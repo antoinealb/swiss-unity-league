@@ -1,5 +1,7 @@
 from django.db import models
 from django.conf import settings
+from django.db.models import Count, F
+import collections
 
 
 class EventOrganizer(models.Model):
@@ -80,3 +82,51 @@ class EventPlayerResult(models.Model):
     )
     player = models.ForeignKey(Player, on_delete=models.CASCADE)
     event = models.ForeignKey(Event, on_delete=models.CASCADE)
+
+
+def _points_for_tournament(category, player_count):
+    # TODO: Points-based tournament
+    points = {
+        Event.Category.POINTS_100: [
+            (15, [100, 70, 50, 50, 30, 30, 30, 30]),
+            (1000, [100, 80, 60, 60] + [40] * 4 + [20] * 7),
+        ],
+        Event.Category.POINTS_250: [
+            (15, [250, 180, 120, 120, 60, 60, 60, 60]),
+            (31, [250, 200, 160, 160] + [120] * 4 + [80] * 4 + [40] * 4),
+            (1000, [250, 200, 160, 160] + [120] * 4 + [80] * 4 + [40] * 4 + 4 * [20]),
+        ],
+        Event.Category.POINTS_500: [
+            (
+                1000,
+                [500, 400, 300, 300]
+                + [200] * 4
+                + [150] * 4
+                + [100] * 4
+                + [50] * 4
+                + [30] * 4
+                + [20] * 4,
+            ),
+        ],
+    }
+
+    for limit, p in points[category]:
+        if player_count <= limit:
+            return p
+
+    raise ValueError("Could not find a big enough event in category!")
+
+
+def compute_scores():
+    scores = collections.defaultdict(lambda: 0)
+    for result in EventPlayerResult.objects.annotate(
+        player_count=Count("event__player"),
+        category=F("event__category"),
+    ).all():
+        points = _points_for_tournament(result.category, result.player_count)
+        if result.ranking > len(points):
+            scores[result.player_id] += 10
+        else:
+            scores[result.player_id] += points[result.ranking - 1]
+
+    return dict(scores)
