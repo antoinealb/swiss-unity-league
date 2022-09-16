@@ -1,0 +1,23 @@
+<h1>Swiss MTG league</h1>
+
+<table class="table table-striped">
+    <thead>
+        <tr>
+            <th scope="col">#</th>
+            <th scope="col">Last</th>
+            <th scope="col">First</th>
+            <th scope="col">Points</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for player in players %}
+            <tr>
+                <td>{{ forloop.counter }}</td>
+                <td>{{ player.last_name }}</td>
+                <td>{{ player.first_name }}</td>
+                <td>{{ player.score }}</td>
+            </tr>
+        {% endfor %}
+    </tbody>
+</table>
+
