@@ -103,21 +103,6 @@ class TestComputeScore(TestCase):
             + [10] * 12,
         )
 
-    def test_compute_score_ranking_mtgr_1000(self):
-        self._test_compute_score(
-            category=Event.Category.POINTS_1000,
-            player_count=40,
-            want_score=[1000, 800]
-            + [600] * 2
-            + [400] * 4
-            + [200] * 4
-            + [150] * 4
-            + [100] * 4
-            + [50] * 4
-            + [20] * 4
-            + [10] * 12,
-        )
-
 
 def _points_for_tournament(category, player_count):
     # TODO: Points-based tournament
