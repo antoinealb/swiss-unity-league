@@ -3,6 +3,7 @@ from factory.django import DjangoModelFactory
 from django.contrib.auth.models import User
 from django.contrib.auth.hashers import make_password
 from .models import *
+import datetime
 
 
 class UserFactory(DjangoModelFactory):
@@ -36,7 +37,11 @@ class EventFactory(DjangoModelFactory):
 
     name = factory.Faker("company")
     organizer = factory.SubFactory(EventOrganizerFactory)
-    date = factory.Faker("date")
+    date = factory.Faker(
+        "date_between",
+        start_date=datetime.date(2022, 1, 1),
+        end_date=datetime.date(2022, 9, 10),
+    )
     url = factory.Faker("uri")
 
     format = Event.Format.MODERN
