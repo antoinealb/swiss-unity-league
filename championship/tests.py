@@ -3,6 +3,7 @@ from .models import *
 from faker import Faker
 from django.contrib.auth.models import User
 from django.db.models import Count, F
+from .factories import *
 import datetime
 import collections
 
@@ -10,24 +11,13 @@ import collections
 class TestComputeScore(TestCase):
     def setUp(self):
         fake = Faker()
-        self.players = []
-        for _ in range(50):
-            first, last = tuple(fake.name().split(" ", maxsplit=1))
-            Player.objects.create(first_name=first, last_name=last)
 
-        p = fake.profile()
-        self.organizer_user = User.objects.create_user(p["username"], p["mail"], "1234")
-        self.organizer = EventOrganizer.objects.create(
-            name="TestTO", contact="test@test.com", user=self.organizer_user
-        )
-        self.event = Event.objects.create(
-            name="TestEvent",
-            organizer=self.organizer,
-            date=datetime.date(2022, 12, 24),
-            url="test.com",
-            category=Event.Category.POINTS_100,
-            format=Event.Format.LEGACY,
-            ranking_type=Event.RankingType.RANKED,
+        for _ in range(50):
+            PlayerFactory()
+
+        self.organizer = EventOrganizerFactory()
+        self.event = EventFactory(
+            format=Event.Format.LEGACY, ranking_type=Event.RankingType.RANKED
         )
 
     def _test_compute_score(self, category, player_count, want_score):
@@ -145,8 +135,8 @@ def compute_scores():
     ).all():
         points = _points_for_tournament(result.category, result.player_count)
         if result.ranking > len(points):
-            scores[result.player.id] += 10
+            scores[result.player_id] += 10
         else:
-            scores[result.player.id] += points[result.ranking - 1]
+            scores[result.player_id] += points[result.ranking - 1]
 
     return dict(scores)

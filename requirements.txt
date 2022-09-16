@@ -1,4 +1,5 @@
 black~=22.8
 Django~=4.1.1
 Faker~=14.2.0
+factory-boy~=3.2.1
 python-language-server~=0.36
