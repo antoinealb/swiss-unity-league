@@ -1,0 +1,4 @@
+black~=22.8
+Django~=4.1.1
+Faker~=14.2.0
+python-language-server~=0.36
