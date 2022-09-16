@@ -13,6 +13,9 @@ class EventOrganizer(models.Model):
     contact = models.EmailField(help_text="Prefered contact email")
     user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.PROTECT)
 
+    def __str__(self):
+        return self.name
+
 
 class Event(models.Model):
     """
@@ -54,6 +57,9 @@ class Event(models.Model):
         help_text="Number of rounds, only used for tournaments with fixed number of rounds.",
     )
 
+    def __str__(self):
+        return f"{self.name} - {self.date}"
+
 
 class Player(models.Model):
     """
@@ -63,6 +69,9 @@ class Player(models.Model):
     last_name = models.CharField(max_length=100)
     first_name = models.CharField(max_length=100)
     events = models.ManyToManyField(Event, through="EventPlayerResult")
+
+    def __str__(self):
+        return f"{self.first_name} {self.last_name}"
 
 
 class EventPlayerResult(models.Model):
