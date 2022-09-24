@@ -1,23 +1,6 @@
-<h1>Swiss MTG league</h1>
-
-<h2>Dernier événements</h2>
-<ul>
-{% for event in last_events %}
-    <li>{{ event.name }} on {{ event.date }}</li>
-{% endfor %}
-</ul>
-
-<h2>Evénements à venir</h2>
-
-<ul>
-{% for event in future_events %}
-    <li>{{ event.name }} on {{ event.date }}</li>
-{% endfor %}
-</ul>
-
+<h1>Classement général</h1>
 
 <h2>Top 10</h2>
-<a href="{% url 'ranking' %}">Classement complet</a>
 <table class="table table-striped">
     <thead>
         <tr>
@@ -34,7 +17,6 @@
                 <td>{{ player.id }}</td>
                 <td>{{ player.last_name }}</td>
                 <td>{{ player.first_name }}</td>
-                <td>{{ player.score }}</td>
                 <td>{{ player.score }}</td>
                 <td><a href="{% url 'player_details' player.id %}">Détails</a>
             </tr>

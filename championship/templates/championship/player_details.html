@@ -1,0 +1,12 @@
+{% load humanize %}
+<h1>{{ player.first_name }} {{player.last_name }}</h1>
+
+<p>{{ player.score }} points</p>
+
+<h2>Last events</h2>
+
+<ul>
+{% for event in last_events %}
+    <li>{{ event.name }} on {{ event.date }} (ranked {{ event.ranking|ordinal }})</li>
+{% endfor %}
+<ul>
