@@ -45,5 +45,8 @@ class EventFactory(DjangoModelFactory):
     url = factory.Faker("uri")
 
     format = Event.Format.MODERN
-    category = Event.Category.POINTS_100
+    category = factory.Faker(
+        "random_element",
+        elements=Event.Category.values,
+    )
     ranking_type = Event.RankingType.RANKED

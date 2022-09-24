@@ -41,7 +41,8 @@ class Event(models.Model):
         POINTS_100 = "100", "100"
         POINTS_250 = "250", "250"
         POINTS_500 = "500", "500"
-        POINTS_1000 = "1000", "1000"
+
+    #    POINTS_1000 = "1000", "1000"
 
     # TODO: Tournament size
     name = models.CharField(max_length=200)

@@ -5,6 +5,7 @@ from django.core.management.base import BaseCommand
 
 from championship.models import *
 from championship.factories import *
+import factory
 
 
 class Command(BaseCommand):
@@ -51,3 +52,13 @@ class Command(BaseCommand):
             random.shuffle(players)
             for i, p in enumerate(players):
                 EventPlayerResult.objects.create(ranking=i + 1, player=p, event=event)
+
+        today = datetime.date.today()
+        for _ in range(10):
+            EventFactory(
+                date=factory.Faker(
+                    "date_between",
+                    start_date=today,
+                    end_date=today + datetime.timedelta(days=14),
+                )
+            )
