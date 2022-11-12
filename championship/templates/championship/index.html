@@ -1,3 +1,6 @@
+{% extends "championship/base.html" %}
+
+{% block title %}Swiss Community League{% endblock %}
 <h1>Swiss MTG league</h1>
 
 <h2>Dernier événements</h2>
@@ -9,37 +12,53 @@
 
 <h2>Evénements à venir</h2>
 
-<ul>
-{% for event in future_events %}
-    <li>{{ event.name }} on {{ event.date }}</li>
-{% endfor %}
-</ul>
 
-
-<h2>Top 10</h2>
-<a href="{% url 'ranking' %}">Classement complet</a>
-<table class="table table-striped">
-    <thead>
-        <tr>
-            <th scope="col">#</th>
-            <th scope="col">Last</th>
-            <th scope="col">First</th>
-            <th scope="col">Points</th>
-        </tr>
-    </thead>
-    <tbody>
-        {% for player in players %}
-            <tr>
-                <td>{{ forloop.counter }}</td>
-                <td>{{ player.id }}</td>
-                <td>{{ player.last_name }}</td>
-                <td>{{ player.first_name }}</td>
-                <td>{{ player.score }}</td>
-                <td>{{ player.score }}</td>
-                <td><a href="{% url 'player_details' player.id %}">Détails</a>
-            </tr>
-        {% endfor %}
-    </tbody>
-</table>
-
-
+{% block content %}
+<div class="container px-4 px-lg-5">
+    <div class="row gx-4 gx-lg-5 align-items-center my-5">
+        <div class="col-lg-7"><img class="img-fluid rounded mb-4 mb-lg-0" src="https://dummyimage.com/900x400/000000/fff.png&text=A+cool+picture+of+a+magic+tournament" alt="..." /></div>
+        <div class="col-lg-5">
+            <h1 class="font-weight-light">Swiss Community League</h1>
+            <p>The Swiss Community League is Switzerland's Magic: The Gathering tournament circuit, where players from all over the country compete for points. The top players get invited into an end-of-year, two days event where they battle for the Player of the Year title.</p>
+            <a class="btn btn-primary" href="#!">More info</a>
+        </div>
+    </div>
+    <div class="row gx-4 gx-lg-5">
+        <div class="col-md-4 mb-5">
+            <div class="card h-100">
+                <div class="card-body">
+                    <h2 class="card-title">Upcoming events</h2>
+                    <ul>
+                    {% for event in future_events|slice:":5" %}
+                        <li>{{ event.date }}: {{ event.name }} by {{ event.organizer}} </li>
+                    {% endfor %}
+                    </ul>
+                </div>
+                <div class="card-footer"><a class="btn btn-primary btn-sm" href="#!">View all upcoming events</a></div>
+            </div>
+        </div>
+        <div class="col-md-4 mb-5">
+            <div class="card h-100">
+                <div class="card-body">
+                    <h2 class="card-title">Info for organizers</h2>
+                    <p class="card-text">Want to be a part of the adventure and start awarding points to your players?</p>
+                </div>
+                <div class="card-footer"><a class="btn btn-primary btn-sm" href="#!">More Info</a></div>
+            </div>
+        </div>
+        <div class="col-md-4 mb-5">
+            <div class="card h-100">
+                <div class="card-body">
+                    <h2 class="card-title">Top players</h2>
+                    <p class="card-text">
+                    <ol>{% for player in players|slice:":5" %}
+                            <li>{{ player.first_name }} {{ player.last_name }} ({{ player.score }}points)</li>
+                        {% endfor %}
+                    </ol>
+                </div>
+                <div class="card-footer"><a class="btn btn-primary btn-sm" href="{% url 'ranking' %}">View full ranking</a></div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
