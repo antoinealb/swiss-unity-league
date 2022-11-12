@@ -1,9 +1,21 @@
 import factory
 from factory.django import DjangoModelFactory
+from faker.providers import BaseProvider
 from django.contrib.auth.models import User
 from django.contrib.auth.hashers import make_password
 from .models import *
 import datetime
+import random
+
+
+class MagicProvider(BaseProvider):
+    def mtg_event_name(self):
+        f = random.choice(["Modern", "Legacy", "Standard"])
+        t = random.choice(["1k", "2k", "Open", "RCQ"])
+        return f"{f} {t}"
+
+
+factory.Faker.add_provider(MagicProvider)
 
 
 class UserFactory(DjangoModelFactory):
@@ -18,7 +30,7 @@ class EventOrganizerFactory(DjangoModelFactory):
     class Meta:
         model = EventOrganizer
 
-    name = factory.Faker("company")
+    name = factory.Faker("company", locale="fr_CH")
     contact = factory.Faker("email")
     user = factory.SubFactory(UserFactory)
 
@@ -27,15 +39,15 @@ class PlayerFactory(DjangoModelFactory):
     class Meta:
         model = Player
 
-    first_name = factory.Faker("first_name")
-    last_name = factory.Faker("last_name")
+    first_name = factory.Faker("first_name", locale="fr_CH")
+    last_name = factory.Faker("last_name", locale="fr_CH")
 
 
 class EventFactory(DjangoModelFactory):
     class Meta:
         model = Event
 
-    name = factory.Faker("company")
+    name = factory.Faker("mtg_event_name")
     organizer = factory.SubFactory(EventOrganizerFactory)
     date = factory.Faker(
         "date_between",
