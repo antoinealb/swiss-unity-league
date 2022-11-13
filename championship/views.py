@@ -1,5 +1,6 @@
 import datetime
 from django.shortcuts import render, get_object_or_404
+from django.views.generic.base import TemplateView
 from .models import Player, compute_scores, Event, EventPlayerResult
 from django.db.models import F
 
@@ -54,3 +55,7 @@ def ranking(request):
     players.sort(key=lambda l: l.score, reverse=True)
 
     return render(request, "championship/ranking.html", dict(players=players))
+
+
+class InformationForPlayerView(TemplateView):
+    template_name = "championship/info.html"
