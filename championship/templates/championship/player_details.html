@@ -1,3 +1,10 @@
+{% extends "championship/base.html" %}
+
+{% block title %}
+{{ player.first_name }} {{player.last_name }}
+{% endblock %}
+
+{% block content %}
 {% load humanize %}
 <h1>{{ player.first_name }} {{player.last_name }}</h1>
 
@@ -10,3 +17,5 @@
     <li>{{ event.name }} on {{ event.date }} (ranked {{ event.ranking|ordinal }})</li>
 {% endfor %}
 <ul>
+
+{% endblock %}
