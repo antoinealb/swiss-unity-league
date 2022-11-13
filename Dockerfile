@@ -14,7 +14,7 @@ RUN pip install -r requirements.txt
 
 COPY . /app
 
-RUN /app/manage.py collecstatic
+RUN /app/manage.py collectstatic --no-input
 
 EXPOSE 8000
 
