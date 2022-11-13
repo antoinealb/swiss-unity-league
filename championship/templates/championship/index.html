@@ -1,20 +1,8 @@
 {% extends "championship/base.html" %}
 
 {% block title %}Swiss Community League{% endblock %}
-<h1>Swiss MTG league</h1>
-
-<h2>Dernier événements</h2>
-<ul>
-{% for event in last_events %}
-    <li>{{ event.name }} on {{ event.date }}</li>
-{% endfor %}
-</ul>
-
-<h2>Evénements à venir</h2>
-
 
 {% block content %}
-<div class="container px-4 px-lg-5">
     <div class="row gx-4 gx-lg-5 align-items-center my-5">
         <div class="col-lg-7"><img class="img-fluid rounded mb-4 mb-lg-0" src="https://dummyimage.com/900x400/000000/fff.png&text=A+cool+picture+of+a+magic+tournament" alt="..." /></div>
         <div class="col-lg-5">
@@ -60,5 +48,4 @@
             </div>
         </div>
     </div>
-</div>
 {% endblock %}
