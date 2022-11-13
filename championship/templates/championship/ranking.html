@@ -1,27 +1,26 @@
-<h1>Classement général</h1>
+{% extends "championship/base.html" %}
 
-<h2>Top 10</h2>
+{% block title %}Ranking Swiss Community League{% endblock %}
+
+{% block content %}
+<h1>Ranking by player</h1>
+
 <table class="table table-striped">
     <thead>
         <tr>
-            <th scope="col">#</th>
-            <th scope="col">Last</th>
-            <th scope="col">First</th>
+            <th scope="col">Rank</th>
             <th scope="col">Points</th>
+            <th scope="col">Name</th>
         </tr>
     </thead>
     <tbody>
         {% for player in players %}
             <tr>
                 <td>{{ forloop.counter }}</td>
-                <td>{{ player.id }}</td>
-                <td>{{ player.last_name }}</td>
-                <td>{{ player.first_name }}</td>
                 <td>{{ player.score }}</td>
-                <td><a href="{% url 'player_details' player.id %}">Détails</a>
+                <td><a href="{% url 'player_details' player.id %}">{{ player.last_name }}, {{ player.first_name }}</a></td>
             </tr>
         {% endfor %}
     </tbody>
 </table>
-
-
+{% endblock %}
