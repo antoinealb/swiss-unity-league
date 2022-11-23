@@ -1,10 +1,12 @@
+import datetime
+
 from django.test import TestCase
-from .models import *
-from faker import Faker
 from django.contrib.auth.models import User
 from django.db.models import Count, F
-from .factories import *
-import datetime
+from faker import Faker
+
+from championship.factories import *
+from championship.models import *
 
 
 class TestComputeScore(TestCase):
