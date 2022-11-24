@@ -1,6 +1,6 @@
 stages:
   - test
-  - deploy
+  - package
 
 tests:
   image: python:3.10
@@ -9,13 +9,15 @@ tests:
   script:
     - ./manage.py test
 
-
-deploy:
-  tags:
-    - infra
-  stage: deploy
-  script:
-    - docker build -t league:latest .
+build-docker:
+  stage: package
   only:
-    - master
-
+    refs:
+      - master
+  image:
+    name: gcr.io/kaniko-project/executor:debug
+    entrypoint: [""]
+  script:
+    - echo "{\"auths\":{\"https://index.docker.io/v1/\":{\"auth\":\"$CI_HUB_SECRET\"}}}" > /kaniko/.docker/config.json
+    - cat /kaniko/.docker/config.json
+    - /kaniko/executor --context $CI_PROJECT_DIR/output/images --dockerfile $CI_PROJECT_DIR/Dockerfile --destination antoinealb/league:latest
