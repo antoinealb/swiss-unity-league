@@ -1,12 +1,17 @@
 import datetime
-from django.shortcuts import render, get_object_or_404
+import logging
+
+from django.shortcuts import render, get_object_or_404, redirect
 from django.views.generic.base import TemplateView
 from django.views.generic import DetailView
 from django.http import HttpResponseRedirect
 
+import requests
+
 from .models import *
-from .forms import EventCreateForm
+from .forms import *
 from django.db.models import F
+from championship import aetherhub_parser
 
 EVENTS_ON_PAGE = 10
 PLAYERS_TOP = 10
@@ -92,3 +97,37 @@ def create_event(request):
         form = EventCreateForm()
 
     return render(request, "championship/create_event.html", {"form": form})
+
+
+def create_results(request):
+    if request.method == "POST":
+        form = AetherhubImporterForm(request.user, request.POST)
+        if form.is_valid():
+            # From here we can assume that the event exists and is owned by
+            # this user, as otherwise the form validation will not accept it.
+            url = form.cleaned_data["url"]
+            event = form.cleaned_data["event"]
+
+            # Fetch results from Aetherhub and parse them
+            response = requests.get(url)
+            response.raise_for_status()
+            standings = list(
+                aetherhub_parser.parse_standings_page(response.content.decode())
+            )
+
+            # Create reports for this events
+            # TODO: Fetch players from DB if they exist
+            # TODO: Fuzzy match player names with DB
+            # TODO: Should we delete all results for that tournament before
+            # adding them in case someone uploads results twice ?
+            for name, points, _ in standings:
+                player = Player.objects.create(last_name="Test", first_name=name)
+                EventPlayerResult.objects.create(
+                    points=points, player=player, event=event
+                )
+
+            return HttpResponseRedirect("/")
+    else:
+        form = AetherhubImporterForm(request.user)
+
+    return render(request, "championship/create_results.html", {"form": form})

@@ -27,6 +27,7 @@
                         <li class="nav-item"><a class="nav-link" href="{% url 'info' %}">About the league</a></li>
                         {% if user.is_authenticated %}
                         <li class="nav-item"><a class="nav-link" href="{% url 'events_create' %}">Create new event</a></li>
+                        <li class="nav-item"><a class="nav-link" href="{% url 'results_create' %}">Upload results</a></li>
                         {% endif %}
                         {% if user.is_staff %}
                         <li class="nav-item"><a class="nav-link" href="{% url 'admin:index' %}">Admin</a></li>
