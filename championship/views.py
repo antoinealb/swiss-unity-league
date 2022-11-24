@@ -45,7 +45,7 @@ class PlayerDetailsView(DetailView):
     def get_context_data(self, object, **kwargs):
         context = super().get_context_data(**kwargs)
         scores = compute_scores()
-        context["score"] = scores[object.id]
+        context["score"] = scores.get(object.id, 0)
         context["last_events"] = (
             EventPlayerResult.objects.filter(player=context["player"])
             .annotate(name=F("event__name"), date=F("event__date"))
