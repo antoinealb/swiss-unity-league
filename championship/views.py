@@ -2,8 +2,10 @@ import datetime
 from django.shortcuts import render, get_object_or_404
 from django.views.generic.base import TemplateView
 from django.views.generic import DetailView
+from django.http import HttpResponseRedirect
 
-from .models import Player, compute_scores, Event, EventPlayerResult
+from .models import *
+from .forms import EventCreateForm
 from django.db.models import F
 
 EVENTS_ON_PAGE = 10
@@ -68,3 +70,24 @@ class CompleteRankingView(TemplateView):
 
 class InformationForPlayerView(TemplateView):
     template_name = "championship/info.html"
+
+
+def create_event(request):
+    if request.method == "POST":
+        form = EventCreateForm(request.POST)
+        if form.is_valid():
+            event = form.save(commit=False)
+            # TODO(antoinealb): Expose those fields
+            event.organizer = EventOrganizer.objects.get(user=request.user)
+            event.date = datetime.datetime.now() + datetime.timedelta(days=1)
+            event.url = ""
+            event.format = Event.Format.MODERN
+            event.category = Event.Category.POINTS_100
+            event.ranking_type = Event.RankingType.RANKED
+            event.save()
+
+            return HttpResponseRedirect("/")
+    else:
+        form = EventCreateForm()
+
+    return render(request, "championship/create_event.html", {"form": form})
