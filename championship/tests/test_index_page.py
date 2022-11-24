@@ -1,7 +1,5 @@
 import datetime
 from django.test import TestCase, Client
-from django.urls import reverse
-from faker import Faker
 from championship.models import Event, EventOrganizer
 from championship.factories import *
 

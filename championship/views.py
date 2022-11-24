@@ -62,7 +62,7 @@ class CompleteRankingView(TemplateView):
         players = list(Player.objects.all())
         scores_by_player = compute_scores()
         for p in players:
-            p.score = scores_by_player[p.id]
+            p.score = scores_by_player.get(p.id, 0)
         players.sort(key=lambda l: l.score, reverse=True)
         context["players"] = players
 
