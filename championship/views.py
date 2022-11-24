@@ -34,6 +34,7 @@ class IndexView(TemplateView):
         future_events = Event.objects.filter(date__gt=datetime.date.today()).order_by(
             "date"
         )[:EVENTS_ON_PAGE]
+        return future_events
 
 
 class PlayerDetailsView(DetailView):
