@@ -1,6 +1,7 @@
 stages:
   - test
   - package
+  - rollout
 
 tests:
   image: python:3.10
@@ -21,3 +22,13 @@ build-docker:
     - echo "{\"auths\":{\"https://index.docker.io/v1/\":{\"auth\":\"$CI_HUB_SECRET\"}}}" > /kaniko/.docker/config.json
     - cat /kaniko/.docker/config.json
     - /kaniko/executor --context $CI_PROJECT_DIR --dockerfile $CI_PROJECT_DIR/Dockerfile --destination antoinealb/league:latest
+
+restart-service:
+  stage: rollout
+  only:
+    refs:
+      - master
+  tags:
+    - infra
+  script:
+    - sudo /bin/systemctl restart league.service
