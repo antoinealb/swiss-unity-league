@@ -8,4 +8,7 @@ class EventCreateForm(forms.ModelForm):
         model = Event
         fields = [
             "name",
+            "url",
+            "date",
+            "format",
         ]

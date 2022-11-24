@@ -77,13 +77,13 @@ def create_event(request):
         form = EventCreateForm(request.POST)
         if form.is_valid():
             event = form.save(commit=False)
-            # TODO(antoinealb): Expose those fields
             event.organizer = EventOrganizer.objects.get(user=request.user)
-            event.date = datetime.datetime.now() + datetime.timedelta(days=1)
-            event.url = ""
-            event.format = Event.Format.MODERN
+
+            # TODO(antoinealb): Change this once we implement Jari's point
+            # system
             event.category = Event.Category.POINTS_100
             event.ranking_type = Event.RankingType.RANKED
+
             event.save()
 
             return HttpResponseRedirect("/")

@@ -1,3 +1,4 @@
+import datetime
 from django.test import TestCase, Client
 from django.contrib.auth.models import User
 from django.urls import reverse
@@ -39,9 +40,18 @@ class AdminViewTestCase(TestCase):
         )
 
     def test_create_event(self):
+        data = {
+            "name": "Test Event",
+            "url": "https://test.example",
+            "date": "26/11/2022",
+            "format": "LEGACY",
+        }
         self.login()
-        self.client.post(reverse("events_create"), data={"name": "Test Event"})
+        self.client.post(reverse("events_create"), data=data)
 
         event = Event.objects.all()[0]
 
         self.assertEqual(event.name, "Test Event")
+        self.assertEqual(event.url, "https://test.example")
+        self.assertEqual(event.date, datetime.date(2022, 11, 26))
+        self.assertEqual(event.format, event.Format.LEGACY)
