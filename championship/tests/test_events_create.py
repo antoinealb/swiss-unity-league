@@ -43,10 +43,12 @@ class AdminViewTestCase(TestCase):
         data = {
             "name": "Test Event",
             "url": "https://test.example",
-            "date": "26/11/2022",
+            "date": "11/26/2022",
             "format": "LEGACY",
         }
         self.login()
+        to = EventOrganizerFactory(user=self.user)
+
         self.client.post(reverse("events_create"), data=data)
 
         event = Event.objects.all()[0]
