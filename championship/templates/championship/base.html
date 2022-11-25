@@ -26,7 +26,7 @@
                         <li class="nav-item"><a class="nav-link" href="{% url 'ranking' %}">Leaderboard</a></li>
                         <li class="nav-item"><a class="nav-link" href="#!">Upcoming events</a></li>
                         <li class="nav-item"><a class="nav-link" href="{% url 'info' %}">About the league</a></li>
-                        {% if user.is_authenticated %}
+                        {% if user.is_authenticated and user.eventorganizer_set.count %}
                         <li class="nav-item"><a class="nav-link" href="{% url 'events_create' %}">Create new event</a></li>
                         <li class="nav-item"><a class="nav-link" href="{% url 'results_create' %}">Upload results</a></li>
                         {% endif %}

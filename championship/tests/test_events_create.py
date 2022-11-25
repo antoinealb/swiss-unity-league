@@ -3,6 +3,7 @@ from django.test import TestCase, Client
 from django.contrib.auth.models import User
 from django.urls import reverse
 from championship.models import Event, EventOrganizer
+from championship.factories import EventOrganizerFactory
 
 
 class AdminViewTestCase(TestCase):
@@ -14,9 +15,6 @@ class AdminViewTestCase(TestCase):
         self.client = Client()
         self.credentials = dict(username="test", password="test")
         self.user = User.objects.create_user(**self.credentials)
-        self.organizer = EventOrganizer.objects.create(
-            name="test TO", contact="", user=self.user
-        )
 
     def login(self):
         self.client.login(**self.credentials)
@@ -30,8 +28,21 @@ class AdminViewTestCase(TestCase):
             "Anonymous users should not see the link to the event create page.",
         )
 
+    def test_link_not_shown_if_no_to(self):
+        """
+        Checks that we don't show the link to accounts that are not TO accounts.
+        """
+        self.login()
+        response = self.client.get("/")
+        self.assertNotIn(
+            reverse("events_create"),
+            response.content.decode(),
+            "Non TOs should not have the link",
+        )
+
     def test_link_shown_when_authenticated(self):
         self.login()
+        to = EventOrganizerFactory(user=self.user)
         response = self.client.get("/")
         self.assertIn(
             reverse("events_create"),
