@@ -1,12 +1,13 @@
 {% extends "championship/base.html" %}
 
 {% block title %}
-{{ player.first_name }} {{player.last_name }}
+{{ player.name }}
 {% endblock %}
 
 {% block content %}
 {% load humanize %}
-<h1>{{ player.first_name }} {{player.last_name }}</h1>
+<h1>{{ player.name }}</h1>
+
 
 <p>{{ score }} points</p>
 

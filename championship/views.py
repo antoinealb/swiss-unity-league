@@ -121,7 +121,7 @@ def create_results(request):
             # TODO: Should we delete all results for that tournament before
             # adding them in case someone uploads results twice ?
             for name, points, _ in standings:
-                player = Player.objects.create(last_name="Test", first_name=name)
+                player = Player.objects.create(name=name)
                 EventPlayerResult.objects.create(
                     points=points, player=player, event=event
                 )

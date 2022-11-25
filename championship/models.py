@@ -67,8 +67,10 @@ class Player(models.Model):
     Represents a player in the championship, amon many tournaments.
     """
 
-    last_name = models.CharField(max_length=100)
-    first_name = models.CharField(max_length=100)
+    # This used to be first_name, last_name in two separate fields.
+    # See https://www.kalzumeus.com/2010/06/17/falsehoods-programmers-believe-about-names/
+    # for why this was not a good idea.
+    name = models.CharField(max_length=200)
     events = models.ManyToManyField(Event, through="EventPlayerResult")
 
     def __str__(self):
@@ -95,7 +97,7 @@ class EventPlayerResult(models.Model):
 
 
 def _points_for_tournament(category, player_count):
-    # TODO: Points-based tournament
+    # TODO: Switch to Jari's system
     points = {
         Event.Category.POINTS_100: [
             (15, [100, 70, 50, 50, 30, 30, 30, 30]),

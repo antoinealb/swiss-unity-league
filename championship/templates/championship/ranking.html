@@ -18,7 +18,7 @@
             <tr>
                 <td>{{ forloop.counter }}</td>
                 <td>{{ player.score }}</td>
-                <td><a href="{% url 'player_details' player.id %}">{{ player.last_name }}, {{ player.first_name }}</a></td>
+                <td><a href="{% url 'player_details' player.id %}">{{ player.name }}</a></td>
             </tr>
         {% endfor %}
     </tbody>

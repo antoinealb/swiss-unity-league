@@ -24,8 +24,8 @@ admin.site.register(Event, EventAdmin)
 
 class PlayerAdmin(admin.ModelAdmin):
     inlines = [ResultInline]
-    search_fields = ["first_name", "last_name"]
-    list_display = ["last_name", "first_name"]
+    search_fields = ["name"]
+    list_display = ["name"]
 
 
 admin.site.register(Player, PlayerAdmin)

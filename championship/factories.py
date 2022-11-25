@@ -39,8 +39,7 @@ class PlayerFactory(DjangoModelFactory):
     class Meta:
         model = Player
 
-    first_name = factory.Faker("first_name", locale="fr_CH")
-    last_name = factory.Faker("last_name", locale="fr_CH")
+    name = factory.Faker("name", locale="fr_CH")
 
 
 class EventFactory(DjangoModelFactory):

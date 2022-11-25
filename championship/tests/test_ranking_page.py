@@ -4,7 +4,7 @@ from championship.models import Player
 from championship.factories import *
 
 
-class AdminViewTestCase(TestCase):
+class RankingTestCase(TestCase):
     """
     Tests for the landing page of the website.
     """
@@ -21,5 +21,4 @@ class AdminViewTestCase(TestCase):
         """
         player = PlayerFactory()
         response = self.client.get("/ranking")
-        self.assertIn(player.first_name, response.content.decode())
-        self.assertIn(player.last_name, response.content.decode())
+        self.assertIn(player.name, response.content.decode())

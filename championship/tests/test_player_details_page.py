@@ -22,5 +22,4 @@ class PlayerDetailsTest(TestCase):
         """
         player = PlayerFactory()
         response = self.client.get(reverse("player_details", args=[player.id]))
-        self.assertIn(player.first_name, response.content.decode())
-        self.assertIn(player.last_name, response.content.decode())
+        self.assertIn(player.name, response.content.decode())
