@@ -15,7 +15,7 @@
 
 <ul>
 {% for event in last_events %}
-    <li>{{ event.name }} on {{ event.date }} (ranked {{ event.ranking|ordinal }})</li>
+    <li>{{ event.name }} on {{ event.date }} ({{ event.points }} points)</li>
 {% endfor %}
 <ul>
 

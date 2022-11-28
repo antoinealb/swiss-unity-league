@@ -55,9 +55,14 @@ class EventFactory(DjangoModelFactory):
     )
     url = factory.Faker("uri")
 
-    format = Event.Format.MODERN
+    category = factory.Faker(
+        "random_element",
+        elements=Event.Format.values,
+    )
+
     category = factory.Faker(
         "random_element",
         elements=Event.Category.values,
     )
-    ranking_type = Event.RankingType.RANKED
+
+    round_count = 4

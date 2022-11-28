@@ -56,6 +56,7 @@ class AdminViewTestCase(TestCase):
             "url": "https://test.example",
             "date": "11/26/2022",
             "format": "LEGACY",
+            "category": "PREMIER",
         }
         self.login()
         to = EventOrganizerFactory(user=self.user)
@@ -68,3 +69,4 @@ class AdminViewTestCase(TestCase):
         self.assertEqual(event.url, "https://test.example")
         self.assertEqual(event.date, datetime.date(2022, 11, 26))
         self.assertEqual(event.format, event.Format.LEGACY)
+        self.assertEqual(event.category, event.Category.PREMIER)

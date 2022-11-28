@@ -84,12 +84,9 @@ def create_event(request):
         if form.is_valid():
             event = form.save(commit=False)
             event.organizer = EventOrganizer.objects.get(user=request.user)
-
-            # TODO(antoinealb): Change this once we implement Jari's point
-            # system
-            event.category = Event.Category.POINTS_100
-            event.ranking_type = Event.RankingType.RANKED
-
+            # TODO: The round count should probably be a part of the results
+            # upload view
+            event.round_count = 3
             event.save()
 
             return HttpResponseRedirect("/")

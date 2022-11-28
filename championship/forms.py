@@ -11,6 +11,7 @@ class EventCreateForm(forms.ModelForm):
             "url",
             "date",
             "format",
+            "category",
         ]
         widgets = {"date": forms.DateInput(attrs={"type": "date"})}
 

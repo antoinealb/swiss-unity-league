@@ -45,13 +45,19 @@ class Command(BaseCommand):
 
         events = []
         for _ in range(events_count):
-            e = EventFactory(organizer=random.choice(organizers))
+            e = EventFactory(organizer=random.choice(organizers), round_count=4)
             events.append(e)
 
         for event in events:
             random.shuffle(players)
             for i, p in enumerate(players):
-                EventPlayerResult.objects.create(ranking=i + 1, player=p, event=event)
+                # Just simulate an event where half the playrs went 1-3
+                # and half went 3 - 1
+                if i % 2:
+                    points = 3
+                else:
+                    points = 9
+                EventPlayerResult.objects.create(points=points, player=p, event=event)
 
         today = datetime.date.today()
         for _ in range(10):

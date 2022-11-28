@@ -1,6 +1,7 @@
 from django.db import models
 from django.conf import settings
 from django.db.models import Count, F
+from django.core.validators import MinValueValidator
 import collections
 
 
@@ -28,38 +29,36 @@ class Event(models.Model):
     number of rounds, or ranking based, typically with a cut to top8.
     """
 
+    name = models.CharField(
+        max_length=200, help_text="The name of the event as defined by the organizer"
+    )
+    organizer = models.ForeignKey(EventOrganizer, on_delete=models.PROTECT)
+    date = models.DateField(
+        help_text="The date of the event. For multi-days event, pick the first day."
+    )
+    url = models.URLField(help_text="A website for information, ticket sale, etc.")
+
     class Format(models.TextChoices):
         LEGACY = "LEGACY", "Legacy"
         MODERN = "MODERN", "Modern"
         LIMITED = "LIMITED", "Limited"
 
-    class RankingType(models.TextChoices):
-        ROUNDS = "ROUNDS", "Number of rounds"
-        RANKED = "RANKED", "Ranking-based"
+    format = models.CharField(max_length=10, choices=Format.choices)
 
     class Category(models.TextChoices):
-        POINTS_100 = "100", "100"
-        POINTS_250 = "250", "250"
-        POINTS_500 = "500", "500"
+        WEEKLY = "WEEKLY", "Weekly event"
+        PREMIER = "PREMIER", "Premier Event"
 
-    #    POINTS_1000 = "1000", "1000"
+    category = models.CharField(max_length=10, choices=Category.choices)
+    multiplier = models.PositiveIntegerField(default=1)
 
-    # TODO: Tournament size
-    name = models.CharField(max_length=200)
-    organizer = models.ForeignKey(EventOrganizer, on_delete=models.PROTECT)
-    date = models.DateField()
-    url = models.URLField(help_text="A website for information, ticket sale, etc.")
-    format = models.CharField(max_length=10, choices=Format.choices)
-    category = models.CharField(max_length=4, choices=Category.choices)
-    ranking_type = models.CharField(max_length=10, choices=RankingType.choices)
     round_count = models.IntegerField(
-        blank=True,
-        null=True,
-        help_text="Number of rounds, only used for tournaments with fixed number of rounds.",
+        help_text="Number of rounds played in the tournament",
+        validators=[MinValueValidator(3, "Not enough rounds (min 3)")],
     )
 
     def __str__(self):
-        return f"{self.name} - {self.date}"
+        return f"{self.name} - {self.date} ({self.category.label})"
 
 
 class Player(models.Model):
@@ -82,11 +81,6 @@ class EventPlayerResult(models.Model):
     A result for a single player in a single event.
     """
 
-    ranking = models.IntegerField(
-        blank=True,
-        null=True,
-        help_text="Ranking, for tournaments where a ranking result is used.",
-    )
     points = models.IntegerField(
         blank=True,
         null=True,
@@ -96,49 +90,28 @@ class EventPlayerResult(models.Model):
     event = models.ForeignKey(Event, on_delete=models.CASCADE)
 
 
-def _points_for_tournament(category, player_count):
-    # TODO: Switch to Jari's system
-    points = {
-        Event.Category.POINTS_100: [
-            (15, [100, 70, 50, 50, 30, 30, 30, 30]),
-            (1000, [100, 80, 60, 60] + [40] * 4 + [20] * 7),
-        ],
-        Event.Category.POINTS_250: [
-            (15, [250, 180, 120, 120, 60, 60, 60, 60]),
-            (31, [250, 200, 160, 160] + [120] * 4 + [80] * 4 + [40] * 4),
-            (1000, [250, 200, 160, 160] + [120] * 4 + [80] * 4 + [40] * 4 + 4 * [20]),
-        ],
-        Event.Category.POINTS_500: [
-            (
-                1000,
-                [500, 400, 300, 300]
-                + [200] * 4
-                + [150] * 4
-                + [100] * 4
-                + [50] * 4
-                + [30] * 4
-                + [20] * 4,
-            ),
-        ],
-    }
-
-    for limit, p in points[category]:
-        if player_count <= limit:
-            return p
-
-    raise ValueError("Could not find a big enough event in category!")
-
-
 def compute_scores():
+    def _participation_points(round_count):
+        if round_count >= 5:
+            return 2
+        elif round_count == 4:
+            return 3
+        else:
+            return 4
+
     scores = collections.defaultdict(lambda: 0)
     for result in EventPlayerResult.objects.annotate(
-        player_count=Count("event__player"),
         category=F("event__category"),
+        multiplier=F("event__multiplier"),
+        round_count=F("event__round_count"),
     ).all():
-        points = _points_for_tournament(result.category, result.player_count)
-        if result.ranking > len(points):
-            scores[result.player_id] += 10
+        if result.category == Event.Category.WEEKLY:
+            mult = 1
         else:
-            scores[result.player_id] += points[result.ranking - 1]
+            mult = result.multiplier
+
+        # TODO: Handle top 8
+        pp = _participation_points(result.round_count)
+        scores[result.player_id] += (result.points + pp) * mult
 
     return dict(scores)

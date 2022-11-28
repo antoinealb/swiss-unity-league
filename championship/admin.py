@@ -5,7 +5,7 @@ from .models import *
 class ResultInline(admin.TabularInline):
     model = EventPlayerResult
     extra = 0
-    ordering = ("event__date", "ranking", "-points")
+    ordering = ("-event__date", "-points")
 
 
 class EventAdmin(admin.ModelAdmin):
