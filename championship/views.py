@@ -115,8 +115,16 @@ def create_results(request):
             # TODO: Fuzzy match player names with DB
             # TODO: Should we delete all results for that tournament before
             # adding them in case someone uploads results twice ?
+
+            def _remove_camel_case(name):
+                """Converts "AntoineAlbertelli" to "Antoine Albertelli"."""
+                name = "".join(map(lambda c: c if c.islower() else " " + c, name))
+                return name.lstrip()
+
             for name, points, _ in results.standings:
-                player = Player.objects.create(name=name)
+                name = _remove_camel_case(name)
+
+                player, _ = Player.objects.get_or_create(name=name)
                 EventPlayerResult.objects.create(
                     points=points, player=player, event=event
                 )

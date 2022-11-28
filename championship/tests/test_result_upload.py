@@ -110,6 +110,9 @@ class AetherhubImportTest(TestCase):
         self.assertEqual(results[10].points, 9)
         self.assertEqual(results[27].points, 3)
 
+        # Check that CamelCase conversion works
+        Player.objects.get(name="Amar Zehic")
+
     @patch("requests.get")
     def test_imports_result_round_count(self, requests_get):
         self.login()
@@ -120,3 +123,21 @@ class AetherhubImportTest(TestCase):
         # refresh the event and check that this was extracted from Aetherhub
         event = Event.objects.get(id=self.event.id)
         self.assertEqual(5, event.round_count)
+
+    @patch("requests.get")
+    def test_imports_result_for_different_tourney_resuses_player(self, requests_get):
+        self.login()
+        self.mock_response(requests_get)
+
+        # Import the first event
+        self.client.post(reverse("results_create"), self.data)
+
+        # Create a second event, and import the results again
+        second_event = EventFactory(organizer=self.organizer)
+        self.data["event"] = second_event.id
+        self.client.post(reverse("results_create"), self.data)
+
+        # Check that a random player has indeed two events to their name
+        player = Player.objects.all()[0]
+        results = EventPlayerResult.objects.filter(player=player).count()
+        self.assertEqual(2, results, "Each player should have two results")
