@@ -58,7 +58,7 @@ class Event(models.Model):
     )
 
     def __str__(self):
-        return f"{self.name} - {self.date} ({self.category.label})"
+        return f"{self.name} - {self.date} ({self.get_category_display()})"
 
 
 class Player(models.Model):
@@ -73,7 +73,7 @@ class Player(models.Model):
     events = models.ManyToManyField(Event, through="EventPlayerResult")
 
     def __str__(self):
-        return f"{self.first_name} {self.last_name}"
+        return self.name
 
 
 class EventPlayerResult(models.Model):
