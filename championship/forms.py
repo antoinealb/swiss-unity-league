@@ -28,4 +28,5 @@ class AetherhubImporterForm(forms.Form):
         super().__init__(*args, **kwargs)
 
         # TODO: Only get past events, and perhaps only those with no results yet ?
-        self.fields["event"].queryset = Event.objects.filter(organizer__user=user)
+
+    #     self.fields["event"].queryset = Event.objects.filter(organizer__user=user)

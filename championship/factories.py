@@ -64,5 +64,3 @@ class EventFactory(DjangoModelFactory):
         "random_element",
         elements=Event.Category.values,
     )
-
-    round_count = 4

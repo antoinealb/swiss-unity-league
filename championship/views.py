@@ -84,9 +84,6 @@ def create_event(request):
         if form.is_valid():
             event = form.save(commit=False)
             event.organizer = EventOrganizer.objects.get(user=request.user)
-            # TODO: The round count should probably be a part of the results
-            # upload view
-            event.round_count = 3
             event.save()
 
             return HttpResponseRedirect("/")
@@ -108,16 +105,17 @@ def create_results(request):
             # Fetch results from Aetherhub and parse them
             response = requests.get(url)
             response.raise_for_status()
-            standings = list(
-                aetherhub_parser.parse_standings_page(response.content.decode())
-            )
+            results = aetherhub_parser.parse_standings_page(response.content.decode())
 
             # Create reports for this events
+            event.round_count = results.round_count
+            event.save()
+
             # TODO: Fetch players from DB if they exist
             # TODO: Fuzzy match player names with DB
             # TODO: Should we delete all results for that tournament before
             # adding them in case someone uploads results twice ?
-            for name, points, _ in standings:
+            for name, points, _ in results.standings:
                 player = Player.objects.create(name=name)
                 EventPlayerResult.objects.create(
                     points=points, player=player, event=event

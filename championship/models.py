@@ -53,6 +53,7 @@ class Event(models.Model):
     multiplier = models.PositiveIntegerField(default=1)
 
     round_count = models.IntegerField(
+        null=True,
         help_text="Number of rounds played in the tournament",
         validators=[MinValueValidator(3, "Not enough rounds (min 3)")],
     )
@@ -82,9 +83,7 @@ class EventPlayerResult(models.Model):
     """
 
     points = models.IntegerField(
-        blank=True,
-        null=True,
-        help_text="Number of points, for fixed-rounds tournaments.",
+        help_text="Number of points scored by that player",
     )
     player = models.ForeignKey(Player, on_delete=models.CASCADE)
     event = models.ForeignKey(Event, on_delete=models.CASCADE)

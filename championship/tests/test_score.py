@@ -74,6 +74,13 @@ class TestComputeScore(TestCase):
             want_score=[39, 39, 36, 24],
         )
 
+    def test_ignores_events_with_no_results(self):
+        self.event.round_count = 0
+        self.event.save()
+        scores = compute_scores()
+        for player_id, score in scores:
+            self.assertEqual(0, score, f"Unexpected points for player {player_id}")
+
 
 class TestSafetyChecks(TestCase):
     def test_cannot_create_events_with_less_than_3_rounds(self):

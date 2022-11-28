@@ -20,20 +20,22 @@ def load_test_html(filename):
 
 def parse_standings_html(filename):
     text = load_test_html(filename)
-    return list(parse_standings_page(text))
+    return parse_standings_page(text)
 
 
 class AetherhubStandingsParser(TestCase):
-    def setUp(self):
-        self.results = parse_standings_html("aetherhub_ranking.html")
-
     def test_can_parse(self):
+        results = parse_standings_html("aetherhub_ranking.html")
         wantStandings = [
             ("DarioMazzola", 13, "4 - 0 - 1"),
             ("Dominik Horber", 13, "4 - 0 - 1"),
             ("Christopher Weber", 12, "4 - 1"),
         ]
-        self.assertEqual(wantStandings, self.results[:3])
+        self.assertEqual(wantStandings, results.standings[:3])
+
+    def test_parse_round_count(self):
+        results = parse_standings_html("aetherhub_ranking.html")
+        self.assertEqual(5, results.round_count)
 
 
 class AetherhubImportTest(TestCase):
@@ -107,3 +109,14 @@ class AetherhubImportTest(TestCase):
         self.assertEqual(results[0].points, 13)
         self.assertEqual(results[10].points, 9)
         self.assertEqual(results[27].points, 3)
+
+    @patch("requests.get")
+    def test_imports_result_round_count(self, requests_get):
+        self.login()
+        self.mock_response(requests_get)
+
+        self.client.post(reverse("results_create"), self.data)
+
+        # refresh the event and check that this was extracted from Aetherhub
+        event = Event.objects.get(id=self.event.id)
+        self.assertEqual(5, event.round_count)
