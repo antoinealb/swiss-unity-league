@@ -46,17 +46,11 @@ class Event(models.Model):
     format = models.CharField(max_length=10, choices=Format.choices)
 
     class Category(models.TextChoices):
-        WEEKLY = "WEEKLY", "Weekly event"
-        PREMIER = "PREMIER", "Premier Event"
+        REGULAR = "REGULAR", "SUL Regular"
+        REGIONAL = "REGIONAL", "SUL Regional"
+        PREMIER = "PREMIER", "SUL Premier"
 
     category = models.CharField(max_length=10, choices=Category.choices)
-    multiplier = models.PositiveIntegerField(default=1)
-
-    round_count = models.IntegerField(
-        null=True,
-        help_text="Number of rounds played in the tournament",
-        validators=[MinValueValidator(3, "Not enough rounds (min 3)")],
-    )
 
     def __str__(self):
         return f"{self.name} - {self.date} ({self.get_category_display()})"
@@ -90,27 +84,20 @@ class EventPlayerResult(models.Model):
 
 
 def compute_scores():
-    def _participation_points(round_count):
-        if round_count >= 5:
-            return 2
-        elif round_count == 4:
-            return 3
-        else:
-            return 4
+    MULT = {
+        Event.Category.REGULAR: 1,
+        Event.Category.REGIONAL: 4,
+        Event.Category.PREMIER: 6,
+    }
+    PARTICIPATION_POINTS = 3
 
     scores = collections.defaultdict(lambda: 0)
     for result in EventPlayerResult.objects.annotate(
         category=F("event__category"),
-        multiplier=F("event__multiplier"),
-        round_count=F("event__round_count"),
     ).all():
-        if result.category == Event.Category.WEEKLY:
-            mult = 1
-        else:
-            mult = result.multiplier
-
         # TODO: Handle top 8
-        pp = _participation_points(result.round_count)
-        scores[result.player_id] += (result.points + pp) * mult
+        scores[result.player_id] += (result.points + PARTICIPATION_POINTS) * MULT[
+            result.category
+        ]
 
     return dict(scores)

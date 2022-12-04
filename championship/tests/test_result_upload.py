@@ -129,17 +129,6 @@ class AetherhubImportTest(TestCase):
         Player.objects.get(name="Amar Zehic")
 
     @patch("requests.get")
-    def test_imports_result_round_count(self, requests_get):
-        self.login()
-        self.mock_response(requests_get)
-
-        self.client.post(reverse("results_create"), self.data)
-
-        # refresh the event and check that this was extracted from Aetherhub
-        event = Event.objects.get(id=self.event.id)
-        self.assertEqual(5, event.round_count)
-
-    @patch("requests.get")
     def test_imports_result_for_different_tourney_resuses_player(self, requests_get):
         self.login()
         self.mock_response(requests_get)

@@ -19,13 +19,9 @@ class TestComputeScore(TestCase):
 
         self.event = EventFactory()
 
-    def _test_compute_score(
-        self, category, round_count, points, want_score, multiplier=1
-    ):
+    def _test_compute_score(self, category, points, want_score):
         player_count = len(points)
         self.event.category = category
-        self.event.round_count = round_count
-        self.event.multiplier = multiplier
         self.event.save()
 
         players = Player.objects.all().order_by("id")[:player_count]
@@ -43,39 +39,26 @@ class TestComputeScore(TestCase):
 
     def test_compute_score_points_weekly_3rounds(self):
         self._test_compute_score(
-            category=Event.Category.WEEKLY,
-            round_count=3,
-            points=[10, 10, 9, 5],
-            want_score=[14, 14, 13, 9],
-        )
-
-    def test_compute_score_points_weekly_4rounds(self):
-        self._test_compute_score(
-            category=Event.Category.WEEKLY,
-            round_count=4,
+            category=Event.Category.REGULAR,
             points=[10, 10, 9, 5],
             want_score=[13, 13, 12, 8],
         )
 
-    def test_compute_score_points_weekly_5rounds(self):
-        self._test_compute_score(
-            category=Event.Category.WEEKLY,
-            round_count=5,
-            points=[10, 10, 9, 5],
-            want_score=[12, 12, 11, 7],
-        )
-
-    def test_multiplier(self):
+    def test_compute_score_points_premier(self):
         self._test_compute_score(
             category=Event.Category.PREMIER,
-            round_count=4,
-            multiplier=3,
             points=[10, 10, 9, 5],
-            want_score=[39, 39, 36, 24],
+            want_score=[78, 78, 72, 48],
+        )
+
+    def test_compute_score_points_regional(self):
+        self._test_compute_score(
+            category=Event.Category.REGIONAL,
+            points=[10, 10, 9, 5],
+            want_score=[52, 52, 48, 32],
         )
 
     def test_ignores_events_with_no_results(self):
-        self.event.round_count = 0
         self.event.save()
         scores = compute_scores()
         for player_id, score in scores:
@@ -85,5 +68,5 @@ class TestComputeScore(TestCase):
 class TestSafetyChecks(TestCase):
     def test_cannot_create_events_with_less_than_3_rounds(self):
         with self.assertRaises(ValidationError):
-            e = EventFactory(round_count=2)
+            e = EventFactory()
             e.full_clean()
