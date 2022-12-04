@@ -37,3 +37,16 @@ class AetherhubImporterForm(forms.Form, SubmitButtonMixin):
 
         # TODO: Only get past events, and perhaps only those with no results yet ?
         self.fields["event"].queryset = Event.objects.filter(organizer__user=user)
+
+
+class EventlinkImporterForm(forms.Form, SubmitButtonMixin):
+    standings = forms.FileField(
+        help_text="The standings file saved as a web page (.html)."
+    )
+    event = forms.ModelChoiceField(queryset=Event.objects.all(), required=True)
+
+    def __init__(self, user, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+
+        # TODO: Only get past events, and perhaps only those with no results yet ?
+        self.fields["event"].queryset = Event.objects.filter(organizer__user=user)

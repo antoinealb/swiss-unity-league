@@ -7,6 +7,9 @@ from django.urls import reverse
 from championship.models import Event, EventOrganizer, EventPlayerResult
 from championship.aetherhub_parser import parse_standings_page
 from championship.factories import *
+from championship import eventlink_parser
+from django.core.files.uploadedfile import SimpleUploadedFile
+
 
 from unittest.mock import patch, MagicMock
 
@@ -38,6 +41,20 @@ class AetherhubStandingsParser(TestCase):
         self.assertEqual(5, results.round_count)
 
 
+class EventlinkStandingParser(TestCase):
+    def test_can_parse(self):
+        path = os.path.join(os.path.dirname(__file__), "eventlink_ranking.html")
+        with open(path) as f:
+            text = f.read()
+        results = eventlink_parser.parse_standings_page(text)
+        wantStandings = [
+            ("Jeremias Wildi", 10),
+            ("Silvan Aeschbach", 9),
+            ("Janosh Georg", 7),
+        ]
+        self.assertEqual(wantStandings, results[:3])
+
+
 class AetherhubImportTest(TestCase):
     """
     Tests for the feature that create new events for tournament organizers.
@@ -47,9 +64,7 @@ class AetherhubImportTest(TestCase):
         self.client = Client()
         self.credentials = dict(username="test", password="test")
         self.user = User.objects.create_user(**self.credentials)
-        self.organizer = EventOrganizer.objects.create(
-            name="test TO", contact="", user=self.user
-        )
+        self.organizer = EventOrganizerFactory(user=self.user)
         self.event = EventFactory(organizer=self.organizer)
 
         self.data = {
@@ -141,3 +156,43 @@ class AetherhubImportTest(TestCase):
         player = Player.objects.all()[0]
         results = EventPlayerResult.objects.filter(player=player).count()
         self.assertEqual(2, results, "Each player should have two results")
+
+
+class EventLinkImportTestCase(TestCase):
+    def setUp(self):
+        self.client = Client()
+        self.credentials = dict(username="test", password="test")
+        self.user = User.objects.create_user(**self.credentials)
+        self.organizer = EventOrganizerFactory(user=self.user)
+        self.event = EventFactory(organizer=self.organizer)
+
+        path = os.path.join(os.path.dirname(__file__), "eventlink_ranking.html")
+        with open(path) as f:
+            text = f.read()
+
+        standings = SimpleUploadedFile(
+            "standings", text.encode(), content_type="text/html"
+        )
+
+        self.data = {
+            "standings": standings,
+            "event": self.event.id,
+        }
+
+    def login(self):
+        self.client.login(**self.credentials)
+
+    def test_imports_result_for_correct_tourney(self):
+        self.login()
+
+        self.client.post(reverse("results_create_eventlink"), self.data)
+
+        results = EventPlayerResult.objects.filter(event=self.event).order_by(
+            "-points"
+        )[:]
+
+        # hardcoded spot checks from the tournament
+        self.assertEqual(len(results), 10)
+        self.assertEqual(results[0].points, 10)
+        self.assertEqual(results[3].points, 6)
+        self.assertEqual(results[0].player.name, "Jeremias Wildi")

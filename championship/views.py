@@ -12,6 +12,7 @@ from .models import *
 from .forms import *
 from django.db.models import F
 from championship import aetherhub_parser
+from championship import eventlink_parser
 
 EVENTS_ON_PAGE = 10
 PLAYERS_TOP = 10
@@ -91,6 +92,33 @@ def create_event(request):
         form = EventCreateForm()
 
     return render(request, "championship/create_event.html", {"form": form})
+
+
+def create_results_eventlink(request):
+
+    form = EventlinkImporterForm(request.user)
+
+    if request.method == "POST":
+        form = EventlinkImporterForm(request.user, request.POST, request.FILES)
+        if form.is_valid():
+            # From here we can assume that the event exists and is owned by
+            # this user, as otherwise the form validation will not accept it.
+            event = form.cleaned_data["event"]
+            text = "".join(s.decode() for s in request.FILES["standings"].chunks())
+            results = eventlink_parser.parse_standings_page(text)
+
+            for (
+                name,
+                points,
+            ) in results:
+                player, _ = Player.objects.get_or_create(name=name)
+                EventPlayerResult.objects.create(
+                    points=points, player=player, event=event
+                )
+
+            return HttpResponseRedirect("/")
+
+    return render(request, "championship/create_results.html", {"form": form})
 
 
 def create_results(request):
