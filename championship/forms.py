@@ -1,6 +1,14 @@
 from django import forms
 from .models import Event
+from crispy_forms.helper import FormHelper
+from crispy_forms.layout import Submit
 import datetime
+
+
+class SubmitButtonMixin:
+    helper = FormHelper()
+    helper.add_input(Submit("submit", "Submit", css_class="btn btn-primary"))
+    helper.form_method = "POST"
 
 
 class EventCreateForm(forms.ModelForm):
@@ -16,7 +24,7 @@ class EventCreateForm(forms.ModelForm):
         widgets = {"date": forms.DateInput(attrs={"type": "date"})}
 
 
-class AetherhubImporterForm(forms.Form):
+class AetherhubImporterForm(forms.Form, SubmitButtonMixin):
     url = forms.URLField(
         widget=forms.URLInput(
             attrs={"placeholder": "https://aetherhub.com/Tourney/RoundTourney/123456"}

@@ -4,10 +4,6 @@
 
 {% block content %}
     <h1>Upload results</h1>
-    <form action="" method="post">
-        {% csrf_token %}
-        {{ form|crispy }}
-        <button type="submit" value="Submit" class="btn btn-primary">Next</button>
-</form>
+    {% crispy form %}
 
 {% endblock %}
