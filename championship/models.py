@@ -40,8 +40,10 @@ class Event(models.Model):
 
     class Format(models.TextChoices):
         LEGACY = "LEGACY", "Legacy"
-        MODERN = "MODERN", "Modern"
         LIMITED = "LIMITED", "Limited"
+        MODERN = "MODERN", "Modern"
+        PIONEER = "PIONEER", "Pioneer"
+        STANDARD = "STANDARD", "Standard"
 
     format = models.CharField(max_length=10, choices=Format.choices)
 
