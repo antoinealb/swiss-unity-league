@@ -27,9 +27,11 @@ class EventCreateForm(forms.ModelForm):
 
 class AetherhubImporterForm(forms.Form, SubmitButtonMixin):
     url = forms.URLField(
+        label="Tournament URL",
+        help_text="Link to your tournament's round page. Must be a public tournament.",
         widget=forms.URLInput(
             attrs={"placeholder": "https://aetherhub.com/Tourney/RoundTourney/123456"}
-        )
+        ),
     )
     event = forms.ModelChoiceField(queryset=Event.objects.all(), required=True)
 

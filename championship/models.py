@@ -30,13 +30,15 @@ class Event(models.Model):
     """
 
     name = models.CharField(
-        max_length=200, help_text="The name of the event as defined by the organizer"
+        max_length=200, help_text="The name of this event, e.g. 'Christmas Modern 1k'"
     )
     organizer = models.ForeignKey(EventOrganizer, on_delete=models.PROTECT)
     date = models.DateField(
         help_text="The date of the event. For multi-days event, pick the first day."
     )
-    url = models.URLField(help_text="A website for information, ticket sale, etc.")
+    url = models.URLField(
+        "Website", help_text="A website for information, ticket sale, etc."
+    )
 
     class Format(models.TextChoices):
         LEGACY = "LEGACY", "Legacy"
