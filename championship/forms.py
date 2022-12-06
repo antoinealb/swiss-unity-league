@@ -1,3 +1,4 @@
+from django.db.models import TextChoices
 from django import forms
 from .models import Event
 from crispy_forms.helper import FormHelper
@@ -50,3 +51,11 @@ class EventlinkImporterForm(forms.Form, SubmitButtonMixin):
 
         # TODO: Only get past events, and perhaps only those with no results yet ?
         self.fields["event"].queryset = Event.objects.filter(organizer__user=user)
+
+
+class ImporterSelectionForm(forms.Form, SubmitButtonMixin):
+    class Importers(TextChoices):
+        AETHERHUB = "AETHERHUB", "Aetherhub"
+        EVENTLINK = "EVENTLINK", "EventLink"
+
+    site = forms.ChoiceField(choices=Importers.choices)

@@ -103,7 +103,7 @@ class AetherhubImportTest(TestCase):
         self.login()
         self.mock_response(requests_get)
 
-        self.client.post(reverse("results_create"), self.data)
+        self.client.post(reverse("results_create_aetherhub"), self.data)
 
         got_url = requests_get.call_args[0][0]
         self.assertEqual(got_url, self.data["url"])
@@ -113,7 +113,7 @@ class AetherhubImportTest(TestCase):
         self.login()
         self.mock_response(requests_get)
 
-        response = self.client.post(reverse("results_create"), self.data)
+        response = self.client.post(reverse("results_create_aetherhub"), self.data)
 
         results = EventPlayerResult.objects.filter(event=self.event).order_by(
             "-points"
@@ -134,12 +134,12 @@ class AetherhubImportTest(TestCase):
         self.mock_response(requests_get)
 
         # Import the first event
-        self.client.post(reverse("results_create"), self.data)
+        self.client.post(reverse("results_create_aetherhub"), self.data)
 
         # Create a second event, and import the results again
         second_event = EventFactory(organizer=self.organizer)
         self.data["event"] = second_event.id
-        self.client.post(reverse("results_create"), self.data)
+        self.client.post(reverse("results_create_aetherhub"), self.data)
 
         # Check that a random player has indeed two events to their name
         player = Player.objects.all()[0]
@@ -185,3 +185,30 @@ class EventLinkImportTestCase(TestCase):
         self.assertEqual(results[0].points, 10)
         self.assertEqual(results[3].points, 6)
         self.assertEqual(results[0].player.name, "Jeremias Wildi")
+
+
+class ImportSelectorTestCase(TestCase):
+    def setUp(self):
+        self.client = Client()
+        self.credentials = dict(username="test", password="test")
+        self.user = User.objects.create_user(**self.credentials)
+        self.organizer = EventOrganizerFactory(user=self.user)
+
+    def login(self):
+        self.client.login(**self.credentials)
+
+    def test_selection_aetherhub(self):
+        self.login()
+
+        data = {"site": "AETHERHUB"}
+        resp = self.client.post(reverse("results_create"), data, follow=True)
+
+        self.assertRedirects(resp, reverse("results_create_aetherhub"))
+
+    def test_selection_eventlink(self):
+        self.login()
+
+        data = {"site": "EVENTLINK"}
+        resp = self.client.post(reverse("results_create"), data, follow=True)
+
+        self.assertRedirects(resp, reverse("results_create_eventlink"))

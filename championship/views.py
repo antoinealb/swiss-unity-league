@@ -5,6 +5,7 @@ from django.shortcuts import render, get_object_or_404, redirect
 from django.views.generic.base import TemplateView
 from django.views.generic import DetailView
 from django.http import HttpResponseRedirect
+from django.urls import reverse
 
 import requests
 
@@ -121,7 +122,7 @@ def create_results_eventlink(request):
     return render(request, "championship/create_results.html", {"form": form})
 
 
-def create_results(request):
+def create_results_aetherhub(request):
     if request.method == "POST":
         form = AetherhubImporterForm(request.user, request.POST)
         if form.is_valid():
@@ -160,5 +161,19 @@ def create_results(request):
             return HttpResponseRedirect("/")
     else:
         form = AetherhubImporterForm(request.user)
+
+    return render(request, "championship/create_results.html", {"form": form})
+
+
+def create_results(request):
+    form = ImporterSelectionForm()
+
+    if request.method == "POST":
+        form = ImporterSelectionForm(request.POST)
+        if form.is_valid():
+            if form.cleaned_data["site"] == ImporterSelectionForm.Importers.AETHERHUB:
+                return redirect(reverse("results_create_aetherhub"))
+            elif form.cleaned_data["site"] == ImporterSelectionForm.Importers.EVENTLINK:
+                return redirect(reverse("results_create_eventlink"))
 
     return render(request, "championship/create_results.html", {"form": form})

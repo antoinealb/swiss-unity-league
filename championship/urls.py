@@ -13,4 +13,9 @@ urlpatterns = [
         views.create_results_eventlink,
         name="results_create_eventlink",
     ),
+    path(
+        "results/create/aetherhub",
+        views.create_results_aetherhub,
+        name="results_create_aetherhub",
+    ),
 ]
