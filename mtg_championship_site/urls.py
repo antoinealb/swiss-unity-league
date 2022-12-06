@@ -20,4 +20,5 @@ urlpatterns = [
     path("", include("championship.urls")),
     path("admin/", admin.site.urls),
     path("accounts/", include("django.contrib.auth.urls")),
+    path("", include("django_prometheus.urls")),
 ]
