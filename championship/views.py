@@ -136,7 +136,20 @@ def create_results_eventlink(request):
             # this user, as otherwise the form validation will not accept it.
             event = form.cleaned_data["event"]
             text = "".join(s.decode() for s in request.FILES["standings"].chunks())
-            results = eventlink_parser.parse_standings_page(text)
+
+            try:
+                results = eventlink_parser.parse_standings_page(text)
+            except:
+                messages.error(
+                    request,
+                    "Error: Could not parse standings file. Did you upload the HTML standings correctly?",
+                )
+                return render(
+                    request,
+                    "championship/create_results.html",
+                    {"form": form},
+                    status=400,
+                )
 
             for (
                 name,
@@ -162,13 +175,24 @@ def create_results_aetherhub(request):
             event = form.cleaned_data["event"]
 
             # Fetch results from Aetherhub and parse them
-            response = requests.get(url)
-            response.raise_for_status()
-            results = aetherhub_parser.parse_standings_page(response.content.decode())
-
-            # Create reports for this events
-            event.round_count = results.round_count
-            event.save()
+            try:
+                response = requests.get(url)
+                response.raise_for_status()
+                results = aetherhub_parser.parse_standings_page(
+                    response.content.decode()
+                )
+            except:
+                # If anything went wrong with the request, just return to the
+                # form.
+                messages.error(
+                    request, "Could not fetch standings information from Aetherhub."
+                )
+                return render(
+                    request,
+                    "championship/create_results.html",
+                    {"form": form},
+                    status=500,
+                )
 
             # TODO: Fetch players from DB if they exist
             # TODO: Fuzzy match player names with DB

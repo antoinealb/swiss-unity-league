@@ -10,6 +10,8 @@ from championship.factories import *
 from championship import eventlink_parser
 from django.core.files.uploadedfile import SimpleUploadedFile
 
+from requests import HTTPError
+
 
 from unittest.mock import patch, MagicMock
 
@@ -158,6 +160,18 @@ class AetherhubImportTest(TestCase):
         # and first name
         player = Player.objects.get(name="Pavel Malach")
 
+    @patch("requests.get")
+    def test_correctly_handles_backend_errors(self, requests_get):
+        self.login()
+        requests_get.side_effects = HTTPError()
+
+        # Try to import
+        resp = self.client.post(reverse("results_create_aetherhub"), self.data)
+
+        # Makes sure we return with an error
+        self.assertEqual(resp.status_code, 500)
+        self.assertIn("Could not fetch standings", resp.content.decode())
+
 
 class EventLinkImportTestCase(TestCase):
     def setUp(self):
@@ -197,6 +211,19 @@ class EventLinkImportTestCase(TestCase):
         self.assertEqual(results[0].points, 10)
         self.assertEqual(results[3].points, 6)
         self.assertEqual(results[0].player.name, "Jeremias Wildi")
+
+    def test_import_garbage(self):
+        """Checks that when we try to import garbage data, we get a nice error
+        message instead of a 500."""
+
+        self.data["standings"] = SimpleUploadedFile(
+            "standings", "FOOBAR".encode(), content_type="text/html"
+        )
+
+        self.login()
+        resp = self.client.post(reverse("results_create_eventlink"), self.data)
+        self.assertEqual(400, resp.status_code)
+        self.assertIn("Could not parse standings", resp.content.decode())
 
 
 class ImportSelectorTestCase(TestCase):
