@@ -115,7 +115,7 @@ def create_event(request):
             event.organizer = EventOrganizer.objects.get(user=request.user)
             event.save()
 
-            return HttpResponseRedirect("/")
+            return HttpResponseRedirect(reverse("event_details", args=[event.id]))
     else:
         form = EventCreateForm()
 
