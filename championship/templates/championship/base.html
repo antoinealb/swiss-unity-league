@@ -51,9 +51,11 @@
 
         <footer class="footer">
             <div class="container">
-                Copyright Leonin League 2022
+                Copyright Leonin League 2022.
+                Not approved/endorsed by Wizards.
+                Portions of the materials used are property of Wizards of the Coast. &copy;Wizards of the Coast LLC.
                 {% if user.is_authenticated %}
-                    <span class="text-muted">Logged in as {{ user.username }}, <a href="{% url 'logout' %}" class="text-muted">logout</a></span>
+                    <br><span class="text-muted">Logged in as {{ user.username }}, <a href="{% url 'logout' %}" class="text-muted">logout</a></span>
                 {% else %}
                     <a href="{% url 'login' %}" class="text-muted">Login</a>
                 {% endif %}
