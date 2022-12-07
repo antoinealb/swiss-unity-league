@@ -51,6 +51,7 @@ INSTALLED_APPS = [
     "crispy_bootstrap5",
     "django_prometheus",
     "django_bleach",
+    "debug_toolbar",
 ]
 
 MIDDLEWARE = [
@@ -64,6 +65,7 @@ MIDDLEWARE = [
     "django.contrib.messages.middleware.MessageMiddleware",
     "django.middleware.clickjacking.XFrameOptionsMiddleware",
     "django_prometheus.middleware.PrometheusAfterMiddleware",
+    "debug_toolbar.middleware.DebugToolbarMiddleware",
 ]
 
 ROOT_URLCONF = "mtg_championship_site.urls"
@@ -159,6 +161,10 @@ LOGOUT_REDIRECT_URL = "/"
 MESSAGE_TAGS = {
     messages.ERROR: "danger",
 }
+
+# List of IPs that Django Debug Toolbar will show the debug information to.
+if DEBUG:
+    INTERNAL_IPS = ["127.0.0.1"]
 
 # Export release version as a metric. The commit_sha.txt file is populated by
 # the CI build.

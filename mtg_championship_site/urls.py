@@ -21,4 +21,5 @@ urlpatterns = [
     path("admin/", admin.site.urls),
     path("accounts/", include("django.contrib.auth.urls")),
     path("", include("django_prometheus.urls")),
+    path("__debug_toolbar__/", include("debug_toolbar.urls")),
 ]

@@ -12,3 +12,4 @@ requests~=2.28.1
 django-prometheus~=2.2.0
 bleach==5.0.1
 django-bleach==3.0.1
+django_debug_toolbar==3.8.1
