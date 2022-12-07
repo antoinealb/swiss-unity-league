@@ -23,7 +23,7 @@
     <tbody>
         {% for event in last_events %}
             <tr>
-                <td><a href="{% url 'event_details' event.id %}">{{ event.name }}</a></td>
+                <td><a href="{% url 'event_details' event.event_id %}">{{ event.name }}</a></td>
                 <td>{{ event.date }}</td>
                 <td>{{ event.qps }}</td>
             </tr>

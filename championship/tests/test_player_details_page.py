@@ -36,3 +36,16 @@ class PlayerDetailsTest(TestCase):
         gotScore = response.context_data["last_events"][0].qps
 
         self.assertEqual(gotScore, (10 + 3) * 6)
+
+    def test_link_to_event(self):
+        """
+        Checks that we correctly link to events.
+        """
+        player = PlayerFactory()
+        event = EventFactory(category=Event.Category.PREMIER, id=1234)
+        ep = EventPlayerResult.objects.create(points=10, player=player, event=event)
+
+        response = self.client.get(reverse("player_details", args=[player.id]))
+        wantUrl = reverse("event_details", args=[event.id])
+
+        self.assertIn(wantUrl, response.content.decode())
