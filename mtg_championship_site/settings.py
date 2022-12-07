@@ -12,6 +12,8 @@ https://docs.djangoproject.com/en/4.1/ref/settings/
 
 from pathlib import Path
 import os
+from prometheus_client import Info
+
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -149,3 +151,14 @@ DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 
 LOGIN_REDIRECT_URL = "/"
 LOGOUT_REDIRECT_URL = "/"
+
+# Export release version as a metric. The commit_sha.txt file is populated by
+# the CI build.
+build_info = Info("app_version", "Stores information about the version of the software")
+try:
+    with open(BASE_DIR / "commit_sha.txt") as f:
+        commit_hash = f.read().strip()
+except FileNotFoundError:
+    commit_hash = "<unknown>"
+
+build_info.info({"commit_sha": commit_hash})
