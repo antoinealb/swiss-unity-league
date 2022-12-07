@@ -52,6 +52,7 @@ INSTALLED_APPS = [
     "django_prometheus",
     "django_bleach",
     "debug_toolbar",
+    "rest_framework",
 ]
 
 MIDDLEWARE = [

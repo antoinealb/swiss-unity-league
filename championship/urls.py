@@ -1,5 +1,9 @@
-from django.urls import path
+from django.urls import path, include
+from rest_framework import routers
 from . import views
+
+api_router = routers.DefaultRouter()
+api_router.register(r"future-events", views.FutureEventViewSet)
 
 urlpatterns = [
     path("", views.IndexView.as_view(), name="index"),
@@ -19,4 +23,5 @@ urlpatterns = [
         views.create_results_aetherhub,
         name="results_create_aetherhub",
     ),
+    path("api/", include(api_router.urls)),
 ]

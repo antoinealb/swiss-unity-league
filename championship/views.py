@@ -10,12 +10,14 @@ from django.urls import reverse
 from django.contrib import messages
 
 import requests
+from rest_framework import viewsets
 
 from .models import *
 from .forms import *
 from django.db.models import F
 from championship import aetherhub_parser
 from championship import eventlink_parser
+from championship.serializers import EventSerializer
 
 EVENTS_ON_PAGE = 10
 PLAYERS_TOP = 10
@@ -233,3 +235,12 @@ def create_results(request):
                 return redirect(reverse("results_create_eventlink"))
 
     return render(request, "championship/create_results.html", {"form": form})
+
+
+class FutureEventViewSet(viewsets.ReadOnlyModelViewSet):
+    """
+    API endpoint that allows events to be viewed or edited.
+    """
+
+    queryset = Event.objects.filter(date__gte=datetime.date.today()).order_by("date")
+    serializer_class = EventSerializer
