@@ -146,6 +146,18 @@ class AetherhubImportTest(TestCase):
         results = EventPlayerResult.objects.filter(player=player).count()
         self.assertEqual(2, results, "Each player should have two results")
 
+    @patch("requests.get")
+    def test_imports_result_cleans_space_in_name(self, requests_get):
+        self.login()
+        self.mock_response(requests_get)
+
+        # Import the first event
+        self.client.post(reverse("results_create_aetherhub"), self.data)
+
+        # This player in the mock result contains too many space between name
+        # and first name
+        player = Player.objects.get(name="Pavel Malach")
+
 
 class EventLinkImportTestCase(TestCase):
     def setUp(self):

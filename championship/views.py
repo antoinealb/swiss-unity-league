@@ -1,5 +1,6 @@
 import datetime
 import logging
+import re
 
 from django.shortcuts import render, get_object_or_404, redirect
 from django.views.generic.base import TemplateView
@@ -174,6 +175,8 @@ def create_results_aetherhub(request):
             def _remove_camel_case(name):
                 """Converts "AntoineAlbertelli" to "Antoine Albertelli"."""
                 name = "".join(map(lambda c: c if c.islower() else " " + c, name))
+                # Normalizes whitespace in case there are double space or tabs
+                name = re.sub(r"\s+", " ", name)
                 return name.lstrip()
 
             for name, points, _ in results.standings:
