@@ -7,6 +7,7 @@ urlpatterns = [
     path("player/<int:pk>/", views.PlayerDetailsView.as_view(), name="player_details"),
     path("info", views.InformationForPlayerView.as_view(), name="info"),
     path("events/create", views.create_event, name="events_create"),
+    path("events/<int:pk>/", views.EventDetailsView.as_view(), name="event_details"),
     path("results/create", views.create_results, name="results_create"),
     path(
         "results/create/eventlink",

@@ -1,6 +1,6 @@
 import datetime
 from django.test import TestCase, Client
-from championship.models import Player
+from championship.models import Player, Event
 from championship.factories import *
 from django.urls import reverse
 
@@ -23,3 +23,16 @@ class PlayerDetailsTest(TestCase):
         player = PlayerFactory()
         response = self.client.get(reverse("player_details", args=[player.id]))
         self.assertIn(player.name, response.content.decode())
+
+    def test_score_in_context(self):
+        """
+        Checks that we have a score available in the events.
+        """
+        player = PlayerFactory()
+        event = EventFactory(category=Event.Category.PREMIER)
+        ep = EventPlayerResult.objects.create(points=10, player=player, event=event)
+
+        response = self.client.get(reverse("player_details", args=[player.id]))
+        gotScore = response.context_data["last_events"][0].qps
+
+        self.assertEqual(gotScore, (10 + 3) * 6)

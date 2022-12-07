@@ -11,12 +11,25 @@
 
 <p>{{ score }} QPs</p>
 
-<h2>Last events</h2>
+<h2>Latest events</h2>
+<table class="table table-striped">
+    <thead>
+        <tr>
+            <th scope="col">Event</th>
+            <th scope="col">Date</th>
+            <th scope="col">QPs awarded</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for event in last_events %}
+            <tr>
+                <td><a href="{% url 'event_details' event.id %}">{{ event.name }}</a></td>
+                <td>{{ event.date }}</td>
+                <td>{{ event.qps }}</td>
+            </tr>
+        {% endfor %}
+    </tbody>
+</table>
 
-<ul>
-{% for event in last_events %}
-    <li>{{ event.name }} on {{ event.date }} ({{ event.points }} points)</li>
-{% endfor %}
-<ul>
 
 {% endblock %}

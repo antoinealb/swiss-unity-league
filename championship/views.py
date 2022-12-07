@@ -55,9 +55,35 @@ class PlayerDetailsView(DetailView):
         context["score"] = scores.get(object.id, 0)
         context["last_events"] = (
             EventPlayerResult.objects.filter(player=context["player"])
-            .annotate(name=F("event__name"), date=F("event__date"))
+            .annotate(
+                name=F("event__name"),
+                date=F("event__date"),
+                category=F("event__category"),
+            )
             .order_by("-event__date")
         )
+        for e in context["last_events"]:
+            e.qps = qps_for_result(e, e.category)
+        return context
+
+
+class EventDetailsView(DetailView):
+    template_name = "championship/event_details.html"
+    model = Event
+    context_object_name = "event"
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        results = (
+            EventPlayerResult.objects.filter(event=context["event"])
+            .annotate(player_name=F("player__name"), category=F("event__category"))
+            .order_by("-points")
+        )
+
+        for r in results:
+            r.qps = qps_for_result(r, r.category)
+        context["results"] = results
+
         return context
 
 

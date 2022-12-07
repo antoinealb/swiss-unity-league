@@ -1,0 +1,43 @@
+{% extends "championship/base.html" %}
+
+{% block title %}
+{{ event.name }}
+{% endblock %}
+
+{% block content %}
+    <h1>{{ event.name }}</br>
+        <small> by {{ event.organizer.name }}</small>
+    </h1>
+
+{% if results %}
+<h2>Results</h2>
+<table class="table table-striped">
+    <thead>
+        <tr>
+            <th scope="col">Name</th>
+            <th scope="col">Points</th>
+            <th scope="col">QPs awarded</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for r in results %}
+            <tr>
+                <td>{{ r.player_name }}</td>
+                <td>{{ r.points }}</td>
+                <td>{{ r.qps }}</td>
+            </tr>
+        {% endfor %}
+    </tbody>
+</table>
+
+<ol>
+{% endif %}
+
+
+<ul>
+{% for event in last_events %}
+    <li>{{ event.name }} on {{ event.date }} ({{ event.points }} points)</li>
+{% endfor %}
+<ul>
+
+{% endblock %}

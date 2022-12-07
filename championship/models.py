@@ -87,7 +87,10 @@ class EventPlayerResult(models.Model):
     event = models.ForeignKey(Event, on_delete=models.CASCADE)
 
 
-def compute_scores():
+def qps_for_result(result: EventPlayerResult, category: Event.Category) -> int:
+    """
+    Returns how many QPs a player got in a single event.
+    """
     MULT = {
         Event.Category.REGULAR: 1,
         Event.Category.REGIONAL: 4,
@@ -95,13 +98,18 @@ def compute_scores():
     }
     PARTICIPATION_POINTS = 3
 
+    res = result.points + PARTICIPATION_POINTS
+    res = res * MULT[category]
+
+    return res
+
+
+def compute_scores():
     scores = collections.defaultdict(lambda: 0)
     for result in EventPlayerResult.objects.annotate(
         category=F("event__category"),
     ).all():
         # TODO: Handle top 8
-        scores[result.player_id] += (result.points + PARTICIPATION_POINTS) * MULT[
-            result.category
-        ]
+        scores[result.player_id] += qps_for_result(result, result.category)
 
     return dict(scores)
