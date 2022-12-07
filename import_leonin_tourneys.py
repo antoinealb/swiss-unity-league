@@ -90,7 +90,7 @@ def create_tournament(session, instance, name, date, url):
 
 
 def upload_results(session, instance, name, url):
-    upload_url = f"{instance}/results/create"
+    upload_url = f"{instance}/results/create/aetherhub"
 
     r = session.get(upload_url)
     r.raise_for_status()
