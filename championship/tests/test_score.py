@@ -65,6 +65,49 @@ class TestComputeScore(TestCase):
             self.assertEqual(0, score, f"Unexpected points for player {player_id}")
 
 
+class ScoresWithTop8TestCase(TestCase):
+    def setUp(self):
+        self.event = EventFactory()
+        self.player = PlayerFactory()
+
+    def score(self, category, points, result):
+        ep = EventPlayerResult(
+            points=points,
+            event=self.event,
+            player=self.player,
+            single_elimination_result=result,
+        )
+        return qps_for_result(ep, category)
+
+    def test_premier_event(self):
+        testCases = [
+            (EventPlayerResult.SingleEliminationResult.WINNER, 500),
+            (EventPlayerResult.SingleEliminationResult.FINALIST, 300),
+            (EventPlayerResult.SingleEliminationResult.SEMI_FINALIST, 200),
+            (EventPlayerResult.SingleEliminationResult.QUARTER_FINALIST, 150),
+        ]
+
+        for ranking, points in testCases:
+            with self.subTest(f"{ranking.label}"):
+                wantScore = (10 + 3) * 6 + points
+                gotScore = self.score(Event.Category.PREMIER, 10, ranking)
+                self.assertEqual(wantScore, gotScore)
+
+    def test_regional_event(self):
+        testCases = [
+            (EventPlayerResult.SingleEliminationResult.WINNER, 100),
+            (EventPlayerResult.SingleEliminationResult.FINALIST, 60),
+            (EventPlayerResult.SingleEliminationResult.SEMI_FINALIST, 40),
+            (EventPlayerResult.SingleEliminationResult.QUARTER_FINALIST, 30),
+        ]
+
+        for ranking, points in testCases:
+            with self.subTest(f"{ranking.label}"):
+                wantScore = (10 + 3) * 4 + points
+                gotScore = self.score(Event.Category.REGIONAL, 10, ranking)
+                self.assertEqual(wantScore, gotScore)
+
+
 class TestSafetyChecks(TestCase):
     def test_cannot_create_events_with_less_than_3_rounds(self):
         with self.assertRaises(ValidationError):

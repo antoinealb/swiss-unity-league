@@ -80,28 +80,75 @@ class EventPlayerResult(models.Model):
     A result for a single player in a single event.
     """
 
+    class SingleEliminationResult(models.IntegerChoices):
+        WINNER = 1
+        FINALIST = 2
+        SEMI_FINALIST = 4
+        QUARTER_FINALIST = 8
+
     points = models.IntegerField(
         help_text="Number of points scored by that player",
     )
     player = models.ForeignKey(Player, on_delete=models.CASCADE)
     event = models.ForeignKey(Event, on_delete=models.CASCADE)
+    single_elimination_result = models.PositiveIntegerField(
+        null=True,
+        choices=SingleEliminationResult.choices,
+    )
 
 
 def qps_for_result(result: EventPlayerResult, category: Event.Category) -> int:
     """
     Returns how many QPs a player got in a single event.
     """
+
     MULT = {
         Event.Category.REGULAR: 1,
         Event.Category.REGIONAL: 4,
         Event.Category.PREMIER: 6,
     }
     PARTICIPATION_POINTS = 3
+    POINTS_FOR_TOP = {
+        (Event.Category.PREMIER, EventPlayerResult.SingleEliminationResult.WINNER): 500,
+        (
+            Event.Category.PREMIER,
+            EventPlayerResult.SingleEliminationResult.FINALIST,
+        ): 300,
+        (
+            Event.Category.PREMIER,
+            EventPlayerResult.SingleEliminationResult.SEMI_FINALIST,
+        ): 200,
+        (
+            Event.Category.PREMIER,
+            EventPlayerResult.SingleEliminationResult.QUARTER_FINALIST,
+        ): 150,
+        (
+            Event.Category.REGIONAL,
+            EventPlayerResult.SingleEliminationResult.WINNER,
+        ): 100,
+        (
+            Event.Category.REGIONAL,
+            EventPlayerResult.SingleEliminationResult.FINALIST,
+        ): 60,
+        (
+            Event.Category.REGIONAL,
+            EventPlayerResult.SingleEliminationResult.SEMI_FINALIST,
+        ): 40,
+        (
+            Event.Category.REGIONAL,
+            EventPlayerResult.SingleEliminationResult.QUARTER_FINALIST,
+        ): 30,
+    }
 
-    res = result.points + PARTICIPATION_POINTS
-    res = res * MULT[category]
+    points = result.points + PARTICIPATION_POINTS
+    points = points * MULT[category]
 
-    return res
+    if result.single_elimination_result:
+        # TODO: Top 16 points for events which had a top 8 and more than 32
+        # players.
+        points += POINTS_FOR_TOP[category, result.single_elimination_result]
+
+    return points
 
 
 def compute_scores():
