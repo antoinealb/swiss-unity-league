@@ -7,6 +7,7 @@ from django.views.generic.base import TemplateView
 from django.views.generic import DetailView
 from django.http import HttpResponseRedirect
 from django.urls import reverse
+from django.contrib import messages
 
 import requests
 
@@ -114,6 +115,8 @@ def create_event(request):
             event = form.save(commit=False)
             event.organizer = EventOrganizer.objects.get(user=request.user)
             event.save()
+
+            messages.success(request, "Succesfully created event!")
 
             return HttpResponseRedirect(reverse("event_details", args=[event.id]))
     else:

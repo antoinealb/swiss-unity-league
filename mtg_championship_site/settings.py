@@ -13,6 +13,7 @@ https://docs.djangoproject.com/en/4.1/ref/settings/
 from pathlib import Path
 import os
 from prometheus_client import Info
+from django.contrib.messages import constants as messages
 
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
@@ -152,6 +153,12 @@ DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 
 LOGIN_REDIRECT_URL = "/"
 LOGOUT_REDIRECT_URL = "/"
+
+# Override the name of some alert messages to match what they are named in
+# Boostrap.
+MESSAGE_TAGS = {
+    messages.ERROR: "danger",
+}
 
 # Export release version as a metric. The commit_sha.txt file is populated by
 # the CI build.
