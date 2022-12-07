@@ -9,6 +9,8 @@
         <small> by {{ event.organizer.name }}</small>
     </h1>
 
+    {{ event.description|linebreaksbr }}
+
 {% if results %}
 <h2>Results</h2>
 <table class="table table-striped">

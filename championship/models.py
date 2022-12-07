@@ -2,6 +2,8 @@ from django.db import models
 from django.conf import settings
 from django.db.models import Count, F
 from django.core.validators import MinValueValidator
+from django_bleach.models import BleachField
+import bleach
 import collections
 
 
@@ -38,6 +40,13 @@ class Event(models.Model):
     )
     url = models.URLField(
         "Website", help_text="A website for information, ticket sale, etc."
+    )
+    description = BleachField(
+        help_text="Supports the following HTML tags: {}".format(
+            ", ".join(bleach.ALLOWED_TAGS)
+        ),
+        blank=True,
+        strip_tags=True,
     )
 
     class Format(models.TextChoices):

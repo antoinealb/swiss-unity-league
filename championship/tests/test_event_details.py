@@ -22,3 +22,18 @@ class EventDetailTestCase(TestCase):
 
         self.assertEqual(resp.context_data["results"][0].points, 10)
         self.assertEqual(resp.context_data["results"][0].qps, (10 + 3) * 6)
+
+    def test_escapes_content_description(self):
+        """
+        Checks that we correctly strip tags unknown tags.
+        """
+        descr = """
+        <b>Bold</b>
+        <script>alert()</script>
+        """
+        want = """
+        <b>Bold</b>
+        alert()
+        """
+        event = EventFactory(description=descr)
+        self.assertEqual(want, event.description)
