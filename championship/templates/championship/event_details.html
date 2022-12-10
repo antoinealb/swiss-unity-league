@@ -5,19 +5,42 @@
 {% endblock %}
 
 {% block content %}
-    <h1>{{ event.name }}</br>
-        <small> by {{ event.organizer.name }}</small>
-    </h1>
+    <h1>{{ event.name }}</h1>
+
+    <dl class="row">
+      <dt class="col-sm-3">Organizer</dt>
+      <dd class="col-sm-9">{{ event.organizer.name }}</dd>
+      <dt class="col-sm-3">Date</dt>
+      <dd class="col-sm-9">{{ event.date }}</dd>
+      <dt class="col-sm-3">Category</dt>
+      <dd class="col-sm-9">{{ event.get_category_display }}</dd>
+      <dt class="col-sm-3">Format</dt>
+      <dd class="col-sm-9">{{ event.get_format_display }}</dd>
+      {% if event.url %}
+      <dt class="col-sm-3">Website (tickets, pairings etc.)</dt>
+      <dd class="col-sm-9">
+          <a href="{{ event.url }}">{{ event.url }}</a>
+      </dd>
+      {% endif %}
 
     {% if user.is_staff %}
+      <dt class="col-sm-3">Admin (shown only to staff users)</dt>
+      <dd class="col-sm-9">
         <a href="{% url 'admin:championship_event_change' event.id %}">Edit in admin</a>
+      </dd>
+    {% endif %}
+    </dl>
+
+
+    {% if event.description %}
+        <h3>Description</h3>
+        <div class="event_description border rounded">
+            {{ event.description|linebreaksbr }}
+        </div>
     {% endif %}
 
-
-    {{ event.description|linebreaksbr }}
-
 {% if results %}
-<h2>Results</h2>
+<h3>Results</h3>
 <table class="table table-striped">
     <thead>
         <tr>
