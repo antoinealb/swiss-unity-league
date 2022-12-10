@@ -19,6 +19,15 @@ python-format:
   script:
     - black --check --verbose .
 
+web-format:
+  stage: test
+  image: node:19
+  before_script:
+    - npm install prettier
+  script:
+    - prettier --check static
+
+
 build-docker:
   stage: package
   only:

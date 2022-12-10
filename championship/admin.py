@@ -31,5 +31,5 @@ class PlayerAdmin(admin.ModelAdmin):
 admin.site.register(Player, PlayerAdmin)
 admin.site.register(EventOrganizer)
 
-admin.site.site_title = 'Unity League'
-admin.site.site_header = 'Unity League Admin'
+admin.site.site_title = "Unity League"
+admin.site.site_header = "Unity League Admin"
