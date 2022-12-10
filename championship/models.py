@@ -105,6 +105,7 @@ class EventPlayerResult(models.Model):
     event = models.ForeignKey(Event, on_delete=models.CASCADE)
     single_elimination_result = models.PositiveIntegerField(
         null=True,
+        blank=True,
         choices=SingleEliminationResult.choices,
     )
 
