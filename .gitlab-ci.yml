@@ -25,7 +25,7 @@ web-format:
   before_script:
     - npm install prettier
   script:
-    - prettier --check static
+    - npx prettier --check static
 
 
 build-docker:
