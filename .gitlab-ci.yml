@@ -4,11 +4,20 @@ stages:
   - rollout
 
 tests:
+  stage: test
   image: python:3.10
   before_script:
     - pip install -r requirements.txt
   script:
     - ./manage.py test
+
+python-format:
+  stage: test
+  image: python:3.10
+  before_script:
+    - pip install black
+  script:
+    - black --check --verbose .
 
 build-docker:
   stage: package
