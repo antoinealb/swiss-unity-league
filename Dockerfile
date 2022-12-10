@@ -18,4 +18,4 @@ RUN /app/manage.py collectstatic --no-input
 
 EXPOSE 8000
 
-CMD ["gunicorn", "--bind", ":8000", "--workers", "1", "mtg_championship_site.wsgi:application"]
+CMD ["gunicorn", "--bind", ":8000", "--workers", "3", "mtg_championship_site.wsgi:application"]
