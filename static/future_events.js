@@ -44,7 +44,7 @@ function events() {
         loadEvents() {
             let self = this
             axios
-                .get('http://localhost:8000/api/future-events/')
+                .get('/api/future-events/')
                 .then(function (response) {
                     self.events = response.data
                 })
