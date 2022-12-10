@@ -22,6 +22,7 @@ class EventApiTestCase(TestCase):
                 "organizer": eo.name,
                 "format": "Legacy",
                 "category": "SUL Premier",
+                "details_url": reverse("event_details", args=[a.id]),
             }
         ]
         self.assertEqual(want, resp.json())

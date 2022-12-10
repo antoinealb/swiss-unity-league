@@ -244,3 +244,7 @@ class FutureEventViewSet(viewsets.ReadOnlyModelViewSet):
 
     queryset = Event.objects.filter(date__gte=datetime.date.today()).order_by("date")
     serializer_class = EventSerializer
+
+
+class FutureEventView(TemplateView):
+    template_name = "championship/future_events.html"
