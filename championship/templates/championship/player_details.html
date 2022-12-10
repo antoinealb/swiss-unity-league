@@ -8,6 +8,10 @@
 {% load humanize %}
 <h1>{{ player.name }}</h1>
 
+{% if user.is_staff %}
+    <a href="{% url 'admin:championship_player_change' player.id %}">Edit in admin</a>
+{% endif %}
+
 
 <p>{{ score }} QPs</p>
 

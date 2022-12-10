@@ -9,6 +9,11 @@
         <small> by {{ event.organizer.name }}</small>
     </h1>
 
+    {% if user.is_staff %}
+        <a href="{% url 'admin:championship_event_change' event.id %}">Edit in admin</a>
+    {% endif %}
+
+
     {{ event.description|linebreaksbr }}
 
 {% if results %}

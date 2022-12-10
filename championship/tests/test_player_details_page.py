@@ -49,3 +49,17 @@ class PlayerDetailsTest(TestCase):
         wantUrl = reverse("event_details", args=[event.id])
 
         self.assertIn(wantUrl, response.content.decode())
+
+    def test_shows_link_for_admin_page(self):
+        client = Client()
+        credentials = dict(username="test", password="test")
+        user = User.objects.create_user(is_staff=True, **credentials)
+        client.login(**credentials)
+
+        player = PlayerFactory()
+        resp = client.get(reverse("player_details", args=[player.id]))
+
+        self.assertIn(
+            reverse("admin:championship_player_change", args=[player.id]),
+            resp.content.decode(),
+        )

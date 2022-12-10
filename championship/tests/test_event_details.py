@@ -37,3 +37,17 @@ class EventDetailTestCase(TestCase):
         """
         event = EventFactory(description=descr)
         self.assertEqual(want, event.description)
+
+    def test_shows_link_for_admin_page(self):
+        client = Client()
+        credentials = dict(username="test", password="test")
+        user = User.objects.create_user(is_staff=True, **credentials)
+        client.login(**credentials)
+
+        event = EventFactory()
+        resp = client.get(reverse("event_details", args=[event.id]))
+
+        self.assertIn(
+            reverse("admin:championship_event_change", args=[event.id]),
+            resp.content.decode(),
+        )
