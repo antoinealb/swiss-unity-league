@@ -3,6 +3,9 @@ from django.conf import settings
 from django.db.models import Count, F
 from django.core.validators import MinValueValidator
 from django_bleach.models import BleachField
+from django.core.cache import cache
+from django.db.models.signals import post_save, post_delete
+from django.dispatch import receiver
 import bleach
 import collections
 
@@ -160,7 +163,15 @@ def qps_for_result(result: EventPlayerResult, category: Event.Category) -> int:
     return points
 
 
+SCORES_CACHE_KEY = "championship.scores"
+
+
 def compute_scores():
+    res = cache.get(SCORES_CACHE_KEY)
+
+    if res:
+        return res
+
     scores = collections.defaultdict(lambda: 0)
     for result in EventPlayerResult.objects.annotate(
         category=F("event__category"),
@@ -168,4 +179,15 @@ def compute_scores():
         # TODO: Handle top 8
         scores[result.player_id] += qps_for_result(result, result.category)
 
-    return dict(scores)
+    res = dict(scores)
+
+    cache.set(SCORES_CACHE_KEY, res, timeout=None)
+
+    return res
+
+
+@receiver(post_save, sender=Event)
+@receiver(post_save, sender=EventPlayerResult)
+@receiver(post_delete, sender=EventPlayerResult)
+def invalidate_cache_on_result_changes(*args, **kwargs):
+    cache.delete(SCORES_CACHE_KEY)
