@@ -3,10 +3,10 @@ from django.test import TestCase, Client
 from django.contrib.auth.models import User
 from django.urls import reverse
 from championship.models import Event, EventOrganizer
-from championship.factories import EventOrganizerFactory
+from championship.factories import EventOrganizerFactory, EventFactory
 
 
-class AdminViewTestCase(TestCase):
+class EventCreationTestCase(TestCase):
     """
     Tests for the feature that create new events for tournament organizers.
     """
@@ -90,3 +90,92 @@ class AdminViewTestCase(TestCase):
         event = Event.objects.all()[0]
 
         self.assertRedirects(resp, reverse("event_details", args=[event.id]))
+
+    def test_update_event(self):
+        data = {
+            "name": "Test Event",
+            "url": "https://test.example",
+            "date": "11/26/2022",
+            "format": "LEGACY",
+            "category": "PREMIER",
+        }
+        self.login()
+        to = EventOrganizerFactory(user=self.user)
+
+        self.client.post(reverse("events_create"), data=data)
+
+        data["name"] = "Updated Event"
+
+        event = Event.objects.all()[0]
+
+        self.client.post(reverse("event_update", args=[event.id]), data=data)
+
+        event = Event.objects.get(pk=event.id)
+
+        self.assertEqual(event.name, data["name"])
+        self.assertEqual(event.organizer, to)
+
+    def test_update_event_from_someone_else(self):
+        other_to = EventOrganizerFactory()
+        event = EventFactory(organizer=other_to)
+
+        # Try to change an event ran by the other TO
+        to = EventOrganizerFactory(user=self.user)
+        self.login()
+        data = {
+            "name": "Test Event",
+            "url": "https://test.example",
+            "date": "11/26/2022",
+            "format": "LEGACY",
+            "category": "PREMIER",
+        }
+
+        resp = self.client.post(reverse("event_update", args=[event.id]), data=data)
+
+        self.assertEqual(403, resp.status_code)
+
+    def test_update_link_shown_to_organizer(self):
+        to = EventOrganizerFactory(user=self.user)
+        event = EventFactory(organizer=to)
+
+        resp = self.client.get(reverse("event_details", args=[event.id]))
+        self.assertNotIn(
+            reverse("event_update", args=[event.id]), resp.content.decode()
+        )
+
+        self.login()
+
+        resp = self.client.get(reverse("event_details", args=[event.id]))
+        self.assertIn(reverse("event_update", args=[event.id]), resp.content.decode())
+
+    def test_get_update_page(self):
+        to = EventOrganizerFactory(user=self.user)
+        event = EventFactory(organizer=to)
+
+        self.login()
+        resp = self.client.get(reverse("event_update", args=[event.id]))
+        self.assertEqual(200, resp.status_code)
+
+    def test_get_delete_page(self):
+        to = EventOrganizerFactory(user=self.user)
+        event = EventFactory(organizer=to)
+
+        self.login()
+        resp = self.client.get(reverse("event_delete", args=[event.id]))
+
+    def test_delete_event(self):
+        to = EventOrganizerFactory(user=self.user)
+        event = EventFactory(organizer=to)
+
+        self.login()
+        self.client.post(reverse("event_delete", args=[event.id]))
+
+        self.assertEqual(Event.objects.count(), 0)
+
+    def test_delete_event_for_another_to(self):
+        to = EventOrganizerFactory(user=self.user)
+        event = EventFactory()  # created for another to
+
+        self.login()
+        resp = self.client.post(reverse("event_delete", args=[event.id]))
+        self.assertEqual(404, resp.status_code)

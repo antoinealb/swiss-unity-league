@@ -12,6 +12,10 @@ urlpatterns = [
     path("info", views.InformationForPlayerView.as_view(), name="info"),
     path("events", views.FutureEventView.as_view(), name="events"),
     path("events/create", views.create_event, name="events_create"),
+    path("events/<int:pk>/update", views.update_event, name="event_update"),
+    path(
+        "events/<int:pk>/delete", views.EventDeleteView.as_view(), name="event_delete"
+    ),
     path("events/<int:pk>/", views.EventDetailsView.as_view(), name="event_details"),
     path("results/create", views.create_results, name="results_create"),
     path(

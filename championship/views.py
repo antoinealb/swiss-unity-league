@@ -2,12 +2,16 @@ import datetime
 import logging
 import re
 
+from django.core.exceptions import PermissionDenied
 from django.shortcuts import render, get_object_or_404, redirect
 from django.views.generic.base import TemplateView
+from django.views.generic.edit import DeleteView
 from django.views.generic import DetailView
-from django.http import HttpResponseRedirect
-from django.urls import reverse
+from django.http import HttpResponseRedirect, HttpResponseForbidden
+from django.urls import reverse, reverse_lazy
 from django.contrib import messages
+from django.contrib.auth.decorators import login_required
+from django.contrib.auth.mixins import LoginRequiredMixin
 
 import requests
 from rest_framework import viewsets
@@ -110,6 +114,7 @@ class InformationForPlayerView(TemplateView):
     template_name = "championship/info.html"
 
 
+@login_required
 def create_event(request):
     if request.method == "POST":
         form = EventCreateForm(request.POST)
@@ -127,6 +132,37 @@ def create_event(request):
     return render(request, "championship/create_event.html", {"form": form})
 
 
+@login_required
+def update_event(request, pk):
+    event = get_object_or_404(Event, pk=pk)
+
+    if event.organizer.user != request.user:
+        return HttpResponseForbidden()
+
+    if request.method == "POST":
+        form = EventCreateForm(request.POST, instance=event)
+        if form.is_valid():
+            form.save()
+            messages.success(request, "Succesfully saved event")
+            return HttpResponseRedirect(reverse("event_details", args=[event.id]))
+    else:
+        form = EventCreateForm(instance=event)
+
+    return render(
+        request, "championship/update_event.html", {"form": form, "event": event}
+    )
+
+
+class EventDeleteView(DeleteView, LoginRequiredMixin):
+    model = Event
+    success_url = reverse_lazy("events")
+
+    def get_queryset(self):
+        qs = super(EventDeleteView, self).get_queryset()
+        return qs.filter(organizer__user=self.request.user)
+
+
+@login_required
 def create_results_eventlink(request):
 
     form = EventlinkImporterForm(request.user)
@@ -167,6 +203,7 @@ def create_results_eventlink(request):
     return render(request, "championship/create_results.html", {"form": form})
 
 
+@login_required
 def create_results_aetherhub(request):
     if request.method == "POST":
         form = AetherhubImporterForm(request.user, request.POST)
@@ -223,6 +260,7 @@ def create_results_aetherhub(request):
     return render(request, "championship/create_results.html", {"form": form})
 
 
+@login_required
 def create_results(request):
     form = ImporterSelectionForm()
 

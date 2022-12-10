@@ -1,0 +1,13 @@
+{% extends "championship/base.html" %}
+
+{% load crispy_forms_tags %}
+
+{% block content %}
+    <h1>Edit event</h1>
+    <form action="{% url 'event_update' event.id %}" method="post">
+        {% csrf_token %}
+        {{ form|crispy }}
+        <button type="submit" value="Submit" class="btn btn-primary">Submit</button>
+</form>
+
+{% endblock %}

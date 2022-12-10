@@ -23,10 +23,18 @@
       </dd>
       {% endif %}
 
+      {% if event.organizer.user == user %}
+      <dt class="col-sm-3">TO actions (only shown to you)</dt>
+      <dd class="col-sm-9">
+          <p><a href="{% url 'event_update' event.id %}" class="btn btn-primary">Edit event</a></p>
+          <p><a href="{% url 'event_delete' event.id %}" class="btn btn-danger">Delete event</a></p>
+      </dd>
+      {% endif %}
+
     {% if user.is_staff %}
       <dt class="col-sm-3">Admin (shown only to staff users)</dt>
       <dd class="col-sm-9">
-        <a href="{% url 'admin:championship_event_change' event.id %}">Edit in admin</a>
+        <a class="btn btn-warning" href="{% url 'admin:championship_event_change' event.id %}">Edit in admin</a>
       </dd>
     {% endif %}
     </dl>
