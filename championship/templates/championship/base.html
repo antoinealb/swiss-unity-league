@@ -28,8 +28,8 @@
                         <li class="nav-item dropdown">
                           <a class="nav-link dropdown-toggle" href="#" id="navbarDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">Infos</a>
                           <ul class="dropdown-menu" aria-labelledby="navbarDropdown">
-                              <li><a class="dropdown-item" href="https://docs.google.com/document/d/1nI2IR7mjItosNU8_eYjaitAF3b6WaOugoskhxL9SxCE/edit?usp=sharing">Guide for Players</a></li>
-                              <li><a class="dropdown-item" href="https://docs.google.com/document/d/1az8Dgyv688uW2Fho0eai90alFTBy62nHbotfMjzcOOc/edit?usp=sharing">Guide for Organizers</a></li>
+                              <li><a class="dropdown-item" href="{% url 'info' %}">Guide for Players</a></li>
+                              <li><a class="dropdown-item" href="{% url 'info_organizer' %}">Guide for Organizers</a></li>
                           </ul>
                         </li>
                         {% if user.is_authenticated and user.eventorganizer_set.count %}

@@ -128,6 +128,10 @@ class InformationForPlayerView(TemplateView):
     template_name = "championship/info.html"
 
 
+class InformationForOrganizerView(TemplateView):
+    template_name = "championship/info_organizer.html"
+
+
 @login_required
 def create_event(request):
     if request.method == "POST":
