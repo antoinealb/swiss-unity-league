@@ -111,6 +111,22 @@ class AetherhubImportTest(TestCase):
         self.assertEqual(got_url, self.data["url"])
 
     @patch("requests.get")
+    def test_get_with_edit_url(self, requests_get):
+        """By default Aetherhub displays the EditTourney view to the tournament
+        admin. We want to convert that to the RoundTourney URL before getting
+        the results."""
+        self.login()
+        self.mock_response(requests_get)
+
+        self.data["url"] = "https://aetherhub.com/Tourney/EditTourney/15671"
+
+        self.client.post(reverse("results_create_aetherhub"), self.data)
+
+        got_url = requests_get.call_args[0][0]
+        want_url = "https://aetherhub.com/Tourney/RoundTourney/15671"
+        self.assertEqual(got_url, want_url)
+
+    @patch("requests.get")
     def test_imports_result_for_correct_tourney(self, requests_get):
         self.login()
         self.mock_response(requests_get)

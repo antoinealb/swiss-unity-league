@@ -221,6 +221,13 @@ def create_results_eventlink(request):
     return render(request, "championship/create_results.html", {"form": form})
 
 
+def clean_aetherhub_url(url):
+    """Normalizes the given tournament url to point to the RoundTourney page."""
+    url_re = r"https://aetherhub.com/Tourney/[a-zA-Z]+/(\d+)"
+    tourney = re.match(url_re, url).group(1)
+    return f"https://aetherhub.com/Tourney/RoundTourney/{tourney}"
+
+
 @login_required
 def create_results_aetherhub(request):
     if request.method == "POST":
@@ -233,6 +240,7 @@ def create_results_aetherhub(request):
 
             # Fetch results from Aetherhub and parse them
             try:
+                url = clean_aetherhub_url(url)
                 response = requests.get(url)
                 response.raise_for_status()
                 results = aetherhub_parser.parse_standings_page(
