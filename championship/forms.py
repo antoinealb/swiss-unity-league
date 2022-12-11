@@ -17,10 +17,10 @@ class EventCreateForm(forms.ModelForm):
         model = Event
         fields = [
             "name",
-            "url",
             "date",
             "format",
             "category",
+            "url",
             "description",
         ]
         widgets = {"date": forms.DateInput(attrs={"type": "date"})}
