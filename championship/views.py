@@ -1,6 +1,9 @@
 import datetime
 import logging
 import re
+import os
+import requests
+import random
 
 from django.core.exceptions import PermissionDenied
 from django.shortcuts import render, get_object_or_404, redirect
@@ -12,8 +15,8 @@ from django.urls import reverse, reverse_lazy
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.mixins import LoginRequiredMixin
+from django.conf import settings
 
-import requests
 from rest_framework import viewsets
 
 from .models import *
@@ -34,6 +37,7 @@ class IndexView(TemplateView):
         context = super().get_context_data(**kwargs)
         context["players"] = self._players()
         context["future_events"] = self._future_events()
+        context["partner_logos"] = self._partner_logos()
         return context
 
     def _players(self):
@@ -50,6 +54,16 @@ class IndexView(TemplateView):
             "date"
         )[:EVENTS_ON_PAGE]
         return future_events
+
+    def _partner_logos(self):
+        paths = [s / "partner_logos" for s in settings.STATICFILES_DIRS]
+        images = sum([os.listdir(p) for p in paths], start=[])
+        images = [os.path.join("partner_logos", i) for i in images]
+
+        # Just make sure we don't always have the pictures in the same order
+        # to be fair to everyone
+        random.shuffle(images)
+        return images
 
 
 class PlayerDetailsView(DetailView):

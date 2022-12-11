@@ -30,3 +30,13 @@ class HomepageTestCase(TestCase):
         player = PlayerFactory()
         response = self.client.get("/")
         self.assertIn(player.name, response.content.decode())
+
+    def test_static_files(self):
+        """
+        Safety check to make sure we correctly have static files.
+        """
+        response = self.client.get("/")
+        self.assertIn("partner_logos", response.context_data)
+        self.assertIn(
+            "partner_logos/leonin_league.png", response.context_data["partner_logos"]
+        )
