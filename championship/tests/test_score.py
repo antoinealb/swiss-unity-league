@@ -64,6 +64,32 @@ class TestComputeScore(TestCase):
         for player_id, score in scores:
             self.assertEqual(0, score, f"Unexpected points for player {player_id}")
 
+    def test_max_500_points_for_regular(self):
+        """The league rules stipulate that the maximum amount of points a
+        player can get from regular eents is 500. The number of points in other
+        categories is not limited."""
+        player = PlayerFactory()
+
+        # First, reach the cap of 500 points for REGULAR
+        for _ in range(6):
+            e = EventFactory(category=Event.Category.REGULAR)
+            EventPlayerResult.objects.create(
+                player=player,
+                event=e,
+                points=100,
+            )
+
+        # Then create an additional event
+        e = EventFactory(category=Event.Category.PREMIER)
+        EventPlayerResult.objects.create(
+            player=player,
+            event=e,
+            points=10,
+        )
+
+        scores = compute_scores()
+        self.assertEqual(578, scores[player.id])
+
 
 class ScoresWithTop8TestCase(TestCase):
     def setUp(self):

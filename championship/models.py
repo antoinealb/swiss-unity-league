@@ -165,6 +165,7 @@ def qps_for_result(result: EventPlayerResult, category: Event.Category) -> int:
 
 
 SCORES_CACHE_KEY = "championship.scores"
+REGULAR_MAX_SCORE = 500
 
 
 def compute_scores():
@@ -173,18 +174,31 @@ def compute_scores():
     if res:
         return res
 
-    scores = collections.defaultdict(lambda: 0)
+    scores_by_player_category = collections.defaultdict(
+        lambda: collections.defaultdict(lambda: 0)
+    )
+
     for result in EventPlayerResult.objects.annotate(
         category=F("event__category"),
     ).all():
         # TODO: Handle top 8
-        scores[result.player_id] += qps_for_result(result, result.category)
+        qps = qps_for_result(result, result.category)
+        scores_by_player_category[result.player_id][result.category] += qps
 
-    res = dict(scores)
+    scores = dict()
+    for player in scores_by_player_category:
+        if (
+            scores_by_player_category[player][Event.Category.REGULAR]
+            > REGULAR_MAX_SCORE
+        ):
+            scores_by_player_category[player][
+                Event.Category.REGULAR
+            ] = REGULAR_MAX_SCORE
+        scores[player] = sum(scores_by_player_category[player].values())
 
-    cache.set(SCORES_CACHE_KEY, res, timeout=None)
+    cache.set(SCORES_CACHE_KEY, scores, timeout=None)
 
-    return res
+    return scores
 
 
 @receiver(post_save, sender=Event)
