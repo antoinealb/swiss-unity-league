@@ -9,7 +9,7 @@
 <h1>{{ player.name }}</h1>
 
 {% if user.is_staff %}
-    <a href="{% url 'admin:championship_player_change' player.id %}">Edit in admin</a>
+    <a class="btn btn-warning" href="{% url 'admin:championship_player_change' player.id %}">Edit in admin</a>
 {% endif %}
 
 
