@@ -45,7 +45,7 @@ class Command(BaseCommand):
 
         events = []
         for _ in range(events_count):
-            e = EventFactory(organizer=random.choice(organizers), round_count=4)
+            e = EventFactory(organizer=random.choice(organizers))
             events.append(e)
 
         for event in events:
