@@ -188,6 +188,31 @@ class AetherhubImportTest(TestCase):
         self.assertEqual(resp.status_code, 500)
         self.assertIn("Could not fetch standings", resp.content.decode())
 
+    def test_only_allows_selection_of_events_with_no_results(self):
+        """Checks that the user is only offered to upload results to
+        tournaments that don't have results yet."""
+        self.login()
+
+        def _choices(response):
+            choices = list(response.context["form"].fields["event"].choices)
+            choices = [s[0].instance for s in choices[1:]]
+            return choices
+
+        # First, check that we have our event offered
+        response = self.client.get(reverse("results_create_aetherhub"))
+        gotChoices = _choices(response)
+        wantChoices = [self.event]
+        self.assertEqual(gotChoices, wantChoices)
+
+        # Then create results for the event and makes sure we don't have the
+        # event listed anymore
+        EventPlayerResult.objects.create(
+            points=10, player=PlayerFactory(), event=self.event
+        )
+        response = self.client.get(reverse("results_create_aetherhub"))
+        gotChoices = _choices(response)
+        self.assertEqual([], gotChoices)
+
 
 class EventLinkImportTestCase(TestCase):
     def setUp(self):
