@@ -266,6 +266,31 @@ class EventLinkImportTestCase(TestCase):
         self.assertEqual(400, resp.status_code)
         self.assertIn("Could not parse standings", resp.content.decode())
 
+    def test_only_allows_selection_of_events_with_no_results(self):
+        """Checks that the user is only offered to upload results to
+        tournaments that don't have results yet."""
+        self.login()
+
+        def _choices(response):
+            choices = list(response.context["form"].fields["event"].choices)
+            choices = [s[0].instance for s in choices[1:]]
+            return choices
+
+        # First, check that we have our event offered
+        response = self.client.get(reverse("results_create_eventlink"))
+        gotChoices = _choices(response)
+        wantChoices = [self.event]
+        self.assertEqual(gotChoices, wantChoices)
+
+        # Then create results for the event and makes sure we don't have the
+        # event listed anymore
+        EventPlayerResult.objects.create(
+            points=10, player=PlayerFactory(), event=self.event
+        )
+        response = self.client.get(reverse("results_create_eventlink"))
+        gotChoices = _choices(response)
+        self.assertEqual([], gotChoices)
+
 
 class ImportSelectorTestCase(TestCase):
     def setUp(self):

@@ -56,8 +56,12 @@ class EventlinkImporterForm(forms.Form, SubmitButtonMixin):
     def __init__(self, user, *args, **kwargs):
         super().__init__(*args, **kwargs)
 
-        # TODO: Only get past events, and perhaps only those with no results yet ?
-        self.fields["event"].queryset = Event.objects.filter(organizer__user=user)
+        # TODO: Only get past events?
+        qs = Event.objects.filter(organizer__user=user)
+
+        # Remove events that already have results
+        qs = qs.annotate(result_cnt=Count("eventplayerresult")).filter(result_cnt=0)
+        self.fields["event"].queryset = qs
 
 
 class ImporterSelectionForm(forms.Form, SubmitButtonMixin):
