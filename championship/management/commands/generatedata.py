@@ -51,13 +51,13 @@ class Command(BaseCommand):
         for event in events:
             random.shuffle(players)
             for i, p in enumerate(players):
-                # Just simulate an event where half the playrs went 1-3
-                # and half went 3 - 1
-                if i % 2:
-                    points = 3
-                else:
+                if i < len(players) // 2:
                     points = 9
-                EventPlayerResult.objects.create(points=points, player=p, event=event)
+                else:
+                    points = 3
+                EventPlayerResult.objects.create(
+                    points=points, player=p, event=event, ranking=i + 1
+                )
 
         today = datetime.date.today()
         for _ in range(10):

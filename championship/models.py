@@ -108,9 +108,12 @@ class EventPlayerResult(models.Model):
         blank=True,
         choices=SingleEliminationResult.choices,
     )
+    ranking = models.PositiveIntegerField(help_text="Standings after the Swiss rounds")
 
 
-def qps_for_result(result: EventPlayerResult, category: Event.Category) -> int:
+def qps_for_result(
+    result: EventPlayerResult, category: Event.Category, event_size: int
+) -> int:
     """
     Returns how many QPs a player got in a single event.
     """
@@ -152,6 +155,16 @@ def qps_for_result(result: EventPlayerResult, category: Event.Category) -> int:
             EventPlayerResult.SingleEliminationResult.QUARTER_FINALIST,
         ): 30,
     }
+    POINTS_TOP_9_12 = {
+        Event.Category.PREMIER: 75,
+        Event.Category.REGIONAL: 15,
+        Event.Category.REGULAR: 0,
+    }
+    POINTS_TOP_13_16 = {
+        Event.Category.PREMIER: 50,
+        Event.Category.REGIONAL: 10,
+        Event.Category.REGULAR: 0,
+    }
 
     points = result.points + PARTICIPATION_POINTS
     points = points * MULT[category]
@@ -160,6 +173,14 @@ def qps_for_result(result: EventPlayerResult, category: Event.Category) -> int:
         # TODO: Top 16 points for events which had a top 8 and more than 32
         # players.
         points += POINTS_FOR_TOP[category, result.single_elimination_result]
+
+    else:
+        # For large tournaments, we award points for placing, even outside of
+        # top8. See the rules for explanation
+        if event_size > 32 and 9 <= result.ranking <= 12:
+            points += POINTS_TOP_9_12[category]
+        elif event_size > 48 and 13 <= result.ranking <= 16:
+            points += POINTS_TOP_13_16[category]
 
     return points
 
@@ -180,9 +201,10 @@ def compute_scores():
 
     for result in EventPlayerResult.objects.annotate(
         category=F("event__category"),
+        size=Count("event__eventplayerresult"),
     ).all():
         # TODO: Handle top 8
-        qps = qps_for_result(result, result.category)
+        qps = qps_for_result(result, result.category, result.size)
         scores_by_player_category[result.player_id][result.category] += qps
 
     scores = dict()

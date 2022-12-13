@@ -81,11 +81,12 @@ class PlayerDetailsView(DetailView):
                 name=F("event__name"),
                 date=F("event__date"),
                 category=F("event__category"),
+                event_size=Count("event__eventplayerresult"),
             )
             .order_by("-event__date")
         )
         for e in context["last_events"]:
-            e.qps = qps_for_result(e, e.category)
+            e.qps = qps_for_result(e, e.category, event_size=e.event_size)
         return context
 
 
@@ -98,12 +99,16 @@ class EventDetailsView(DetailView):
         context = super().get_context_data(**kwargs)
         results = (
             EventPlayerResult.objects.filter(event=context["event"])
-            .annotate(player_name=F("player__name"), category=F("event__category"))
+            .annotate(
+                player_name=F("player__name"),
+                category=F("event__category"),
+                event_size=Count("event__eventplayerresult"),
+            )
             .order_by("-points")
         )
 
         for r in results:
-            r.qps = qps_for_result(r, r.category)
+            r.qps = qps_for_result(r, r.category, event_size=r.event_size)
         context["results"] = results
 
         return context
@@ -207,13 +212,13 @@ def create_results_eventlink(request):
                     status=400,
                 )
 
-            for (
+            for i, (
                 name,
                 points,
-            ) in results:
+            ) in enumerate(results):
                 player, _ = Player.objects.get_or_create(name=name)
                 EventPlayerResult.objects.create(
-                    points=points, player=player, event=event
+                    points=points, player=player, event=event, ranking=i + 1
                 )
 
             return HttpResponseRedirect("/")
@@ -271,12 +276,12 @@ def create_results_aetherhub(request):
                 name = re.sub(r"\s+", " ", name)
                 return name.lstrip()
 
-            for name, points, _ in results.standings:
+            for i, (name, points, _) in enumerate(results.standings):
                 name = _remove_camel_case(name)
 
                 player, _ = Player.objects.get_or_create(name=name)
                 EventPlayerResult.objects.create(
-                    points=points, player=player, event=event
+                    points=points, player=player, event=event, ranking=i + 1
                 )
 
             return HttpResponseRedirect("/")

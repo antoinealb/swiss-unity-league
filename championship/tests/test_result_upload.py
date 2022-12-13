@@ -133,15 +133,16 @@ class AetherhubImportTest(TestCase):
 
         response = self.client.post(reverse("results_create_aetherhub"), self.data)
 
-        results = EventPlayerResult.objects.filter(event=self.event).order_by(
-            "-points"
-        )[:]
+        results = EventPlayerResult.objects.filter(event=self.event).order_by("id")[:]
 
         # hardcoded spot checks from the tournament
         self.assertEqual(len(results), 30)
         self.assertEqual(results[0].points, 13)
+        self.assertEqual(results[0].ranking, 1)
         self.assertEqual(results[10].points, 9)
+        self.assertEqual(results[10].ranking, 11)
         self.assertEqual(results[27].points, 3)
+        self.assertEqual(results[27].ranking, 28)
 
         # Check that CamelCase conversion works
         Player.objects.get(name="Amar Zehic")
@@ -207,7 +208,7 @@ class AetherhubImportTest(TestCase):
         # Then create results for the event and makes sure we don't have the
         # event listed anymore
         EventPlayerResult.objects.create(
-            points=10, player=PlayerFactory(), event=self.event
+            points=10, player=PlayerFactory(), event=self.event, ranking=1
         )
         response = self.client.get(reverse("results_create_aetherhub"))
         gotChoices = _choices(response)
@@ -243,14 +244,14 @@ class EventLinkImportTestCase(TestCase):
 
         self.client.post(reverse("results_create_eventlink"), self.data)
 
-        results = EventPlayerResult.objects.filter(event=self.event).order_by(
-            "-points"
-        )[:]
+        results = EventPlayerResult.objects.filter(event=self.event).order_by("id")[:]
 
         # hardcoded spot checks from the tournament
         self.assertEqual(len(results), 10)
         self.assertEqual(results[0].points, 10)
+        self.assertEqual(results[0].ranking, 1)
         self.assertEqual(results[3].points, 6)
+        self.assertEqual(results[3].ranking, 4)
         self.assertEqual(results[0].player.name, "Jeremias Wildi")
 
     def test_import_garbage(self):
@@ -285,7 +286,7 @@ class EventLinkImportTestCase(TestCase):
         # Then create results for the event and makes sure we don't have the
         # event listed anymore
         EventPlayerResult.objects.create(
-            points=10, player=PlayerFactory(), event=self.event
+            points=10, player=PlayerFactory(), event=self.event, ranking=1
         )
         response = self.client.get(reverse("results_create_eventlink"))
         gotChoices = _choices(response)

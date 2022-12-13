@@ -14,9 +14,6 @@ class TestComputeScore(TestCase):
     def setUp(self):
         fake = Faker()
 
-        for _ in range(50):
-            PlayerFactory()
-
         self.event = EventFactory()
 
     def _test_compute_score(self, category, points, want_score):
@@ -24,12 +21,13 @@ class TestComputeScore(TestCase):
         self.event.category = category
         self.event.save()
 
-        players = Player.objects.all().order_by("id")[:player_count]
+        players = [PlayerFactory() for _ in range(player_count)]
         for i, (player, pi) in enumerate(zip(players, points)):
             EventPlayerResult.objects.create(
                 player=player,
                 event=self.event,
                 points=pi,
+                ranking=i + 1,
             )
 
         scores = compute_scores()
@@ -71,12 +69,13 @@ class TestComputeScore(TestCase):
         player = PlayerFactory()
 
         # First, reach the cap of 500 points for REGULAR
-        for _ in range(6):
+        for i in range(6):
             e = EventFactory(category=Event.Category.REGULAR)
             EventPlayerResult.objects.create(
                 player=player,
                 event=e,
                 points=100,
+                ranking=i + 1,
             )
 
         # Then create an additional event
@@ -85,10 +84,55 @@ class TestComputeScore(TestCase):
             player=player,
             event=e,
             points=10,
+            ranking=10,
         )
 
         scores = compute_scores()
         self.assertEqual(578, scores[player.id])
+
+    def test_extra_points_for_9th_in_large_events(self):
+        """Checks that we get some extra points to the 9th player in larger events (more than 32)"""
+        # Note that here 9th gets more QPs that top 8 but that's because we did
+        # not input the top 8 result with finalists and such yet
+        points = [10] * 8 + [9] * 4 + [0] * 21
+        want_score = [52] * 8 + [48 + 15] * 4 + [12] * 21
+        self._test_compute_score(
+            category=Event.Category.REGIONAL,
+            points=points,
+            want_score=want_score,
+        )
+
+    def test_extra_points_for_9th_in_large_premier(self):
+        """Checks that we get some extra points to the 9th player in larger events (more than 32)"""
+        # Note that here 9th gets more QPs that top 8 but that's because we did
+        # not input the top 8 result with finalists and such yet
+        points = [10] * 8 + [9] * 4 + [0] * 21
+        want_score = [13 * 6] * 8 + [12 * 6 + 75] * 4 + [18] * 21
+        self._test_compute_score(
+            category=Event.Category.PREMIER,
+            points=points,
+            want_score=want_score,
+        )
+
+    def test_extra_points_for_13th_in_xlarge_events(self):
+        """Checks that we get some extra points to the 9th player in XL events (more than 48)"""
+        points = [10] * 8 + [9] * 4 + [0] * 37
+        want_score = [52] * 8 + [48 + 15] * 4 + [12 + 10] * 4 + [12] * 33
+        self._test_compute_score(
+            category=Event.Category.REGIONAL,
+            points=points,
+            want_score=want_score,
+        )
+
+    def test_extra_points_for_13th_in_xlarge_premier(self):
+        """Checks that we get some extra points to the 9th player in XL events (more than 48)"""
+        points = [10] * 8 + [9] * 4 + [0] * 37
+        want_score = [13 * 6] * 8 + [12 * 6 + 75] * 4 + [18 + 50] * 4 + [18] * 33
+        self._test_compute_score(
+            category=Event.Category.PREMIER,
+            points=points,
+            want_score=want_score,
+        )
 
 
 class ScoresWithTop8TestCase(TestCase):
@@ -102,8 +146,9 @@ class ScoresWithTop8TestCase(TestCase):
             event=self.event,
             player=self.player,
             single_elimination_result=result,
+            ranking=1,
         )
-        return qps_for_result(ep, category)
+        return qps_for_result(ep, category, event_size=32)
 
     def test_premier_event(self):
         testCases = [

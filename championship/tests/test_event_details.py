@@ -14,7 +14,9 @@ class EventDetailTestCase(TestCase):
 
         event = EventFactory(category=Event.Category.PREMIER)
         player = PlayerFactory()
-        EventPlayerResult.objects.create(points=10, player=player, event=event)
+        EventPlayerResult.objects.create(
+            points=10, player=player, event=event, ranking=1
+        )
 
         resp = self.client.get(reverse("event_details", args=[event.id]))
         self.assertIn(event.name, resp.content.decode())
