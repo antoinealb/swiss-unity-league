@@ -17,11 +17,15 @@ class HomepageTestCase(TestCase):
         Checks that the home page contains a list of coming up events.
         """
         d = datetime.date.today() + datetime.timedelta(days=1)
-        event = EventFactory(name="TestEvent2000", date=d)
+        EventFactory(name="TestEvent2000", date=d, category=Event.Category.REGIONAL)
+        EventFactory(name="TestEvent1000", date=d, category=Event.Category.PREMIER)
+        EventFactory(name="RegularEvent", date=d, category=Event.Category.REGULAR)
 
         response = self.client.get("/")
 
         self.assertIn("TestEvent2000", response.content.decode())
+        self.assertIn("TestEvent1000", response.content.decode())
+        self.assertNotIn("RegularEvent", response.content.decode())
 
     def test_shows_player_name(self):
         """

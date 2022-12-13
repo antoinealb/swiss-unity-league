@@ -16,7 +16,7 @@
         <div class="col-md-4 mb-5">
             <div class="card h-100">
                 <div class="card-body">
-                    <h2 class="card-title">Upcoming events</h2>
+                    <h2 class="card-title">Upcoming major events</h2>
                     <ul>
                     {% for event in future_events|slice:":5" %}
                         <li>{{ event.date }}: {{ event.name }} by {{ event.organizer}} </li>

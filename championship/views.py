@@ -50,9 +50,11 @@ class IndexView(TemplateView):
         return players
 
     def _future_events(self):
-        future_events = Event.objects.filter(date__gt=datetime.date.today()).order_by(
-            "date"
-        )[:EVENTS_ON_PAGE]
+        future_events = (
+            Event.objects.filter(date__gt=datetime.date.today())
+            .exclude(category=Event.Category.REGULAR)
+            .order_by("date")[:EVENTS_ON_PAGE]
+        )
         return future_events
 
     def _partner_logos(self):
