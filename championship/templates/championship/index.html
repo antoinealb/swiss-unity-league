@@ -2,13 +2,16 @@
 {% load static %}
 
 {% block content %}
-    <div class="row gx-4 gx-lg-5 align-items-center my-5">
-        <div class="col-lg-7"><img class="img-fluid rounded mb-4 mb-lg-0" src="{% static 'tournament.jpg' %}" alt="A Magic: The Gathering tournament" /></div>
-        <div class="col-lg-5">
-            <h1 class="font-weight-light">Swiss Unity League</h1>
-            <p>The Swiss Unity League is Switzerland's Magic: The Gathering tournament circuit, where players from all over the country compete for points. The top players get invited into an end-of-year, two days event where they battle for the Player of the Year title.</p>
+    <div class="row gx-4 gx-lg-5 my-5">
+        <div class="col-lg-5 mb-2">
+            <div class="text-center mb-4">
+                <img class="img-fluid" style="max-height:300px" src="{% static 'sul_logo.png' %}" alt="SUL Logo" />
+            </div>
+            <p>The Swiss Unity League (SUL) is a collaborative league in 2023 between various Magic tournament organizers in Switzerland with an end of year 2-day invitational tournament with 3.5k+ Prizes.</p>
+            <p>Any organizer can register their tournament for the league to make it award Qualification Points (QPs). Players need to collect these QPs in order to qualify for the invitational tournament.</p>
             <a class="btn btn-primary" href="{% url 'info' %}">More info</a>
         </div>
+        <div class="col-lg-7"><img class="img-fluid rounded mb-4 mb-lg-0" src="{% static 'tournament.jpg' %}" alt="A Magic: The Gathering tournament" /></div>
     </div>
 
 
