@@ -29,8 +29,8 @@ SECRET_KEY = "django-insecure-8g+wfs#fbtjgv98n!449i9ml%kgi!6(9&_)6%!0#p=4ne#i&qq
 # SECURITY WARNING: don't run with debug turned on in production!
 if "RUN_IN_PROD" in os.environ:
     DEBUG = False
-    ALLOWED_HOSTS = ["0.0.0.0", "leoninleague.ch"]
-    CSRF_TRUSTED_ORIGINS = ["https://leoninleague.ch"]
+    ALLOWED_HOSTS = ["0.0.0.0", "leoninleague.ch", "unityleague.ch"]
+    CSRF_TRUSTED_ORIGINS = ["https://leoninleague.ch", "https://unityleague.ch"]
 else:
     DEBUG = True
     ALLOWED_HOSTS = []
