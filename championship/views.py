@@ -60,7 +60,7 @@ class IndexView(TemplateView):
     def _partner_logos(self):
         paths = [s / "partner_logos" for s in settings.STATICFILES_DIRS]
         images = sum([os.listdir(p) for p in paths], start=[])
-        images = [os.path.join("partner_logos", i) for i in images]
+        images = [os.path.join("partner_logos", i) for i in images if i.endswith("png")]
 
         # Just make sure we don't always have the pictures in the same order
         # to be fair to everyone

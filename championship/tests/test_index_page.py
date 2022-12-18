@@ -40,7 +40,7 @@ class HomepageTestCase(TestCase):
         Safety check to make sure we correctly have static files.
         """
         response = self.client.get("/")
-        self.assertIn("partner_logos", response.context_data)
+        self.assertIn("partner_logos", response.context)
         self.assertIn(
-            "partner_logos/leonin_league.png", response.context_data["partner_logos"]
+            "partner_logos/leonin_league.png", response.context["partner_logos"]
         )
