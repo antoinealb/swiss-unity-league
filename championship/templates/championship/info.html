@@ -5,6 +5,7 @@
 {% endblock %}
 
 {% block content %}
+    </p>
     <h1>Swiss Unity League</h1>
     The Swiss Unity League (SUL) is a collaborative league in 2023
     between various Magic tournament organizers in Switzerland with an end
@@ -14,25 +15,22 @@
     order to qualify for the invitational tournament.</p>
     <h2>SUL Invitational 18-19.11.2023</h2>
     <h3>3.5k Prize Pool</h3>
-    In case the league has a bigger attendance than planned, the prizes
-    will be increased further. The prizes will be awarded in the form of <a
-        href="http://cardmarket.com">Cardmarket</a> coupons.</p>
     <ul>
-        <li>1st: € 1000</li>
-        <li>2nd: € 500</li>
-        <li>3rd/4th: € 350</li>
-        <li>5th-8th: € 250</li>
-        <li>9th-12th: € 75</li>
+        <li>1st: 1000 €*</li>
+        <li>2nd: 500 €*</li>
+        <li>3rd/4th: 350 €*</li>
+        <li>5th-8th: 250 €*</li>
+        <li>9th-12th 75 €*</li>
     </ul>
+    *The prizes will be awarded in the form of <a
+    href="http://cardmarket.com">Cardmarket</a> coupons.
     <h3>How to Qualify</h3>
     The season for the SUL will run from 1st of January 2023 to 10th of
     November 2023. During that time all tournaments participating at SUL
     will award Qualification Points (QPs). The <strong>top 32
         players</strong> that earned the most QPs are qualified at the end of
-    the season. If the league has a higher attendance than expected, the
-    number of qualified players will be increased (e.g. to the top 64). In
-    addition, players with a lot of QPs will be awarded byes for the
-    tournament.</p>
+    the season. </p> If the league has a higher attendance than expected, the prize 
+    pool and the number of qualified players will be increased (e.g. to the top 64). </p>
     <h3>Tournament Structure</h3>
     Location: To be announced</p>
     Entry: Free, but only qualified players can participate.</p>
@@ -50,7 +48,7 @@
             </ul></li>
     </ul>
     <h2>How to participate</h2>
-    Tell your local tournament organizer (TO) about our league and show them the <a href="https://docs.google.com/document/d/1az8Dgyv688uW2Fho0eai90alFTBy62nHbotfMjzcOOc/edit?usp=sharing">SUL Guide for Organizers</a>! Your TO will then register their local events for the league so you can start collecting Qualification Points at those events.</p>
+    Tell your local tournament organizer (TO) about our league and show them the <a href="{% url 'info_organizer' %}">Information for Organizers</a> page! Your TO will then register their local events for the league so you can start collecting Qualification Points at those events.</p>
     <h2>Qualification Points</h2>
     Players can earn Qualification Points (QPs) at all tournaments
     participating in the league. QPs are awarded in the following three
@@ -62,40 +60,34 @@
             QPs).</li>
         <li><strong>Participation:</strong> A player receives 3 QPs just for
             participating at the event.</li>
-        <li><strong>Tops:</strong> The Top 8/12/16 receive extra QPs as
-            explained later.</li>
+        <li><strong>Tops:</strong> The top 8/12/16 players receive extra QPs (explained later).</li>
     </ul>
     <h3>Tournament Types</h3>
-    There are the following 3 types of tournaments. Your local tournament
-    organizer will assign one of these 3 types to each tournament they
-    organize. Depending on the type of tournament, a different amount of QPs
-    will be awarded to the participants.</p>
+    There are 3 types of tournaments (SUL Regular, Regional, and Premier). 
+    Your local tournament organizer will assign one of these 3 types to each 
+    tournament they organize. Depending on the type of tournament, a different
+     number of QPs will be awarded to the participants.</p>
     <h4>SUL Regular</h4>
     All normal events (weekly, FNM, Prerelease) at your local store or
     association are SUL Regular events.</p>
     <h4>SUL Regional</h4>
     SUL Regional events are medium-sized events for which people travel
-    all around your canton to attend them. Each of your local tournament
-    organizers can organize one of these events per month in each Format. So
-    for example 1 in Modern, 1 in Limited, 1 in Pioneer and 1 in Legacy. SUL
-    Regional events can be with or without a top 8.</p>
+    all around your canton to attend them. For each format your local 
+    tournament organizers can organize one of these events per month 
+    (1 Modern, 1 Limited, 1 Standard, etc. per month). SUL Regional events
+    can be with or without a top 8.</p>
     <h4>SUL Premier</h4>
     SUL Premier events are meant to be huge tournaments for which people
     travel all around Switzerland. To make those events feel special and
     exciting your local tournament organizer can only host up to 2 of these
     events per year.</p>
-    <h3>Multiplier</h3>
+    <h3>SUL Multiplier</h3>
     Each of the 3 tournament types has a different multiplier that
     increases the number of Qualification Points the players earn. SUL
     Regular events have a multiplier of 1x, SUL Regional 4x, and SUL Premier
     6x. The QPs earned for match points and participation (but not for
     tops) are multiplied with the given multiplier for the
     tournament.</p>
-    <em>Example: During 4 Swiss rounds Jace manages to get 7
-        match points with 2 wins, 1 loss, and 1 draw. Normally Jace would earn 7
-        QPs for the match points and 3 QPs for participation, which is 10 QPs in
-        total. However since the event has a multiplier of 4x, he receives 40
-        QPs instead.</em></p>
 
     <div class="row py-3">
         <div class="col-md-6 align-items-center mx-auto">
@@ -105,7 +97,7 @@
                         <th >Tournament Type</th>
                         <th >Multiplier</th>
                         <th >Top 8</th>
-                        <th >Number of tournaments per organizer</th>
+                        <th >Events per organizer</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -131,16 +123,15 @@
             </table>
         </div>
     </div>
-
-    Each player can earn a maximum of <strong>500 QPs with SUL Regular
-        events</strong> in total, further points will be ignored. With SUL
-    Regional and Premier events a player can earn an unlimited amount of
-    points.</p>
+    Over the course of the season a player can earn a <strong>maximum of 500 QPs
+    with all SUL Regular events</strong> combined, further points will be ignored. 
+    With SUL Regional and Premier events a player can earn an unlimited amount of points.
     <h3>Qualification Points for Top 8</h3>
-    For SUL Regional events running a top 8 is optional, so the
-    tournament organizer can decide if they wish to run a top 8 or not. For
-    SUL Premier events running a top 8 is mandatory. Events with top 8 award
-    additional Qualification Points according to the schema below.</p>
+    For SUL Premier events running a top 8 is mandatory.
+    For SUL Regional events the tournament organizer can
+    decide if they wish to run a top 8 or not. Events with
+    top 8 award additional Qualification Points according to the schema below. 
+</p>
     The QPs for 9th-12th and 13th-16th are only awarded if the tournament
     has more than 32 or 48 participants.</p>
 
@@ -195,48 +186,28 @@
         </div>
     </div>
     <h3>Example</h3>
-    <em>Chandra plays a SUL Premier event at her local gaming store
-        (hence it has a multiplier of 6x). During the 5 Swiss rounds she manages
-        to get 3 wins, 2 losses, and 1 draw (10 match points). She places 11th
-        in the overall ranking.</em></p>
-    <em>Therefore she receives 60 QPs (6x10) for the match points, 18 QPs
-        (6x3) just for participating. Since the event has more than 32 players,
-        she receives an additional 75 QPs for placing 11th. With this event she
-        earns a grand total of 153 QPs.</em></p>
-    <em>Gideon plays a SUL Regional event without top 8 at his local
-        gaming store (hence it has a multiplier of 4x). During the 5 Swiss
-        rounds he manages to get 3 wins and 1 loss (9 match points). Therefore
-        he receives 36 QPs (4x9) for the match points, 12 QPs (4x3) just for
-        participating. Since the event has no top 8, no additional QPs are
-        awarded. With this event he earns a grand total of 48 QPs.</em></p>
-    As mentioned before, the QPs from all tournaments are summed up and
-    the 32 players with the most QPs at the end of the season (10.11.2023)
-    will be qualified for the invitational.</p>
+    <em>Chandra plays a SUL Premier event (multiplier 6x) at her local gaming 
+        store with 41 participants. During the 5 Swiss rounds she 
+        manages to get 3 wins, 2 losses, and 1 draw (10 match points). 
+        She places 11th in the overall ranking. Therefore she receives 60 QPs 
+        (6x10) for the match points, 18 QPs (6x3) just for participating. Since the
+        event has more than 32 players, she receives an additional 75 QPs for placing 11th.
+         With this event she earns a grand total of 153 QPs.
+    </em></p>
+
     <h2>Byes</h2>
     The best performing players at the league are awarded byes (free wins
     in the first rounds) for the invitational tournament at the end of the
     year. A player can have at maximum 2 byes, further byes will be ignored.
     Players can earn byes in the following ways:</p>
     <ul>
-        <li>The top 5 players in the end of year QP-leaderboard will be awarded
-            &gt; 1 bye.</li>
-        <li>The player of the year (with the most QPs) will be awarded 2
-            byes.</li>
-        <li>SUL Premier events with more than 128 participants award 2 byes to
-            &gt; the winner of the tournament.</li>
+        <li>The top 5 players (with the most QPs) will be awarded 1 bye.</li>
+        <li>The player of the year (top 1 with the most QPs) will be awarded 2 byes.</li>
+        <li>SUL Premier events with more than 128 participants award 2 byes to the winner of the tournament.</li>
     </ul>
-    <h2>Team Events</h2>
-    Team events where teams of 3 players are playing 1v1 matches against
-    a player of a different team can also be part of SUL. In this case each
-    player receives QPs equal to the match points their team earned in the
-    swiss rounds and 3 participations QPs (all multiplied with the given
-    multiplier). The QPs awarded for top 8 will be divided equally among the
-    team members and rounded up. (E.g. if the winning team earns 500 QPs
-    from top 8, then each team member gets 167 QPs)</p>
-
     <h1>How do we finance this ?</h1>
     In addition to sponsorships, tournament organizers will pay a small
     fee for each participant of the Regional and Premier events they
-    organize. For detailed information, see the SUL Guide for
-    Organizers!</p>
+    organize. For detailed information, see <a href="{% url 'info_organizer' %}"> 
+    Information for Organizers</a>!</p>
 {% endblock %}
