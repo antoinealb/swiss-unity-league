@@ -179,3 +179,43 @@ class EventCreationTestCase(TestCase):
         self.login()
         resp = self.client.post(reverse("event_delete", args=[event.id]))
         self.assertEqual(404, resp.status_code)
+
+
+class EventCopyTestCase(TestCase):
+    def setUp(self):
+        self.client = Client()
+        self.credentials = dict(username="test", password="test")
+        self.user = User.objects.create_user(**self.credentials)
+        self.organizer = EventOrganizerFactory(user=self.user)
+
+    def login(self):
+        self.client.login(**self.credentials)
+
+    def test_current_event_in_context(self):
+        self.login()
+        event = EventFactory(organizer=self.organizer)
+        r = self.client.get(reverse("event_copy", args=[event.id]))
+        self.assertEqual(event, r.context["original_event"])
+
+    def test_copy_event(self):
+        self.login()
+        event = EventFactory()
+
+        data = {
+            "name": "Test Event",
+            "url": "https://test.example",
+            "date": "11/26/2022",
+            "format": "LEGACY",
+            "category": "PREMIER",
+        }
+
+        self.client.post(reverse("event_copy", args=[event.id]), data=data)
+
+        self.assertEqual(2, Event.objects.count())
+
+    def test_button_shown(self):
+        self.login()
+        event = EventFactory(organizer=self.organizer)
+
+        resp = self.client.get(reverse("event_details", args=[event.id]))
+        self.assertIn("Copy event", resp.content.decode())

@@ -27,6 +27,7 @@
       <dt class="col-sm-3">TO actions (only shown to you)</dt>
       <dd class="col-sm-9">
           <p><a href="{% url 'event_update' event.id %}" class="btn btn-primary">Edit event</a></p>
+          <p><a href="{% url 'event_copy' event.id %}" class="btn btn-secondary">Copy event</a></p>
           <p><a href="{% url 'event_delete' event.id %}" class="btn btn-danger">Delete event</a></p>
       </dd>
       {% endif %}

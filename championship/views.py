@@ -158,6 +158,33 @@ def create_event(request):
 
 
 @login_required
+def copy_event(request, pk):
+    original_event = get_object_or_404(Event, pk=pk)
+    if request.method == "POST":
+        form = EventCreateForm(request.POST)
+        if form.is_valid():
+            event = form.save(commit=False)
+            event.pk = None  # Force django to commit
+            event.organizer = EventOrganizer.objects.get(user=request.user)
+            event.save()
+
+            messages.success(request, "Succesfully created event!")
+
+            return HttpResponseRedirect(reverse("event_details", args=[event.id]))
+    else:
+        # By default, copy it one week later
+        new_event = get_object_or_404(Event, pk=pk)
+        new_event.date += datetime.timedelta(days=7)
+        form = EventCreateForm(instance=new_event)
+
+    return render(
+        request,
+        "championship/copy_event.html",
+        {"form": form, "original_event": original_event},
+    )
+
+
+@login_required
 def update_event(request, pk):
     event = get_object_or_404(Event, pk=pk)
 
