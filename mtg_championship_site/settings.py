@@ -149,6 +149,10 @@ STATICFILES_FINDERS = [
     "sass_processor.finders.CssFinder",
 ]
 
+SASS_PROCESSOR_ENABLED = True
+SASS_PRECISION = 8
+
+
 STATIC_ROOT = BASE_DIR / "static_root"
 
 WHITENOISE_ROOT = STATIC_ROOT / "root"
