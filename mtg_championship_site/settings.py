@@ -157,6 +157,9 @@ STATIC_ROOT = BASE_DIR / "static_root"
 
 WHITENOISE_ROOT = STATIC_ROOT / "root"
 
+# Required as we lazily generate CSS files from Sass
+WHITENOISE_AUTOREFRESH = True
+
 CRISPY_ALLOWED_TEMPLATE_PACKS = "bootstrap5"
 CRISPY_TEMPLATE_PACK = "bootstrap5"
 
