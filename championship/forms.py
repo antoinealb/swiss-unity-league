@@ -29,7 +29,7 @@ class EventCreateForm(forms.ModelForm):
 class AetherhubImporterForm(forms.Form, SubmitButtonMixin):
     url = forms.URLField(
         label="Tournament URL",
-        help_text="Link to your tournament's round page. Must be a public tournament.",
+        help_text="Link to your tournament. Make sure it is a public and finished tournament.",
         widget=forms.URLInput(
             attrs={"placeholder": "https://aetherhub.com/Tourney/RoundTourney/123456"}
         ),
@@ -49,7 +49,8 @@ class AetherhubImporterForm(forms.Form, SubmitButtonMixin):
 
 class EventlinkImporterForm(forms.Form, SubmitButtonMixin):
     standings = forms.FileField(
-        help_text="The standings file saved as a web page (.html)."
+        help_text="The standings file saved as a web page (.html). "
+        + "Go to the standings of the last swiss round on the EventLink website, then press Ctrl+S and save."
     )
     event = forms.ModelChoiceField(queryset=Event.objects.all(), required=True)
 
@@ -69,4 +70,8 @@ class ImporterSelectionForm(forms.Form, SubmitButtonMixin):
         AETHERHUB = "AETHERHUB", "Aetherhub"
         EVENTLINK = "EVENTLINK", "EventLink"
 
-    site = forms.ChoiceField(choices=Importers.choices)
+    site = forms.ChoiceField(
+        choices=Importers.choices,
+        help_text="If you use a different tool for the results and can't upload them, please send us the results via email: leoninleague@gmail.com"
+        + "We will try to support as many tools as possible, but we also appreciate it if you can switch to one of the tools already supported!",
+    )
