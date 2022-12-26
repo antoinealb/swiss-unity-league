@@ -14,3 +14,5 @@ bleach==5.0.1
 django-bleach==3.0.1
 django_debug_toolbar==3.8.1
 djangorestframework==3.14.0
+django-sass-processor==1.2.2
+libsass==0.22.0
