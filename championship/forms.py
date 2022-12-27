@@ -4,6 +4,7 @@ from .models import Event
 from crispy_forms.helper import FormHelper
 from crispy_forms.layout import Submit
 import datetime
+import bleach
 
 
 class SubmitButtonMixin:
@@ -14,6 +15,7 @@ class SubmitButtonMixin:
 
 class EventCreateForm(forms.ModelForm):
     class Meta:
+
         model = Event
         fields = [
             "name",
@@ -24,6 +26,13 @@ class EventCreateForm(forms.ModelForm):
             "description",
         ]
         widgets = {"date": forms.DateInput(attrs={"type": "date"})}
+        help_texts = {
+            "description": """Supports the following HTML tags: {}.
+You can copy/paste the description from a website like swissmtg.ch, and the formatting will be preserved.""".format(
+                ", ".join(bleach.ALLOWED_TAGS)
+            ),
+            "format": "If your desired format is not listed, please contact us and we'll add it.",
+        }
 
 
 class AetherhubImporterForm(forms.Form, SubmitButtonMixin):

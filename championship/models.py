@@ -47,7 +47,6 @@ class Event(models.Model):
     description = BleachField(
         help_text="Supports the following HTML tags: {}".format(
             ", ".join(bleach.ALLOWED_TAGS)
-            + "\nYou can copy and paste the description from a website like swissmtg.ch, then HTML syntax will also be copied."
         ),
         blank=True,
         strip_tags=True,
@@ -63,7 +62,6 @@ class Event(models.Model):
     format = models.CharField(
         max_length=10,
         choices=Format.choices,
-        help_text="If your desired format is not listed, please contact us and we'll add it.",
     )
 
     class Category(models.TextChoices):
