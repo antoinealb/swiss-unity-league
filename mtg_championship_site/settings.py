@@ -39,6 +39,7 @@ else:
 # Application definition
 
 INSTALLED_APPS = [
+    "championship",
     "django.contrib.admin",
     "django.contrib.auth",
     "django.contrib.contenttypes",
@@ -46,7 +47,6 @@ INSTALLED_APPS = [
     "django.contrib.messages",
     "django.contrib.staticfiles",
     "django.contrib.humanize",
-    "championship",
     "crispy_forms",
     "crispy_bootstrap5",
     "django_prometheus",
