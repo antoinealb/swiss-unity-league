@@ -59,7 +59,10 @@ class Event(models.Model):
         PIONEER = "PIONEER", "Pioneer"
         STANDARD = "STANDARD", "Standard"
 
-    format = models.CharField(max_length=10, choices=Format.choices)
+    format = models.CharField(
+        max_length=10,
+        choices=Format.choices,
+    )
 
     class Category(models.TextChoices):
         REGULAR = "REGULAR", "SUL Regular"
@@ -74,7 +77,7 @@ class Event(models.Model):
 
 class Player(models.Model):
     """
-    Represents a player in the championship, amon many tournaments.
+    Represents a player in the championship, among many tournaments.
     """
 
     # This used to be first_name, last_name in two separate fields.
