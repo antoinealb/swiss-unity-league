@@ -1,39 +1,39 @@
 {% extends "championship/base.html" %}
 
 {% block title %}
-{{ player.name }}
+    {{ player.name }}
 {% endblock %}
 
 {% block content %}
-{% load humanize %}
-<h1>{{ player.name }}</h1>
+    {% load humanize %}
+    <h1>{{ player.name }}</h1>
 
-{% if user.is_staff %}
-    <a class="btn btn-warning" href="{% url 'admin:championship_player_change' player.id %}">Edit in admin</a>
-{% endif %}
+    {% if user.is_staff %}
+        <a class="btn btn-warning" href="{% url 'admin:championship_player_change' player.id %}">Edit in admin</a>
+    {% endif %}
 
 
-<p>{{ score }} QPs</p>
+    <p>{{ score }} QPs</p>
 
-<h2>Latest events</h2>
-<table class="table table-striped">
-    <thead>
-        <tr>
-            <th scope="col">Event</th>
-            <th scope="col">Date</th>
-            <th scope="col">QPs awarded</th>
-        </tr>
-    </thead>
-    <tbody>
-        {% for event in last_events %}
+    <h2>Latest events</h2>
+    <table class="table table-striped">
+        <thead>
             <tr>
-                <td><a href="{% url 'event_details' event.event_id %}">{{ event.name }}</a></td>
-                <td>{{ event.date }}</td>
-                <td>{{ event.qps }}</td>
+                <th scope="col">Event</th>
+                <th scope="col">Date</th>
+                <th scope="col">QPs awarded</th>
             </tr>
-        {% endfor %}
-    </tbody>
-</table>
+        </thead>
+        <tbody>
+            {% for event in last_events %}
+                <tr>
+                    <td><a href="{% url 'event_details' event.event_id %}">{{ event.name }}</a></td>
+                    <td>{{ event.date }}</td>
+                    <td>{{ event.qps }}</td>
+                </tr>
+            {% endfor %}
+        </tbody>
+    </table>
 
 
 {% endblock %}

@@ -19,6 +19,14 @@ python-format:
   script:
     - black --check --verbose .
 
+templates-format:
+  stage: test
+  image: python:3.10
+  before_script:
+    - pip install djhtml==1.5.2
+  script:
+    - djhtml --check championship/templates
+
 web-format:
   stage: test
   image: node:19

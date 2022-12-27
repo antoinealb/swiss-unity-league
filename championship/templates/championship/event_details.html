@@ -1,43 +1,43 @@
 {% extends "championship/base.html" %}
 
 {% block title %}
-{{ event.name }}
+    {{ event.name }}
 {% endblock %}
 
 {% block content %}
     <h1>{{ event.name }}</h1>
 
     <dl class="row">
-      <dt class="col-sm-3">Organizer</dt>
-      <dd class="col-sm-9">{{ event.organizer.name }}</dd>
-      <dt class="col-sm-3">Date</dt>
-      <dd class="col-sm-9">{{ event.date }}</dd>
-      <dt class="col-sm-3">Category</dt>
-      <dd class="col-sm-9">{{ event.get_category_display }}</dd>
-      <dt class="col-sm-3">Format</dt>
-      <dd class="col-sm-9">{{ event.get_format_display }}</dd>
-      {% if event.url %}
-      <dt class="col-sm-3">Website (tickets, pairings etc.)</dt>
-      <dd class="col-sm-9">
-          <a href="{{ event.url }}">{{ event.url }}</a>
-      </dd>
-      {% endif %}
+        <dt class="col-sm-3">Organizer</dt>
+        <dd class="col-sm-9">{{ event.organizer.name }}</dd>
+        <dt class="col-sm-3">Date</dt>
+        <dd class="col-sm-9">{{ event.date }}</dd>
+        <dt class="col-sm-3">Category</dt>
+        <dd class="col-sm-9">{{ event.get_category_display }}</dd>
+        <dt class="col-sm-3">Format</dt>
+        <dd class="col-sm-9">{{ event.get_format_display }}</dd>
+        {% if event.url %}
+            <dt class="col-sm-3">Website (tickets, pairings etc.)</dt>
+            <dd class="col-sm-9">
+                <a href="{{ event.url }}">{{ event.url }}</a>
+            </dd>
+        {% endif %}
 
-      {% if event.organizer.user == user %}
-      <dt class="col-sm-3">TO actions (only shown to you)</dt>
-      <dd class="col-sm-9">
-          <p><a href="{% url 'event_update' event.id %}" class="btn btn-primary">Edit event</a></p>
-          <p><a href="{% url 'event_copy' event.id %}" class="btn btn-secondary">Copy event</a></p>
-          <p><a href="{% url 'event_delete' event.id %}" class="btn btn-danger">Delete event</a></p>
-      </dd>
-      {% endif %}
+        {% if event.organizer.user == user %}
+            <dt class="col-sm-3">TO actions (only shown to you)</dt>
+            <dd class="col-sm-9">
+                <p><a href="{% url 'event_update' event.id %}" class="btn btn-primary">Edit event</a></p>
+                <p><a href="{% url 'event_copy' event.id %}" class="btn btn-secondary">Copy event</a></p>
+                <p><a href="{% url 'event_delete' event.id %}" class="btn btn-danger">Delete event</a></p>
+            </dd>
+        {% endif %}
 
-    {% if user.is_staff %}
-      <dt class="col-sm-3">Admin (shown only to staff users)</dt>
-      <dd class="col-sm-9">
-        <a class="btn btn-warning" href="{% url 'admin:championship_event_change' event.id %}">Edit in admin</a>
-      </dd>
-    {% endif %}
+        {% if user.is_staff %}
+            <dt class="col-sm-3">Admin (shown only to staff users)</dt>
+            <dd class="col-sm-9">
+                <a class="btn btn-warning" href="{% url 'admin:championship_event_change' event.id %}">Edit in admin</a>
+            </dd>
+        {% endif %}
     </dl>
 
 
@@ -48,35 +48,35 @@
         </div>
     {% endif %}
 
-{% if results %}
-<h3>Results</h3>
-<table class="table table-striped">
-    <thead>
-        <tr>
-            <th scope="col">Name</th>
-            <th scope="col">Points</th>
-            <th scope="col">QPs awarded</th>
-        </tr>
-    </thead>
-    <tbody>
-        {% for r in results %}
-            <tr>
-                <td>{{ r.player_name }}</td>
-                <td>{{ r.points }}</td>
-                <td>{{ r.qps }}</td>
-            </tr>
+    {% if results %}
+        <h3>Results</h3>
+        <table class="table table-striped">
+            <thead>
+                <tr>
+                    <th scope="col">Name</th>
+                    <th scope="col">Points</th>
+                    <th scope="col">QPs awarded</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for r in results %}
+                    <tr>
+                        <td>{{ r.player_name }}</td>
+                        <td>{{ r.points }}</td>
+                        <td>{{ r.qps }}</td>
+                    </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+
+        <ol>
+    {% endif %}
+
+
+    <ul>
+        {% for event in last_events %}
+            <li>{{ event.name }} on {{ event.date }} ({{ event.points }} points)</li>
         {% endfor %}
-    </tbody>
-</table>
-
-<ol>
-{% endif %}
-
-
-<ul>
-{% for event in last_events %}
-    <li>{{ event.name }} on {{ event.date }} ({{ event.points }} points)</li>
-{% endfor %}
-<ul>
+        <ul>
 
 {% endblock %}
