@@ -115,7 +115,10 @@ class EventPlayerResult(models.Model):
 
 
 def qps_for_result(
-    result: EventPlayerResult, category: Event.Category, event_size: int
+    result: EventPlayerResult,
+    category: Event.Category,
+    event_size: int,
+    has_top_8: bool,
 ) -> int:
     """
     Returns how many QPs a player got in a single event.
@@ -176,8 +179,7 @@ def qps_for_result(
         # TODO: Top 16 points for events which had a top 8 and more than 32
         # players.
         points += POINTS_FOR_TOP[category, result.single_elimination_result]
-
-    else:
+    elif has_top_8:
         # For large tournaments, we award points for placing, even outside of
         # top8. See the rules for explanation
         if event_size > 32 and 9 <= result.ranking <= 12:
@@ -202,12 +204,17 @@ def compute_scores():
         lambda: collections.defaultdict(lambda: 0)
     )
 
+    events_with_top8 = set(
+        e.event_id
+        for e in EventPlayerResult.objects.filter(single_elimination_result__gt=0)
+    )
+
     for result in EventPlayerResult.objects.annotate(
         category=F("event__category"),
         size=Count("event__eventplayerresult"),
     ).all():
-        # TODO: Handle top 8
-        qps = qps_for_result(result, result.category, result.size)
+        has_top8 = result.event_id in events_with_top8
+        qps = qps_for_result(result, result.category, result.size, has_top8)
         scores_by_player_category[result.player_id][result.category] += qps
 
     scores = dict()

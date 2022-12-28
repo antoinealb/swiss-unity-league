@@ -21,7 +21,7 @@ from rest_framework import viewsets
 
 from .models import *
 from .forms import *
-from django.db.models import F
+from django.db.models import F, Q
 from championship import aetherhub_parser
 from championship import eventlink_parser
 from championship.serializers import EventSerializer
@@ -84,11 +84,21 @@ class PlayerDetailsView(DetailView):
                 date=F("event__date"),
                 category=F("event__category"),
                 event_size=Count("event__eventplayerresult"),
+                top8_cnt=Count(
+                    "event__eventplayerresult",
+                    filter=Q(event__eventplayerresult__single_elimination_result__gt=0),
+                ),
             )
             .order_by("-event__date")
         )
         for e in context["last_events"]:
-            e.qps = qps_for_result(e, e.category, event_size=e.event_size)
+            has_top8 = e.top8_cnt > 0
+            e.qps = qps_for_result(
+                e,
+                e.category,
+                event_size=e.event_size,
+                has_top_8=has_top8,
+            )
         return context
 
 
@@ -105,12 +115,19 @@ class EventDetailsView(DetailView):
                 player_name=F("player__name"),
                 category=F("event__category"),
                 event_size=Count("event__eventplayerresult"),
+                top8_cnt=Count(
+                    "event__eventplayerresult",
+                    filter=Q(event__eventplayerresult__single_elimination_result__gt=0),
+                ),
             )
             .order_by("-points")
         )
 
         for r in results:
-            r.qps = qps_for_result(r, r.category, event_size=r.event_size)
+            has_top8 = r.top8_cnt > 0
+            r.qps = qps_for_result(
+                r, r.category, event_size=r.event_size, has_top_8=has_top8
+            )
         context["results"] = results
 
         return context
