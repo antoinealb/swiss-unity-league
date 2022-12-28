@@ -8,7 +8,7 @@ import random
 from django.core.exceptions import PermissionDenied
 from django.shortcuts import render, get_object_or_404, redirect
 from django.views.generic.base import TemplateView
-from django.views.generic.edit import DeleteView
+from django.views.generic.edit import DeleteView, FormView
 from django.views.generic import DetailView
 from django.http import HttpResponseRedirect, HttpResponseForbidden
 from django.urls import reverse, reverse_lazy
@@ -139,22 +139,18 @@ class InformationForOrganizerView(TemplateView):
     template_name = "championship/info_organizer.html"
 
 
-@login_required
-def create_event(request):
-    if request.method == "POST":
-        form = EventCreateForm(request.POST)
-        if form.is_valid():
-            event = form.save(commit=False)
-            event.organizer = EventOrganizer.objects.get(user=request.user)
-            event.save()
+class CreateEventView(FormView, LoginRequiredMixin):
+    template_name = "championship/create_event.html"
+    form_class = EventCreateForm
 
-            messages.success(request, "Succesfully created event!")
+    def form_valid(self, form):
+        event = form.save(commit=False)
+        event.organizer = EventOrganizer.objects.get(user=self.request.user)
+        event.save()
 
-            return HttpResponseRedirect(reverse("event_details", args=[event.id]))
-    else:
-        form = EventCreateForm()
+        messages.success(self.request, "Succesfully created event!")
 
-    return render(request, "championship/create_event.html", {"form": form})
+        return HttpResponseRedirect(reverse("event_details", args=[event.id]))
 
 
 @login_required
