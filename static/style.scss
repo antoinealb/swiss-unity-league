@@ -3,23 +3,6 @@ html {
     min-height: 100%;
 }
 
-body {
-    margin-bottom: 90px; /* Margin bottom by footer height + some extra */
-}
-
-.sulcolor {
-    background-color: #c6b098;
-}
-
-.footer {
-    position: absolute;
-    bottom: 0;
-    width: 100%;
-    line-height: 15px;
-    padding: 10px;
-    font-size: 10px;
-}
-
 .event_description {
     background: #f7f7f9;
     padding: 10px;
