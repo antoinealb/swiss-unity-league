@@ -9,7 +9,7 @@ import bleach
 
 class SubmitButtonMixin:
     helper = FormHelper()
-    helper.add_input(Submit("submit", "Submit", css_class="btn btn-primary"))
+    helper.add_input(Submit("submit", "Submit", css_class="btn btn-secondary"))
     helper.form_method = "POST"
 
 

@@ -9,7 +9,6 @@
     <form action="{% url 'event_copy' original_event.id %}" method="post">
         {% csrf_token %}
         {{ form|crispy }}
-        <button type="submit" value="Submit" class="btn btn-primary">Create Event</button>
+        <button type="submit" value="Submit" class="btn btn-secondary">Create Event</button>
     </form>
-
 {% endblock %}
