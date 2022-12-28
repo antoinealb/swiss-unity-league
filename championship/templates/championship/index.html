@@ -9,7 +9,7 @@
             </div>
             <p>The Swiss Unity League (SUL) is a collaborative league in 2023 between various Magic tournament organizers in Switzerland with an end of year 2-day invitational tournament with 3.5k+ Prizes.</p>
             <p>Any organizer can register their tournament for the league to make it award Qualification Points (QPs). Players need to collect these QPs in order to qualify for the invitational tournament.</p>
-            <a class="btn btn-primary" href="{% url 'info' %}">More info</a>
+            <a class="btn btn-secondary" href="{% url 'info' %}">More info</a>
         </div>
         <div class="col-lg-7"><img class="img-fluid rounded mb-4 mb-lg-0" src="{% static 'tournament.jpg' %}" alt="A Magic: The Gathering tournament" /></div>
     </div>
@@ -26,7 +26,7 @@
                         {% endfor %}
                     </ul>
                 </div>
-                <div class="card-footer"><a class="btn btn-primary btn-sm" href="{% url 'events' %}">View all upcoming events</a></div>
+                <div class="card-footer"><a class="btn btn-secondary btn-sm" href="{% url 'events' %}">View all upcoming events</a></div>
             </div>
         </div>
         <div class="col-md-4 mb-5">
@@ -35,7 +35,7 @@
                     <h2 class="card-title">Info for organizers</h2>
                     <p class="card-text">Want to be a part of the adventure and start awarding points to your players?</p>
                 </div>
-                <div class="card-footer"><a class="btn btn-primary btn-sm" href="{% url 'info_organizer' %}">More Info</a></div>
+                <div class="card-footer"><a class="btn btn-secondary btn-sm" href="{% url 'info_organizer' %}">More Info</a></div>
             </div>
         </div>
         <div class="col-md-4 mb-5">
@@ -48,7 +48,7 @@
                         {% endfor %}
                         </ol>
                     </div>
-                    <div class="card-footer"><a class="btn btn-primary btn-sm" href="{% url 'ranking' %}">Full ranking</a></div>
+                    <div class="card-footer"><a class="btn btn-secondary btn-sm" href="{% url 'ranking' %}">Full ranking</a></div>
                 </div>
             </div>
         </div>
@@ -57,7 +57,7 @@
         <div class="row text-center">
             <div class="col-md-6 align-items-center mx-auto">
                 <div id="carouselPartnersIndicators" class="carousel slide" data-bs-ride="carousel" data-bs-interval="3000">
-                    <div class="carousel-inner">
+                    <div class="carousel-inner" style="height: 300px;">
                         {% for logo in partner_logos %}
                             <div class="carousel-item {% if forloop.counter0 == 0 %}active{% endif %}">
                                 <img class="d-block w-100" src="{% static logo %}" alt="Partner logo ({{ logo }})">

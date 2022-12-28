@@ -1,7 +1,7 @@
 {% load static %}
 {% load sass_tags %}
 <!DOCTYPE html>
-<html lang="en">
+<html class="h-100" lang="en">
     <head>
         <meta charset="utf-8" />
         <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no" />
@@ -11,75 +11,81 @@
 
         <link rel="stylesheet" href="{% sass_src 'style.scss' %}" type="text/css">
     </head>
-    <body>
-        <nav class="navbar navbar-expand-lg sulcolor">
-            <div class="container px-5">
-                <a class="navbar-brand" href="{% url 'index' %}">
-                    <img src="{% static 'flag.png' %}" width="30" height="30" class="d-inline-block align-top" alt="">
-                    Swiss Unity League
-                </a>
+    <body class="d-flex flex-column h-100">
+        <main class="flex-shrink-0 pb-2">
+            <nav class="navbar navbar-expand-lg bg-primary">
+                <div class="container px-5">
+                    <a class="navbar-brand" href="{% url 'index' %}">
+                        <img src="{% static 'flag.png' %}" width="30" height="30" class="d-inline-block align-top" alt="">
+                        Swiss Unity League
+                    </a>
 
 
-                <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation"><span class="navbar-toggler-icon"></span></button>
-                <div class="collapse navbar-collapse" id="navbarSupportedContent">
-                    <ul class="navbar-nav ms-auto mb-2 mb-lg-0">
-                        <li class="nav-item"><a class="nav-link" href="{% url 'ranking' %}">Leaderboard</a></li>
-                        <li class="nav-item"><a class="nav-link" href="{% url 'events' %}">Upcoming events</a></li>
-                        <li class="nav-item dropdown">
-                            <a class="nav-link dropdown-toggle" href="#" id="navbarDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">Infos</a>
-                            <ul class="dropdown-menu" aria-labelledby="navbarDropdown">
-                                <li><a class="dropdown-item" href="{% url 'info' %}">Guide for Players</a></li>
-                                <li><a class="dropdown-item" href="{% url 'info_organizer' %}">Guide for Organizers</a></li>
-                            </ul>
-                        </li>
-
-                        {% if user.is_authenticated %}
+                    <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation"><span class="navbar-toggler-icon"></span></button>
+                    <div class="collapse navbar-collapse" id="navbarSupportedContent">
+                        <ul class="navbar-nav ms-auto mb-2 mb-lg-0">
+                            <li class="nav-item"><a class="nav-link" href="{% url 'ranking' %}">Leaderboard</a></li>
+                            <li class="nav-item"><a class="nav-link" href="{% url 'events' %}">Upcoming events</a></li>
                             <li class="nav-item dropdown">
-                                <a class="nav-link dropdown-toggle" href="#" id="userDropDown" role="button" data-bs-toggle="dropdown" aria-expanded="false">Welcome, {{ user.username }}</a>
-                                <ul class="dropdown-menu" aria-labelledby="userDropDown">
-                                    {% if user.eventorganizer_set.count %}
-                                        <li class="nav-item"><a class="nav-link" href="{% url 'events_create' %}">Create new event</a></li>
-                                        <li class="nav-item"><a class="nav-link" href="{% url 'results_create' %}">Upload results</a></li>
-                                    {% endif %}
-                                    {% if user.is_staff %}
-                                        <li class="nav-item"><a class="nav-link" href="{% url 'admin:index' %}">Admin</a></li>
-                                    {% endif %}
-                                    <li class="nav-item"><a class="nav-link" href="{% url 'password_change' %}">Change password</a></li>
-                                    <li class="nav-item"><a class="nav-link" href="{% url 'logout' %}">Logout</a></li>
+                                <a class="nav-link dropdown-toggle" href="#" id="navbarDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">Infos</a>
+                                <ul class="dropdown-menu" aria-labelledby="navbarDropdown">
+                                    <li><a class="dropdown-item" href="{% url 'info' %}">Guide for Players</a></li>
+                                    <li><a class="dropdown-item" href="{% url 'info_organizer' %}">Guide for Organizers</a></li>
                                 </ul>
                             </li>
-                        {% endif %}
 
-                    </ul>
-                </div>
-            </div>
-        </nav>
-        <div class="container px-4 px-lg-5">
-            {% if messages %}
-                <br>
-                {% for message in messages %}
-                    <div class="alert alert-{{ message.tags }}" role="alert">
-                        {{ message }}
+                            {% if user.is_authenticated %}
+                                <li class="nav-item dropdown">
+                                    <a class="nav-link dropdown-toggle" href="#" id="userDropDown" role="button" data-bs-toggle="dropdown" aria-expanded="false">Welcome, {{ user.username }}</a>
+                                    <ul class="dropdown-menu" aria-labelledby="userDropDown">
+                                        {% if user.eventorganizer_set.count %}
+                                            <li class="nav-item"><a class="nav-link" href="{% url 'events_create' %}">Create new event</a></li>
+                                            <li class="nav-item"><a class="nav-link" href="{% url 'results_create' %}">Upload results</a></li>
+                                        {% endif %}
+                                        {% if user.is_staff %}
+                                            <li class="nav-item"><a class="nav-link" href="{% url 'admin:index' %}">Admin</a></li>
+                                        {% endif %}
+                                        <li class="nav-item"><a class="nav-link" href="{% url 'password_change' %}">Change password</a></li>
+                                        <li class="nav-item"><a class="nav-link" href="{% url 'logout' %}">Logout</a></li>
+                                    </ul>
+                                </li>
+                            {% endif %}
+
+                        </ul>
                     </div>
-                {% endfor %}
-            {% endif %}
-            {% block content %}
-                You now need to fill in the block content :)
-            {% endblock %}
-        </div>
-
-        <footer class="footer sulcolor">
-            <div class="container text-center">
-                Copyright Leonin League 2022.
-                Not approved/endorsed by Wizards.
-                Portions of the materials used are property of Wizards of the Coast. &copy;Wizards of the Coast LLC.
-                {% if user.is_authenticated %}
-                    <br><span class="text-muted">Logged in as {{ user.username }}, <a href="{% url 'logout' %}" class="text-muted">logout</a></span>
-                {% else %}
-                    <a href="{% url 'login' %}" class="text-muted">Login</a>
+                </div>
+            </nav>
+            <div class="container px-4 px-lg-5">
+                {% if messages %}
+                    <br>
+                    {% for message in messages %}
+                        <div class="alert alert-{{ message.tags }}" role="alert">
+                            {{ message }}
+                        </div>
+                    {% endfor %}
                 {% endif %}
-
-
+                {% block content %}
+                    You now need to fill in the block content :)
+                {% endblock %}
+            </div>
+        </main>
+        <footer class="footer mt-auto bg-primary">
+            <div class="container p-3">
+                <div class="row">
+                    <div class="col-8">
+                        &copy;Leonin League 2022. Not approved or endorsed by Wizards of the Coast. Portions of the
+                        materials used are &copy;Wizards of the Coast LLC.
+                    </div>
+                    <div class="col-4">
+                        <div class="float-end">
+                            {% if user.is_authenticated %}
+                                Logged in as {{ user.username }}, <a href="{% url 'logout' %}" class="text-muted">logout</a>
+                            {% else %}
+                                <a href="{% url 'login' %}" class="btn btn-secondary">Login</a>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
             </div>
         </footer>
 
