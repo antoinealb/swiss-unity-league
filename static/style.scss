@@ -16,6 +16,7 @@ $theme-colors: (
     'secondary-light': #99bbc7,
     'success': #198754,
     'danger': #dc3545,
+    'warning': #ffc008,
 );
 
 @import 'bootstrap/scss/bootstrap'; /*Needs to be last otherwise it doesn't override the variables*/
