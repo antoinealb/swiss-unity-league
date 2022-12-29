@@ -156,7 +156,7 @@ class InformationForOrganizerView(TemplateView):
     template_name = "championship/info_organizer.html"
 
 
-class CreateEventView(FormView, LoginRequiredMixin):
+class CreateEventView(LoginRequiredMixin, FormView):
     template_name = "championship/create_event.html"
     form_class = EventCreateForm
 
@@ -218,7 +218,7 @@ def update_event(request, pk):
     )
 
 
-class EventDeleteView(DeleteView, LoginRequiredMixin):
+class EventDeleteView(LoginRequiredMixin, DeleteView):
     model = Event
     success_url = reverse_lazy("events")
 
@@ -361,7 +361,7 @@ class FutureEventView(TemplateView):
     template_name = "championship/future_events.html"
 
 
-class OrganizerProfileEdit(UpdateView, LoginRequiredMixin):
+class OrganizerProfileEdit(LoginRequiredMixin, UpdateView):
     model = EventOrganizer
     fields = ["name", "contact"]
     template_name = "championship/update_organizer.html"
