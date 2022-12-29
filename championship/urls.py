@@ -34,5 +34,8 @@ urlpatterns = [
         views.create_results_aetherhub,
         name="results_create_aetherhub",
     ),
+    path(
+        "organizer/edit", views.OrganizerProfileEdit.as_view(), name="organizer_update"
+    ),
     path("api/", include(api_router.urls)),
 ]

@@ -1,0 +1,12 @@
+{% extends "championship/base.html" %}
+
+{% load crispy_forms_tags %}
+
+{% block content %}
+    <h1>Edit organizer settings</h1>
+    <form action="{% url 'organizer_update' %}" method="post">
+        {% csrf_token %}
+        {{ form|crispy }}
+        <button type="submit" value="Submit" class="btn btn-secondary">Submit</button>
+    </form>
+{% endblock %}

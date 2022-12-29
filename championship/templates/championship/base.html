@@ -41,6 +41,7 @@
                                         {% if user.eventorganizer_set.count %}
                                             <li class="nav-item"><a class="nav-link" href="{% url 'events_create' %}">Create new event</a></li>
                                             <li class="nav-item"><a class="nav-link" href="{% url 'results_create' %}">Upload results</a></li>
+                                            <li class="nav-item"><a class="nav-link" href="{% url 'organizer_update' %}">Edit organizer profile</a></li>
                                         {% endif %}
                                         {% if user.is_staff %}
                                             <li class="nav-item"><a class="nav-link" href="{% url 'admin:index' %}">Admin</a></li>

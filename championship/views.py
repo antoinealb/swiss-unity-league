@@ -8,7 +8,7 @@ import random
 from django.core.exceptions import PermissionDenied
 from django.shortcuts import render, get_object_or_404, redirect
 from django.views.generic.base import TemplateView
-from django.views.generic.edit import DeleteView, FormView
+from django.views.generic.edit import DeleteView, FormView, UpdateView
 from django.views.generic import DetailView
 from django.http import HttpResponseRedirect, HttpResponseForbidden
 from django.urls import reverse, reverse_lazy
@@ -359,3 +359,13 @@ class FutureEventViewSet(viewsets.ReadOnlyModelViewSet):
 
 class FutureEventView(TemplateView):
     template_name = "championship/future_events.html"
+
+
+class OrganizerProfileEdit(UpdateView, LoginRequiredMixin):
+    model = EventOrganizer
+    fields = ["name", "contact"]
+    template_name = "championship/update_organizer.html"
+    success_url = reverse_lazy("organizer_update")
+
+    def get_object(self):
+        return EventOrganizer.objects.get(user=self.request.user)
