@@ -18,6 +18,9 @@
                     <a class="navbar-brand" href="{% url 'index' %}">
                         <img src="{% static 'flag.png' %}" width="30" height="30" class="d-inline-block align-top" alt="">
                         Swiss Unity League
+                        {% if debug %}
+                            (DEBUG MODE)
+                        {% endif %}
                     </a>
 
 
