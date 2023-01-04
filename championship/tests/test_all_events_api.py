@@ -18,7 +18,7 @@ class EventApiTestCase(TestCase):
         want = [
             {
                 "name": a.name,
-                "date": tomorrow.strftime("%Y-%m-%d"),
+                "date": tomorrow.strftime("%d.%m.%Y"),
                 "organizer": eo.name,
                 "format": "Legacy",
                 "category": "SUL Premier",

@@ -8,6 +8,7 @@ class EventSerializer(serializers.ModelSerializer):
         model = Event
         fields = ["name", "date", "organizer", "format", "category", "details_url"]
 
+    date = serializers.DateField(format="%d.%m.%Y")
     organizer = serializers.CharField(source="organizer.name")
     format = serializers.CharField(source="get_format_display")
     category = serializers.CharField(source="get_category_display")
