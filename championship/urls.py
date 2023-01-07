@@ -3,7 +3,9 @@ from rest_framework import routers
 from . import views
 
 api_router = routers.DefaultRouter()
-api_router.register(r"future-events", views.FutureEventViewSet)
+api_router.register(
+    r"future-events", views.FutureEventViewSet, basename="future-events"
+)
 
 urlpatterns = [
     path("", views.IndexView.as_view(), name="index"),

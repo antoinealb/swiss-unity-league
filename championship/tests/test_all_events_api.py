@@ -14,7 +14,7 @@ class EventApiTestCase(TestCase):
             format=Event.Format.LEGACY,
             category=Event.Category.PREMIER,
         )
-        resp = Client().get(reverse("event-list"))
+        resp = Client().get(reverse("future-events-list"))
         want = [
             {
                 "name": a.name,

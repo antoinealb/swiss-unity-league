@@ -353,8 +353,15 @@ class FutureEventViewSet(viewsets.ReadOnlyModelViewSet):
     API endpoint that allows events to be viewed or edited.
     """
 
-    queryset = Event.objects.filter(date__gte=datetime.date.today()).order_by("date")
     serializer_class = EventSerializer
+
+    def get_queryset(self):
+        """Returns all Events in the future."""
+
+        # This needs to be a function (get_queryset) instead of an attribute as
+        # otherwise the today means "when the app was started.
+        qs = Event.objects.filter(date__gte=datetime.date.today())
+        return qs.order_by("date")
 
 
 class FutureEventView(TemplateView):
