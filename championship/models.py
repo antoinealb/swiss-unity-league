@@ -190,15 +190,14 @@ def qps_for_result(
     return points
 
 
-SCORES_CACHE_KEY = "championship.scores"
 REGULAR_MAX_SCORE = 500
 
 
 def compute_scores():
-    res = cache.get(SCORES_CACHE_KEY)
-
-    if res:
-        return res
+    if settings.SCORES_CACHE_ENABLED:
+        res = cache.get(settings.SCORES_CACHE_KEY)
+        if res:
+            return res
 
     scores_by_player_category = collections.defaultdict(
         lambda: collections.defaultdict(lambda: 0)
@@ -228,7 +227,8 @@ def compute_scores():
             ] = REGULAR_MAX_SCORE
         scores[player] = sum(scores_by_player_category[player].values())
 
-    cache.set(SCORES_CACHE_KEY, scores, timeout=None)
+    if settings.SCORES_CACHE_ENABLED:
+        cache.set(settings.SCORES_CACHE_KEY, scores, timeout=None)
 
     return scores
 
@@ -237,4 +237,4 @@ def compute_scores():
 @receiver(post_save, sender=EventPlayerResult)
 @receiver(post_delete, sender=EventPlayerResult)
 def invalidate_cache_on_result_changes(*args, **kwargs):
-    cache.delete(SCORES_CACHE_KEY)
+    cache.delete(settings.SCORES_CACHE_KEY)
