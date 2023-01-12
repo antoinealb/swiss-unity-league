@@ -42,7 +42,10 @@ class Event(models.Model):
         help_text="The date of the event. For multi-days event, pick the first day."
     )
     url = models.URLField(
-        "Website", help_text="A website for information, ticket sale, etc."
+        "Website",
+        help_text="A website for information, ticket sale, etc.",
+        blank=True,
+        null=True,
     )
     description = BleachField(
         help_text="Supports the following HTML tags: {}".format(
