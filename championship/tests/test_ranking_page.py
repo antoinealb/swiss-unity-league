@@ -22,3 +22,9 @@ class RankingTestCase(TestCase):
         player = PlayerFactory()
         response = self.client.get("/ranking")
         self.assertIn(player.name, response.content.decode())
+
+    def test_ranking_for_player_hidden(self):
+        """Checks that we hide hidden players from the leaderboard."""
+        player = PlayerFactory(hidden_from_leaderboard=True)
+        response = self.client.get("/ranking")
+        self.assertNotIn(player.name, response.content.decode())

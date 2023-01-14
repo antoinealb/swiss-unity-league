@@ -78,6 +78,11 @@ class Event(models.Model):
         return f"{self.name} - {self.date} ({self.get_category_display()})"
 
 
+class LeaderBoardPlayerManager(models.Manager):
+    def get_queryset(self):
+        return super().get_queryset().filter(hidden_from_leaderboard=False)
+
+
 class Player(models.Model):
     """
     Represents a player in the championship, among many tournaments.
@@ -88,6 +93,14 @@ class Player(models.Model):
     # for why this was not a good idea.
     name = models.CharField(max_length=200)
     events = models.ManyToManyField(Event, through="EventPlayerResult")
+
+    hidden_from_leaderboard = models.BooleanField(
+        help_text="If true, this should be hidden from the global leaderboard. Useful for virtual players, such as Eventlink's REDACTED.",
+        default=False,
+    )
+
+    objects = models.Manager()
+    leaderboard_objects = LeaderBoardPlayerManager()
 
     def __str__(self):
         return self.name

@@ -35,6 +35,14 @@ class HomepageTestCase(TestCase):
         response = self.client.get("/")
         self.assertIn(player.name, response.content.decode())
 
+    def test_hides_hidden_player_name(self):
+        """
+        Checks that the homepage contains some player information.
+        """
+        player = PlayerFactory(hidden_from_leaderboard=True)
+        response = self.client.get("/")
+        self.assertNotIn(player.name, response.content.decode())
+
     def test_static_files(self):
         """
         Safety check to make sure we correctly have static files.

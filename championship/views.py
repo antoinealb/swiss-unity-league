@@ -41,7 +41,7 @@ class IndexView(TemplateView):
         return context
 
     def _players(self):
-        players = list(Player.objects.all())
+        players = list(Player.leaderboard_objects.all())
         scores_by_player = compute_scores()
         for p in players:
             p.score = scores_by_player.get(p.id, 0)
@@ -138,7 +138,7 @@ class CompleteRankingView(TemplateView):
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        players = list(Player.objects.all())
+        players = list(Player.leaderboard_objects.all())
         scores_by_player = compute_scores()
         for p in players:
             p.score = scores_by_player.get(p.id, 0)
