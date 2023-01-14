@@ -36,34 +36,34 @@
             </div>
 
         </form>
-        <ul>
-            <div class="table-responsive">
-                <table class="table table-striped">
-                    <thead>
-                        <tr>
-                            <th scope="col">Date</th>
-                            <th scope="col">Event</th>
-                            <th scope="col">Category</th>
-                            <th scope="col">Format</th>
-                            <th scope="col">Organizer</th>
+
+        <div class="table-responsive">
+            <table class="table table-striped">
+                <thead>
+                    <tr>
+                        <th scope="col">Date</th>
+                        <th scope="col">Event</th>
+                        <th scope="col">Category</th>
+                        <th scope="col">Format</th>
+                        <th scope="col">Organizer</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <template x-for="event in events">
+                        <tr x-show="showCategories[event.category] && showFormats[event.format]">
+                            <td x-text="event.date"></td>
+                            <td>
+                                <a x-text="event.name" :href="event.details_url"></a>
+                            </td>
+                            <td x-text="event.category"></td>
+                            <td x-text="event.format"></td>
+                            <td x-text="event.organizer"></td>
                         </tr>
-                    </thead>
-                    <tbody>
-                        <template x-for="event in events">
-                            <tr x-show="showCategories[event.category] && showFormats[event.format]">
-                                <td x-text="event.date"></td>
-                                <td>
-                                    <a x-text="event.name" :href="event.details_url"></a>
-                                </td>
-                                <td x-text="event.category"></td>
-                                <td x-text="event.format"></td>
-                                <td x-text="event.organizer"></td>
-                            </tr>
-                        </template>
-                    </tbody>
-                </table>
-            </div>
-        </ul>
+                    </template>
+                </tbody>
+            </table>
+        </div>
+
     </div>
 
 {% endblock %}

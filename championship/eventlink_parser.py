@@ -13,9 +13,8 @@ def _standings(soup):
         return elem.text.rstrip().strip()
 
     for row in standings.find("tbody").find_all("tr"):
-        row = list(row.find_all("td"))
-        name = clean(row[1])
-        points = int(clean(row[2]))
+        name = clean(row.find(class_="name").string)
+        points = int(clean(row.find(class_="points").string))
         yield (name, points)
 
 
