@@ -55,7 +55,7 @@ class EventFactory(DjangoModelFactory):
     )
     url = factory.Faker("uri")
 
-    category = factory.Faker(
+    format = factory.Faker(
         "random_element",
         elements=Event.Format.values,
     )
