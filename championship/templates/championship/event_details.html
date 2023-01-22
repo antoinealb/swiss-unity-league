@@ -1,4 +1,5 @@
 {% extends "championship/base.html" %}
+{% load humanize %}
 
 {% block title %}
     {{ event.name }}
@@ -53,6 +54,7 @@
         <table class="table table-striped">
             <thead>
                 <tr>
+                    <th scope="col">Rank</th>
                     <th scope="col">Name</th>
                     <th scope="col">Points</th>
                     <th scope="col">QPs awarded</th>
@@ -61,6 +63,7 @@
             <tbody>
                 {% for r in results %}
                     <tr>
+                        <td>{{ forloop.counter|ordinal }}</td>
                         <td>{{ r.player_name }}</td>
                         <td>{{ r.points }}</td>
                         <td>{{ r.qps }}</td>
