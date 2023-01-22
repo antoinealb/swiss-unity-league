@@ -238,3 +238,37 @@ class TestSafetyChecks(TestCase):
         with self.assertRaises(ValidationError):
             e = EventFactory()
             e.full_clean()
+
+
+class TestSortEventPlayerResults(TestCase):
+    def test_can_order_basic_player_results(self):
+        """Checks that we get players ordered correctly."""
+        e = EventFactory()
+        for i in range(10):
+            EventPlayerResult.objects.create(
+                player=PlayerFactory(),
+                ranking=10 - i,
+                points=5,
+                event=e,
+            )
+
+        sorted_rankings = [s.ranking for s in sorted(EventPlayerResult.objects.all())]
+        self.assertEqual(list(range(1, 11)), sorted_rankings)
+
+    def test_can_order_results_based_on_single_elimination_results(self):
+        e = EventFactory()
+        for i in range(10):
+            EventPlayerResult.objects.create(
+                player=PlayerFactory(),
+                ranking=i + 1,
+                points=5,
+                event=e,
+            )
+
+        e = EventPlayerResult.objects.filter(ranking=3)[0]
+        e.single_elimination_result = EventPlayerResult.SingleEliminationResult.WINNER
+        e.save()
+
+        sorted_rankings = [s.ranking for s in sorted(EventPlayerResult.objects.all())]
+        self.assertEqual(3, sorted_rankings[0])
+        self.assertEqual(1, sorted_rankings[1])

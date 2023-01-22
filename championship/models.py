@@ -129,6 +129,18 @@ class EventPlayerResult(models.Model):
     )
     ranking = models.PositiveIntegerField(help_text="Standings after the Swiss rounds")
 
+    def __lt__(self, other):
+        """Comparison function for sorting.
+
+        First checks single elimination results, then swiss rounds ranking.
+        """
+        if (other.single_elimination_result or 32) > (
+            self.single_elimination_result or 32
+        ):
+            return True
+
+        return self.ranking < other.ranking
+
 
 def qps_for_result(
     result: EventPlayerResult,

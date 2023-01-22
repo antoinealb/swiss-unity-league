@@ -128,7 +128,7 @@ class EventDetailsView(DetailView):
             r.qps = qps_for_result(
                 r, r.category, event_size=r.event_size, has_top_8=has_top8
             )
-        context["results"] = results
+        context["results"] = sorted(results)
 
         return context
 
