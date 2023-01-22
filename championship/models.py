@@ -6,6 +6,7 @@ from django_bleach.models import BleachField
 from django.core.cache import cache
 from django.db.models.signals import post_save, post_delete
 from django.dispatch import receiver
+from django.urls import reverse
 import bleach
 import collections
 
@@ -76,6 +77,9 @@ class Event(models.Model):
 
     def __str__(self):
         return f"{self.name} - {self.date} ({self.get_category_display()})"
+
+    def get_absolute_url(self):
+        return reverse("event_details", args=[self.id])
 
 
 class LeaderBoardPlayerManager(models.Manager):
