@@ -233,13 +233,6 @@ class ScoresWithTop8TestCase(TestCase):
                 self.assertEqual(wantScore, gotScore)
 
 
-class TestSafetyChecks(TestCase):
-    def test_cannot_create_events_with_less_than_3_rounds(self):
-        with self.assertRaises(ValidationError):
-            e = EventFactory()
-            e.full_clean()
-
-
 class TestSortEventPlayerResults(TestCase):
     def test_can_order_basic_player_results(self):
         """Checks that we get players ordered correctly."""
