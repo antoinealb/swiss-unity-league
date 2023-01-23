@@ -10,39 +10,39 @@
 {% block bodyclass %}{{ block.super }} app-{{ opts.app_label }} model-{{ opts.model_name }} delete-confirmation{% endblock %}
 
 {% block content %}
- {% block delete_confirm %}
-     <p>Are you sure you want to merge the following players under {{ original_player.name }}?</p>
-     <h2>Players</h2>
-     <ul>
-     {% for p in players %}
-         <li>{{ p.name }}
-             {% if p == original_player %}
-                 (Will be the only one remaining)
-             {% endif %}
-         </li>
-     {% endfor %}
-     </ul>
+    {% block delete_confirm %}
+        <p>Are you sure you want to merge the following players under {{ original_player.name }}?</p>
+        <h2>Players</h2>
+        <ul>
+            {% for p in players %}
+                <li>{{ p.name }}
+                    {% if p == original_player %}
+                        (Will be the only one remaining)
+                    {% endif %}
+                </li>
+            {% endfor %}
+        </ul>
 
-     <h2>Results</h2>
-     <ul>
-     {% for result in results %}
-         <li>{{ result.player }} - {{ result.event }}</li>
-     {% endfor %}
-     </ul>
+        <h2>Results</h2>
+        <ul>
+            {% for result in results %}
+                <li>{{ result.player }} - {{ result.event }}</li>
+            {% endfor %}
+        </ul>
 
-    <form method="post" action="">{% csrf_token %}
-    <div>
-    <input type="hidden" name="post" value="yes">
-    <input type="hidden" name="action" value="{{ action }}"/>
+        <form method="post" action="">{% csrf_token %}
+            <div>
+                <input type="hidden" name="post" value="yes">
+                <input type="hidden" name="action" value="{{ action }}"/>
 
-    {% for player in players %}
-        <input type="hidden" name="_selected_action" value="{{ player.id|unlocalize }}" />
-    {% endfor %}
+                {% for player in players %}
+                    <input type="hidden" name="_selected_action" value="{{ player.id|unlocalize }}" />
+                {% endfor %}
 
 
-    <input type="submit" value="{% translate 'Yes, I’m sure' %}">
-    <a href="#" class="button cancel-link">{% translate "No, take me back" %}</a>
-    </div>
-    </form>
-  {% endblock %}
+                <input type="submit" value="{% translate 'Yes, I’m sure' %}">
+                <a href="#" class="button cancel-link">{% translate "No, take me back" %}</a>
+            </div>
+        </form>
+    {% endblock %}
 {% endblock content %}
