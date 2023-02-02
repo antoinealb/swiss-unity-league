@@ -11,26 +11,24 @@
 
 {% block content %}
     {% block delete_confirm %}
-        <p>Are you sure you want to merge the following players under {{ original_player.name }}?</p>
-        <h2>Players</h2>
-        <ul>
-            {% for p in players %}
-                <li>{{ p.name }}
-                    {% if p == original_player %}
-                        (Will be the only one remaining)
-                    {% endif %}
-                </li>
-            {% endfor %}
-        </ul>
-
-        <h2>Results</h2>
-        <ul>
-            {% for result in results %}
-                <li>{{ result.player }} - {{ result.event }}</li>
-            {% endfor %}
-        </ul>
-
+        <p>Are you sure you want to merge the following players?</p>
         <form method="post" action="">{% csrf_token %}
+            <h2>Players</h2>
+            Player to keep: {{ form.player_to_keep }}
+            <ul>
+                {% for p in players %}
+                    <li>{{ p.name }}</li>
+                {% endfor %}
+            </ul>
+
+            <h2>Results</h2>
+            <ul>
+                {% for result in results %}
+                    <li>{{ result.player }} - {{ result.event }}</li>
+                {% endfor %}
+            </ul>
+
+
             <div>
                 <input type="hidden" name="post" value="yes">
                 <input type="hidden" name="action" value="{{ action }}"/>

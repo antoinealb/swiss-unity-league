@@ -1,6 +1,7 @@
 from django.contrib import admin
 from django.shortcuts import render, redirect
 from django.urls import reverse
+from django import forms
 from .models import *
 
 
@@ -26,6 +27,19 @@ class EventAdmin(admin.ModelAdmin):
 admin.site.register(Event, EventAdmin)
 
 
+class PlayerMergeForm(forms.Form):
+    player_to_keep = forms.ModelChoiceField(
+        queryset=Player.objects.all(),
+        required=True,
+        help_text="The player to keep, who will get all the results.",
+    )
+
+    def __init__(self, players, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.fields["player_to_keep"].queryset = players
+        self.fields["player_to_keep"].initial = players[0]
+
+
 class PlayerAdmin(admin.ModelAdmin):
     inlines = [ResultInline]
     search_fields = ["name"]
@@ -33,15 +47,21 @@ class PlayerAdmin(admin.ModelAdmin):
     actions = ["merge_players"]
 
     @admin.action(
-        description="Merge selected players, keeping the oldest one.",
+        description="Merge selected players",
         permissions=["delete"],
     )
     def merge_players(self, request, queryset):
-        players = list(queryset.order_by("id"))
-        original_player = players[0]
+        queryset = queryset.order_by("id")
+        players = queryset.order_by("id")
 
-        if "post" in request.POST:
-            for player in players[1:]:
+        form = PlayerMergeForm(queryset, request.POST)
+
+        if form.is_valid():
+            original_player = form.cleaned_data["player_to_keep"]
+            for player in players:
+                if player == original_player:
+                    continue
+
                 for e in EventPlayerResult.objects.filter(player=player):
                     e.player = original_player
                     e.save()
@@ -52,21 +72,18 @@ class PlayerAdmin(admin.ModelAdmin):
                 object_id=original_player.id,
             )
 
-        else:
-            results = sum(
-                (list(EventPlayerResult.objects.filter(player=p)) for p in players), []
-            )
-
-            return render(
-                request,
-                "admin/merge_confirmation.html",
-                context={
-                    "players": players,
-                    "results": results,
-                    "original_player": original_player,
-                    "action": request.POST["action"],
-                },
-            )
+        results = EventPlayerResult.objects.filter(player__in=players)
+        form = PlayerMergeForm(queryset)
+        return render(
+            request,
+            "admin/merge_confirmation.html",
+            context={
+                "players": players,
+                "results": results,
+                "form": form,
+                "action": request.POST["action"],
+            },
+        )
 
 
 admin.site.register(Player, PlayerAdmin)
