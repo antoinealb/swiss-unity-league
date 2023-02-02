@@ -229,7 +229,6 @@ class EventDeleteView(LoginRequiredMixin, DeleteView):
 
 @login_required
 def create_results_eventlink(request):
-
     form = EventlinkImporterForm(request.user)
 
     if request.method == "POST":

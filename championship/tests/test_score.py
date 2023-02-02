@@ -31,7 +31,7 @@ class TestComputeScore(TestCase):
             )
 
         scores = compute_scores()
-        for (i, want) in enumerate(want_score):
+        for i, want in enumerate(want_score):
             got = scores[i + 1]
             self.assertEqual(want, got, f"Invalid score for player {i+1}")
 

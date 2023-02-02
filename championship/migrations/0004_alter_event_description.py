@@ -5,7 +5,6 @@ import django_bleach.models
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
         ("championship", "0003_event_description"),
     ]

@@ -5,7 +5,6 @@ import django_bleach.models
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
         ("championship", "0002_eventplayerresult_single_elimination_result_and_more"),
     ]
