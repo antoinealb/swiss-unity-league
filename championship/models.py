@@ -62,6 +62,7 @@ class Event(models.Model):
         MODERN = "MODERN", "Modern"
         PIONEER = "PIONEER", "Pioneer"
         STANDARD = "STANDARD", "Standard"
+        DUEL_COMMANDER = "DC", "Duel Commander"
 
     format = models.CharField(
         max_length=10,
