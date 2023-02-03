@@ -27,3 +27,10 @@ class EventApiTestCase(TestCase):
             }
         ]
         self.assertEqual(want, resp.json())
+
+
+class FormatsApiTestCase(TestCase):
+    def test_get_all_formats(self):
+        resp = Client().get(reverse("formats-list"))
+        want = sorted(Event.Format.labels)
+        self.assertEqual(want, resp.json())

@@ -40,4 +40,5 @@ urlpatterns = [
         "organizer/edit", views.OrganizerProfileEdit.as_view(), name="organizer_update"
     ),
     path("api/", include(api_router.urls)),
+    path("api/formats/", views.ListFormats.as_view(), name="formats-list"),
 ]

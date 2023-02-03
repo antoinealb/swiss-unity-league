@@ -1,14 +1,7 @@
 function events() {
     return {
         events: [],
-        showFormats: {
-            // TODO: Could we fetch this dynamically as well ?
-            Standard: true,
-            Modern: true,
-            Legacy: true,
-            Pioneer: true,
-            Limited: true,
-        },
+        showFormats: {},
         showCategories: {
             // TODO: Could we fetch this dynamically as well ?
             'SUL Regular': true,
@@ -51,7 +44,19 @@ function events() {
                 .catch(function (error) {
                     // handle error
                     console.log(error)
+                });
+            axios
+                .get('/api/formats/')
+                .then(function (response) {
+                    for (let format of response.data) {
+                        self.showFormats[format] = true;
+                    }
                 })
+                .catch(function (error) {
+                    // handle error
+                    console.log(error)
+                })
+
         },
     }
 }

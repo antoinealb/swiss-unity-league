@@ -17,7 +17,8 @@ from django.contrib.auth.decorators import login_required
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.conf import settings
 
-from rest_framework import viewsets
+from rest_framework import viewsets, views
+from rest_framework.response import Response
 
 from .models import *
 from .forms import *
@@ -361,6 +362,13 @@ class FutureEventViewSet(viewsets.ReadOnlyModelViewSet):
         # otherwise the today means "when the app was started.
         qs = Event.objects.filter(date__gte=datetime.date.today())
         return qs.order_by("date")
+
+
+class ListFormats(views.APIView):
+    """View to list all Magic formats we play for the league."""
+
+    def get(self, request, format=None):
+        return Response(sorted(Event.Format.labels))
 
 
 class FutureEventView(TemplateView):
