@@ -44,19 +44,18 @@ function events() {
                 .catch(function (error) {
                     // handle error
                     console.log(error)
-                });
+                })
             axios
                 .get('/api/formats/')
                 .then(function (response) {
                     for (let format of response.data) {
-                        self.showFormats[format] = true;
+                        self.showFormats[format] = true
                     }
                 })
                 .catch(function (error) {
                     // handle error
                     console.log(error)
                 })
-
         },
     }
 }
