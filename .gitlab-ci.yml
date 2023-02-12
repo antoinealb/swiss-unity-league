@@ -60,4 +60,4 @@ restart-service:
   script:
     - sudo /bin/systemctl restart league.service
     - sleep 60
-    - sudo /usr/bin/docker exec -it league.service ./manage.py migrate --no-input
+    - sudo /usr/bin/docker exec league.service ./manage.py migrate --no-input
