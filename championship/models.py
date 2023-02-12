@@ -75,6 +75,12 @@ class Event(models.Model):
         PREMIER = "PREMIER", "SUL Premier"
 
     category = models.CharField(max_length=10, choices=Category.choices)
+    decklists_url = models.URLField(
+        "Decklists URL",
+        help_text="A link to a page containing decklists for the event, for example mtgtop8",
+        blank=True,
+        null=True,
+    )
 
     def __str__(self):
         return f"{self.name} - {self.date} ({self.get_category_display()})"

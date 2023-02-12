@@ -105,6 +105,7 @@ class EventCreationTestCase(TestCase):
         self.client.post(reverse("events_create"), data=data)
 
         data["name"] = "Updated Event"
+        data["decklists_url"] = "http://mtgtop8.com"
 
         event = Event.objects.all()[0]
 
@@ -113,6 +114,7 @@ class EventCreationTestCase(TestCase):
         event = Event.objects.get(pk=event.id)
 
         self.assertEqual(event.name, data["name"])
+        self.assertEqual(event.decklists_url, data["decklists_url"])
         self.assertEqual(event.organizer, to)
 
     def test_update_event_from_someone_else(self):
