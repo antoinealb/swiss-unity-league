@@ -2,6 +2,7 @@ from django.contrib import admin
 from django.shortcuts import render, redirect
 from django.urls import reverse
 from django import forms
+from django.conf import settings
 from .models import *
 
 
@@ -90,4 +91,8 @@ admin.site.register(Player, PlayerAdmin)
 admin.site.register(EventOrganizer)
 
 admin.site.site_title = "Unity League"
-admin.site.site_header = "Unity League Admin"
+
+if settings.DEBUG:
+    admin.site.site_header = "Unity League Admin (DEBUG)"
+else:
+    admin.site.site_header = "Unity League Admin"
