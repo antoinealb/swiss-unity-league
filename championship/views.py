@@ -110,18 +110,14 @@ class EventDetailsView(DetailView):
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        results = (
-            EventPlayerResult.objects.filter(event=context["event"])
-            .annotate(
-                player_name=F("player__name"),
-                category=F("event__category"),
-                event_size=Count("event__eventplayerresult"),
-                top8_cnt=Count(
-                    "event__eventplayerresult",
-                    filter=Q(event__eventplayerresult__single_elimination_result__gt=0),
-                ),
-            )
-            .order_by("-points")
+        results = EventPlayerResult.objects.filter(event=context["event"]).annotate(
+            player_name=F("player__name"),
+            category=F("event__category"),
+            event_size=Count("event__eventplayerresult"),
+            top8_cnt=Count(
+                "event__eventplayerresult",
+                filter=Q(event__eventplayerresult__single_elimination_result__gt=0),
+            ),
         )
 
         for r in results:
@@ -129,7 +125,16 @@ class EventDetailsView(DetailView):
             r.qps = qps_for_result(
                 r, r.category, event_size=r.event_size, has_top_8=has_top8
             )
-        context["results"] = sorted(results)
+
+        results = sorted(results)
+
+        top_results = []
+
+        while results and results[0].single_elimination_result:
+            top_results.append(results.pop(0))
+
+        context["results"] = results
+        context["top_results"] = top_results
 
         return context
 

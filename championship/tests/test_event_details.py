@@ -25,6 +25,41 @@ class EventDetailTestCase(TestCase):
         self.assertEqual(resp.context_data["results"][0].points, 10)
         self.assertEqual(resp.context_data["results"][0].qps, (10 + 3) * 6)
 
+    def test_get_result_with_top_8(self):
+        self.client = Client()
+
+        event = EventFactory(category=Event.Category.PREMIER)
+        player = PlayerFactory()
+
+        # Create 10 results with a top8
+        results = (
+            [
+                EventPlayerResult.SingleEliminationResult.WINNER,
+                EventPlayerResult.SingleEliminationResult.FINALIST,
+            ]
+            + [EventPlayerResult.SingleEliminationResult.SEMI_FINALIST] * 2
+            + [EventPlayerResult.SingleEliminationResult.QUARTER_FINALIST] * 4
+            + [None] * 10  # outside of top8
+        )
+
+        for i, r in enumerate(results):
+            EventPlayerResult.objects.create(
+                points=10,
+                player=PlayerFactory(),
+                event=event,
+                ranking=i + 1,
+                single_elimination_result=r,
+            )
+
+        resp = self.client.get(reverse("event_details", args=[event.id]))
+        results = resp.context_data["results"]
+        top8_results = resp.context_data["top_results"]
+        self.assertEqual(results[0].ranking, 9)
+        self.assertEqual(
+            top8_results[0].single_elimination_result,
+            EventPlayerResult.SingleEliminationResult.WINNER,
+        )
+
     def test_escapes_content_description(self):
         """
         Checks that we correctly strip tags unknown tags.

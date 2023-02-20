@@ -68,9 +68,17 @@
                 </tr>
             </thead>
             <tbody>
+                {% for r in top_results %}
+                    <tr>
+                        <td>{{ r.get_single_elimination_result_display }}</td>
+                        <td>{{ r.player_name }}</td>
+                        <td>{{ r.points }}</td>
+                        <td>{{ r.qps }}</td>
+                    </tr>
+                {% endfor %}
                 {% for r in results %}
                     <tr>
-                        <td>{{ forloop.counter|ordinal }}</td>
+                        <td>{{ r.ranking|ordinal }}</td>
                         <td>{{ r.player_name }}</td>
                         <td>{{ r.points }}</td>
                         <td>{{ r.qps }}</td>
