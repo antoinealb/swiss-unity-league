@@ -20,11 +20,12 @@
             <div class="card h-100">
                 <div class="card-body">
                     <h2 class="card-title">Upcoming major events</h2>
-                    <ul>
+                    <dl>
                         {% for event in future_events|slice:":5" %}
-                            <li>{{ event.date }}: {{ event.name }} by {{ event.organizer}} </li>
+                            <dt>{{ event.date }}</dt>
+                            <dd>{{ event.name }} by {{ event.organizer}} </dd>
                         {% endfor %}
-                    </ul>
+                    </dl>
                 </div>
                 <div class="card-footer"><a class="btn btn-secondary btn-sm" href="{% url 'events' %}">View all upcoming events</a></div>
             </div>
