@@ -17,3 +17,4 @@ djangorestframework==3.14.0
 django-sass-processor==1.2.2
 libsass==0.22.0
 djhtml==1.5.2
+prettytable~=3.6.0
