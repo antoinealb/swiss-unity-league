@@ -14,7 +14,7 @@ class Command(BaseCommand):
     def handle(self, *args, **kwargs):
         players_by_format = []
 
-        table = PrettyTable(field_names=["Format", "Player Count"], align="l")
+        table = PrettyTable(field_names=["Format", "Registrations Count"], align="l")
         for entry in (
             Event.objects.all()
             .values("format")
