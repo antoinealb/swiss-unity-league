@@ -18,11 +18,12 @@ class EventAdmin(admin.ModelAdmin):
         "name",
         "date",
         "category",
+        "format",
         "organizer",
     )
     inlines = [ResultInline]
     search_fields = ["name", "organizer__name", "url"]
-    list_filter = ["organizer", "category"]
+    list_filter = ["organizer", "category", "format"]
 
 
 admin.site.register(Event, EventAdmin)
