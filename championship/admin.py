@@ -3,6 +3,7 @@ from django.shortcuts import render, redirect
 from django.urls import reverse
 from django import forms
 from django.conf import settings
+from django.contrib import messages
 from .models import *
 
 
@@ -69,9 +70,11 @@ class PlayerAdmin(admin.ModelAdmin):
                     e.save()
                 player.delete()
 
+            messages.add_message(
+                request, messages.INFO, f"Succesfully saved {original_player.name}"
+            )
             return redirect(
-                "admin:championship_player_change",
-                object_id=original_player.id,
+                "admin:championship_player_changelist",
             )
 
         results = EventPlayerResult.objects.filter(player__in=players)
