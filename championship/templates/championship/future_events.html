@@ -72,6 +72,16 @@
                     </template>
                 </div>
             </div>
+
+            <div class="dropdown btn-group">
+                <button class="btn btn-secondary dropdown-toggle" type="button"  data-bs-toggle="dropdown" x-text="currentEventType"></button>
+                <div class="dropdown-menu">
+                    <template x-for="type in Object.keys(eventTypes)">
+                        <div class="dropdown-item" x-text="type" x-on:click="loadEvents(type); currentEventType = type"></div>
+                    </template>
+                </div>
+            </div>
+
         </form>
 
         <div class="table-responsive">

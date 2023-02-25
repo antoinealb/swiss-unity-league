@@ -369,6 +369,22 @@ class FutureEventViewSet(viewsets.ReadOnlyModelViewSet):
         return qs.order_by("date")
 
 
+class PastEventViewSet(viewsets.ReadOnlyModelViewSet):
+    """
+    API endpoint that allows events to be viewed or edited.
+    """
+
+    serializer_class = EventSerializer
+
+    def get_queryset(self):
+        """Returns all Events in the past."""
+
+        # This needs to be a function (get_queryset) instead of an attribute as
+        # otherwise the today means "when the app was started.
+        qs = Event.objects.filter(date__lt=datetime.date.today())
+        return qs.order_by("-date")
+
+
 class ListFormats(views.APIView):
     """View to list all Magic formats we play for the league."""
 

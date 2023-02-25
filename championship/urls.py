@@ -6,6 +6,7 @@ api_router = routers.DefaultRouter()
 api_router.register(
     r"future-events", views.FutureEventViewSet, basename="future-events"
 )
+api_router.register(r"past-events", views.PastEventViewSet, basename="past-events")
 
 urlpatterns = [
     path("", views.IndexView.as_view(), name="index"),
