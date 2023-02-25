@@ -8,30 +8,18 @@ function events() {
             'SUL Regional': true,
             'SUL Premier': true,
         },
-        allFormatsStatus() {
+        showOrganizers: {},
+        allChecked(obj){
             let res = true
-            for (let val of Object.values(this.showFormats)) {
+            for (let val of Object.values(obj)) {
                 res = res & val
             }
             return res
         },
-        allCategoriesStatus() {
-            let res = true
-            for (let val of Object.values(this.showCategories)) {
-                res = res & val
-            }
-            return res
-        },
-        toggleAllFormats() {
-            let newVal = !this.allFormatsStatus()
-            for (let key of Object.keys(this.showFormats)) {
-                this.showFormats[key] = newVal
-            }
-        },
-        toggleAllCategories() {
-            let newVal = !this.allCategoriesStatus()
-            for (let key of Object.keys(this.showCategories)) {
-                this.showCategories[key] = newVal
+        toggleAll(obj){
+            let newVal = !this.allChecked(obj)
+            for (let key of Object.keys(obj)) {
+                obj[key] = newVal
             }
         },
         loadEvents() {
@@ -40,17 +28,14 @@ function events() {
                 .get('/api/future-events/')
                 .then(function (response) {
                     self.events = response.data
-                })
-                .catch(function (error) {
-                    // handle error
-                    console.log(error)
-                })
-            axios
-                .get('/api/formats/')
-                .then(function (response) {
-                    for (let format of response.data) {
+                    let uniqueFormats = [... new Set(response.data.map(x => x.format))]
+                    for (let format of uniqueFormats) {
                         self.showFormats[format] = true
                     }
+                    let uniqueOrganizers = [... new Set(response.data.map(x => x.organizer))]
+                    for (let organizer of uniqueOrganizers) {
+                        self.showOrganizers[organizer] = true
+                    }                    
                 })
                 .catch(function (error) {
                     // handle error
