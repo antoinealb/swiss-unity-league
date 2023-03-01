@@ -45,7 +45,7 @@
                     <h2 class="card-title">Top players</h2>
                     <p class="card-text">
                         <ol>{% for player in players|slice:":5" %}
-                            <li>{{ player.name }} ({{ player.score }}points)</li>
+                            <li>{{ player.name }} ({{ player.score }} points)</li>
                         {% endfor %}
                         </ol>
                     </div>
