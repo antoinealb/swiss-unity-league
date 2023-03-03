@@ -33,18 +33,16 @@ function events() {
                 .get(this.eventTypes[eventType])
                 .then(function (response) {
                     self.events = response.data
-                    let uniqueFormats = [
-                        ...new Set(response.data.map((x) => x.format)),
-                    ]
-                    for (let format of uniqueFormats) {
-                        self.showFormats[format] = true
-                    }
-                    let uniqueOrganizers = [
-                        ...new Set(response.data.map((x) => x.organizer)),
-                    ]
-                    for (let organizer of uniqueOrganizers) {
-                        self.showOrganizers[organizer] = true
-                    }
+
+                    let formats = new Set(response.data.map((x) => x.format))
+                    formats.forEach((fmt) => (self.showFormats[fmt] = true))
+
+                    let organizers = new Set(
+                        response.data.map((x) => x.organizer)
+                    )
+                    organizers.forEach(
+                        (fmt) => (self.showOrganizers[fmt] = true)
+                    )
                 })
                 .catch(function (error) {
                     // handle error

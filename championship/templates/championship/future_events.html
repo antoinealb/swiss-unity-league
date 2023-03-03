@@ -17,7 +17,6 @@
                 <div class="dropdown-menu">
                     <div class="dropdown-item">
                         <div class="form-check form-check-inline">
-                            <!-- <input class="form-check-input" id="allFormats" type="checkbox" x-on:click="toggleAll(showFormats)" x-bind:checked="allChecked(showFormats)"/>
                         <label class="form-check-label" for="allFormats">All formats</label>-->
                             <label class="form-check-label" x-on:click="toggleAll(showFormats)">All formats</label>
                         </div>
@@ -45,8 +44,8 @@
                     <template x-for="cat in Object.keys(showCategories)">
                         <div class="dropdown-item">
                             <div class="form-check form-check-inline">
-                                <input class="form-check-input" type="checkbox" x-bind:id="cat" x-model="showCategories[cat]">
-                                <label class="form-check-label" x-bind:for="cat" x-text="cat"></label>
+                                <input class="form-check-input" type="checkbox" x-bind:id="cat.replace(/\s/g, '')" x-model="showCategories[cat]">
+                                <label class="form-check-label" x-bind:for="cat.replace(/\s/g, '')" x-text="cat"></label>
                             </div>
                         </div>
                     </template>
@@ -60,7 +59,7 @@
                 <div class="dropdown-menu">
                     <div class="dropdown-item">
                         <div class="form-check form-check-inline">
-                            <label class="form-check-label" x-on:click="toggleAll(showOrganizers)">All categories</label>
+                            <label class="form-check-label" x-on:click="toggleAll(showOrganizers)">All organizers</label>
                         </div></div>
                     <template x-for="organizer in Object.keys(showOrganizers)">
                         <div class="dropdown-item">
