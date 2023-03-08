@@ -31,6 +31,7 @@ if "RUN_IN_PROD" in os.environ:
     DEBUG = False
     ALLOWED_HOSTS = ["0.0.0.0", "leoninleague.ch", "unityleague.ch"]
     CSRF_TRUSTED_ORIGINS = ["https://leoninleague.ch", "https://unityleague.ch"]
+    PROMETHEUS_METRICS_EXPORT_PORT_RANGE = range(8001, 8004)
 else:
     DEBUG = True
     ALLOWED_HOSTS = []

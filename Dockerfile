@@ -16,6 +16,12 @@ COPY . /app
 
 RUN /app/manage.py collectstatic --no-input
 
+# HTTP endpoint
 EXPOSE 8000
+
+# Metrics endpoint, one per worker
+EXPOSE 8001
+EXPOSE 8002
+EXPOSE 8003
 
 CMD ["gunicorn", "--bind", ":8000", "--workers", "3", "mtg_championship_site.wsgi:application"]
