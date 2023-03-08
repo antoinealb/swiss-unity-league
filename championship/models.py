@@ -7,6 +7,7 @@ from django.core.cache import cache
 from django.db.models.signals import post_save, post_delete
 from django.dispatch import receiver
 from django.urls import reverse
+from auditlog.registry import auditlog
 import bleach
 import collections
 
@@ -280,3 +281,9 @@ def compute_scores():
 @receiver(post_delete, sender=EventPlayerResult)
 def invalidate_cache_on_result_changes(*args, **kwargs):
     cache.delete(settings.SCORES_CACHE_KEY)
+
+
+auditlog.register(EventOrganizer)
+auditlog.register(Player, m2m_fields={"events"})
+auditlog.register(Event)
+auditlog.register(EventPlayerResult)
