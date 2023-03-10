@@ -57,6 +57,7 @@ INSTALLED_APPS = [
     "rest_framework",
     "sass_processor",
     "auditlog",
+    "cid.apps.CidAppConfig",
 ]
 
 MIDDLEWARE = [
@@ -200,3 +201,13 @@ build_info.info({"commit_sha": commit_hash})
 # TODO: Disabled for now, as it causes coherency issues
 SCORES_CACHE_ENABLED = False
 SCORES_CACHE_KEY = "championship.scores"
+
+# Forces Django to create a correlation Id for requests rather than expect it
+# from the load balancer.
+CID_GENERATE = True
+
+# Include the correlation ID in the audit log. Useful to identify operations
+# that all stem from the same place, such as one "merge players" operation.
+import cid.locals
+
+AUDITLOG_CID_GETTER = cid.locals.get_cid

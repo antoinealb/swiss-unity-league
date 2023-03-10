@@ -18,5 +18,6 @@ django-sass-processor==1.2.2
 libsass==0.22.0
 djhtml==1.5.2
 prettytable~=3.6.0
+django-cid~=2.3
 # TODO: Change this once an auditlog is released
 django-auditlog @ git+https://github.com/jazzband/django-auditlog.git@0cb3eb2b996cc14498dbdd94429169c64e23cfb9
