@@ -65,9 +65,18 @@ class PlayerAdmin(admin.ModelAdmin):
                 if player == original_player:
                     continue
 
+                # First, take all the results and attribute them back to the
+                # original player.
                 for e in EventPlayerResult.objects.filter(player=player):
                     e.player = original_player
                     e.save()
+
+                # Then, create an alias for the player
+                PlayerAlias.objects.create(
+                    name=player.name, true_player=original_player
+                )
+
+                # Finally, delete the extra player
                 player.delete()
 
             messages.add_message(
@@ -91,6 +100,7 @@ class PlayerAdmin(admin.ModelAdmin):
         )
 
 
+admin.site.register(PlayerAlias)
 admin.site.register(Player, PlayerAdmin)
 admin.site.register(EventOrganizer)
 

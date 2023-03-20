@@ -131,6 +131,12 @@ class PlayerAlias(models.Model):
     name = models.CharField(max_length=200)
     true_player = models.ForeignKey(Player, on_delete=models.CASCADE)
 
+    def __str__(self):
+        return f"{self.name} (-> {self.true_player})"
+
+    class Meta:
+        verbose_name_plural = "player aliases"
+
 
 class EventPlayerResult(models.Model):
     """
