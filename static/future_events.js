@@ -11,8 +11,14 @@ function events() {
         showOrganizers: {},
         currentEventType: 'Select Future or Past Events',
         eventTypes: {
-            Past: '/api/past-events/',
-            Future: '/api/future-events/',
+            Past: {
+                url: '/api/past-events/',
+                data: [],
+            },
+            Future: {
+                url: '/api/future-events/',
+                data: [],
+            },
         },
         allChecked(obj) {
             let res = true
@@ -29,25 +35,30 @@ function events() {
         },
         loadEvents(eventType = 'Future') {
             let self = this
-            axios
-                .get(this.eventTypes[eventType])
-                .then(function (response) {
-                    self.events = response.data
-
-                    let formats = new Set(response.data.map((x) => x.format))
-                    formats.forEach((fmt) => (self.showFormats[fmt] = true))
-
-                    let organizers = new Set(
-                        response.data.map((x) => x.organizer)
-                    )
-                    organizers.forEach(
-                        (fmt) => (self.showOrganizers[fmt] = true)
-                    )
-                })
-                .catch(function (error) {
-                    // handle error
-                    console.log(error)
-                })
+            if (self.eventTypes[eventType].data.length === 0) {
+                axios
+                    .get(self.eventTypes[eventType].url)
+                    .then(function (response) {
+                        self.eventTypes[eventType].data = response.data
+                        self.setEvents(response.data)
+                    })
+                    .catch(function (error) {
+                        console.log(error)
+                    })
+            } else {
+                self.setEvents(self.eventTypes[eventType].data)
+            }
+        },
+        setEvents(events) {
+            this.events = events
+            this.setFilterOptions('showFormats', (x) => x.format)
+            this.setFilterOptions('showOrganizers', (x) => x.organizer)
+        },
+        setFilterOptions(showFilter, selectLambda) {
+            self = this
+            self[showFilter] = {}
+            let filterOptions = new Set(self.events.map(selectLambda))
+            filterOptions.forEach((option) => (self[showFilter][option] = true))
         },
     }
 }
