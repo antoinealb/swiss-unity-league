@@ -263,7 +263,10 @@ def create_results_eventlink(request):
                 name,
                 points,
             ) in enumerate(results):
-                player, _ = Player.objects.get_or_create(name=name)
+                try:
+                    player = PlayerAlias.objects.get(name=name).true_player
+                except PlayerAlias.DoesNotExist:
+                    player, _ = Player.objects.get_or_create(name=name)
                 EventPlayerResult.objects.create(
                     points=points, player=player, event=event, ranking=i + 1
                 )
@@ -325,8 +328,11 @@ def create_results_aetherhub(request):
 
             for i, (name, points, _) in enumerate(results.standings):
                 name = _remove_camel_case(name)
+                try:
+                    player = PlayerAlias.objects.get(name=name).true_player
+                except PlayerAlias.DoesNotExist:
+                    player, _ = Player.objects.get_or_create(name=name)
 
-                player, _ = Player.objects.get_or_create(name=name)
                 EventPlayerResult.objects.create(
                     points=points, player=player, event=event, ranking=i + 1
                 )

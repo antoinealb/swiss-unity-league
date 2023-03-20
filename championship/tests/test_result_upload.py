@@ -148,6 +148,19 @@ class AetherhubImportTest(TestCase):
         Player.objects.get(name="Amar Zehic")
 
     @patch("requests.get")
+    def test_imports_result_with_aliasing(self, requests_get):
+        self.login()
+        self.mock_response(requests_get)
+
+        orig_player = PlayerFactory(name="Test Player")
+        PlayerAlias.objects.create(name="Dominik Horber", true_player=orig_player)
+
+        self.client.post(reverse("results_create_aetherhub"), self.data)
+
+        results = EventPlayerResult.objects.filter(event=self.event).order_by("id")[:]
+        self.assertEqual(results[1].player.name, "Test Player")
+
+    @patch("requests.get")
     def test_imports_result_for_different_tourney_resuses_player(self, requests_get):
         self.login()
         self.mock_response(requests_get)
@@ -253,6 +266,16 @@ class EventLinkImportTestCase(TestCase):
         self.assertEqual(results[3].points, 6)
         self.assertEqual(results[3].ranking, 4)
         self.assertEqual(results[0].player.name, "Jeremias Wildi")
+
+    def test_import_result_with_aliasing(self):
+        self.login()
+
+        orig_player = PlayerFactory(name="Test Player")
+        PlayerAlias.objects.create(name="Jeremias Wildi", true_player=orig_player)
+
+        self.client.post(reverse("results_create_eventlink"), self.data)
+        results = EventPlayerResult.objects.filter(event=self.event).order_by("id")[:]
+        self.assertEqual(results[0].player.name, "Test Player")
 
     def test_import_garbage(self):
         """Checks that when we try to import garbage data, we get a nice error
