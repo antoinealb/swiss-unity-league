@@ -121,6 +121,17 @@ class Player(models.Model):
         return reverse("player_details", args=[self.id])
 
 
+class PlayerAlias(models.Model):
+    """
+    Sometimes players get named in a strange way, or with a typo, or something.
+    For example, a player might be named 'Antoine Albertelli', but one TO has
+    him as 'antoinealb' (a nickname).
+    """
+
+    name = models.CharField(max_length=200)
+    true_player = models.ForeignKey(Player, on_delete=models.CASCADE)
+
+
 class EventPlayerResult(models.Model):
     """
     A result for a single player in a single event.
