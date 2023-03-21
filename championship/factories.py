@@ -64,3 +64,13 @@ class EventFactory(DjangoModelFactory):
         "random_element",
         elements=Event.Category.values,
     )
+
+
+class EventPlayerResultFactory(DjangoModelFactory):
+    class Meta:
+        model = EventPlayerResult
+
+    event = factory.SubFactory(EventFactory)
+    player = factory.SubFactory(PlayerFactory)
+    points = factory.Faker("random_int", min=0, max=15)
+    ranking = factory.Faker("random_int", min=1, max=30)
