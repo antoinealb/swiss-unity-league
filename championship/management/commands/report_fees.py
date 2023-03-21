@@ -12,7 +12,7 @@ class Command(BaseCommand):
 
     def handle(self, *args, **kwargs):
         table = PrettyTable(field_names=["Organizer", "Event", "Fee"], align="l")
-        table.align["Fees"] = "r"
+        table.align["Fee"] = "r"
         total = 0
 
         for e in (
@@ -24,6 +24,5 @@ class Command(BaseCommand):
             table.add_row((e.organizer.name, str(e), fee))
             total += fee
 
+        table.add_row(("Total", "", total))
         print(table)
-
-        print(f"Total: {total} CHF")
