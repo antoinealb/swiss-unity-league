@@ -1,3 +1,4 @@
+import datetime
 from django.core.management.base import BaseCommand
 from django.db.models import Count
 
@@ -14,8 +15,10 @@ class Command(BaseCommand):
         table.align["Fees"] = "r"
         total = 0
 
-        for e in Event.objects.exclude(category=Event.Category.REGULAR).order_by(
-            "organizer__name", "date"
+        for e in (
+            Event.objects.exclude(category=Event.Category.REGULAR)
+            .filter(date__lte=datetime.date.today())
+            .order_by("organizer__name", "date")
         ):
             fee = fee_for_event(e)
             table.add_row((e.organizer.name, str(e), fee))
