@@ -161,6 +161,9 @@ class EventPlayerResult(models.Model):
     )
     ranking = models.PositiveIntegerField(help_text="Standings after the Swiss rounds")
 
+    class Meta:
+        indexes = [models.Index(fields=["event"])]
+
     def __lt__(self, other):
         """Comparison function for sorting.
 
@@ -174,6 +177,55 @@ class EventPlayerResult(models.Model):
         return self.ranking < other.ranking
 
 
+MULT = {
+    Event.Category.REGULAR: 1,
+    Event.Category.REGIONAL: 4,
+    Event.Category.PREMIER: 6,
+}
+PARTICIPATION_POINTS = 3
+POINTS_FOR_TOP = {
+    (Event.Category.PREMIER, EventPlayerResult.SingleEliminationResult.WINNER): 500,
+    (
+        Event.Category.PREMIER,
+        EventPlayerResult.SingleEliminationResult.FINALIST,
+    ): 300,
+    (
+        Event.Category.PREMIER,
+        EventPlayerResult.SingleEliminationResult.SEMI_FINALIST,
+    ): 200,
+    (
+        Event.Category.PREMIER,
+        EventPlayerResult.SingleEliminationResult.QUARTER_FINALIST,
+    ): 150,
+    (
+        Event.Category.REGIONAL,
+        EventPlayerResult.SingleEliminationResult.WINNER,
+    ): 100,
+    (
+        Event.Category.REGIONAL,
+        EventPlayerResult.SingleEliminationResult.FINALIST,
+    ): 60,
+    (
+        Event.Category.REGIONAL,
+        EventPlayerResult.SingleEliminationResult.SEMI_FINALIST,
+    ): 40,
+    (
+        Event.Category.REGIONAL,
+        EventPlayerResult.SingleEliminationResult.QUARTER_FINALIST,
+    ): 30,
+}
+POINTS_TOP_9_12 = {
+    Event.Category.PREMIER: 75,
+    Event.Category.REGIONAL: 15,
+    Event.Category.REGULAR: 0,
+}
+POINTS_TOP_13_16 = {
+    Event.Category.PREMIER: 50,
+    Event.Category.REGIONAL: 10,
+    Event.Category.REGULAR: 0,
+}
+
+
 def qps_for_result(
     result: EventPlayerResult,
     category: Event.Category,
@@ -183,54 +235,6 @@ def qps_for_result(
     """
     Returns how many QPs a player got in a single event.
     """
-
-    MULT = {
-        Event.Category.REGULAR: 1,
-        Event.Category.REGIONAL: 4,
-        Event.Category.PREMIER: 6,
-    }
-    PARTICIPATION_POINTS = 3
-    POINTS_FOR_TOP = {
-        (Event.Category.PREMIER, EventPlayerResult.SingleEliminationResult.WINNER): 500,
-        (
-            Event.Category.PREMIER,
-            EventPlayerResult.SingleEliminationResult.FINALIST,
-        ): 300,
-        (
-            Event.Category.PREMIER,
-            EventPlayerResult.SingleEliminationResult.SEMI_FINALIST,
-        ): 200,
-        (
-            Event.Category.PREMIER,
-            EventPlayerResult.SingleEliminationResult.QUARTER_FINALIST,
-        ): 150,
-        (
-            Event.Category.REGIONAL,
-            EventPlayerResult.SingleEliminationResult.WINNER,
-        ): 100,
-        (
-            Event.Category.REGIONAL,
-            EventPlayerResult.SingleEliminationResult.FINALIST,
-        ): 60,
-        (
-            Event.Category.REGIONAL,
-            EventPlayerResult.SingleEliminationResult.SEMI_FINALIST,
-        ): 40,
-        (
-            Event.Category.REGIONAL,
-            EventPlayerResult.SingleEliminationResult.QUARTER_FINALIST,
-        ): 30,
-    }
-    POINTS_TOP_9_12 = {
-        Event.Category.PREMIER: 75,
-        Event.Category.REGIONAL: 15,
-        Event.Category.REGULAR: 0,
-    }
-    POINTS_TOP_13_16 = {
-        Event.Category.PREMIER: 50,
-        Event.Category.REGIONAL: 10,
-        Event.Category.REGULAR: 0,
-    }
 
     points = result.points + PARTICIPATION_POINTS
     points = points * MULT[category]
