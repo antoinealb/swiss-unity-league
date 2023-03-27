@@ -55,6 +55,7 @@ class IndexView(TemplateView):
             Event.objects.filter(date__gt=datetime.date.today())
             .exclude(category=Event.Category.REGULAR)
             .order_by("date")[:EVENTS_ON_PAGE]
+            .select_related("organizer")
         )
         return future_events
 
@@ -372,6 +373,7 @@ class FutureEventViewSet(viewsets.ReadOnlyModelViewSet):
         # This needs to be a function (get_queryset) instead of an attribute as
         # otherwise the today means "when the app was started.
         qs = Event.objects.filter(date__gte=datetime.date.today())
+        qs = qs.select_related("organizer")
         return qs.order_by("date")
 
 
