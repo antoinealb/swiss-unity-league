@@ -16,11 +16,26 @@
         <tbody>
             {% for player in players %}
                 <tr>
-                    <td>{{ forloop.counter }}</td>
+                    {% if forloop.counter == 1 %}
+                        <td>{{ forloop.counter }} <i class="icon-star"></i> <i class="icon-shield"></i> <i class="icon-shield"></td>
+                    {% elif forloop.counter <= 5 %}
+                        <td>{{ forloop.counter }} <i class="icon-star"></i> <i class="icon-shield"></i></td>
+                    {% elif forloop.counter <= 32 %}
+                        <td>{{ forloop.counter }} <i class="icon-star"></i></td>
+                    {% else %}
+                        <td>{{ forloop.counter }}</td>
+                    {% endif %}
                     <td>{{ player.score }}</td>
                     <td><a href="{% url 'player_details' player.id %}">{{ player.name }}</a></td>
                 </tr>
             {% endfor %}
         </tbody>
     </table>
+
+    <dl>
+        <dt><i class="icon-star"></i></dt>
+        <dd>Qualified for the invitational</dd>
+        <dt><i class="icon-shield"></i></dt>
+        <dd>Bye for the invitational</dd>
+    </dl>
 {% endblock %}
