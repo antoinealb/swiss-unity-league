@@ -12,6 +12,7 @@ https://docs.djangoproject.com/en/4.1/ref/settings/
 
 from pathlib import Path
 import os
+import logging
 from prometheus_client import Info
 from django.contrib.messages import constants as messages
 
@@ -24,7 +25,11 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 # See https://docs.djangoproject.com/en/4.1/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = "django-insecure-8g+wfs#fbtjgv98n!449i9ml%kgi!6(9&_)6%!0#p=4ne#i&qq"
+try:
+    SECRET_KEY = os.environ["SECRET_KEY"]
+except KeyError:
+    logging.warning("Using insecure dev key.")
+    SECRET_KEY = "django-insecure-8g+wfs#fbtjgv98n!449i9ml%kgi!6(9&_)6%!0#p=4ne#i&qq"
 
 # SECURITY WARNING: don't run with debug turned on in production!
 if "RUN_IN_PROD" in os.environ:
