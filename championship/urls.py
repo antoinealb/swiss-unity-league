@@ -26,15 +26,15 @@ urlpatterns = [
     ),
     path("events/<int:pk>/copy", views.copy_event, name="event_copy"),
     path("events/<int:pk>/", views.EventDetailsView.as_view(), name="event_details"),
-    path("results/create", views.create_results, name="results_create"),
+    path("results/create", views.CreateResultsView.as_view(), name="results_create"),
     path(
         "results/create/eventlink",
-        views.create_results_eventlink,
+        views.CreateEvenlinkResultsView.as_view(),
         name="results_create_eventlink",
     ),
     path(
         "results/create/aetherhub",
-        views.create_results_aetherhub,
+        views.CreateAetherhubResultsView.as_view(),
         name="results_create_aetherhub",
     ),
     path(

@@ -21,8 +21,7 @@ def _standings(soup):
         row = [s for s in row.find_all("td")]
         name = _value(row, "Name")
         points = int(_value(row, "Points"))
-        results = _value(row, "Results")
-        yield (name, points, results)
+        yield (name, points)
 
 
 def _round_count(soup):

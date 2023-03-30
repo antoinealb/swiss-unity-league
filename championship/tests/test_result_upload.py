@@ -32,9 +32,9 @@ class AetherhubStandingsParser(TestCase):
     def test_can_parse(self):
         results = parse_standings_html("aetherhub_ranking.html")
         wantStandings = [
-            ("DarioMazzola", 13, "4 - 0 - 1"),
-            ("Dominik Horber", 13, "4 - 0 - 1"),
-            ("Christopher Weber", 12, "4 - 1"),
+            ("DarioMazzola", 13),
+            ("Dominik Horber", 13),
+            ("Christopher Weber", 12),
         ]
         self.assertEqual(wantStandings, results.standings[:3])
 
@@ -199,7 +199,7 @@ class AetherhubImportTest(TestCase):
         resp = self.client.post(reverse("results_create_aetherhub"), self.data)
 
         # Makes sure we return with an error
-        self.assertEqual(resp.status_code, 500)
+        self.assertEqual(resp.status_code, 400)
         self.assertIn("Could not fetch standings", resp.content.decode())
 
     def test_only_allows_selection_of_events_with_no_results(self):

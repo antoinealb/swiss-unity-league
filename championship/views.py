@@ -5,7 +5,7 @@ import os
 import requests
 import random
 
-from django.core.exceptions import PermissionDenied
+from django.core.exceptions import ImproperlyConfigured
 from django.shortcuts import render, get_object_or_404, redirect
 from django.views.generic.base import TemplateView
 from django.views.generic.edit import DeleteView, FormView, UpdateView
@@ -234,130 +234,125 @@ class EventDeleteView(LoginRequiredMixin, DeleteView):
         return qs.filter(organizer__user=self.request.user)
 
 
-@login_required
-def create_results_eventlink(request):
-    form = EventlinkImporterForm(request.user)
+class CreateResultsView(FormView):
+    """Generic view that handles the logic for importing results.
 
-    if request.method == "POST":
-        form = EventlinkImporterForm(request.user, request.POST, request.FILES)
-        if form.is_valid():
-            # From here we can assume that the event exists and is owned by
-            # this user, as otherwise the form validation will not accept it.
-            event = form.cleaned_data["event"]
-            text = "".join(s.decode() for s in request.FILES["standings"].chunks())
+    This view encapsulate all the code that should be website-independent for
+    importing results, such as validating a form, looking for events, etc.
 
+    To use this class, the user simply needs to implement the get_results
+    method, which contains all the parsing logic. See
+    CreateAetherhubResultsView for an example.
+    """
+
+    template_name = "championship/create_results.html"
+    success_url = "/"
+
+    def get_form_kwargs(self):
+        k = super().get_form_kwargs()
+        k["user"] = self.request.user
+        return k
+
+    def get_results(self, form):
+        """This function must be implemented to actually parse results.
+
+        It returns a list of standings, or None if parsing was not succesful.
+        """
+        raise ImproperlyConfigured("No parser implemented")
+
+    def _remove_camel_case(self, name):
+        """Converts "AntoineAlbertelli" to "Antoine Albertelli"."""
+        name = "".join(map(lambda c: c if c.islower() else " " + c, name))
+        # Normalizes whitespace in case there are double space or tabs
+        name = re.sub(r"\s+", " ", name)
+        return name.lstrip()
+
+    def form_valid(self, form):
+        """Processes a succesful result creation form.
+
+        This part of the processing is generic and does not depend on which
+        website we use for parsing.
+        """
+        # From here we can assume that the event exists and is owned by
+        # this user, as otherwise the form validation will not accept it.
+        event = form.cleaned_data["event"]
+        standings = self.get_results(form)
+
+        if not standings:
+            return render(
+                self.request,
+                self.template_name,
+                {"form": form},
+                status=400,
+            )
+
+        for i, (name, points) in enumerate(standings):
+            name = self._remove_camel_case(name)
             try:
-                results = eventlink_parser.parse_standings_page(text)
-            except:
-                messages.error(
-                    request,
-                    "Error: Could not parse standings file. Did you upload the HTML standings correctly?",
-                )
-                return render(
-                    request,
-                    "championship/create_results.html",
-                    {"form": form},
-                    status=400,
-                )
+                player = PlayerAlias.objects.get(name=name).true_player
+            except PlayerAlias.DoesNotExist:
+                player, _ = Player.objects.get_or_create(name=name)
 
-            for i, (
-                name,
-                points,
-            ) in enumerate(results):
-                try:
-                    player = PlayerAlias.objects.get(name=name).true_player
-                except PlayerAlias.DoesNotExist:
-                    player, _ = Player.objects.get_or_create(name=name)
-                EventPlayerResult.objects.create(
-                    points=points, player=player, event=event, ranking=i + 1
-                )
+            EventPlayerResult.objects.create(
+                points=points, player=player, event=event, ranking=i + 1
+            )
 
-            return HttpResponseRedirect("/")
-
-    return render(request, "championship/create_results.html", {"form": form})
+        return super().form_valid(form)
 
 
-def clean_aetherhub_url(url):
-    """Normalizes the given tournament url to point to the RoundTourney page."""
-    url_re = r"https://aetherhub.com/Tourney/[a-zA-Z]+/(\d+)"
-    tourney = re.match(url_re, url).group(1)
-    return f"https://aetherhub.com/Tourney/RoundTourney/{tourney}"
+class CreateAetherhubResultsView(LoginRequiredMixin, CreateResultsView):
+    form_class = AetherhubImporterForm
+
+    def clean_aetherhub_url(self, url):
+        """Normalizes the given tournament url to point to the RoundTourney page."""
+        url_re = r"https://aetherhub.com/Tourney/[a-zA-Z]+/(\d+)"
+        tourney = re.match(url_re, url).group(1)
+        return f"https://aetherhub.com/Tourney/RoundTourney/{tourney}"
+
+    def get_results(self, form):
+        url = form.cleaned_data["url"]
+        url = self.clean_aetherhub_url(url)
+
+        # Fetch results from Aetherhub and parse them
+        try:
+            response = requests.get(url)
+            response.raise_for_status()
+            results = aetherhub_parser.parse_standings_page(response.content.decode())
+            return results.standings
+        except:
+            # If anything went wrong with the request, just return to the
+            # form.
+            messages.error(
+                self.request, "Could not fetch standings information from Aetherhub."
+            )
 
 
-@login_required
-def create_results_aetherhub(request):
-    if request.method == "POST":
-        form = AetherhubImporterForm(request.user, request.POST)
-        if form.is_valid():
-            # From here we can assume that the event exists and is owned by
-            # this user, as otherwise the form validation will not accept it.
-            url = form.cleaned_data["url"]
-            event = form.cleaned_data["event"]
+class CreateEvenlinkResultsView(LoginRequiredMixin, CreateResultsView):
+    form_class = EventlinkImporterForm
 
-            # Fetch results from Aetherhub and parse them
-            try:
-                url = clean_aetherhub_url(url)
-                response = requests.get(url)
-                response.raise_for_status()
-                results = aetherhub_parser.parse_standings_page(
-                    response.content.decode()
-                )
-            except:
-                # If anything went wrong with the request, just return to the
-                # form.
-                messages.error(
-                    request, "Could not fetch standings information from Aetherhub."
-                )
-                return render(
-                    request,
-                    "championship/create_results.html",
-                    {"form": form},
-                    status=500,
-                )
+    def get_results(self, form):
+        text = "".join(s.decode() for s in self.request.FILES["standings"].chunks())
 
-            # TODO: Fetch players from DB if they exist
-            # TODO: Fuzzy match player names with DB
-            # TODO: Should we delete all results for that tournament before
-            # adding them in case someone uploads results twice ?
-
-            def _remove_camel_case(name):
-                """Converts "AntoineAlbertelli" to "Antoine Albertelli"."""
-                name = "".join(map(lambda c: c if c.islower() else " " + c, name))
-                # Normalizes whitespace in case there are double space or tabs
-                name = re.sub(r"\s+", " ", name)
-                return name.lstrip()
-
-            for i, (name, points, _) in enumerate(results.standings):
-                name = _remove_camel_case(name)
-                try:
-                    player = PlayerAlias.objects.get(name=name).true_player
-                except PlayerAlias.DoesNotExist:
-                    player, _ = Player.objects.get_or_create(name=name)
-
-                EventPlayerResult.objects.create(
-                    points=points, player=player, event=event, ranking=i + 1
-                )
-
-            return HttpResponseRedirect("/")
-    else:
-        form = AetherhubImporterForm(request.user)
-
-    return render(request, "championship/create_results.html", {"form": form})
+        try:
+            return eventlink_parser.parse_standings_page(text)
+        except:
+            messages.error(
+                self.request,
+                "Error: Could not parse standings file. Did you upload the HTML standings correctly?",
+            )
 
 
-@login_required
-def create_results(request):
-    form = ImporterSelectionForm()
+class CreateResultsView(LoginRequiredMixin, FormView):
+    template_name = "championship/create_results.html"
+    form_class = ImporterSelectionForm
 
-    if request.method == "POST":
-        form = ImporterSelectionForm(request.POST)
-        if form.is_valid():
-            if form.cleaned_data["site"] == ImporterSelectionForm.Importers.AETHERHUB:
-                return redirect(reverse("results_create_aetherhub"))
-            elif form.cleaned_data["site"] == ImporterSelectionForm.Importers.EVENTLINK:
-                return redirect(reverse("results_create_eventlink"))
-
-    return render(request, "championship/create_results.html", {"form": form})
+    def form_valid(self, form):
+        urls_for_type = {
+            ImporterSelectionForm.Importers.AETHERHUB: "results_create_aetherhub",
+            ImporterSelectionForm.Importers.EVENTLINK: "results_create_eventlink",
+        }
+        url = urls_for_type[form.cleaned_data["site"]]
+        return HttpResponseRedirect(reverse(url))
 
 
 class FutureEventViewSet(viewsets.ReadOnlyModelViewSet):
