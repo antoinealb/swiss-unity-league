@@ -31,7 +31,7 @@ urlpatterns = [
     ),
     path("events/<int:pk>/copy", views.copy_event, name="event_copy"),
     path("events/<int:pk>/", views.EventDetailsView.as_view(), name="event_details"),
-    path("results/create", views.CreateResultsView.as_view(), name="results_create"),
+    path("results/create", views.ChooseUploaderView.as_view(), name="results_create"),
     path(
         "organizer/edit", views.OrganizerProfileEdit.as_view(), name="organizer_update"
     ),

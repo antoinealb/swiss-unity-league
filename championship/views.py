@@ -361,7 +361,7 @@ class CreateMtgEventResultsView(LoginRequiredMixin, CreateResultsView):
             )
 
 
-class CreateResultsView(LoginRequiredMixin, FormView):
+class ChooseUploaderView(LoginRequiredMixin, FormView):
     template_name = "championship/create_results.html"
     form_class = ImporterSelectionForm
 
