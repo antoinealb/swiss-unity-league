@@ -232,6 +232,15 @@ class ScoresWithTop8TestCase(TestCase):
                 gotScore = self.score(Event.Category.REGIONAL, 10, ranking)
                 self.assertEqual(wantScore, gotScore)
 
+    def test_top8_when_only_top4_where_played(self):
+        """Tests a scenario where we only played a top4."""
+        r = EventPlayerResultFactory(points=10, ranking=5)
+
+        want = (10 + 3) * 6 + 150
+        got = qps_for_result(r, Event.Category.PREMIER, 5, has_top_8=True)
+
+        self.assertEqual(want, got)
+
 
 class TestSortEventPlayerResults(TestCase):
     def test_can_order_basic_player_results(self):

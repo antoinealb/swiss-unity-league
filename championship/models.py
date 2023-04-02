@@ -250,6 +250,12 @@ def qps_for_result(
             points += POINTS_TOP_9_12[category]
         elif event_size > 48 and 13 <= result.ranking <= 16:
             points += POINTS_TOP_13_16[category]
+        elif result.ranking <= 8:
+            # If we are in this case, it means the event did not play a top8,
+            # only a top4, and we still need to award points for 5th-8th.
+            points += POINTS_FOR_TOP[
+                category, EventPlayerResult.SingleEliminationResult.QUARTER_FINALIST
+            ]
 
     return points
 
