@@ -57,7 +57,7 @@
         <h2>Our partners</h3>
         <div class="row text-center">
             <div class="col-md-6 align-items-center mx-auto">
-                <div id="carouselPartnersIndicators" class="carousel slide" data-bs-ride="carousel" data-bs-interval="3000">
+                <div id="carouselPartnersIndicators" class="carousel slide" data-bs-ride="carousel" data-bs-interval="{% if debug %}500{% else %}3000{% endif %}">
                     <div class="carousel-inner" style="height: 300px;">
                         {% for logo in partner_logos %}
                             <div class="carousel-item {% if forloop.counter0 == 0 %}active{% endif %}">
