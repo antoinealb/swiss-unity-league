@@ -43,15 +43,15 @@
                                     <a class="nav-link dropdown-toggle" href="#" id="userDropDown" role="button" data-bs-toggle="dropdown" aria-expanded="false">Welcome, {{ user.username }}</a>
                                     <ul class="dropdown-menu" aria-labelledby="userDropDown">
                                         {% if user.eventorganizer_set.count %}
-                                            <li class="nav-item"><a class="nav-link" href="{% url 'events_create' %}">Create new event</a></li>
-                                            <li class="nav-item"><a class="nav-link" href="{% url 'results_create' %}">Upload results</a></li>
-                                            <li class="nav-item"><a class="nav-link" href="{% url 'organizer_update' %}">Edit organizer profile</a></li>
+                                            <li><a class="dropdown-item" href="{% url 'events_create' %}">Create new event</a></li>
+                                            <li><a class="dropdown-item" href="{% url 'results_create' %}">Upload results</a></li>
+                                            <li><a class="dropdown-item" href="{% url 'organizer_update' %}">Edit organizer profile</a></li>
                                         {% endif %}
                                         {% if user.is_staff %}
-                                            <li class="nav-item"><a class="nav-link" href="{% url 'admin:index' %}">Admin</a></li>
+                                            <li><a class="dropdown-item" href="{% url 'admin:index' %}">Admin</a></li>
                                         {% endif %}
-                                        <li class="nav-item"><a class="nav-link" href="{% url 'password_change' %}">Change password</a></li>
-                                        <li class="nav-item"><a class="nav-link" href="{% url 'logout' %}">Logout</a></li>
+                                        <li><a class="dropdown-item" href="{% url 'password_change' %}">Change password</a></li>
+                                        <li><a class="dropdown-item" href="{% url 'logout' %}">Logout</a></li>
                                     </ul>
                                 </li>
                             {% endif %}
