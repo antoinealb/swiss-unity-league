@@ -248,7 +248,6 @@ class CreateResultsView(FormView):
     """
 
     template_name = "championship/create_results.html"
-    success_url = "/"
 
     def get_form_kwargs(self):
         k = super().get_form_kwargs()
@@ -299,7 +298,7 @@ class CreateResultsView(FormView):
                 points=points, player=player, event=event, ranking=i + 1
             )
 
-        return super().form_valid(form)
+        return HttpResponseRedirect("/events/" + str(event.id))
 
 
 class CreateAetherhubResultsView(LoginRequiredMixin, CreateResultsView):
