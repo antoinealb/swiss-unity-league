@@ -25,7 +25,9 @@ from .forms import *
 from django.db.models import F, Q
 from championship import aetherhub_parser
 from championship import eventlink_parser
+from championship import mtgevent_parser
 from championship.serializers import EventSerializer
+from .parsers import PARSER_LIST
 
 EVENTS_ON_PAGE = 10
 PLAYERS_TOP = 10
@@ -328,7 +330,7 @@ class CreateAetherhubResultsView(LoginRequiredMixin, CreateResultsView):
 
 
 class CreateEvenlinkResultsView(LoginRequiredMixin, CreateResultsView):
-    form_class = EventlinkImporterForm
+    form_class = HtmlImporterForm
 
     def get_results(self, form):
         text = "".join(s.decode() for s in self.request.FILES["standings"].chunks())
@@ -342,17 +344,30 @@ class CreateEvenlinkResultsView(LoginRequiredMixin, CreateResultsView):
             )
 
 
+class CreateMtgEventResultsView(LoginRequiredMixin, CreateResultsView):
+    form_class = HtmlImporterForm
+
+    def get_results(self, form):
+        text = "".join(s.decode() for s in self.request.FILES["standings"].chunks())
+
+        try:
+            return mtgevent_parser.parse_standings_page(text)
+        except:
+            messages.error(
+                self.request,
+                "Error: Could not parse standings file. Did you upload the HTML standings correctly?",
+            )
+
+
 class CreateResultsView(LoginRequiredMixin, FormView):
     template_name = "championship/create_results.html"
     form_class = ImporterSelectionForm
 
     def form_valid(self, form):
         urls_for_type = {
-            ImporterSelectionForm.Importers.AETHERHUB: "results_create_aetherhub",
-            ImporterSelectionForm.Importers.EVENTLINK: "results_create_eventlink",
+            parser.name.upper(): parser.to_url(True) for parser in PARSER_LIST
         }
-        url = urls_for_type[form.cleaned_data["site"]]
-        return HttpResponseRedirect(reverse(url))
+        return HttpResponseRedirect(urls_for_type[form.cleaned_data["site"]])
 
 
 class FutureEventViewSet(viewsets.ReadOnlyModelViewSet):

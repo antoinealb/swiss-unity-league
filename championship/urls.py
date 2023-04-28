@@ -1,6 +1,8 @@
 from django.urls import path, include
 from rest_framework import routers
+from .parsers import PARSER_LIST, PARSER_VIEWS
 from . import views
+
 
 api_router = routers.DefaultRouter()
 api_router.register(
@@ -9,6 +11,9 @@ api_router.register(
 api_router.register(r"past-events", views.PastEventViewSet, basename="past-events")
 
 urlpatterns = [
+    path(parser.to_url(), view.as_view(), name=parser.to_view_name())
+    for parser, view in zip(PARSER_LIST, PARSER_VIEWS)
+] + [
     path("", views.IndexView.as_view(), name="index"),
     path("ranking", views.CompleteRankingView.as_view(), name="ranking"),
     path("player/<int:pk>/", views.PlayerDetailsView.as_view(), name="player_details"),
@@ -27,16 +32,6 @@ urlpatterns = [
     path("events/<int:pk>/copy", views.copy_event, name="event_copy"),
     path("events/<int:pk>/", views.EventDetailsView.as_view(), name="event_details"),
     path("results/create", views.CreateResultsView.as_view(), name="results_create"),
-    path(
-        "results/create/eventlink",
-        views.CreateEvenlinkResultsView.as_view(),
-        name="results_create_eventlink",
-    ),
-    path(
-        "results/create/aetherhub",
-        views.CreateAetherhubResultsView.as_view(),
-        name="results_create_aetherhub",
-    ),
     path(
         "organizer/edit", views.OrganizerProfileEdit.as_view(), name="organizer_update"
     ),

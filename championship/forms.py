@@ -5,6 +5,7 @@ from crispy_forms.helper import FormHelper
 from crispy_forms.layout import Submit
 import datetime
 import bleach
+from .parsers import PARSER_LIST
 
 
 class SubmitButtonMixin:
@@ -35,6 +36,14 @@ You can copy/paste the description from a website like swissmtg.ch, and the form
         }
 
 
+def gets_events_available_for_upload(user):
+    # TODO: Only get past events ?
+    qs = Event.objects.filter(organizer__user=user)
+
+    # Remove events that already have results
+    return qs.annotate(result_cnt=Count("eventplayerresult")).filter(result_cnt=0)
+
+
 class AetherhubImporterForm(forms.Form, SubmitButtonMixin):
     url = forms.URLField(
         label="Tournament URL",
@@ -48,39 +57,25 @@ class AetherhubImporterForm(forms.Form, SubmitButtonMixin):
     def __init__(self, user, *args, **kwargs):
         super().__init__(*args, **kwargs)
 
-        # TODO: Only get past events ?
-        qs = Event.objects.filter(organizer__user=user)
-
-        # Remove events that already have results
-        qs = qs.annotate(result_cnt=Count("eventplayerresult")).filter(result_cnt=0)
-        self.fields["event"].queryset = qs
+        self.fields["event"].queryset = gets_events_available_for_upload(user)
 
 
-class EventlinkImporterForm(forms.Form, SubmitButtonMixin):
+class HtmlImporterForm(forms.Form, SubmitButtonMixin):
     standings = forms.FileField(
         help_text="The standings file saved as a web page (.html). "
-        + "Go to the standings of the last swiss round on the EventLink website, then press Ctrl+S and save."
+        + "Go to the standings page of the last swiss round, then press Ctrl+S and save."
     )
     event = forms.ModelChoiceField(queryset=Event.objects.all(), required=True)
 
     def __init__(self, user, *args, **kwargs):
         super().__init__(*args, **kwargs)
 
-        # TODO: Only get past events?
-        qs = Event.objects.filter(organizer__user=user)
-
-        # Remove events that already have results
-        qs = qs.annotate(result_cnt=Count("eventplayerresult")).filter(result_cnt=0)
-        self.fields["event"].queryset = qs
+        self.fields["event"].queryset = gets_events_available_for_upload(user)
 
 
 class ImporterSelectionForm(forms.Form, SubmitButtonMixin):
-    class Importers(TextChoices):
-        AETHERHUB = "AETHERHUB", "Aetherhub"
-        EVENTLINK = "EVENTLINK", "EventLink"
-
     site = forms.ChoiceField(
-        choices=Importers.choices,
+        choices=[parser.to_tuple() for parser in PARSER_LIST],
         help_text="If you use a different tool for the results and can't upload them, please send us the results via email: leoninleague@gmail.com"
         + "We will try to support as many tools as possible, but we also appreciate it if you can switch to one of the tools already supported!",
     )

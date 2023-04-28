@@ -1,11 +1,11 @@
-import datetime
 import os.path
 
 from django.test import TestCase, Client
 from django.contrib.auth.models import User
 from django.urls import reverse
-from championship.models import Event, EventOrganizer, EventPlayerResult
-from championship.aetherhub_parser import parse_standings_page
+from championship.models import EventPlayerResult
+from championship import aetherhub_parser
+from championship import mtgevent_parser
 from championship.factories import *
 from championship import eventlink_parser
 from django.core.files.uploadedfile import SimpleUploadedFile
@@ -23,38 +23,56 @@ def load_test_html(filename):
     return text
 
 
-def parse_standings_html(filename):
-    text = load_test_html(filename)
-    return parse_standings_page(text)
-
-
 class AetherhubStandingsParser(TestCase):
-    def test_can_parse(self):
-        results = parse_standings_html("aetherhub_ranking.html")
-        wantStandings = [
+    def setUp(self):
+        self.text = load_test_html("aetherhub_ranking.html")
+        self.results = aetherhub_parser.parse_standings_page(self.text)
+
+    def test_parse_standings(self):
+        want_standings = [
             ("DarioMazzola", 13),
             ("Dominik Horber", 13),
             ("Christopher Weber", 12),
         ]
-        self.assertEqual(wantStandings, results.standings[:3])
+        self.assertEqual(want_standings, self.results.standings[:3])
 
     def test_parse_round_count(self):
-        results = parse_standings_html("aetherhub_ranking.html")
-        self.assertEqual(5, results.round_count)
+        self.assertEqual(5, self.results.round_count)
 
 
 class EventlinkStandingParser(TestCase):
+    def setUp(self):
+        self.text = load_test_html("eventlink_ranking.html")
+        self.results = eventlink_parser.parse_standings_page(self.text)
+
     def test_can_parse(self):
-        path = os.path.join(os.path.dirname(__file__), "eventlink_ranking.html")
-        with open(path) as f:
-            text = f.read()
-        results = eventlink_parser.parse_standings_page(text)
         wantStandings = [
             ("Jeremias Wildi", 10),
             ("Silvan Aeschbach", 9),
             ("Janosh Georg", 7),
         ]
-        self.assertEqual(wantStandings, results[:3])
+        self.assertEqual(wantStandings, self.results[:3])
+
+
+class MtgEventStandingsParser(TestCase):
+    def setUp(self):
+        self.text = load_test_html("mtgevent_ranking.html")
+        self.results = mtgevent_parser.parse_standings_page(self.text)
+
+    def test_can_parse(self):
+        wantStandings = [
+            ("Toni Marty", 9),
+            ("Eder Lars", 9),
+            ("Pascal Merk", 9),
+            ("Luca Riedmann", 9),
+            ("Remus Kosmalla", 6),
+            ("Phillpp Ackermann", 6),
+            ("Rico Oess", 6),
+            ("Mathias Tonazi", 3),
+            ("Donat Harterbach", 3),
+            ("Pascal Schärrer", 0),
+        ]
+        self.assertEqual(wantStandings, self.results)
 
 
 class AetherhubImportTest(TestCase):
