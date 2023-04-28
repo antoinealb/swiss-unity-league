@@ -1,5 +1,6 @@
 from bs4 import BeautifulSoup
 
+
 def _standings(soup):
     standings = soup.find(class_="standings")
     thead = standings.find("thead")
