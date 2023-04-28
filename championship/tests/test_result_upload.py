@@ -209,6 +209,17 @@ class AetherhubImportTest(TestCase):
         player = Player.objects.get(name="Pavel Malach")
 
     @patch("requests.get")
+    def test_redirects_after_reply(self, requests_get):
+        self.login()
+        self.mock_response(requests_get)
+
+        # Import the first event
+        resp = self.client.post(
+            reverse("results_create_aetherhub"), self.data, follow=True
+        )
+        self.assertRedirects(resp, self.event.get_absolute_url())
+
+    @patch("requests.get")
     def test_correctly_handles_backend_errors(self, requests_get):
         self.login()
         requests_get.side_effects = HTTPError()

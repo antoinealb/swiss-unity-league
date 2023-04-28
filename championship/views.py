@@ -276,7 +276,7 @@ class CreateResultsView(FormView):
         """
         # From here we can assume that the event exists and is owned by
         # this user, as otherwise the form validation will not accept it.
-        event = form.cleaned_data["event"]
+        self.event = form.cleaned_data["event"]
         standings = self.get_results(form)
 
         if not standings:
@@ -295,10 +295,13 @@ class CreateResultsView(FormView):
                 player, _ = Player.objects.get_or_create(name=name)
 
             EventPlayerResult.objects.create(
-                points=points, player=player, event=event, ranking=i + 1
+                points=points, player=player, event=self.event, ranking=i + 1
             )
 
-        return HttpResponseRedirect("/events/" + str(event.id))
+        return super().form_valid(form)
+
+    def get_success_url(self):
+        return self.event.get_absolute_url()
 
 
 class CreateAetherhubResultsView(LoginRequiredMixin, CreateResultsView):
