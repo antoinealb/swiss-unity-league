@@ -13,6 +13,12 @@ class ResultInline(admin.TabularInline):
     ordering = ("-event__date", "-points")
 
 
+class PlayerAliasInline(admin.TabularInline):
+    model = PlayerAlias
+    extra = 1
+    ordering = ("name",)
+
+
 class EventAdmin(admin.ModelAdmin):
     date_hierarchy = "date"
     list_display = (
@@ -44,7 +50,7 @@ class PlayerMergeForm(forms.Form):
 
 
 class PlayerAdmin(admin.ModelAdmin):
-    inlines = [ResultInline]
+    inlines = [ResultInline, PlayerAliasInline]
     search_fields = ["name"]
     list_display = ["name"]
     actions = ["merge_players"]
