@@ -22,4 +22,5 @@ urlpatterns = [
     path("accounts/", include("django.contrib.auth.urls")),
     path("", include("django_prometheus.urls")),
     path("__debug_toolbar__/", include("debug_toolbar.urls")),
+    path("hijack/", include("hijack.urls")),
 ]

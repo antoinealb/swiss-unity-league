@@ -21,3 +21,4 @@ prettytable~=3.6.0
 django-cid~=2.3
 # TODO: Change this once an auditlog is released
 django-auditlog @ git+https://github.com/jazzband/django-auditlog.git@0cb3eb2b996cc14498dbdd94429169c64e23cfb9
+django-hijack~=3.3.0

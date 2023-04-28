@@ -63,6 +63,8 @@ INSTALLED_APPS = [
     "sass_processor",
     "auditlog",
     "cid.apps.CidAppConfig",
+    "hijack",
+    "hijack.contrib.admin",
 ]
 
 MIDDLEWARE = [
@@ -78,6 +80,7 @@ MIDDLEWARE = [
     "django.middleware.clickjacking.XFrameOptionsMiddleware",
     "django_prometheus.middleware.PrometheusAfterMiddleware",
     "debug_toolbar.middleware.DebugToolbarMiddleware",
+    "hijack.middleware.HijackUserMiddleware",
 ]
 
 ROOT_URLCONF = "mtg_championship_site.urls"
