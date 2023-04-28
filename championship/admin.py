@@ -100,7 +100,19 @@ class PlayerAdmin(admin.ModelAdmin):
         )
 
 
-admin.site.register(PlayerAlias)
+class PlayerAliasAdmin(admin.ModelAdmin):
+    list_display = (
+        "name",
+        "true_player_name",
+    )
+    search_fields = ["name", "true_player__name"]
+
+    @admin.display(ordering="true_player__name", description="True player name")
+    def true_player_name(self, instance):
+        return instance.true_player.name
+
+
+admin.site.register(PlayerAlias, PlayerAliasAdmin)
 admin.site.register(Player, PlayerAdmin)
 
 
