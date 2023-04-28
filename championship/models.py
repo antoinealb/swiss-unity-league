@@ -10,6 +10,7 @@ from django.urls import reverse
 from auditlog.registry import auditlog
 import bleach
 import collections
+from prometheus_client import Gauge, Summary
 
 
 class EventOrganizer(models.Model):
@@ -260,10 +261,21 @@ def qps_for_result(
     return points
 
 
-REGULAR_MAX_SCORE = 500
+scores_computation_time_seconds = Summary(
+    "scores_computation_time_seconds", "Time spent to compute scores of all players"
+)
+
+scores_players_reaching_max_regular = Gauge(
+    "scores_players_reaching_max_regular",
+    "Number of players hitting the cap of points at Regular",
+)
 
 
+@scores_computation_time_seconds.time()
 def compute_scores():
+    REGULAR_MAX_SCORE = 500
+    players_reaching_max = 0
+
     if settings.SCORES_CACHE_ENABLED:
         res = cache.get(settings.SCORES_CACHE_KEY)
         if res:
@@ -295,11 +307,14 @@ def compute_scores():
             scores_by_player_category[player][
                 Event.Category.REGULAR
             ] = REGULAR_MAX_SCORE
+            players_reaching_max += 1
+
         scores[player] = sum(scores_by_player_category[player].values())
 
     if settings.SCORES_CACHE_ENABLED:
         cache.set(settings.SCORES_CACHE_KEY, scores, timeout=None)
 
+    scores_players_reaching_max_regular.set(players_reaching_max)
     return scores
 
 
