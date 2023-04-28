@@ -1,8 +1,4 @@
-from collections import namedtuple
 from bs4 import BeautifulSoup
-
-MtgEventResult = namedtuple("AetherhubResult", ["standings"])
-
 
 def _recordToPoints(record):
     points = 0
