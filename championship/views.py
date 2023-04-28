@@ -24,9 +24,8 @@ from rest_framework.response import Response
 from .models import *
 from .forms import *
 from django.db.models import F, Q
-from championship.parsers import aetherhub, eventlink, mtgevent
+from championship.parsers import aetherhub, eventlink, mtgevent, challonge
 from championship.serializers import EventSerializer
-
 
 EVENTS_ON_PAGE = 10
 PLAYERS_TOP = 10
@@ -384,14 +383,15 @@ class CreateAetherhubResultsView(LoginRequiredMixin, CreateResultsView):
             )
 
 
-class CreateEvenlinkResultsView(LoginRequiredMixin, CreateResultsView):
+class CreateHTMLParserResultsView(LoginRequiredMixin, CreateResultsView):
     form_class = HtmlImporterForm
+    parser = None
 
     def get_results(self, form):
         text = "".join(s.decode() for s in self.request.FILES["standings"].chunks())
 
         try:
-            return eventlink.parse_standings_page(text)
+            return self.parser.parse_standings_page(text)
         except:
             messages.error(
                 self.request,
@@ -399,19 +399,16 @@ class CreateEvenlinkResultsView(LoginRequiredMixin, CreateResultsView):
             )
 
 
-class CreateMtgEventResultsView(LoginRequiredMixin, CreateResultsView):
-    form_class = HtmlImporterForm
+class CreateEvenlinkResultsView(CreateHTMLParserResultsView):
+    parser = eventlink
 
-    def get_results(self, form):
-        text = "".join(s.decode() for s in self.request.FILES["standings"].chunks())
 
-        try:
-            return mtgevent.parse_standings_page(text)
-        except:
-            messages.error(
-                self.request,
-                "Error: Could not parse standings file. Did you upload the HTML standings correctly?",
-            )
+class CreateMtgEventResultsView(CreateHTMLParserResultsView):
+    parser = mtgevent.parse_standings_page
+
+
+class CreateChallongeResultsView(CreateHTMLParserResultsView):
+    parser = challonge.parse_standings_page
 
 
 class ChooseUploaderView(LoginRequiredMixin, FormView):
