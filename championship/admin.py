@@ -102,7 +102,32 @@ class PlayerAdmin(admin.ModelAdmin):
 
 admin.site.register(PlayerAlias)
 admin.site.register(Player, PlayerAdmin)
-admin.site.register(EventOrganizer)
+
+
+class EventOrganizerAdmin(admin.ModelAdmin):
+    list_display = (
+        "name",
+        "last_event_with_results",
+        "user",
+    )
+
+    sortable_by = ["name"]
+
+    @admin.display(description="Last event with published results")
+    def last_event_with_results(self, instance):
+        event = (
+            Event.objects.filter(organizer=instance)
+            .annotate(result_cnt=Count("eventplayerresult"))
+            .exclude(result_cnt=0)
+            .order_by("-date")
+        )
+
+        if event.count() > 0:
+            return event[0].date
+        return "No published results"
+
+
+admin.site.register(EventOrganizer, EventOrganizerAdmin)
 
 admin.site.site_title = "Unity League"
 
