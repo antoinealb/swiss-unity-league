@@ -1,25 +1,34 @@
 import re
 from bs4 import BeautifulSoup
-from .general_parser_functions import (
-    record_to_points,
-    find_record_index,
-    find_non_numeric_index,
-)
+from .general_parser_functions import *
 
 
-def _removeBrackets(text):
+def _remove_brackets(text):
     return re.sub(r"\([^()]*\)", "", text)
+
+
+def _get_player_and_record_index(table):
+    titles = [tag.text.strip() for tag in table.find("thead").find_all("th")]
+    player_index = find_index_of_substring(titles, "Participant")
+    record_index = find_index_of_substring(titles, "Match W-L-T")
+
+    if None in [player_index, record_index]:
+        tbody = table.find("tbody").find_all("tr")
+        first_row = [tag.text.strip() for tag in tbody[0].find_all(["th", "td"])]
+        if player_index is None:
+            player_index = find_non_numeric_index(first_row)
+        if record_index is None:
+            record_index = find_record_index(first_row)
+
+    return player_index, record_index
 
 
 def _standings(soup):
     table = soup.find("table", class_="striped-table -light limited_width standings")
-    tbody = table.find("tbody").find_all("tr")
-    first_row = [tag.text.strip() for tag in tbody[0].find_all(["th", "td"])]
-    player_index = find_non_numeric_index(first_row)
-    record_index = find_record_index(first_row)
-    for line in tbody:
+    player_index, record_index = _get_player_and_record_index(table)
+    for line in table.find("tbody").find_all("tr"):
         values = [tag.text.strip() for tag in line.find_all(["th", "td"])]
-        name = _removeBrackets(values[player_index]).strip()
+        name = _remove_brackets(values[player_index]).strip()
         points = record_to_points(values[record_index])
         yield (name, points)
 
