@@ -36,18 +36,23 @@ You can copy/paste the description from a website like swissmtg.ch, and the form
         }
 
 
-class AetherhubImporterForm(forms.Form, SubmitButtonMixin):
+class LinkImporterForm(forms.Form, SubmitButtonMixin):
     url = forms.URLField(
         label="Tournament URL",
-        help_text="Link to your tournament. Make sure it is a public and finished tournament.",
-        widget=forms.URLInput(
-            attrs={"placeholder": "https://aetherhub.com/Tourney/RoundTourney/123456"}
-        ),
+        help_text="Link to your tournament.",
+        widget=forms.URLInput(),
+        required=True,
     )
     event = forms.ModelChoiceField(queryset=Event.objects.all(), required=True)
 
     def __init__(self, user, *args, **kwargs):
+        help_text = kwargs.pop("help_text", None)
+        placeholder = kwargs.pop("placeholder", None)
         super().__init__(*args, **kwargs)
+        if help_text:
+            self.fields["url"].help_text = help_text
+        if placeholder:
+            self.fields["url"].widget.attrs["placeholder"] = placeholder
 
         self.fields["event"].queryset = Event.objects.available_for_result_upload(user)
 

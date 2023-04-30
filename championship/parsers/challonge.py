@@ -23,7 +23,18 @@ def _get_player_and_record_index(table):
     return player_index, record_index
 
 
+def _check_tournament_swiss(soup):
+    meta_data = soup.find("ul", class_="meta inline-meta-list -themed is-hidden-mobile")
+    for item in meta_data.find_all("li", {"class": "item"}):
+        if item.find("i", {"class": "icon fa fa-trophy"}):
+            tournament_type = item.find("div", class_="text").text
+    if tournament_type != "Swiss":
+        raise ValueError("Tournament is not a Swiss tournament")
+
+
 def _standings(soup):
+    _check_tournament_swiss(soup)
+
     table = soup.find("table", class_="striped-table -light limited_width standings")
     player_index, record_index = _get_player_and_record_index(table)
     for line in table.find("tbody").find_all("tr"):

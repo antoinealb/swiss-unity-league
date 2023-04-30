@@ -357,30 +357,34 @@ class CreateResultsView(FormView):
         return self.event.get_absolute_url()
 
 
-class CreateAetherhubResultsView(LoginRequiredMixin, CreateResultsView):
-    form_class = AetherhubImporterForm
+class CreateLinkParserResultsView(LoginRequiredMixin, CreateResultsView):
+    form_class = LinkImporterForm
+    parser = None
+    help_text = None
+    placeholder = None
 
-    def clean_aetherhub_url(self, url):
-        """Normalizes the given tournament url to point to the RoundTourney page."""
-        url_re = r"https://aetherhub.com/Tourney/[a-zA-Z]+/(\d+)"
-        tourney = re.match(url_re, url).group(1)
-        return f"https://aetherhub.com/Tourney/RoundTourney/{tourney}"
+    def clean_url(self, url):
+        raise NotImplementedError("This method has not been implemented yet.")
+
+    def get_form_kwargs(self):
+        kwargs = super().get_form_kwargs()
+        kwargs.update({"help_text": self.help_text, "placeholder": self.placeholder})
+        return kwargs
 
     def get_results(self, form):
         url = form.cleaned_data["url"]
-        url = self.clean_aetherhub_url(url)
+        url = self.clean_url(url)
 
-        # Fetch results from Aetherhub and parse them
         try:
-            response = requests.get(url)
+            headers = {
+                "User-Agent": "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/112.0.0.0 Safari/537.36",
+                "Accept-Language": "en-US,en;q=0.9",
+            }
+            response = requests.get(url, headers=headers)
             response.raise_for_status()
-            return aetherhub.parse_standings_page(response.content.decode())
+            return self.parser.parse_standings_page(response.content.decode())
         except:
-            # If anything went wrong with the request, just return to the
-            # form.
-            messages.error(
-                self.request, "Could not fetch standings information from Aetherhub."
-            )
+            messages.error(self.request, "Could not fetch standings.")
 
 
 class CreateHTMLParserResultsView(LoginRequiredMixin, CreateResultsView):
@@ -399,16 +403,48 @@ class CreateHTMLParserResultsView(LoginRequiredMixin, CreateResultsView):
             )
 
 
+class CreateAetherhubResultsView(CreateLinkParserResultsView):
+    parser = aetherhub
+    help_text = (
+        "Link to your tournament. Make sure it is a public and finished tournament."
+    )
+    placeholder = "https://aetherhub.com/Tourney/RoundTourney/123456"
+
+    def clean_url(self, url):
+        """Normalizes the given tournament url to point to the RoundTourney page."""
+        url_re = r"https://aetherhub.com/Tourney/[a-zA-Z]+/(\d+)"
+        tourney = re.match(url_re, url).group(1)
+        return f"https://aetherhub.com/Tourney/RoundTourney/{tourney}"
+
+
+class CreateChallongeResultsView(CreateLinkParserResultsView):
+    parser = challonge
+    help_text = (
+        "Link to your tournament. Make sure the tournament system is Swiss rounds."
+    )
+    placeholder = "https://challonge.com/de/rk6vluaa"
+
+    def clean_url(self, url):
+        challonge = "challonge.com/"
+        https = "https://"
+        try:
+            url_start, path = url.split(challonge)
+        except:
+            raise ValueError("No challonge.com URL")
+        if not url_start.startswith(https):
+            url_start = https
+        for tourney_id in path.split("/"):
+            if len(tourney_id) == 8:
+                return url_start + challonge + tourney_id + "/standings"
+        raise ValueError("No tournament id found")
+
+
 class CreateEvenlinkResultsView(CreateHTMLParserResultsView):
     parser = eventlink
 
 
 class CreateMtgEventResultsView(CreateHTMLParserResultsView):
     parser = mtgevent.parse_standings_page
-
-
-class CreateChallongeResultsView(CreateHTMLParserResultsView):
-    parser = challonge.parse_standings_page
 
 
 class ChooseUploaderView(LoginRequiredMixin, FormView):
