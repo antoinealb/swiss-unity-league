@@ -374,8 +374,7 @@ class CreateAetherhubResultsView(LoginRequiredMixin, CreateResultsView):
         try:
             response = requests.get(url)
             response.raise_for_status()
-            results = aetherhub_parser.parse_standings_page(response.content.decode())
-            return results.standings
+            return aetherhub_parser.parse_standings_page(response.content.decode())
         except:
             # If anything went wrong with the request, just return to the
             # form.

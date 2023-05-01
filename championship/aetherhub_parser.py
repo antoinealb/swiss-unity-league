@@ -1,8 +1,5 @@
 import re
-from collections import namedtuple
 from bs4 import BeautifulSoup
-
-AetherhubResult = namedtuple("AetherhubResult", ["standings", "round_count"])
 
 
 def _standings(soup):
@@ -24,14 +21,7 @@ def _standings(soup):
         yield (name, points)
 
 
-def _round_count(soup):
-    pairing_text = soup.find("a", href="#tab_pairings").text
-    num_rounds = re.match(" Pairings round ([0-9]+)", pairing_text).group(1)
-    return int(num_rounds)
-
-
 def parse_standings_page(text):
     soup = BeautifulSoup(text, features="html.parser")
     standings = list(_standings(soup))
-    round_count = _round_count(soup)
-    return AetherhubResult(round_count=round_count, standings=standings)
+    return standings

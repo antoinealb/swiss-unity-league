@@ -35,10 +35,7 @@ class AetherhubStandingsParser(TestCase):
             ("Dominik Horber", 13),
             ("Christopher Weber", 12),
         ]
-        self.assertEqual(want_standings, self.results.standings[:3])
-
-    def test_parse_round_count(self):
-        self.assertEqual(5, self.results.round_count)
+        self.assertEqual(want_standings, self.results[:3])
 
 
 class EventlinkStandingParser(TestCase):
