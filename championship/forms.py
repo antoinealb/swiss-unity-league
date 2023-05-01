@@ -5,7 +5,6 @@ from crispy_forms.helper import FormHelper
 from crispy_forms.layout import Submit
 import datetime
 import bleach
-from .parsers import PARSER_LIST
 
 
 class SubmitButtonMixin:
@@ -74,8 +73,15 @@ class HtmlImporterForm(forms.Form, SubmitButtonMixin):
 
 
 class ImporterSelectionForm(forms.Form, SubmitButtonMixin):
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+
+        # We have to import this here in order to break a circular dependency
+        from championship.importers import IMPORTER_LIST
+
+        self.fields["site"].choices = [(p.name.upper(), p.name) for p in IMPORTER_LIST]
+
     site = forms.ChoiceField(
-        choices=[parser.to_tuple() for parser in PARSER_LIST],
         help_text="If you use a different tool for the results and can't upload them, please send us the results via email: leoninleague@gmail.com"
         + "We will try to support as many tools as possible, but we also appreciate it if you can switch to one of the tools already supported!",
     )

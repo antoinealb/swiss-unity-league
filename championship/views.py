@@ -4,6 +4,7 @@ import re
 import os
 import requests
 import random
+from typing import *
 
 from django.core.exceptions import ImproperlyConfigured
 from django.shortcuts import render, get_object_or_404, redirect
@@ -27,7 +28,7 @@ from championship import aetherhub_parser
 from championship import eventlink_parser
 from championship import mtgevent_parser
 from championship.serializers import EventSerializer
-from .parsers import PARSER_LIST
+
 
 EVENTS_ON_PAGE = 10
 PLAYERS_TOP = 10
@@ -366,8 +367,10 @@ class ChooseUploaderView(LoginRequiredMixin, FormView):
     form_class = ImporterSelectionForm
 
     def form_valid(self, form):
+        from championship.importers import IMPORTER_LIST
+
         urls_for_type = {
-            parser.name.upper(): parser.to_url(True) for parser in PARSER_LIST
+            parser.name.upper(): reverse(parser.view_name) for parser in IMPORTER_LIST
         }
         return HttpResponseRedirect(urls_for_type[form.cleaned_data["site"]])
 

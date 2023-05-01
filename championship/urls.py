@@ -1,6 +1,6 @@
 from django.urls import path, include
 from rest_framework import routers
-from .parsers import PARSER_LIST, PARSER_VIEWS
+from championship.importers import IMPORTER_LIST
 from . import views
 
 
@@ -11,8 +11,8 @@ api_router.register(
 api_router.register(r"past-events", views.PastEventViewSet, basename="past-events")
 
 urlpatterns = [
-    path(parser.to_url(), view.as_view(), name=parser.to_view_name())
-    for parser, view in zip(PARSER_LIST, PARSER_VIEWS)
+    path(parser.to_url(), parser.view, name=parser.view_name)
+    for parser in IMPORTER_LIST
 ] + [
     path("", views.IndexView.as_view(), name="index"),
     path("ranking", views.CompleteRankingView.as_view(), name="ranking"),

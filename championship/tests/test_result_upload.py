@@ -11,6 +11,7 @@ from championship import eventlink_parser
 from django.core.files.uploadedfile import SimpleUploadedFile
 
 from requests import HTTPError
+from parameterized import parameterized
 
 
 from unittest.mock import patch, MagicMock
@@ -363,10 +364,26 @@ class ImportSelectorTestCase(TestCase):
 
         self.assertRedirects(resp, reverse("results_create_aetherhub"))
 
-    def test_selection_eventlink(self):
+
+class ImportSelectorTestCase(TestCase):
+    def setUp(self):
+        self.client = Client()
+        self.credentials = dict(username="test", password="test")
+        self.user = User.objects.create_user(**self.credentials)
+        self.organizer = EventOrganizerFactory(user=self.user)
         self.login()
 
-        data = {"site": "EVENTLINK"}
-        resp = self.client.post(reverse("results_create"), data, follow=True)
+    def login(self):
+        self.client.login(**self.credentials)
 
-        self.assertRedirects(resp, reverse("results_create_eventlink"))
+    @parameterized.expand(
+        [
+            ("AETHERHUB", "results_create_aetherhub"),
+            ("EVENTLINK", "results_create_eventlink"),
+            ("MTGEVENT", "results_create_mtgevent"),
+        ]
+    )
+    def test_selection_redirects(self, choice, view_name):
+        data = {"site": choice}
+        resp = self.client.post(reverse("results_create"), data, follow=True)
+        self.assertRedirects(resp, reverse(view_name))
