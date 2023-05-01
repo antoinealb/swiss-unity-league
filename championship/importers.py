@@ -20,4 +20,5 @@ IMPORTER_LIST = [
     Importer("Aetherhub", views.CreateAetherhubResultsView.as_view()),
     Importer("EventLink", views.CreateEvenlinkResultsView.as_view()),
     Importer("MTGEvent", views.CreateMtgEventResultsView.as_view()),
+    Importer("Manual", views.create_results_manual),
 ]

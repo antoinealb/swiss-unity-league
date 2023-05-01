@@ -237,6 +237,58 @@ class EventDeleteView(LoginRequiredMixin, DeleteView):
         return qs.filter(organizer__user=self.request.user)
 
 
+def _points_from_score(score: str) -> int:
+    """Parses the number of points from score
+
+    TODO: More robust parsing required (proper parser?)
+    >>> _points_from_score('3-0-1')
+    10
+
+    >>> _points_from_score('3-0-0')
+    9
+
+    >>> _points_from_score('3-0')
+    9
+    """
+    score = [int(s) for s in score.split("-")]
+    return sum(a * b for a, b in zip(score, (3, 0, 1)))
+
+
+@login_required
+def create_results_manual(request):
+    formset = ResultsFormset()
+    metadata_form = ManualUploadMetadataForm(user=request.user)
+
+    if request.method == "POST":
+        formset = ResultsFormset(request.POST)
+        metadata_form = ManualUploadMetadataForm(user=request.user, data=request.POST)
+        logging.warning("POST")
+        if formset.is_valid() and metadata_form.is_valid():
+            event = metadata_form.cleaned_data["event"]
+            for ranking, result in enumerate(formset):
+                name = result.cleaned_data["name"]
+                name = re.sub(r"\s+", " ", name)
+                points = _points_from_score(result.cleaned_data["points"])
+                try:
+                    player = PlayerAlias.objects.get(name=name).true_player
+                except PlayerAlias.DoesNotExist:
+                    player, _ = Player.objects.get_or_create(name=name)
+
+                EventPlayerResult.objects.create(
+                    event=event, player=player, points=points, ranking=ranking + 1
+                )
+
+                return HttpResponseRedirect(event.get_absolute_url())
+
+    players = Player.leaderboard_objects.all()
+    context = {
+        "metadata_form": metadata_form,
+        "formset": formset,
+        "players": players,
+    }
+    return render(request, "championship/create_results_manual.html", context=context)
+
+
 class CreateResultsView(FormView):
     """Generic view that handles the logic for importing results.
 

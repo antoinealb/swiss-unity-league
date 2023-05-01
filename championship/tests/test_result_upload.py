@@ -346,23 +346,61 @@ class EventLinkImportTestCase(TestCase):
         self.assertEqual([], gotChoices)
 
 
-class ImportSelectorTestCase(TestCase):
+class ManualImportTestCase(TestCase):
     def setUp(self):
         self.client = Client()
         self.credentials = dict(username="test", password="test")
         self.user = User.objects.create_user(**self.credentials)
         self.organizer = EventOrganizerFactory(user=self.user)
+        self.event = EventFactory(organizer=self.organizer)
+
+        self.data = {
+            "form-0-name": "Antoine Albertelli",
+            "form-0-points": "3-0",
+            "event": self.event.id,
+            "form-TOTAL_FORMS": 1,
+            "form-INITIAL_FORMS": 0,
+            "form-MIN_NUM_FORMS": 1,
+            "form-MAX_NUM_FORMS": 128,
+        }
+        self.login()
 
     def login(self):
         self.client.login(**self.credentials)
 
-    def test_selection_aetherhub(self):
-        self.login()
+    def test_upload_simple_result(self):
+        self.client.post(reverse("results_create_manual"), self.data)
 
-        data = {"site": "AETHERHUB"}
-        resp = self.client.post(reverse("results_create"), data, follow=True)
+        results = EventPlayerResult.objects.filter(event=self.event).order_by("id")[:]
+        self.assertEqual(results[0].player.name, "Antoine Albertelli")
+        self.assertEqual(results[0].ranking, 1)
+        self.assertEqual(results[0].points, 9)
 
-        self.assertRedirects(resp, reverse("results_create_aetherhub"))
+    def test_redirects_to_event_page(self):
+        resp = self.client.post(reverse("results_create_manual"), self.data)
+        self.assertRedirects(resp, self.event.get_absolute_url())
+
+    def test_import_result_with_aliasing(self):
+        orig_player = PlayerFactory(name="Test Player")
+        PlayerAlias.objects.create(name="Antoine Albertelli", true_player=orig_player)
+
+        self.client.post(reverse("results_create_manual"), self.data)
+        results = EventPlayerResult.objects.filter(event=self.event).order_by("id")[:]
+        self.assertEqual(results[0].player.name, "Test Player")
+
+    def test_import_double_space(self):
+        self.data["form-0-name"] = "Antoine    Albertelli"
+        self.client.post(reverse("results_create_manual"), self.data)
+
+        results = EventPlayerResult.objects.filter(event=self.event).order_by("id")[:]
+        self.assertEqual(results[0].player.name, "Antoine Albertelli")
+
+    def test_import_draws(self):
+        self.data["form-0-points"] = "3-0-1"
+        self.client.post(reverse("results_create_manual"), self.data)
+
+        results = EventPlayerResult.objects.filter(event=self.event).order_by("id")[:]
+        self.assertEqual(results[0].points, 10)
 
 
 class ImportSelectorTestCase(TestCase):

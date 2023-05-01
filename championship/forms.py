@@ -1,8 +1,9 @@
 from django.db.models import TextChoices, Count
+from django.core.validators import RegexValidator
 from django import forms
 from .models import Event
 from crispy_forms.helper import FormHelper
-from crispy_forms.layout import Submit
+from crispy_forms.layout import Submit, Layout, Div, Field
 import datetime
 import bleach
 
@@ -85,3 +86,61 @@ class ImporterSelectionForm(forms.Form, SubmitButtonMixin):
         help_text="If you use a different tool for the results and can't upload them, please send us the results via email: leoninleague@gmail.com"
         + "We will try to support as many tools as possible, but we also appreciate it if you can switch to one of the tools already supported!",
     )
+
+
+class SingleResultForm(forms.Form):
+    name = forms.CharField(
+        label="Name",
+        widget=forms.TextInput(
+            attrs={"placeholder": "First Last", "list": "players-datalist"}
+        ),
+    )
+    points = forms.CharField(
+        widget=forms.TextInput(attrs={"placeholder": "e.g. 3-0-1"}),
+        validators=[
+            RegexValidator(
+                "^\d+-\d+(-\d+)?$",
+                message="Score should be in the win-losss-draws format.",
+            )
+        ],
+    )
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.helper = SingleResultFormHelper(self)
+
+
+class ManualUploadMetadataForm(forms.Form, SubmitButtonMixin):
+    event = forms.ModelChoiceField(queryset=Event.objects.all(), required=True)
+
+    def __init__(self, user, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+
+        # TODO: Only get past events?
+        qs = Event.objects.filter(organizer__user=user)
+
+        # Remove events that already have results
+        qs = qs.annotate(result_cnt=Count("eventplayerresult")).filter(result_cnt=0)
+        self.fields["event"].queryset = qs
+
+        self.helper = FormHelper()
+        self.helper.form_tag = False
+
+
+class SingleResultFormHelper(FormHelper):
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.form_method = "post"
+        self.layout = Div(
+            Field("name", wrapper_class="col"),
+            Field("points", wrapper_class="col"),
+            css_class="row",
+        )
+        self.form_show_labels = False
+        self.render_required_fields = True
+        self.form_tag = False
+
+
+ResultsFormset = forms.formset_factory(
+    SingleResultForm, min_num=1, extra=32, max_num=128
+)

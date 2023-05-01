@@ -1,0 +1,30 @@
+{% extends "championship/base.html" %}
+
+{% load crispy_forms_tags %}
+
+{% block content %}
+    <h1>Upload results</h1>
+    <form action="{% url 'results_create_manual' %}" method="post">
+        {% crispy metadata_form %}
+        </p>
+        <div class="row">
+            <div class="col"><h3>Name</h3></div>
+            <div class="col"><h3>Points</h3></div>
+        </div>
+
+        {{ formset.management_form }}
+
+        {% for f in formset %}
+            {% crispy f %}
+        {% endfor %}
+
+        <input type="submit" class="btn btn-secondary" value="Submit results"></input>
+    </form>
+
+    <datalist id="players-datalist">
+        {% for p in players %}
+            <option value="{{ p.name }}">
+        {% endfor %}
+    </datalist>
+
+{% endblock %}
