@@ -262,7 +262,6 @@ def create_results_manual(request):
     if request.method == "POST":
         formset = ResultsFormset(request.POST)
         metadata_form = ManualUploadMetadataForm(user=request.user, data=request.POST)
-        logging.warning("POST")
         if formset.is_valid() and metadata_form.is_valid():
             event = metadata_form.cleaned_data["event"]
             for ranking, result in enumerate(formset):
