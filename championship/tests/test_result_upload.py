@@ -399,6 +399,29 @@ class ManualImportTestCase(TestCase):
         results = EventPlayerResult.objects.filter(event=self.event).order_by("id")[:]
         self.assertEqual(results[0].points, 10)
 
+    def test_import_more_than_one(self):
+        self.data = {
+            "form-0-name": "Antoine Albertelli",
+            "form-0-points": "3-0",
+            "form-1-name": "Bo Bobby",
+            "form-1-points": "0-3",
+            "event": self.event.id,
+            "form-TOTAL_FORMS": 2,
+            "form-INITIAL_FORMS": 0,
+            "form-MIN_NUM_FORMS": 1,
+            "form-MAX_NUM_FORMS": 128,
+        }
+        self.client.post(reverse("results_create_manual"), self.data)
+        self.assertEqual(2, EventPlayerResult.objects.filter(event=self.event).count())
+
+        names = [
+            e.player.name
+            for e in EventPlayerResult.objects.filter(event=self.event).order_by(
+                "ranking"
+            )
+        ]
+        self.assertEqual(names, ["Antoine Albertelli", "Bo Bobby"])
+
 
 class ImportSelectorTestCase(TestCase):
     def setUp(self):

@@ -277,7 +277,7 @@ def create_results_manual(request):
                     event=event, player=player, points=points, ranking=ranking + 1
                 )
 
-                return HttpResponseRedirect(event.get_absolute_url())
+            return HttpResponseRedirect(event.get_absolute_url())
 
     players = Player.leaderboard_objects.all()
     context = {
