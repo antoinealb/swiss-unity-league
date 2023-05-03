@@ -264,10 +264,14 @@ def create_results_manual(request):
         metadata_form = ManualUploadMetadataForm(user=request.user, data=request.POST)
         if formset.is_valid() and metadata_form.is_valid():
             event = metadata_form.cleaned_data["event"]
-            for ranking, result in enumerate(formset):
-                name = result.cleaned_data["name"]
+            for ranking, result in enumerate(formset.cleaned_data):
+                try:
+                    name = result["name"]
+                    points = _points_from_score(result["points"])
+                except KeyError:
+                    continue
+
                 name = re.sub(r"\s+", " ", name)
-                points = _points_from_score(result.cleaned_data["points"])
                 try:
                     player = PlayerAlias.objects.get(name=name).true_player
                 except PlayerAlias.DoesNotExist:
