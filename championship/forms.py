@@ -36,14 +36,6 @@ You can copy/paste the description from a website like swissmtg.ch, and the form
         }
 
 
-def gets_events_available_for_upload(user):
-    # TODO: Only get past events ?
-    qs = Event.objects.filter(organizer__user=user)
-
-    # Remove events that already have results
-    return qs.annotate(result_cnt=Count("eventplayerresult")).filter(result_cnt=0)
-
-
 class AetherhubImporterForm(forms.Form, SubmitButtonMixin):
     url = forms.URLField(
         label="Tournament URL",
@@ -57,7 +49,7 @@ class AetherhubImporterForm(forms.Form, SubmitButtonMixin):
     def __init__(self, user, *args, **kwargs):
         super().__init__(*args, **kwargs)
 
-        self.fields["event"].queryset = gets_events_available_for_upload(user)
+        self.fields["event"].queryset = Event.objects.available_for_result_upload(user)
 
 
 class HtmlImporterForm(forms.Form, SubmitButtonMixin):
@@ -70,7 +62,7 @@ class HtmlImporterForm(forms.Form, SubmitButtonMixin):
     def __init__(self, user, *args, **kwargs):
         super().__init__(*args, **kwargs)
 
-        self.fields["event"].queryset = gets_events_available_for_upload(user)
+        self.fields["event"].queryset = Event.objects.available_for_result_upload(user)
 
 
 class ImporterSelectionForm(forms.Form, SubmitButtonMixin):
@@ -116,12 +108,7 @@ class ManualUploadMetadataForm(forms.Form, SubmitButtonMixin):
     def __init__(self, user, *args, **kwargs):
         super().__init__(*args, **kwargs)
 
-        # TODO: Only get past events?
-        qs = Event.objects.filter(organizer__user=user)
-
-        # Remove events that already have results
-        qs = qs.annotate(result_cnt=Count("eventplayerresult")).filter(result_cnt=0)
-        self.fields["event"].queryset = qs
+        self.fields["event"].queryset = Event.objects.available_for_result_upload(user)
 
         self.helper = FormHelper()
         self.helper.form_tag = False

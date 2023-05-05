@@ -83,7 +83,7 @@ class AetherhubImportTest(TestCase):
         self.credentials = dict(username="test", password="test")
         self.user = User.objects.create_user(**self.credentials)
         self.organizer = EventOrganizerFactory(user=self.user)
-        self.event = EventFactory(organizer=self.organizer)
+        self.event = EventFactory(organizer=self.organizer, date=datetime.date.today())
 
         self.data = {
             "url": "https://aetherhub.com/Tourney/RoundTourney/13923",
@@ -185,7 +185,9 @@ class AetherhubImportTest(TestCase):
         self.client.post(reverse("results_create_aetherhub"), self.data)
 
         # Create a second event, and import the results again
-        second_event = EventFactory(organizer=self.organizer)
+        second_event = EventFactory(
+            organizer=self.organizer, date=datetime.date.today()
+        )
         self.data["event"] = second_event.id
         self.client.post(reverse("results_create_aetherhub"), self.data)
 
@@ -261,7 +263,7 @@ class EventLinkImportTestCase(TestCase):
         self.credentials = dict(username="test", password="test")
         self.user = User.objects.create_user(**self.credentials)
         self.organizer = EventOrganizerFactory(user=self.user)
-        self.event = EventFactory(organizer=self.organizer)
+        self.event = EventFactory(organizer=self.organizer, date=datetime.date.today())
 
         path = os.path.join(os.path.dirname(__file__), "eventlink_ranking.html")
         with open(path) as f:
@@ -349,7 +351,7 @@ class ManualImportTestCase(TestCase):
         self.credentials = dict(username="test", password="test")
         self.user = User.objects.create_user(**self.credentials)
         self.organizer = EventOrganizerFactory(user=self.user)
-        self.event = EventFactory(organizer=self.organizer)
+        self.event = EventFactory(organizer=self.organizer, date=datetime.date.today())
 
         self.data = {
             "form-0-name": "Antoine Albertelli",
@@ -447,3 +449,45 @@ class ImportSelectorTestCase(TestCase):
         data = {"site": choice}
         resp = self.client.post(reverse("results_create"), data, follow=True)
         self.assertRedirects(resp, reverse(view_name))
+
+
+class FindEventsForUpload(TestCase):
+    def test_find_events_for_upload(self):
+        yesterday = datetime.date.today() - datetime.timedelta(days=1)
+        organizer = EventOrganizerFactory()
+        event = EventFactory(date=yesterday, organizer=organizer)
+
+        self.assertIn(
+            event, set(Event.objects.available_for_result_upload(organizer.user))
+        )
+
+    def test_old_events_not_shown(self):
+        long_ago = datetime.date.today() - datetime.timedelta(days=100)
+        organizer = EventOrganizerFactory()
+        event = EventFactory(date=long_ago, organizer=organizer)
+
+        with self.settings(EVENT_MAX_AGE_FOR_RESULT_ENTRY=datetime.timedelta(30)):
+            self.assertNotIn(
+                event, Event.objects.available_for_result_upload(organizer.user)
+            )
+
+    def test_does_not_show_events_by_other_organizer(self):
+        orga1 = EventOrganizerFactory()
+        orga2 = EventOrganizerFactory()
+        event = EventFactory(date=datetime.date.today(), organizer=orga1)
+
+        self.assertNotIn(event, Event.objects.available_for_result_upload(orga2.user))
+
+    def test_does_not_show_events_with_results(self):
+        event = EventFactory(date=datetime.date.today())
+        EventPlayerResultFactory(event=event)
+        self.assertNotIn(
+            event, Event.objects.available_for_result_upload(event.organizer.user)
+        )
+
+    def test_does_not_show_future_events(self):
+        tomorrow = datetime.date.today() + datetime.timedelta(days=1)
+        event = EventFactory(date=tomorrow)
+        self.assertNotIn(
+            event, Event.objects.available_for_result_upload(event.organizer.user)
+        )

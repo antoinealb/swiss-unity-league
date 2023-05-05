@@ -10,6 +10,7 @@ from django.urls import reverse
 from auditlog.registry import auditlog
 import bleach
 import collections
+import datetime
 from prometheus_client import Gauge, Summary
 
 
@@ -24,6 +25,17 @@ class EventOrganizer(models.Model):
 
     def __str__(self):
         return self.name
+
+
+class EventManager(models.Manager):
+    def available_for_result_upload(self, user):
+        start_date = datetime.date.today() - settings.EVENT_MAX_AGE_FOR_RESULT_ENTRY
+        end_date = datetime.date.today()
+        return (
+            self.filter(organizer__user=user, date__gte=start_date, date__lte=end_date)
+            .annotate(result_cnt=Count("eventplayerresult"))
+            .filter(result_cnt=0)
+        )
 
 
 class Event(models.Model):
@@ -89,6 +101,8 @@ class Event(models.Model):
 
     def get_absolute_url(self):
         return reverse("event_details", args=[self.id])
+
+    objects = EventManager()
 
 
 class LeaderBoardPlayerManager(models.Manager):

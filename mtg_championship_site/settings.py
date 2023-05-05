@@ -12,6 +12,7 @@ https://docs.djangoproject.com/en/4.1/ref/settings/
 
 from pathlib import Path
 import os
+import datetime
 import logging
 from prometheus_client import Info
 from django.contrib.messages import constants as messages
@@ -209,6 +210,9 @@ build_info.info({"commit_sha": commit_hash})
 # TODO: Disabled for now, as it causes coherency issues
 SCORES_CACHE_ENABLED = False
 SCORES_CACHE_KEY = "championship.scores"
+
+# Maximum age for an event to enter result in (effetively disables backfill).
+EVENT_MAX_AGE_FOR_RESULT_ENTRY = datetime.timedelta(days=31)
 
 # Forces Django to create a correlation Id for requests rather than expect it
 # from the load balancer.
