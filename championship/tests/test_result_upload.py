@@ -7,6 +7,7 @@ from championship.models import EventPlayerResult
 from championship.tests.parsers.utils import load_test_html
 from championship.factories import *
 from django.core.files.uploadedfile import SimpleUploadedFile
+from championship.views import clean_name
 
 
 from requests import HTTPError
@@ -14,6 +15,33 @@ from parameterized import parameterized
 
 
 from unittest.mock import patch, MagicMock
+
+
+class CleanNameTest(TestCase):
+    @parameterized.expand(
+        [
+            "AntoineAlbertelli",
+            "Antoine ALBERTELLI",
+            "Antoine ALBertelli",
+            "AntoineALBERTELLI",
+            "Antoine_Albertelli",
+            "   Antoine      Albertelli   ",
+            "antoine albertelli",
+            "Antoine Albertelli",
+        ]
+    )
+    def test_clean_basic(self, name):
+        want = "Antoine Albertelli"
+        self.assertEqual(want, clean_name(name))
+
+    def test_dash(self):
+        self.assertEqual("Antoine Renaud-Goud", clean_name("antoine renaud-goud"))
+
+    def test_dot(self):
+        self.assertEqual("Thomas J. Kardos", clean_name("thomas j. kardos"))
+
+    def test_numbers(self):
+        self.assertEqual("Renki777", clean_name("Renki777"))
 
 
 class AetherhubImportTest(TestCase):

@@ -289,6 +289,26 @@ def create_results_manual(request):
     return render(request, "championship/create_results_manual.html", context=context)
 
 
+def clean_name(name):
+    """Cleans the name:
+    -Camel Case: "AntoineAlbertelli"
+    -All Capse  "Antoine ALBERTELLI"
+    -Underscores "Antoine_Albertelli"
+    -Multiple (and leading/trailing) white spaces/tabs "   Antoine    Albertelli   "
+    -Make first letter of each word capital "antoine albertelli"
+    => all of those will be transformed to "Antoine Albertelli"
+    """
+    name = name.replace("_", " ")
+    name = re.sub(
+        r"([A-Z])([A-Z]+)", lambda match: match.group(1) + match.group(2).lower(), name
+    )
+    name = re.sub(r"(?<=[a-z])(?=[A-Z])", " ", name)
+    # Normalizes whitespace in case there are double space or tabs
+    name = re.sub(r"\s+", " ", name)
+
+    return name.strip().title()
+
+
 class CreateResultsView(FormView):
     """Generic view that handles the logic for importing results.
 
@@ -314,13 +334,6 @@ class CreateResultsView(FormView):
         """
         raise ImproperlyConfigured("No parser implemented")
 
-    def _remove_camel_case(self, name):
-        """Converts "AntoineAlbertelli" to "Antoine Albertelli"."""
-        name = "".join(map(lambda c: c if c.islower() else " " + c, name))
-        # Normalizes whitespace in case there are double space or tabs
-        name = re.sub(r"\s+", " ", name)
-        return name.lstrip()
-
     def form_valid(self, form):
         """Processes a succesful result creation form.
 
@@ -341,7 +354,7 @@ class CreateResultsView(FormView):
             )
 
         for i, (name, points) in enumerate(standings):
-            name = self._remove_camel_case(name)
+            name = clean_name(name)
             try:
                 player = PlayerAlias.objects.get(name=name).true_player
             except PlayerAlias.DoesNotExist:
