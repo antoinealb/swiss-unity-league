@@ -158,7 +158,9 @@ class AddTop8ResultsForm(forms.Form, SubmitButtonMixin):
 
     def __init__(self, event, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        qs = EventPlayerResult.objects.filter(event=event).order_by("ranking")
+        qs = EventPlayerResult.objects.filter(event=event, ranking__lte=8).order_by(
+            "ranking"
+        )
         for f in self.fields.values():
             if isinstance(f, AddTop8ResultsForm.ResultChoiceField):
                 f.queryset = qs

@@ -8,6 +8,7 @@ from championship.tests.parsers.utils import load_test_html
 from championship.factories import *
 from django.core.files.uploadedfile import SimpleUploadedFile
 from championship.views import clean_name
+from championship.forms import AddTop8ResultsForm
 
 
 from requests import HTTPError
@@ -472,14 +473,14 @@ class AddTop8Results(TestCase):
             organizer=self.organizer, category=Event.Category.REGIONAL
         )
 
-        self.winner = EventPlayerResultFactory(event=self.event)
-        self.finalist = EventPlayerResultFactory(event=self.event)
-        self.semi0 = EventPlayerResultFactory(event=self.event)
-        self.semi1 = EventPlayerResultFactory(event=self.event)
-        self.quarter0 = EventPlayerResultFactory(event=self.event)
-        self.quarter1 = EventPlayerResultFactory(event=self.event)
-        self.quarter2 = EventPlayerResultFactory(event=self.event)
-        self.quarter3 = EventPlayerResultFactory(event=self.event)
+        self.winner = EventPlayerResultFactory(event=self.event, ranking=3)
+        self.finalist = EventPlayerResultFactory(event=self.event, ranking=5)
+        self.semi0 = EventPlayerResultFactory(event=self.event, ranking=1)
+        self.semi1 = EventPlayerResultFactory(event=self.event, ranking=4)
+        self.quarter0 = EventPlayerResultFactory(event=self.event, ranking=2)
+        self.quarter1 = EventPlayerResultFactory(event=self.event, ranking=6)
+        self.quarter2 = EventPlayerResultFactory(event=self.event, ranking=7)
+        self.quarter3 = EventPlayerResultFactory(event=self.event, ranking=8)
 
         self.data = {
             "winner": self.winner.player.id,
@@ -586,7 +587,7 @@ class AddTop8Results(TestCase):
         )
 
         # Create a new player, make it the winner
-        new_winner = EventPlayerResultFactory(event=self.event)
+        new_winner = EventPlayerResultFactory(event=self.event, ranking=2)
         self.data["winner"] = new_winner.id
         resp = self.client.post(
             reverse("results_top8_add", args=(self.event.id,)),
@@ -623,3 +624,16 @@ class AddTop8Results(TestCase):
                 single_elimination_result=EventPlayerResult.SingleEliminationResult.QUARTER_FINALIST
             ).count(),
         )
+
+    def test_result_offer_only_top_players_as_choices(self):
+        """
+        Test that the top8 form only offers 9 options (8 players plus empty)
+        for each result choice field.
+        """
+        event = EventFactory()
+        for i in range(1, 20):
+            EventPlayerResultFactory(event=event, ranking=i)
+        form = AddTop8ResultsForm(event=event)
+        for field in form.fields.values():
+            if isinstance(field, AddTop8ResultsForm.ResultChoiceField):
+                self.assertEqual(len(field.choices), 9)
