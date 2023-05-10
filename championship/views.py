@@ -289,14 +289,19 @@ def create_results_manual(request):
     return render(request, "championship/create_results_manual.html", context=context)
 
 
-def clean_name(name):
-    """Cleans the name:
-    -Camel Case: "AntoineAlbertelli"
-    -All Capse  "Antoine ALBERTELLI"
-    -Underscores "Antoine_Albertelli"
-    -Multiple (and leading/trailing) white spaces/tabs "   Antoine    Albertelli   "
-    -Make first letter of each word capital "antoine albertelli"
-    => all of those will be transformed to "Antoine Albertelli"
+def clean_name(name: str) -> str:
+    """Normalizes the given name based on observations from results uploaded.
+
+    This function applies transformations to the provided input so that the
+    result is a clean name ready to be put in the DB.
+
+    For example, all of the following inputs map to the normalized "Antoine Albertelli":
+
+        -Camel Case: "AntoineAlbertelli"
+        -All Caps: "Antoine ALBERTELLI"
+        -Snake case: "Antoine_Albertelli"
+        -Multiple (and leading/trailing) white spaces/tabs: "   Antoine    Albertelli   "
+        -Lower case: "antoine albertelli"
     """
     name = name.replace("_", " ")
     name = re.sub(
