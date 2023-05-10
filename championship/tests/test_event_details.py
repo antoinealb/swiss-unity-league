@@ -88,3 +88,31 @@ class EventDetailTestCase(TestCase):
             reverse("admin:championship_event_change", args=[event.id]),
             resp.content.decode(),
         )
+
+    def test_shows_link_for_top8(self):
+        client = Client()
+        credentials = dict(username="test", password="test")
+        user = User.objects.create_user(is_staff=True, **credentials)
+        organizer = EventOrganizerFactory(user=user)
+        client.login(**credentials)
+
+        event = EventFactory(category=Event.Category.REGIONAL, organizer=organizer)
+        resp = client.get(reverse("event_details", args=[event.id]))
+        self.assertIn(
+            reverse("results_top8_add", args=[event.id]),
+            resp.content.decode(),
+        )
+
+    def test_shows_no_link_top8_regular(self):
+        client = Client()
+        credentials = dict(username="test", password="test")
+        user = User.objects.create_user(**credentials)
+        client.login(**credentials)
+        organizer = EventOrganizerFactory(user=user)
+
+        event = EventFactory(category=Event.Category.REGULAR, organizer=organizer)
+        resp = client.get(reverse("event_details", args=[event.id]))
+        self.assertNotIn(
+            reverse("results_top8_add", args=[event.id]),
+            resp.content.decode(),
+        )

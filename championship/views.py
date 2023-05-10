@@ -467,6 +467,46 @@ class ChooseUploaderView(LoginRequiredMixin, FormView):
         return HttpResponseRedirect(urls_for_type[form.cleaned_data["site"]])
 
 
+class AddTop8ResultsView(LoginRequiredMixin, FormView):
+    template_name = "championship/add_top8_results.html"
+    form_class = AddTop8ResultsForm
+
+    def get_form_kwargs(self):
+        kwargs = super().get_form_kwargs()
+        kwargs["event"] = get_object_or_404(
+            Event, pk=self.kwargs["pk"], organizer__user=self.request.user
+        )
+        return kwargs
+
+    def form_valid(self, form):
+        self.event = Event.objects.get(id=self.kwargs["pk"])
+
+        if self.event.category == Event.Category.REGULAR:
+            messages.error(self.request, "Top 8 are not allowed at SUL Regular.")
+            return super().form_valid(form)
+
+        FIELDS_TO_RESULTS = {
+            "winner": EventPlayerResult.SingleEliminationResult.WINNER,
+            "finalist": EventPlayerResult.SingleEliminationResult.FINALIST,
+            "semi0": EventPlayerResult.SingleEliminationResult.SEMI_FINALIST,
+            "semi1": EventPlayerResult.SingleEliminationResult.SEMI_FINALIST,
+            "quarter0": EventPlayerResult.SingleEliminationResult.QUARTER_FINALIST,
+            "quarter1": EventPlayerResult.SingleEliminationResult.QUARTER_FINALIST,
+            "quarter2": EventPlayerResult.SingleEliminationResult.QUARTER_FINALIST,
+            "quarter3": EventPlayerResult.SingleEliminationResult.QUARTER_FINALIST,
+        }
+
+        for key, result in FIELDS_TO_RESULTS.items():
+            w = form.cleaned_data[key]
+            w.single_elimination_result = result
+            w.save()
+
+        return super().form_valid(form)
+
+    def get_success_url(self):
+        return self.event.get_absolute_url()
+
+
 class FutureEventViewSet(viewsets.ReadOnlyModelViewSet):
     """
     API endpoint that allows events to be viewed or edited.
