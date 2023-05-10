@@ -24,9 +24,7 @@ from rest_framework.response import Response
 from .models import *
 from .forms import *
 from django.db.models import F, Q
-from championship import aetherhub_parser
-from championship import eventlink_parser
-from championship import mtgevent_parser
+from championship.parsers import aetherhub, eventlink, mtgevent
 from championship.serializers import EventSerializer
 
 
@@ -377,7 +375,7 @@ class CreateAetherhubResultsView(LoginRequiredMixin, CreateResultsView):
         try:
             response = requests.get(url)
             response.raise_for_status()
-            return aetherhub_parser.parse_standings_page(response.content.decode())
+            return aetherhub.parse_standings_page(response.content.decode())
         except:
             # If anything went wrong with the request, just return to the
             # form.
@@ -393,7 +391,7 @@ class CreateEvenlinkResultsView(LoginRequiredMixin, CreateResultsView):
         text = "".join(s.decode() for s in self.request.FILES["standings"].chunks())
 
         try:
-            return eventlink_parser.parse_standings_page(text)
+            return eventlink.parse_standings_page(text)
         except:
             messages.error(
                 self.request,
@@ -408,7 +406,7 @@ class CreateMtgEventResultsView(LoginRequiredMixin, CreateResultsView):
         text = "".join(s.decode() for s in self.request.FILES["standings"].chunks())
 
         try:
-            return mtgevent_parser.parse_standings_page(text)
+            return mtgevent.parse_standings_page(text)
         except:
             messages.error(
                 self.request,
