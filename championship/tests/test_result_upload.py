@@ -4,73 +4,16 @@ from django.test import TestCase, Client
 from django.contrib.auth.models import User
 from django.urls import reverse
 from championship.models import EventPlayerResult
-from championship import aetherhub_parser
-from championship import mtgevent_parser
+from championship.tests.parsers.utils import load_test_html
 from championship.factories import *
-from championship import eventlink_parser
 from django.core.files.uploadedfile import SimpleUploadedFile
+
 
 from requests import HTTPError
 from parameterized import parameterized
 
 
 from unittest.mock import patch, MagicMock
-
-
-def load_test_html(filename):
-    path = os.path.join(os.path.dirname(__file__), filename)
-    with open(path) as f:
-        text = f.read()
-    return text
-
-
-class AetherhubStandingsParser(TestCase):
-    def setUp(self):
-        self.text = load_test_html("aetherhub_ranking.html")
-        self.results = aetherhub_parser.parse_standings_page(self.text)
-
-    def test_parse_standings(self):
-        want_standings = [
-            ("DarioMazzola", 13),
-            ("Dominik Horber", 13),
-            ("Christopher Weber", 12),
-        ]
-        self.assertEqual(want_standings, self.results[:3])
-
-
-class EventlinkStandingParser(TestCase):
-    def setUp(self):
-        self.text = load_test_html("eventlink_ranking.html")
-        self.results = eventlink_parser.parse_standings_page(self.text)
-
-    def test_can_parse(self):
-        wantStandings = [
-            ("Jeremias Wildi", 10),
-            ("Silvan Aeschbach", 9),
-            ("Janosh Georg", 7),
-        ]
-        self.assertEqual(wantStandings, self.results[:3])
-
-
-class MtgEventStandingsParser(TestCase):
-    def setUp(self):
-        self.text = load_test_html("mtgevent_ranking.html")
-        self.results = mtgevent_parser.parse_standings_page(self.text)
-
-    def test_can_parse(self):
-        wantStandings = [
-            ("Toni Marty", 9),
-            ("Eder Lars", 9),
-            ("Pascal Merk", 9),
-            ("Luca Riedmann", 9),
-            ("Remus Kosmalla", 6),
-            ("Phillpp Ackermann", 6),
-            ("Rico Oess", 6),
-            ("Mathias Tonazi", 3),
-            ("Donat Harterbach", 3),
-            ("Pascal Schärrer", 0),
-        ]
-        self.assertEqual(wantStandings, self.results)
 
 
 class AetherhubImportTest(TestCase):
@@ -265,9 +208,7 @@ class EventLinkImportTestCase(TestCase):
         self.organizer = EventOrganizerFactory(user=self.user)
         self.event = EventFactory(organizer=self.organizer, date=datetime.date.today())
 
-        path = os.path.join(os.path.dirname(__file__), "eventlink_ranking.html")
-        with open(path) as f:
-            text = f.read()
+        text = load_test_html("eventlink_ranking.html")
 
         standings = SimpleUploadedFile(
             "standings", text.encode(), content_type="text/html"

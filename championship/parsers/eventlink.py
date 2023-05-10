@@ -1,8 +1,4 @@
-import re
-from collections import namedtuple
 from bs4 import BeautifulSoup
-
-EventlinkResult = namedtuple("EventlinkResult", ["standings"])
 
 
 def _standings(soup):

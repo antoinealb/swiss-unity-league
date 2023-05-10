@@ -24,11 +24,8 @@ from rest_framework.response import Response
 from .models import *
 from .forms import *
 from django.db.models import F, Q
-from championship import aetherhub_parser
-from championship import eventlink_parser
-from championship import mtgevent_parser
+from championship.parsers import aetherhub, eventlink, mtgevent, challonge
 from championship.serializers import EventSerializer
-
 
 EVENTS_ON_PAGE = 10
 PLAYERS_TOP = 10
@@ -360,60 +357,83 @@ class CreateResultsView(FormView):
         return self.event.get_absolute_url()
 
 
-class CreateAetherhubResultsView(LoginRequiredMixin, CreateResultsView):
-    form_class = AetherhubImporterForm
+class CreateLinkParserResultsView(LoginRequiredMixin, CreateResultsView):
+    form_class = LinkImporterForm
+    parser = None
+    help_text = None
+    placeholder = None
 
-    def clean_aetherhub_url(self, url):
+    def clean_url(self, url):
+        raise NotImplementedError("This method has not been implemented yet.")
+
+    def get_form_kwargs(self):
+        kwargs = super().get_form_kwargs()
+        kwargs.update({"help_text": self.help_text, "placeholder": self.placeholder})
+        return kwargs
+
+    def get_results(self, form):
+        url = form.cleaned_data["url"]
+        url = self.clean_url(url)
+
+        try:
+            headers = {
+                "User-Agent": "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/112.0.0.0 Safari/537.36",
+                "Accept-Language": "en-US,en;q=0.9",
+            }
+            response = requests.get(url, headers=headers)
+            response.raise_for_status()
+            return self.parser.parse_standings_page(response.content.decode())
+        except:
+            messages.error(self.request, "Could not fetch standings.")
+
+
+class CreateHTMLParserResultsView(LoginRequiredMixin, CreateResultsView):
+    form_class = HtmlImporterForm
+    parser = None
+
+    def get_results(self, form):
+        text = "".join(s.decode() for s in self.request.FILES["standings"].chunks())
+
+        try:
+            return self.parser.parse_standings_page(text)
+        except:
+            messages.error(
+                self.request,
+                "Error: Could not parse standings file. Did you upload the HTML standings correctly?",
+            )
+
+
+class CreateAetherhubResultsView(CreateLinkParserResultsView):
+    parser = aetherhub
+    help_text = (
+        "Link to your tournament. Make sure it is a public and finished tournament."
+    )
+    placeholder = "https://aetherhub.com/Tourney/RoundTourney/123456"
+
+    def clean_url(self, url):
         """Normalizes the given tournament url to point to the RoundTourney page."""
         url_re = r"https://aetherhub.com/Tourney/[a-zA-Z]+/(\d+)"
         tourney = re.match(url_re, url).group(1)
         return f"https://aetherhub.com/Tourney/RoundTourney/{tourney}"
 
-    def get_results(self, form):
-        url = form.cleaned_data["url"]
-        url = self.clean_aetherhub_url(url)
 
-        # Fetch results from Aetherhub and parse them
-        try:
-            response = requests.get(url)
-            response.raise_for_status()
-            return aetherhub_parser.parse_standings_page(response.content.decode())
-        except:
-            # If anything went wrong with the request, just return to the
-            # form.
-            messages.error(
-                self.request, "Could not fetch standings information from Aetherhub."
-            )
+class CreateChallongeResultsView(CreateLinkParserResultsView):
+    parser = challonge
+    help_text = (
+        "Link to your tournament. Make sure the tournament system is Swiss rounds."
+    )
+    placeholder = "https://challonge.com/de/rk6vluaa"
+
+    def clean_url(self, url):
+        return challonge.clean_url(url)
 
 
-class CreateEvenlinkResultsView(LoginRequiredMixin, CreateResultsView):
-    form_class = HtmlImporterForm
-
-    def get_results(self, form):
-        text = "".join(s.decode() for s in self.request.FILES["standings"].chunks())
-
-        try:
-            return eventlink_parser.parse_standings_page(text)
-        except:
-            messages.error(
-                self.request,
-                "Error: Could not parse standings file. Did you upload the HTML standings correctly?",
-            )
+class CreateEvenlinkResultsView(CreateHTMLParserResultsView):
+    parser = eventlink
 
 
-class CreateMtgEventResultsView(LoginRequiredMixin, CreateResultsView):
-    form_class = HtmlImporterForm
-
-    def get_results(self, form):
-        text = "".join(s.decode() for s in self.request.FILES["standings"].chunks())
-
-        try:
-            return mtgevent_parser.parse_standings_page(text)
-        except:
-            messages.error(
-                self.request,
-                "Error: Could not parse standings file. Did you upload the HTML standings correctly?",
-            )
+class CreateMtgEventResultsView(CreateHTMLParserResultsView):
+    parser = mtgevent.parse_standings_page
 
 
 class ChooseUploaderView(LoginRequiredMixin, FormView):
