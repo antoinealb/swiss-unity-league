@@ -577,3 +577,26 @@ class AddTop8Results(TestCase):
         self.assertIsNone(
             EventPlayerResult.objects.get(id=self.winner.id).single_elimination_result
         )
+
+    def test_result_top8_results_are_removed_before_upload(self):
+        # first, post with initial data
+        resp = self.client.post(
+            reverse("results_top8_add", args=(self.event.id,)),
+            data=self.data,
+        )
+
+        # Create a new player, make it the winner
+        new_winner = EventPlayerResultFactory(event=self.event)
+        self.data["winner"] = new_winner.id
+        resp = self.client.post(
+            reverse("results_top8_add", args=(self.event.id,)),
+            data=self.data,
+        )
+
+        # We should only have one winner and it should be the new one
+        winners = self.event.eventplayerresult_set.filter(
+            single_elimination_result=EventPlayerResult.SingleEliminationResult.WINNER
+        )
+
+        self.assertEqual(1, winners.count(), "Only one WINNER should be set.")
+        self.assertEqual(new_winner, winners[0])

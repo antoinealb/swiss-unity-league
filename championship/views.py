@@ -496,6 +496,7 @@ class AddTop8ResultsView(LoginRequiredMixin, FormView):
             "quarter3": EventPlayerResult.SingleEliminationResult.QUARTER_FINALIST,
         }
 
+        self.event.eventplayerresult_set.update(single_elimination_result=None)
         for key, result in FIELDS_TO_RESULTS.items():
             w = form.cleaned_data[key]
             w.single_elimination_result = result
