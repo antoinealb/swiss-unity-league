@@ -33,6 +33,11 @@ urlpatterns = [
     path("events/<int:pk>/", views.EventDetailsView.as_view(), name="event_details"),
     path("results/create", views.ChooseUploaderView.as_view(), name="results_create"),
     path(
+        "results/<int:pk>/top8",
+        views.AddTop8ResultsView.as_view(),
+        name="results_top8_add",
+    ),
+    path(
         "organizer/edit", views.OrganizerProfileEdit.as_view(), name="organizer_update"
     ),
     path("api/", include(api_router.urls)),

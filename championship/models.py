@@ -102,6 +102,9 @@ class Event(models.Model):
     def get_absolute_url(self):
         return reverse("event_details", args=[self.id])
 
+    def can_have_top8(self):
+        return self.category != Event.Category.REGULAR
+
     objects = EventManager()
 
 

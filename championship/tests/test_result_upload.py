@@ -460,3 +460,143 @@ class FindEventsForUpload(TestCase):
         self.assertNotIn(
             event, Event.objects.available_for_result_upload(event.organizer.user)
         )
+
+
+class AddTop8Results(TestCase):
+    def setUp(self):
+        self.client = Client()
+        self.credentials = dict(username="test", password="test")
+        self.user = User.objects.create_user(**self.credentials)
+        self.organizer = EventOrganizerFactory(user=self.user)
+        self.event = EventFactory(
+            organizer=self.organizer, category=Event.Category.REGIONAL
+        )
+
+        self.winner = EventPlayerResultFactory(event=self.event)
+        self.finalist = EventPlayerResultFactory(event=self.event)
+        self.semi0 = EventPlayerResultFactory(event=self.event)
+        self.semi1 = EventPlayerResultFactory(event=self.event)
+        self.quarter0 = EventPlayerResultFactory(event=self.event)
+        self.quarter1 = EventPlayerResultFactory(event=self.event)
+        self.quarter2 = EventPlayerResultFactory(event=self.event)
+        self.quarter3 = EventPlayerResultFactory(event=self.event)
+
+        self.data = {
+            "winner": self.winner.player.id,
+            "finalist": self.finalist.player.id,
+            "semi0": self.semi0.player.id,
+            "semi1": self.semi1.player.id,
+            "quarter0": self.quarter0.player.id,
+            "quarter1": self.quarter1.player.id,
+            "quarter2": self.quarter2.player.id,
+            "quarter3": self.quarter3.player.id,
+        }
+
+        self.login()
+
+    def login(self):
+        self.client.login(**self.credentials)
+
+    def test_redirects(self):
+        resp = self.client.post(
+            reverse("results_top8_add", args=(self.event.id,)),
+            data=self.data,
+        )
+
+        self.assertRedirects(resp, reverse("event_details", args=(self.event.id,)))
+
+    def test_update_player_result_top8(self):
+        self.client.post(
+            reverse("results_top8_add", args=(self.event.id,)),
+            data=self.data,
+        )
+
+        self.assertEqual(
+            EventPlayerResult.objects.get(id=self.winner.id).single_elimination_result,
+            EventPlayerResult.SingleEliminationResult.WINNER,
+        )
+        self.assertEqual(
+            EventPlayerResult.objects.get(
+                id=self.finalist.id
+            ).single_elimination_result,
+            EventPlayerResult.SingleEliminationResult.FINALIST,
+        )
+        self.assertEqual(
+            EventPlayerResult.objects.get(id=self.semi0.id).single_elimination_result,
+            EventPlayerResult.SingleEliminationResult.SEMI_FINALIST,
+        )
+        self.assertEqual(
+            EventPlayerResult.objects.get(id=self.semi1.id).single_elimination_result,
+            EventPlayerResult.SingleEliminationResult.SEMI_FINALIST,
+        )
+        self.assertEqual(
+            EventPlayerResult.objects.get(
+                id=self.quarter0.id
+            ).single_elimination_result,
+            EventPlayerResult.SingleEliminationResult.QUARTER_FINALIST,
+        )
+        self.assertEqual(
+            EventPlayerResult.objects.get(
+                id=self.quarter1.id
+            ).single_elimination_result,
+            EventPlayerResult.SingleEliminationResult.QUARTER_FINALIST,
+        )
+        self.assertEqual(
+            EventPlayerResult.objects.get(
+                id=self.quarter2.id
+            ).single_elimination_result,
+            EventPlayerResult.SingleEliminationResult.QUARTER_FINALIST,
+        )
+        self.assertEqual(
+            EventPlayerResult.objects.get(
+                id=self.quarter3.id
+            ).single_elimination_result,
+            EventPlayerResult.SingleEliminationResult.QUARTER_FINALIST,
+        )
+
+    def test_result_top8_not_allowed_for_other_users(self):
+        # Change the owner of the event
+        self.event.organizer = EventOrganizerFactory()
+        self.event.save()
+        resp = self.client.post(
+            reverse("results_top8_add", args=(self.event.id,)),
+            data=self.data,
+        )
+        self.assertEqual(404, resp.status_code)
+
+    def test_result_top8_not_allowed_for_regular_events(self):
+        self.event.category = Event.Category.REGULAR
+        self.event.save()
+        resp = self.client.post(
+            reverse("results_top8_add", args=(self.event.id,)),
+            data=self.data,
+            follow=True,
+        )
+        self.assertRedirects(resp, reverse("event_details", args=(self.event.id,)))
+        self.assertIn("Top 8 are not allowed at SUL Regular.", resp.content.decode())
+        self.assertIsNone(
+            EventPlayerResult.objects.get(id=self.winner.id).single_elimination_result
+        )
+
+    def test_result_top8_results_are_removed_before_upload(self):
+        # first, post with initial data
+        resp = self.client.post(
+            reverse("results_top8_add", args=(self.event.id,)),
+            data=self.data,
+        )
+
+        # Create a new player, make it the winner
+        new_winner = EventPlayerResultFactory(event=self.event)
+        self.data["winner"] = new_winner.id
+        resp = self.client.post(
+            reverse("results_top8_add", args=(self.event.id,)),
+            data=self.data,
+        )
+
+        # We should only have one winner and it should be the new one
+        winners = self.event.eventplayerresult_set.filter(
+            single_elimination_result=EventPlayerResult.SingleEliminationResult.WINNER
+        )
+
+        self.assertEqual(1, winners.count(), "Only one WINNER should be set.")
+        self.assertEqual(new_winner, winners[0])

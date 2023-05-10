@@ -1,7 +1,7 @@
 from django.db.models import TextChoices, Count
 from django.core.validators import RegexValidator
 from django import forms
-from .models import Event
+from .models import Event, EventPlayerResult
 from crispy_forms.helper import FormHelper
 from crispy_forms.layout import Submit, Layout, Div, Field
 import datetime
@@ -136,3 +136,43 @@ class SingleResultFormHelper(FormHelper):
 ResultsFormset = forms.formset_factory(
     SingleResultForm, min_num=1, extra=32, max_num=128
 )
+
+
+class AddTop8ResultsForm(forms.Form, SubmitButtonMixin):
+    class ResultChoiceField(forms.ModelChoiceField):
+        def __init__(self, *args, **kwargs):
+            queryset = EventPlayerResult.objects.none()
+            super().__init__(queryset=queryset, *args, **kwargs)
+
+        def label_from_instance(self, obj):
+            return obj.player.name
+
+    winner = ResultChoiceField(label="Winner")
+    finalist = ResultChoiceField(label="Finalist")
+    semi0 = ResultChoiceField(label="Semifinalist")
+    semi1 = ResultChoiceField(label="Semifinalist")
+    quarter0 = ResultChoiceField(label="Quarterfinalist")
+    quarter1 = ResultChoiceField(label="Quarterfinalist")
+    quarter2 = ResultChoiceField(label="Quarterfinalist")
+    quarter3 = ResultChoiceField(label="Quarterfinalist")
+
+    def __init__(self, event, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        qs = EventPlayerResult.objects.filter(event=event).order_by("ranking")
+        for f in self.fields.values():
+            if isinstance(f, AddTop8ResultsForm.ResultChoiceField):
+                f.queryset = qs
+        scnt = 0
+        qcnt = 0
+        for r in event.eventplayerresult_set.exclude(single_elimination_result=None):
+            s = r.single_elimination_result
+            if s == EventPlayerResult.SingleEliminationResult.WINNER:
+                self.initial["winner"] = r
+            elif s == EventPlayerResult.SingleEliminationResult.FINALIST:
+                self.initial["finalist"] = r
+            elif s == EventPlayerResult.SingleEliminationResult.SEMI_FINALIST:
+                self.initial[f"semi{scnt}"] = r
+                scnt += 1
+            elif s == EventPlayerResult.SingleEliminationResult.QUARTER_FINALIST:
+                self.initial[f"quarter{qcnt}"] = r
+                qcnt += 1
