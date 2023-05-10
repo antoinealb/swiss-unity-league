@@ -600,3 +600,26 @@ class AddTop8Results(TestCase):
 
         self.assertEqual(1, winners.count(), "Only one WINNER should be set.")
         self.assertEqual(new_winner, winners[0])
+
+    def test_update_player_result_with_only_top4(self):
+        # No quarterfinalist, only top4
+        for i in range(4):
+            del self.data[f"quarter{i}"]
+        self.client.post(
+            reverse("results_top8_add", args=(self.event.id,)),
+            data=self.data,
+        )
+
+        # Check that we have one winner
+        self.assertEqual(
+            EventPlayerResult.objects.get(id=self.winner.id).single_elimination_result,
+            EventPlayerResult.SingleEliminationResult.WINNER,
+        )
+
+        # And that we have no quarter finalist
+        self.assertEqual(
+            0,
+            self.event.eventplayerresult_set.filter(
+                single_elimination_result=EventPlayerResult.SingleEliminationResult.QUARTER_FINALIST
+            ).count(),
+        )

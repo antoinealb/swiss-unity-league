@@ -151,10 +151,10 @@ class AddTop8ResultsForm(forms.Form, SubmitButtonMixin):
     finalist = ResultChoiceField(label="Finalist")
     semi0 = ResultChoiceField(label="Semifinalist")
     semi1 = ResultChoiceField(label="Semifinalist")
-    quarter0 = ResultChoiceField(label="Quarterfinalist")
-    quarter1 = ResultChoiceField(label="Quarterfinalist")
-    quarter2 = ResultChoiceField(label="Quarterfinalist")
-    quarter3 = ResultChoiceField(label="Quarterfinalist")
+    quarter0 = ResultChoiceField(label="Quarterfinalist", required=False)
+    quarter1 = ResultChoiceField(label="Quarterfinalist", required=False)
+    quarter2 = ResultChoiceField(label="Quarterfinalist", required=False)
+    quarter3 = ResultChoiceField(label="Quarterfinalist", required=False)
 
     def __init__(self, event, *args, **kwargs):
         super().__init__(*args, **kwargs)

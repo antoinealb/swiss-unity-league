@@ -499,6 +499,10 @@ class AddTop8ResultsView(LoginRequiredMixin, FormView):
         self.event.eventplayerresult_set.update(single_elimination_result=None)
         for key, result in FIELDS_TO_RESULTS.items():
             w = form.cleaned_data[key]
+
+            if w is None:
+                continue
+
             w.single_elimination_result = result
             w.save()
 
