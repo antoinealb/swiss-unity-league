@@ -7,7 +7,6 @@ from championship.models import EventPlayerResult
 from championship.tests.parsers.utils import load_test_html
 from championship.factories import *
 from django.core.files.uploadedfile import SimpleUploadedFile
-from championship.parsers.parser_list import PARSER_LIST
 
 
 from requests import HTTPError
@@ -15,49 +14,6 @@ from parameterized import parameterized
 
 
 from unittest.mock import patch, MagicMock
-
-
-class ChallongeCleanUrlTest(TestCase):
-    def setUp(self):
-        for parser in PARSER_LIST:
-            if parser.name == "Challonge":
-                self.clean_url = parser.view.clean_url
-
-    def test_positive_clean_url(self):
-        tests = [
-            (
-                "challonge.com/de/rk6vluak",
-                "https://challonge.com/rk6vluak/standings",
-            ),
-            (
-                "https://test.test.challonge.com/zh_cn/rk6vluak",
-                "https://test.test.challonge.com/rk6vluak/standings",
-            ),
-            (
-                "https:/test.test.challonge.com/rk6vluak",
-                "https://challonge.com/rk6vluak/standings",
-            ),
-            (
-                "https://challonge.com/fr/rk6vluak/standings",
-                "https://challonge.com/rk6vluak/standings",
-            ),
-            (
-                "https://test.challonge.com/rk6vluak/test",
-                "https://test.challonge.com/rk6vluak/standings",
-            ),
-        ]
-        for to_be_cleaned, expected in tests:
-            self.assertEqual(self.clean_url(self, to_be_cleaned), expected)
-
-    def test_no_challonge(self):
-        with self.assertRaises(ValueError):
-            self.clean_url(self, "llonge.com/rk6vluak")
-
-    def test_wrong_tourney_id(self):
-        with self.assertRaises(ValueError):
-            self.clean_url(self, "https://challonge.com/fr/rk6vlak")
-        with self.assertRaises(ValueError):
-            self.clean_url(self, "https://challonge.com/fr/rk6vlakasdd")
 
 
 class AetherhubImportTest(TestCase):

@@ -53,3 +53,43 @@ class ChallongeStandingsParser(TestCase):
             ("test", 2),
         ]
         self.assertEqual(want_standings, self.results[:3])
+
+
+class ChallongeCleanUrlTest(TestCase):
+    def test_positive_clean_url(self):
+        tests = [
+            (
+                "challonge.com/de/rk6vluak",
+                "https://challonge.com/rk6vluak/standings",
+            ),
+            (
+                "https://test.test.challonge.com/zh_cn/rk6vluak",
+                "https://test.test.challonge.com/rk6vluak/standings",
+            ),
+            (
+                "https:/test.test.challonge.com/rk6vluak",
+                "https://challonge.com/rk6vluak/standings",
+            ),
+            (
+                "https://challonge.com/fr/rk6vluak/standings",
+                "https://challonge.com/rk6vluak/standings",
+            ),
+            (
+                "https://test.challonge.com/rk6vluak/test",
+                "https://test.challonge.com/rk6vluak/standings",
+            ),
+        ]
+
+        for input, want in tests:
+            with self.subTest(f"Formatting {input}"):
+                self.assertEqual(challonge.clean_url(input), want)
+
+    def test_no_challonge(self):
+        with self.assertRaises(ValueError):
+            challonge.clean_url("llonge.com/rk6vluak")
+
+    def test_wrong_tourney_id(self):
+        with self.assertRaises(ValueError):
+            challonge.clean_url("https://challonge.com/fr/rk6vlak")
+        with self.assertRaises(ValueError):
+            challonge.clean_url("https://challonge.com/fr/rk6vlakasdd")

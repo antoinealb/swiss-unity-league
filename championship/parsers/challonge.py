@@ -48,3 +48,18 @@ def parse_standings_page(text):
     soup = BeautifulSoup(text, features="html.parser")
     standings = list(_standings(soup))
     return standings
+
+
+def clean_url(url):
+    challonge = "challonge.com/"
+    https = "https://"
+    try:
+        url_start, path = url.split(challonge)
+    except:
+        raise ValueError("No challonge.com URL")
+    if not url_start.startswith(https):
+        url_start = https
+    for tourney_id in path.split("/"):
+        if len(tourney_id) == 8:
+            return url_start + challonge + tourney_id + "/standings"
+    raise ValueError("No tournament id found")
