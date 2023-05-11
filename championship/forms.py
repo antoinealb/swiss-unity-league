@@ -164,6 +164,15 @@ class AddTop8ResultsForm(forms.Form, SubmitButtonMixin):
         for f in self.fields.values():
             if isinstance(f, AddTop8ResultsForm.ResultChoiceField):
                 f.queryset = qs
+
+        # Make playing the whole top8 mandatory for event above 16 players.
+        # Source: MTR Appendix E
+        event_size = event.eventplayerresult_set.count()
+        if event_size > 16:
+            for key, field in self.fields.items():
+                if key.startswith("quarter"):
+                    field.required = True
+
         scnt = 0
         qcnt = 0
         for r in event.eventplayerresult_set.exclude(single_elimination_result=None):

@@ -637,3 +637,26 @@ class AddTop8Results(TestCase):
         for field in form.fields.values():
             if isinstance(field, AddTop8ResultsForm.ResultChoiceField):
                 self.assertEqual(len(field.choices), 9)
+
+    def test_must_play_top8_not_top4_if_big_enough(self):
+        """Test that if we have more than 17 players, we are forced to enter a
+        full top8 and not only top4, as suggested in MTR Appendix E."""
+        for _ in range(9):
+            EventPlayerResultFactory(event=self.event)
+        self.assertEqual(17, self.event.eventplayerresult_set.count())
+
+        # play only top 4, which is not allowed with 17 players
+        for i in range(4):
+            del self.data[f"quarter{i}"]
+
+        self.client.post(
+            reverse("results_top8_add", args=(self.event.id,)),
+            data=self.data,
+        )
+
+        self.assertFalse(
+            self.event.eventplayerresult_set.filter(
+                single_elimination_result=EventPlayerResult.SingleEliminationResult.WINNER
+            ).exists(),
+            "Should not have a winner.",
+        )
