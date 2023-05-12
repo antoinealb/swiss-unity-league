@@ -315,6 +315,40 @@ class EventLinkImportTestCase(TestCase):
         self.assertEqual([], gotChoices)
 
 
+class MtgEventUploadTest(TestCase):
+    def setUp(self):
+        self.client = Client()
+        self.credentials = dict(username="test", password="test")
+        self.user = User.objects.create_user(**self.credentials)
+        self.organizer = EventOrganizerFactory(user=self.user)
+        self.event = EventFactory(organizer=self.organizer, date=datetime.date.today())
+
+        text = load_test_html("mtgevent_ranking.html")
+
+        standings = SimpleUploadedFile(
+            "standings", text.encode(), content_type="text/html"
+        )
+
+        self.data = {
+            "standings": standings,
+            "event": self.event.id,
+        }
+
+    def login(self):
+        self.client.login(**self.credentials)
+
+    def test_imports_result(self):
+        self.login()
+
+        self.client.post(reverse("results_create_mtgevent"), self.data)
+
+        self.event.refresh_from_db()
+
+        results = self.event.eventplayerresult_set.order_by("ranking")
+        self.assertEqual(results.count(), 10)
+        self.assertEqual(results[0].player.name, "Toni Marty")
+
+
 class ManualImportTestCase(TestCase):
     def setUp(self):
         self.client = Client()

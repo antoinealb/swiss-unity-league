@@ -451,7 +451,7 @@ class CreateEvenlinkResultsView(CreateHTMLParserResultsView):
 
 
 class CreateMtgEventResultsView(CreateHTMLParserResultsView):
-    parser = mtgevent.parse_standings_page
+    parser = mtgevent
 
 
 class ChooseUploaderView(LoginRequiredMixin, FormView):
