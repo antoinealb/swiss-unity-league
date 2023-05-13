@@ -1,6 +1,7 @@
 import datetime
-import logging
+import math
 import re
+import logging
 import os
 import requests
 import random
@@ -26,6 +27,7 @@ from .forms import *
 from django.db.models import F, Q
 from championship.parsers import aetherhub, eventlink, mtgevent, challonge
 from championship.serializers import EventSerializer
+from championship.tournament_valid import check_if_valid_tournament
 
 EVENTS_ON_PAGE = 10
 PLAYERS_TOP = 10
@@ -280,14 +282,28 @@ class CreateManualResultsView(LoginRequiredMixin, TemplateView):
             return self.render_to_response(context)
 
         event = metadata_form.cleaned_data["event"]
-        for ranking, result in enumerate(formset.cleaned_data):
+
+        standings = []
+        for result in formset.cleaned_data:
             try:
                 name = result["name"]
                 points = _points_from_score(result["points"])
             except KeyError:
                 continue
 
-            name = re.sub(r"\s+", " ", name)
+            standings.append((re.sub(r"\s+", " ", name), points))
+
+        try:
+            check_if_valid_tournament(standings, event.category)
+        except ValueError as e:
+            logging.exception("Could not validate tournament")
+            messages.error(request, str(e))
+            context = self.get_context_data(
+                formset=formset, metadata_form=metadata_form
+            )
+            return self.render_to_response(context, status=400)
+
+        for ranking, (name, points) in enumerate(standings):
             try:
                 player = PlayerAlias.objects.get(name=name).true_player
             except PlayerAlias.DoesNotExist:
@@ -298,19 +314,6 @@ class CreateManualResultsView(LoginRequiredMixin, TemplateView):
             )
 
         return HttpResponseRedirect(event.get_absolute_url())
-
-
-def create_results_manual(request):
-    formset = ResultsFormset()
-    metadata_form = ManualUploadMetadataForm(user=request.user)
-
-    if request.method == "POST":
-        formset = ResultsFormset(request.POST)
-        metadata_form = ManualUploadMetadataForm(user=request.user, data=request.POST)
-        if formset.is_valid() and metadata_form.is_valid():
-            event = metadata_form.cleaned_data["event"]
-    players = Player.leaderboard_objects.all()
-    return render(request, context=context)
 
 
 def clean_name(name: str) -> str:
@@ -404,13 +407,23 @@ class CreateResultsView(FormView):
         self.event = form.cleaned_data["event"]
         standings = self.get_results(form)
 
-        if not standings:
+        def bad_request():
             return render(
                 self.request,
                 self.template_name,
                 {"form": form},
                 status=400,
             )
+
+        if not standings:
+            return bad_request()
+
+        try:
+            check_if_valid_tournament(standings, self.event.category)
+        except ValueError as e:
+            logging.exception("Could not validate tournament")
+            messages.error(self.request, str(e))
+            return bad_request()
 
         for i, (name, points) in enumerate(standings):
             name = clean_name(name)
@@ -472,7 +485,8 @@ class CreateHTMLParserResultsView(LoginRequiredMixin, CreateResultsView):
 
         try:
             return self.extract_standings_from_page(text)
-        except:
+        except Exception as e:
+            logging.exception("Could not parse page")
             messages.error(
                 self.request,
                 "Error: Could not parse standings file. Did you upload the HTML standings correctly?",
