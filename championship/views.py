@@ -302,6 +302,10 @@ def clean_name(name: str) -> str:
         -Snake case: "Antoine_Albertelli"
         -Multiple (and leading/trailing) white spaces/tabs: "   Antoine    Albertelli   "
         -Lower case: "antoine albertelli"
+
+    Note lower case words are only capitalized if the word has more than 3 letters
+    (Short terms like "van", ""der", "da" shouldn't be capital).
+    Abbreviations that end with a dot like "J." should be capital though.
     """
     name = name.replace("_", " ")
     name = re.sub(
@@ -310,8 +314,15 @@ def clean_name(name: str) -> str:
     name = re.sub(r"(?<=[a-z])(?=[A-Z])", " ", name)
     # Normalizes whitespace in case there are double space or tabs
     name = re.sub(r"\s+", " ", name)
-
-    return name.strip().title()
+    name = name.strip()
+    # Capitalizes all words with 4 or more letters or that end with a dot "."
+    name = " ".join(
+        [
+            word.title() if len(word) > 3 or word.endswith(".") else word
+            for word in name.split()
+        ]
+    )
+    return name
 
 
 class CreateResultsView(FormView):

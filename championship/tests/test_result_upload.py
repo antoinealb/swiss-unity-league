@@ -44,6 +44,10 @@ class CleanNameTest(TestCase):
     def test_numbers(self):
         self.assertEqual("Renki777", clean_name("Renki777"))
 
+    def test_short_words_shouldnt_be_capital(self):
+        self.assertEqual("Laurin van der Hagen", clean_name("laurin van der hagen"))
+        self.assertEqual("Laurin Van Der Hagen", clean_name("laurin Van Der hagen"))
+
 
 class AetherhubImportTest(TestCase):
     """
