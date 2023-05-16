@@ -11,6 +11,15 @@ tests:
   script:
     - ./manage.py test
 
+python-typing:
+  stage: test
+  image: python:3.10
+  before_script:
+    - pip install -r requirements.txt
+    - pip install mypy
+  script:
+    - mypy --install-types --non-interactive championship
+
 python-format:
   stage: test
   image: python:3.10

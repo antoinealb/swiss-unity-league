@@ -247,8 +247,8 @@ def _points_from_score(score: str) -> int:
     >>> _points_from_score('3-0')
     9
     """
-    score = [int(s) for s in score.split("-")]
-    return sum(a * b for a, b in zip(score, (3, 0, 1)))
+    score_tuples = [int(s) for s in score.split("-")]
+    return sum(a * b for a, b in zip(score_tuples, (3, 0, 1)))
 
 
 @login_required
@@ -388,9 +388,9 @@ class CreateResultsView(FormView):
 
 class CreateLinkParserResultsView(LoginRequiredMixin, CreateResultsView):
     form_class = LinkImporterForm
-    parser = None
-    help_text = None
-    placeholder = None
+    parser: Any
+    help_text: str
+    placeholder: str
 
     def clean_url(self, url):
         raise NotImplementedError("This method has not been implemented yet.")
@@ -418,7 +418,7 @@ class CreateLinkParserResultsView(LoginRequiredMixin, CreateResultsView):
 
 class CreateHTMLParserResultsView(LoginRequiredMixin, CreateResultsView):
     form_class = HtmlImporterForm
-    parser = None
+    parser: Any
 
     def get_results(self, form):
         text = "".join(s.decode() for s in self.request.FILES["standings"].chunks())
