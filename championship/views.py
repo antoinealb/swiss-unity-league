@@ -409,7 +409,7 @@ class CreateResultsView(FormView):
         self.event = form.cleaned_data["event"]
         standings = self.get_results(form)
 
-        def bad_request():
+        def render_error_standings_form():
             return render(
                 self.request,
                 self.template_name,
@@ -418,14 +418,14 @@ class CreateResultsView(FormView):
             )
 
         if not standings:
-            return bad_request()
+            return render_error_standings_form()
 
         try:
             check_if_valid_tournament(standings, self.event.category)
         except ValueError as e:
             logging.exception("Could not validate tournament")
             messages.error(self.request, str(e))
-            return bad_request()
+            return render_error_standings_form()
 
         for i, (name, points) in enumerate(standings):
             name = clean_name(name)
