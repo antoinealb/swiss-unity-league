@@ -9,7 +9,7 @@ def get_max_rounds(num_players, event_category):
     max_rounds = math.ceil(math.log2(num_players))
     # For regional tournaments without top 8 we allow up to 5 Swiss rounds
     if event_category == Event.Category.REGIONAL and max_rounds < 5:
-        max_rounds = 5
+        return 5
 
     if event_category == Event.Category.PREMIER and num_players < 17:
         raise ValueError(
