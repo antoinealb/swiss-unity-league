@@ -483,6 +483,24 @@ class ManualImportTestCase(TestCase):
         ]
         self.assertEqual(names, ["Antoine", "Charles", "Bo"])
 
+    def test_tournament_validation(self):
+        regional_event = EventFactory(
+            organizer=self.organizer,
+            date=datetime.date.today(),
+            category=Event.Category.REGIONAL,
+        )
+        self.data["form-0-points"] = "5-0-1"
+        self.data["event"] = regional_event.id
+        resp = self.client.post(reverse("results_create_manual"), self.data)
+        self.assertEqual(400, resp.status_code)
+        content = resp.content.decode()
+        self.assertIn(
+            "A SUL Regional event with 1 players should have at maximum 5 rounds.",
+            content,
+        )
+        results = EventPlayerResult.objects.filter(event=regional_event)
+        self.assertEqual(len(results), 0)
+
 
 class ImportSelectorTestCase(TestCase):
     def setUp(self):
