@@ -321,15 +321,34 @@ def clean_name(name: str) -> str:
 
     For example, all of the following inputs map to the normalized "Antoine Albertelli":
 
-        -Camel Case: "AntoineAlbertelli"
-        -All Caps: "Antoine ALBERTELLI"
-        -Snake case: "Antoine_Albertelli"
-        -Multiple (and leading/trailing) white spaces/tabs: "   Antoine    Albertelli   "
-        -Lower case: "antoine albertelli"
+    CamelCase:
+    >>> clean_name('AntoineAlbertelli')
+    'Antoine Albertelli'
+
+    All caps
+    >>> clean_name('Antoine ALBERTELLI')
+    'Antoine Albertelli'
+
+    Snake Case
+    >>> clean_name('Antoine_Albertelli')
+    'Antoine Albertelli'
+
+    Extra spaces
+    >>> clean_name('   Antoine   Albertelli')
+    'Antoine Albertelli'
+
+    All lower caps
+    >>> clean_name('antoine albertelli')
+    'Antoine Albertelli'
+
 
     Note lower case words are only capitalized if the word has more than 3 letters
     (Short terms like "van", ""der", "da" shouldn't be capital).
-    Abbreviations that end with a dot like "J." should be capital though.
+    >>> clean_name('Antoine van Albertelli')
+    'Antoine van Albertelli'
+
+    >>> clean_name('Antoine J. Albertelli')
+    'Antoine J. Albertelli'
     """
     name = name.replace("_", " ")
     name = re.sub(
