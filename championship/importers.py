@@ -21,5 +21,5 @@ IMPORTER_LIST = [
     Importer("EventLink", views.CreateEvenlinkResultsView.as_view()),
     Importer("MTGEvent", views.CreateMtgEventResultsView.as_view()),
     Importer("Challonge", views.CreateChallongeResultsView.as_view()),
-    Importer("Manual", views.create_results_manual),
+    Importer("Manual", views.CreateManualResultsView.as_view()),
 ]

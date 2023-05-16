@@ -375,6 +375,9 @@ class ManualImportTestCase(TestCase):
     def login(self):
         self.client.login(**self.credentials)
 
+    def test_get(self):
+        self.client.get(reverse("results_create_manual"))
+
     def test_upload_simple_result(self):
         self.client.post(reverse("results_create_manual"), self.data)
 
@@ -382,6 +385,12 @@ class ManualImportTestCase(TestCase):
         self.assertEqual(results[0].player.name, "Antoine Albertelli")
         self.assertEqual(results[0].ranking, 1)
         self.assertEqual(results[0].points, 9)
+
+    def test_import_garbage(self):
+        self.data["form-0-points"] = "3@"
+        resp = self.client.post(reverse("results_create_manual"), self.data)
+        self.assertIn("Score should be in the win-loss", resp.content.decode())
+        self.assertFalse(self.event.eventplayerresult_set.exists())
 
     def test_redirects_to_event_page(self):
         resp = self.client.post(reverse("results_create_manual"), self.data)

@@ -251,7 +251,55 @@ def _points_from_score(score: str) -> int:
     return sum(a * b for a, b in zip(score_tuples, (3, 0, 1)))
 
 
-@login_required
+class CreateManualResultsView(LoginRequiredMixin, TemplateView):
+    template_name = "championship/create_results_manual.html"
+
+    def get_context_data(self, formset=None, metadata_form=None):
+        if not formset:
+            formset = ResultsFormset()
+
+        if not metadata_form:
+            metadata_form = ManualUploadMetadataForm(user=self.request.user)
+
+        players = Player.leaderboard_objects.all()
+
+        return {
+            "metadata_form": metadata_form,
+            "formset": formset,
+            "players": players,
+        }
+
+    def post(self, request, *args, **kwargs):
+        formset = ResultsFormset(request.POST)
+        metadata_form = ManualUploadMetadataForm(user=request.user, data=request.POST)
+
+        if not formset.is_valid() or not metadata_form.is_valid():
+            context = self.get_context_data(
+                formset=formset, metadata_form=metadata_form
+            )
+            return self.render_to_response(context)
+
+        event = metadata_form.cleaned_data["event"]
+        for ranking, result in enumerate(formset.cleaned_data):
+            try:
+                name = result["name"]
+                points = _points_from_score(result["points"])
+            except KeyError:
+                continue
+
+            name = re.sub(r"\s+", " ", name)
+            try:
+                player = PlayerAlias.objects.get(name=name).true_player
+            except PlayerAlias.DoesNotExist:
+                player, _ = Player.objects.get_or_create(name=name)
+
+            EventPlayerResult.objects.create(
+                event=event, player=player, points=points, ranking=ranking + 1
+            )
+
+        return HttpResponseRedirect(event.get_absolute_url())
+
+
 def create_results_manual(request):
     formset = ResultsFormset()
     metadata_form = ManualUploadMetadataForm(user=request.user)
@@ -261,32 +309,8 @@ def create_results_manual(request):
         metadata_form = ManualUploadMetadataForm(user=request.user, data=request.POST)
         if formset.is_valid() and metadata_form.is_valid():
             event = metadata_form.cleaned_data["event"]
-            for ranking, result in enumerate(formset.cleaned_data):
-                try:
-                    name = result["name"]
-                    points = _points_from_score(result["points"])
-                except KeyError:
-                    continue
-
-                name = re.sub(r"\s+", " ", name)
-                try:
-                    player = PlayerAlias.objects.get(name=name).true_player
-                except PlayerAlias.DoesNotExist:
-                    player, _ = Player.objects.get_or_create(name=name)
-
-                EventPlayerResult.objects.create(
-                    event=event, player=player, points=points, ranking=ranking + 1
-                )
-
-            return HttpResponseRedirect(event.get_absolute_url())
-
     players = Player.leaderboard_objects.all()
-    context = {
-        "metadata_form": metadata_form,
-        "formset": formset,
-        "players": players,
-    }
-    return render(request, "championship/create_results_manual.html", context=context)
+    return render(request, context=context)
 
 
 def clean_name(name: str) -> str:
