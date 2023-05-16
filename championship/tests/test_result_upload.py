@@ -1,5 +1,3 @@
-import os.path
-
 from django.test import TestCase, Client
 from django.contrib.auth.models import User
 from django.urls import reverse
@@ -9,12 +7,8 @@ from championship.factories import *
 from django.core.files.uploadedfile import SimpleUploadedFile
 from championship.views import clean_name
 from championship.forms import AddTop8ResultsForm
-
-
 from requests import HTTPError
 from parameterized import parameterized
-
-
 from unittest.mock import patch, MagicMock
 
 
