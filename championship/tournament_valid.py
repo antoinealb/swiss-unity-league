@@ -17,7 +17,7 @@ def get_max_rounds(num_players, event_category):
         int: The maximum number of rounds for the tournament.
     """
     if event_category == Event.Category.REGULAR:
-        return None
+        return 6
 
     # Premier requires min 17 players
     if event_category == Event.Category.PREMIER and num_players < 17:

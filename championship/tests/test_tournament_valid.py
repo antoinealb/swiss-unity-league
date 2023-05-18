@@ -7,7 +7,7 @@ class CheckTournamentValidTestCase(TestCase):
     def test_get_max_rounds(self):
 
         player_category_result_list = [
-            (6, Event.Category.REGULAR, None),
+            (12, Event.Category.REGULAR, 6),
             (6, Event.Category.REGIONAL, 5),
             (32, Event.Category.REGIONAL, 5),
             (33, Event.Category.REGIONAL, 6),

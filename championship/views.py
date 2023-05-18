@@ -281,12 +281,10 @@ def validate_standings_and_show_error(request, standings, category):
         TooManyPointsInTotalError,
         TooManyPointsForTop8Error,
     ) as e:
-        LAST_SWISS_ROUND_MESSAGE = " Please use the standings of the last Swiss round!"
-        error_message = (
-            e.ui_error_message()
-            + get_max_round_error_message(category, standings)
-            + LAST_SWISS_ROUND_MESSAGE
-        )
+        if category == Event.Category.REGULAR:
+            error_message = f"{e.ui_error_message()} Your trying to upload a SUL Regular events with more than 6 Swiss rounds. Please contact us at leoninleague@gmail.com!"
+        else:
+            error_message = f"{e.ui_error_message()} {get_max_round_error_message(category, standings)} Please use the standings of the last Swiss round!"
         messages.error(request, error_message)
         return True
     return False
