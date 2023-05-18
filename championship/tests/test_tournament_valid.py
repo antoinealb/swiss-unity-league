@@ -5,6 +5,13 @@ from championship.models import Event
 
 
 class CheckTournamentValidTestCase(TestCase):
+    def generate_sample_standings(self, points_list):
+        """
+        Takes a list of points and generates a list of tuples that contain a placeholder player name.
+        This is simulates the input that we try to validate.
+        """
+        return [(f"Player {index}", result) for index, result in enumerate(points_list)]
+
     @parameterized.expand(
         [
             (12, Event.Category.REGULAR, 6),
@@ -38,15 +45,18 @@ class CheckTournamentValidTestCase(TestCase):
         self.assertEqual(result, expected)
 
     def test_validate_standings_regular(self):
-        standings = [("Player 1", 100), ("Player 2", 70), ("Player 3", 50)]
+        standings = self.generate_sample_standings([3 * 6, 3 * 3, 0])
         event_category = Event.Category.REGULAR
-        validate_standings(standings, event_category)  # No exception should be raised
+        # No exception should be raised since maximum is 6 rounds
+        validate_standings(standings, event_category)
+
+        standings = self.generate_sample_standings([3 * 6 + 1, 3 * 3, 0])
+        with self.assertRaises(TooManyPointsForPlayerError):
+            validate_standings(standings, event_category)
 
     def test_validate_standings_too_many_points_total(self):
-        results = simulate_tournament_max_points(16, 5)
-        standings = [
-            ("Player " + str(index), result) for (index, result) in enumerate(results)
-        ]
+        points_list = simulate_tournament_max_points(16, 5)
+        standings = self.generate_sample_standings(points_list)
         event_category = Event.Category.REGIONAL
         # No exception should be raised
         validate_standings(standings, event_category)
@@ -57,10 +67,8 @@ class CheckTournamentValidTestCase(TestCase):
             validate_standings(standings, event_category)
 
     def test_validate_standings_single_player_too_many_points(self):
-        results = simulate_tournament_max_points(17, 5)
-        standings = [
-            (f"Player {index}", result) for index, result in enumerate(results)
-        ]
+        points_list = simulate_tournament_max_points(17, 5)
+        standings = self.generate_sample_standings(points_list)
         event_category = Event.Category.PREMIER
         validate_standings(standings, event_category)  # No exception should be raised
 
@@ -69,10 +77,10 @@ class CheckTournamentValidTestCase(TestCase):
             validate_standings(standings, event_category)
 
     def test_validate_standings_top_8_players(self):
-        results = [15] * 8 + [0] * 16
-        standings = [
-            ("Player  {index}", result) for (index, result) in enumerate(results)
-        ]
+        points_list = [5 * 3] * 8 + [
+            0
+        ] * 16  # 15 points is possible in 5 rounds, but not for 8 players
+        standings = self.generate_sample_standings(points_list)
         event_category = Event.Category.PREMIER
         with self.assertRaises(TooManyPointsForTop8Error):
             validate_standings(standings, event_category)

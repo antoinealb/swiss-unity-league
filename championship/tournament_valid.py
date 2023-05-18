@@ -128,9 +128,6 @@ def validate_standings(standings, category):
         TooManyPointsForTop8Error: If the top 8 players have accumulated more points than allowed for the category.
         TooFewPlayersForPremierError: If the event category is PREMIER and there are fewer than 17 players.
     """
-    if category == Event.Category.REGULAR:
-        return
-
     _validate_points_per_player(standings, category)
     _validate_total_points(standings, category)
     _validate_top_8_points(standings, category)
