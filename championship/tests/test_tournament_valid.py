@@ -1,12 +1,12 @@
 from django.test import TestCase
+from parameterized import parameterized
 from championship.tournament_valid import *
 from championship.models import Event
 
 
 class CheckTournamentValidTestCase(TestCase):
-    def test_get_max_rounds(self):
-
-        player_category_result_list = [
+    @parameterized.expand(
+        [
             (12, Event.Category.REGULAR, 6),
             (6, Event.Category.REGIONAL, 5),
             (32, Event.Category.REGIONAL, 5),
@@ -15,8 +15,9 @@ class CheckTournamentValidTestCase(TestCase):
             (32, Event.Category.PREMIER, 5),
             (33, Event.Category.PREMIER, 6),
         ]
-        for num_players, category, result in player_category_result_list:
-            self.assertEqual(result, get_max_rounds(num_players, category))
+    )
+    def test_get_max_rounds(self, num_players, category, expected_result):
+        self.assertEqual(expected_result, get_max_rounds(num_players, category))
 
     def test_get_max_rounds_raises_error(self):
         with self.assertRaises(TooFewPlayersForPremierError):
@@ -58,7 +59,7 @@ class CheckTournamentValidTestCase(TestCase):
     def test_validate_standings_single_player_too_many_points(self):
         results = simulate_tournament_max_points(17, 5)
         standings = [
-            ("Player " + str(index), result) for (index, result) in enumerate(results)
+            (f"Player {index}", result) for index, result in enumerate(results)
         ]
         event_category = Event.Category.PREMIER
         validate_standings(standings, event_category)  # No exception should be raised
@@ -70,7 +71,7 @@ class CheckTournamentValidTestCase(TestCase):
     def test_validate_standings_top_8_players(self):
         results = [15] * 8 + [0] * 16
         standings = [
-            ("Player " + str(index), result) for (index, result) in enumerate(results)
+            ("Player  {index}", result) for (index, result) in enumerate(results)
         ]
         event_category = Event.Category.PREMIER
         with self.assertRaises(TooManyPointsForTop8Error):
