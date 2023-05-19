@@ -42,7 +42,7 @@ def check_if_valid_tournament(standings, event_category):
     if event_category == Event.Category.REGIONAL:
         at_maximum_text = " at maximum"
 
-    event_category_label = Event.Category(event_category).label
+    event_category_label = event_category
     max_rounds_text = f" A {event_category_label} event with {num_players} players should have{at_maximum_text} {max_rounds} rounds."
     max_points_per_player = 3 * max_rounds
 
