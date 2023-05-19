@@ -38,6 +38,11 @@ urlpatterns = [
         name="results_top8_add",
     ),
     path(
+        "results/<int:pk>/delete",
+        views.ClearEventResultsView.as_view(),
+        name="event_clear_results",
+    ),
+    path(
         "organizer/edit", views.OrganizerProfileEdit.as_view(), name="organizer_update"
     ),
     path("api/", include(api_router.urls)),
