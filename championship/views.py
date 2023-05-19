@@ -293,6 +293,8 @@ class CreateManualResultsView(LoginRequiredMixin, TemplateView):
 
             standings.append((re.sub(r"\s+", " ", name), points))
 
+        standings.sort(key=lambda s: s[1], reverse=True)
+
         try:
             check_if_valid_tournament(standings, event.category)
         except ValueError as e:
