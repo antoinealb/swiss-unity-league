@@ -1,0 +1,21 @@
+{% extends "championship/base.html" %}
+
+{% load crispy_forms_tags %}
+
+{% block content %}
+
+    <h1>Deletion confirmation</h1>
+
+    <form method="post">{% csrf_token %}
+        <p>Are you sure you want to delete results for "{{ event }}"?</p>
+        <p>This will delete the following results:</p>
+        <ol>
+            {% for r in event.eventplayerresult_set.all %}
+                <li>{{ r.player.name}} - {{ r.points }} points</li>
+            {% endfor %}
+        </ol>
+        <input type="submit" value="Confirm" class="btn btn-danger">
+    </form>
+
+
+{% endblock %}

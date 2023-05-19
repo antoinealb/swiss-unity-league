@@ -187,3 +187,14 @@ class AddTop8ResultsForm(forms.Form, SubmitButtonMixin):
             elif s == EventPlayerResult.SingleEliminationResult.QUARTER_FINALIST:
                 self.initial[f"quarter{qcnt}"] = r
                 qcnt += 1
+
+
+class ResultsDeleteForm(forms.Form, SubmitButtonMixin):
+    """Event results deletion confirmation form.
+
+    This form is empty on purpose; its only role is to have a "confirm" button
+    that will be shown to the user when they want to delete results for the
+    event.
+    """
+
+    pass

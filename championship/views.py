@@ -576,6 +576,29 @@ class AddTop8ResultsView(LoginRequiredMixin, FormView):
         return self.event.get_absolute_url()
 
 
+class ClearEventResultsView(LoginRequiredMixin, FormView):
+    template_name = "championship/results_confirm_delete.html"
+    form_class = ResultsDeleteForm
+
+    def get_event(self) -> Event:
+        return get_object_or_404(
+            Event, id=self.kwargs["pk"], organizer__user=self.request.user
+        )
+
+    def get_success_url(self):
+        return self.get_event().get_absolute_url()
+
+    def get_context_data(self, **kwargs):
+        ctx = super().get_context_data(**kwargs)
+        ctx["event"] = self.get_event()
+        return ctx
+
+    def form_valid(self, form):
+        # No processing to do here, just delete results
+        self.get_event().eventplayerresult_set.all().delete()
+        return super().form_valid(form)
+
+
 class FutureEventViewSet(viewsets.ReadOnlyModelViewSet):
     """
     API endpoint that allows events to be viewed or edited.

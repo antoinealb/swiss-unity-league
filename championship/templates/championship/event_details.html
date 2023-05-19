@@ -40,6 +40,9 @@
                 <p><a href="{% url 'event_update' event.id %}" class="btn btn-secondary">Edit event</a></p>
                 <p><a href="{% url 'event_copy' event.id %}" class="btn btn-secondary-light">Copy event</a></p>
                 <p><a href="{% url 'event_delete' event.id %}" class="btn btn-danger">Delete event</a></p>
+                {% if event.eventplayerresult_set.count > 0 %}
+                    <p><a href="{% url 'event_clear_results' event.id %}" class="btn btn-danger">Delete results</a></p>
+                {% endif %}
             </dd>
         {% endif %}
 
