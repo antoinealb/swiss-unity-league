@@ -461,6 +461,34 @@ class ManualImportTestCase(TestCase):
         ]
         self.assertEqual(names, ["Antoine Albertelli", "Bo Bobby"])
 
+    def test_import_more_than_one_unsorted(self):
+        """Checks that when importing players in an order not sorted by points,
+        they are sorted before being given a ranking."""
+        self.data = {
+            "form-0-name": "Antoine",
+            "form-0-points": "3-0",
+            "form-1-name": "Bo",
+            "form-1-points": "2-0",
+            "form-2-name": "Charles",
+            "form-2-points": "3-0",
+            "form-3-name": "",
+            "form-3-points": "",
+            "event": self.event.id,
+            "form-TOTAL_FORMS": 4,
+            "form-INITIAL_FORMS": 0,
+            "form-MIN_NUM_FORMS": 1,
+            "form-MAX_NUM_FORMS": 128,
+        }
+        self.client.post(reverse("results_create_manual"), self.data)
+
+        names = [
+            e.player.name
+            for e in EventPlayerResult.objects.filter(event=self.event).order_by(
+                "ranking"
+            )
+        ]
+        self.assertEqual(names, ["Antoine", "Charles", "Bo"])
+
 
 class ImportSelectorTestCase(TestCase):
     def setUp(self):
