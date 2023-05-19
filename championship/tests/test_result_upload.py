@@ -59,7 +59,11 @@ class AetherhubImportTest(TestCase):
         self.credentials = dict(username="test", password="test")
         self.user = User.objects.create_user(**self.credentials)
         self.organizer = EventOrganizerFactory(user=self.user)
-        self.event = EventFactory(organizer=self.organizer, date=datetime.date.today())
+        self.event = EventFactory(
+            organizer=self.organizer,
+            date=datetime.date.today(),
+            category=Event.Category.REGULAR,
+        )
 
         self.data = {
             "url": "https://aetherhub.com/Tourney/RoundTourney/13923",
@@ -162,7 +166,9 @@ class AetherhubImportTest(TestCase):
 
         # Create a second event, and import the results again
         second_event = EventFactory(
-            organizer=self.organizer, date=datetime.date.today()
+            organizer=self.organizer,
+            date=datetime.date.today(),
+            category=self.event.category,
         )
         self.data["event"] = second_event.id
         self.client.post(reverse("results_create_aetherhub"), self.data)
@@ -239,7 +245,11 @@ class EventLinkImportTestCase(TestCase):
         self.credentials = dict(username="test", password="test")
         self.user = User.objects.create_user(**self.credentials)
         self.organizer = EventOrganizerFactory(user=self.user)
-        self.event = EventFactory(organizer=self.organizer, date=datetime.date.today())
+        self.event = EventFactory(
+            organizer=self.organizer,
+            date=datetime.date.today(),
+            category=Event.Category,
+        )
 
         text = load_test_html("eventlink_ranking.html")
 
@@ -325,7 +335,11 @@ class MtgEventUploadTest(TestCase):
         self.credentials = dict(username="test", password="test")
         self.user = User.objects.create_user(**self.credentials)
         self.organizer = EventOrganizerFactory(user=self.user)
-        self.event = EventFactory(organizer=self.organizer, date=datetime.date.today())
+        self.event = EventFactory(
+            organizer=self.organizer,
+            date=datetime.date.today(),
+            category=Event.Category.REGULAR,
+        )
 
         text = load_test_html("mtgevent_ranking.html")
 
@@ -359,7 +373,11 @@ class ManualImportTestCase(TestCase):
         self.credentials = dict(username="test", password="test")
         self.user = User.objects.create_user(**self.credentials)
         self.organizer = EventOrganizerFactory(user=self.user)
-        self.event = EventFactory(organizer=self.organizer, date=datetime.date.today())
+        self.event = EventFactory(
+            organizer=self.organizer,
+            date=datetime.date.today(),
+            category=Event.Category.REGULAR,
+        )
 
         self.data = {
             "form-0-name": "Antoine Albertelli",
