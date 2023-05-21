@@ -35,7 +35,7 @@ def find_non_numeric_index(values):
     for index, value in enumerate(values):
         try:
             float(value)
-        except:
+        except (ValueError, TypeError):
             return index
 
 
@@ -44,8 +44,11 @@ def find_index_of_nth_integer(values, n):
     Takes a list of values and finds the index of the n-th integer it finds.
     """
     count = 0
-    for i, element in enumerate(values):
-        if isinstance(element, int):
-            count += 1
-            if count == n:
-                return i
+    for i, value in enumerate(values):
+        try:
+            if int(value) == float(value):
+                count += 1
+                if count == n:
+                    return i
+        except (ValueError, TypeError):
+            pass

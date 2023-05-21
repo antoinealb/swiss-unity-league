@@ -27,10 +27,18 @@ class ParserFunctionsTest(TestCase):
     def test_find_non_numeric_index(self):
         row1 = ["player1", 3, "male", 5.4]
         row2 = [2, 2, 2.22, "23", 65, "female"]
-        row3 = [2, "player3", 3.5, "male", "active"]
+        row3 = [2, {}, "player3", 3.5, "male", "active"]
         self.assertEqual(find_non_numeric_index(row1), 0)
         self.assertEqual(find_non_numeric_index(row2), 5)
         self.assertEqual(find_non_numeric_index(row3), 1)
+
+    def test_find_index_of_nth_integer(self):
+        row1 = [{}, 1, 3, "male", 5.4]
+        row2 = ["2", 2, 2.22, "23", 65, "female"]
+        row3 = [2, "player3", 3.5, "male", "active"]
+        self.assertEqual(find_index_of_nth_integer(row1, 1), 1)
+        self.assertEqual(find_index_of_nth_integer(row2, 4), 4)
+        self.assertEqual(find_index_of_nth_integer(row3, 2), None)
 
 
 class ChallongeStandingsParser(TestCase):
