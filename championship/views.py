@@ -27,7 +27,14 @@ from .forms import *
 from django.db.models import F, Q
 from championship.parsers import aetherhub, eventlink, mtgevent, challonge
 from championship.serializers import EventSerializer
-from championship.tournament_valid import check_if_valid_tournament
+from championship.tournament_valid import (
+    validate_standings,
+    get_max_round_error_message,
+    TooManyPointsForPlayerError,
+    TooManyPointsInTotalError,
+    TooManyPointsForTop8Error,
+    TooFewPlayersForPremierError,
+)
 
 EVENTS_ON_PAGE = 10
 PLAYERS_TOP = 10
@@ -253,6 +260,36 @@ def _points_from_score(score: str) -> int:
     return sum(a * b for a, b in zip(score_tuples, (3, 0, 1)))
 
 
+def validate_standings_and_show_error(request, standings, category):
+    """
+    Validates the standings for a given category and sends a given error message to the UI.
+
+    Args:
+        standings (list): A list of tuples containing player names and their respective points.
+        category (Event.Category): The category of the event.
+
+    Returns:
+        True: When an error html should be rendered for the user.
+    """
+    try:
+        validate_standings(standings, category)
+    except TooFewPlayersForPremierError as e:
+        messages.error(request, e.ui_error_message())
+        return True
+    except (
+        TooManyPointsForPlayerError,
+        TooManyPointsInTotalError,
+        TooManyPointsForTop8Error,
+    ) as e:
+        if category == Event.Category.REGULAR:
+            error_message = f"{e.ui_error_message()} You're trying to upload a SUL Regular event with more than 6 Swiss rounds. Please contact us at leoninleague@gmail.com!"
+        else:
+            error_message = f"{e.ui_error_message()} {get_max_round_error_message(category, standings)} Please use the standings of the last Swiss round!"
+        messages.error(request, error_message)
+        return True
+    return False
+
+
 class CreateManualResultsView(LoginRequiredMixin, TemplateView):
     template_name = "championship/create_results_manual.html"
 
@@ -295,11 +332,7 @@ class CreateManualResultsView(LoginRequiredMixin, TemplateView):
 
         standings.sort(key=lambda s: s[1], reverse=True)
 
-        try:
-            check_if_valid_tournament(standings, event.category)
-        except ValueError as e:
-            logging.exception("Could not validate tournament")
-            messages.error(request, str(e))
+        if validate_standings_and_show_error(request, standings, event.category):
             context = self.get_context_data(
                 formset=formset, metadata_form=metadata_form
             )
@@ -409,7 +442,7 @@ class CreateResultsView(FormView):
         self.event = form.cleaned_data["event"]
         standings = self.get_results(form)
 
-        def bad_request():
+        def render_error_standings_form():
             return render(
                 self.request,
                 self.template_name,
@@ -418,14 +451,12 @@ class CreateResultsView(FormView):
             )
 
         if not standings:
-            return bad_request()
+            return render_error_standings_form()
 
-        try:
-            check_if_valid_tournament(standings, self.event.category)
-        except ValueError as e:
-            logging.exception("Could not validate tournament")
-            messages.error(self.request, str(e))
-            return bad_request()
+        if validate_standings_and_show_error(
+            self.request, standings, self.event.category
+        ):
+            return render_error_standings_form()
 
         for i, (name, points) in enumerate(standings):
             name = clean_name(name)

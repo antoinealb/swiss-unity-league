@@ -1,5 +1,3 @@
-import os.path
-
 from django.test import TestCase, Client
 from django.contrib.auth.models import User
 from django.urls import reverse
@@ -9,12 +7,8 @@ from championship.factories import *
 from django.core.files.uploadedfile import SimpleUploadedFile
 from championship.views import clean_name
 from championship.forms import AddTop8ResultsForm
-
-
 from requests import HTTPError
 from parameterized import parameterized
-
-
 from unittest.mock import patch, MagicMock
 
 
@@ -366,6 +360,17 @@ class MtgEventUploadTest(TestCase):
         self.assertEqual(results.count(), 10)
         self.assertEqual(results[0].player.name, "Toni Marty")
 
+    def test_tournament_validation(self):
+        self.login()
+        self.event.category = Event.Category.PREMIER
+        self.event.save()
+        resp = self.client.post(reverse("results_create_mtgevent"), self.data)
+        self.assertEqual(400, resp.status_code)
+        self.assertIn(
+            "SUL Premier events require at least 17 players.", resp.content.decode()
+        )
+        self.assertFalse(self.event.eventplayerresult_set.exists())
+
 
 class ManualImportTestCase(TestCase):
     def setUp(self):
@@ -488,6 +493,19 @@ class ManualImportTestCase(TestCase):
             )
         ]
         self.assertEqual(names, ["Antoine", "Charles", "Bo"])
+
+    def test_tournament_validation(self):
+        self.event.category = Event.Category.REGIONAL
+        self.event.save()
+        self.data["form-0-points"] = "5-0-1"
+        resp = self.client.post(reverse("results_create_manual"), self.data)
+        self.assertEqual(400, resp.status_code)
+        content = resp.content.decode()
+        self.assertIn(
+            "A SUL Regional event with 1 players should have at maximum 5 rounds.",
+            content,
+        )
+        self.assertFalse(self.event.eventplayerresult_set.exists())
 
 
 class ImportSelectorTestCase(TestCase):
