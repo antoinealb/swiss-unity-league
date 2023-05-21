@@ -7,20 +7,29 @@ def _remove_brackets(text):
     return re.sub(r"\([^()]*\)", "", text)
 
 
-def _get_player_and_record_index(table):
+def _get_indices(table):
     titles = [tag.text.strip() for tag in table.find("thead").find_all("th")]
-    player_index = find_index_of_substring(titles, "Participant")
-    record_index = find_index_of_substring(titles, "Match W-L-T")
+    player_index = find_index_with_substring(
+        titles, ["Participant", "Teilnehmer", "Participant", "Partecipante"]
+    )
 
-    if None in [player_index, record_index]:
+    # Italian is using same translations as Enlish for record and byes
+    record_index = find_index_with_substring(
+        titles, ["Match W-L-T", "Spiele G-V-U", "Match V-D-N"]
+    )
+    bye_index = find_index_with_substring(titles, ["Byes", "Freilose", "Exempts"])
+
+    if None in [player_index, record_index, bye_index]:
         tbody = table.find("tbody").find_all("tr")
         first_row = [tag.text.strip() for tag in tbody[0].find_all(["th", "td"])]
         if player_index is None:
             player_index = find_non_numeric_index(first_row)
         if record_index is None:
             record_index = find_record_index(first_row)
+        if bye_index is None:
+            bye_index = find_index_of_nth_integer(first_row, 2)
 
-    return player_index, record_index
+    return player_index, record_index, bye_index
 
 
 def _check_tournament_swiss(soup):
@@ -36,11 +45,13 @@ def _standings(soup):
     _check_tournament_swiss(soup)
 
     table = soup.find("table", class_="striped-table -light limited_width standings")
-    player_index, record_index = _get_player_and_record_index(table)
+    player_index, record_index, bye_index = _get_indices(table)
     for line in table.find("tbody").find_all("tr"):
         values = [tag.text.strip() for tag in line.find_all(["th", "td"])]
         name = _remove_brackets(values[player_index]).strip()
         points = record_to_points(values[record_index])
+        byes = int(values[bye_index])
+        points += byes * 3
         yield (name, points)
 
 

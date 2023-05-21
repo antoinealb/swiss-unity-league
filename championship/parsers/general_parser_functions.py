@@ -8,22 +8,44 @@ def record_to_points(record):
     return points
 
 
-def find_index_of_substring(table_row, substring):
-    for index, elem in enumerate(table_row):
-        if substring in elem:
-            return index
+def find_index_with_substring(values, substrings):
+    """
+    Takes a list of values and finds the first index of the element that contains one of the substrings.
+    """
+    for index, value in enumerate(values):
+        for substring in substrings:
+            if substring.strip() in value:
+                return index
 
 
-def find_record_index(table_row):
-    for index, entry in enumerate(table_row):
+def find_record_index(values):
+    """
+    Takes a list of values and finds index of first element that is a Swiss system record. (Three integers with a dash in between e.g. 3-0-1)
+    """
+    for index, entry in enumerate(values):
         records = entry.split("-")
         if len(records) == 3:
             return index
 
 
-def find_non_numeric_index(row):
-    for index, value in enumerate(row):
+def find_non_numeric_index(values):
+    """
+    Takes a list of values and finds the index of the first element that's not a number.
+    """
+    for index, value in enumerate(values):
         try:
             float(value)
         except:
             return index
+
+
+def find_index_of_nth_integer(values, n):
+    """
+    Takes a list of values and finds the index of the n-th integer it finds.
+    """
+    count = 0
+    for i, element in enumerate(values):
+        if isinstance(element, int):
+            count += 1
+            if count == n:
+                return i

@@ -12,9 +12,9 @@ class ParserFunctionsTest(TestCase):
 
     def test_find_index_of_substring(self):
         row = ["name", "age", "gender", "height"]
-        self.assertEqual(find_index_of_substring(row, "age"), 1)
-        self.assertEqual(find_index_of_substring(row, "gender"), 2)
-        self.assertEqual(find_index_of_substring(row, "weight"), None)
+        self.assertEqual(find_index_with_substring(row, ["age ", "Test"]), 1)
+        self.assertEqual(find_index_with_substring(row, ["gender", "Height"]), 2)
+        self.assertEqual(find_index_with_substring(row, ["weight"]), None)
 
     def test_find_record_index(self):
         row1 = ["2-2-0", "player2", "6"]
@@ -48,11 +48,12 @@ class ChallongeStandingsParser(TestCase):
         self.text = load_test_html("challonge_de_ranking.html")
         self.results = challonge.parse_standings_page(self.text)
         want_standings = [
-            ("Eloi Benvenuti", 6),
-            ("Jari Rentsch", 3),
-            ("test", 2),
+            ("Jari Rentsch", 10),
+            ("Aleksander Colovic", 9),
+            ("Derek Kwan", 9),
+            ("Mikko Tuhkannen", 9),
         ]
-        self.assertEqual(want_standings, self.results[:3])
+        self.assertEqual(want_standings, self.results[:4])
 
 
 class ChallongeCleanUrlTest(TestCase):
