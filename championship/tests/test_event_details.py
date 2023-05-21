@@ -106,8 +106,11 @@ class EventDetailTestCase(TestCase):
         )
 
     def test_shows_link_delete_results(self):
+        yesterday = datetime.date.today() - datetime.timedelta(1)
         organizer = EventOrganizerFactory(user=self.user)
-        event = EventFactory(category=Event.Category.REGULAR, organizer=organizer)
+        event = EventFactory(
+            category=Event.Category.REGULAR, organizer=organizer, date=yesterday
+        )
         for _ in range(3):
             EventPlayerResultFactory(event=event)
         resp = self.client.get(reverse("event_details", args=[event.id]))

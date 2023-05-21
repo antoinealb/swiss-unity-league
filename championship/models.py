@@ -102,8 +102,14 @@ class Event(models.Model):
     def get_absolute_url(self):
         return reverse("event_details", args=[self.id])
 
-    def can_have_top8(self):
+    def can_have_top8(self) -> bool:
         return self.category != Event.Category.REGULAR
+
+    def can_change_results(self) -> bool:
+        """Returns True if changing results for this event is still allowed
+        based on league rules."""
+        d = datetime.date.today() - settings.EVENT_MAX_AGE_FOR_RESULT_ENTRY
+        return self.date >= d
 
     objects = EventManager()
 

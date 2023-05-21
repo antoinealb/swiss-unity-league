@@ -642,7 +642,13 @@ class ClearEventResultsView(LoginRequiredMixin, FormView):
 
     def form_valid(self, form):
         # No processing to do here, just delete results
-        self.get_event().eventplayerresult_set.all().delete()
+        event = self.get_event()
+
+        if event.can_change_results():
+            event.eventplayerresult_set.all().delete()
+        else:
+            messages.error(self.request, "Event too old to delete results.")
+
         return super().form_valid(form)
 
 
