@@ -9,15 +9,9 @@ def _remove_brackets(text):
 
 def _get_indices(table):
     titles = [tag.text.strip() for tag in table.find("thead").find_all("th")]
-    player_index = find_index_with_substring(
-        titles, ["Participant", "Teilnehmer", "Participant", "Partecipante"]
-    )
-
-    # Italian is using same translations as Enlish for record and byes
-    record_index = find_index_with_substring(
-        titles, ["Match W-L-T", "Spiele G-V-U", "Match V-D-N"]
-    )
-    bye_index = find_index_with_substring(titles, ["Byes", "Freilose", "Exempts"])
+    player_index = find_index_with_substring(titles, ["Participant"])
+    record_index = find_index_with_substring(titles, ["Match W-L-T"])
+    bye_index = find_index_with_substring(titles, ["Byes"])
 
     if None in [player_index, record_index, bye_index]:
         tbody = table.find("tbody").find_all("tr")
