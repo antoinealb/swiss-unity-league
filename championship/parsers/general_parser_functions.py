@@ -25,7 +25,7 @@ def find_record_index(strings):
     for index, entry in enumerate(strings):
         record = entry.split("-")
         if len(record) == 3:
-            all_are_integers = sum(
+            all_are_integers = all(
                 [_check_string_contains_int(value) for value in record]
             )
             if all_are_integers:

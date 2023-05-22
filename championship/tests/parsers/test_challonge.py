@@ -18,10 +18,10 @@ class ParserFunctionsTest(TestCase):
 
     def test_find_record_index(self):
         row1 = ["2-2-0", "player2", "6"]
-        row2 = ["2-0", "4-3-0", "4-3-0"]
+        row2 = ["2-0", "4-[[-0", "4-3-0"]
         row3 = ["player5", "9", "   1   - 1 -4 "]
         self.assertEqual(find_record_index(row1), 0)
-        self.assertEqual(find_record_index(row2), 1)
+        self.assertEqual(find_record_index(row2), 2)
         self.assertEqual(find_record_index(row3), 2)
 
     def test_find_non_numeric_index(self):
