@@ -12,21 +12,21 @@ class ParserFunctionsTest(TestCase):
 
     def test_find_index_of_substring(self):
         row = ["name", "age", "gender", "height"]
-        self.assertEqual(find_index_with_substring(row, ["age ", "Test"]), 1)
-        self.assertEqual(find_index_with_substring(row, ["gender", "Height"]), 2)
-        self.assertEqual(find_index_with_substring(row, ["weight"]), None)
+        self.assertEqual(find_index_containing_substring(row, ["age ", "Test"]), 1)
+        self.assertEqual(find_index_containing_substring(row, ["gender", "Height"]), 2)
+        self.assertEqual(find_index_containing_substring(row, ["weight"]), None)
 
     def test_find_record_index(self):
         row1 = ["2-2-0", "player2", "6"]
-        row2 = ["player4", "4-3-0", "4-3-0"]
-        row3 = ["player5", "9", "1-1-4"]
+        row2 = ["2-0", "4-3-0", "4-3-0"]
+        row3 = ["player5", "9", "   1   - 1 -4 "]
         self.assertEqual(find_record_index(row1), 0)
         self.assertEqual(find_record_index(row2), 1)
         self.assertEqual(find_record_index(row3), 2)
 
     def test_find_non_numeric_index(self):
         row1 = ["player1", 3, "male", 5.4]
-        row2 = [2, 2, 2.22, "23", 65, "female"]
+        row2 = [2, 2, 2.22, "23 ", 65, "female"]
         row3 = [2, {}, "player3", 3.5, "male", "active"]
         self.assertEqual(find_non_numeric_index(row1), 0)
         self.assertEqual(find_non_numeric_index(row2), 5)
@@ -34,7 +34,7 @@ class ParserFunctionsTest(TestCase):
 
     def test_find_index_of_nth_integer(self):
         row1 = [{}, 1, 3, "male", 5.4]
-        row2 = ["2", 2, 2.22, "23", 65, "female"]
+        row2 = ["2 ", 2, 2.22, "23 ", 65, "female"]
         row3 = [2, "player3", 3.5, "male", "active"]
         self.assertEqual(find_index_of_nth_integer(row1, 1), 1)
         self.assertEqual(find_index_of_nth_integer(row2, 4), 4)
