@@ -48,6 +48,7 @@ else:
 
 INSTALLED_APPS = [
     "championship",
+    "invoicing",
     "django.contrib.admin",
     "django.contrib.auth",
     "django.contrib.contenttypes",
@@ -66,6 +67,7 @@ INSTALLED_APPS = [
     "cid.apps.CidAppConfig",
     "hijack",
     "hijack.contrib.admin",
+    "django_tex",
 ]
 
 MIDDLEWARE = [
@@ -99,6 +101,11 @@ TEMPLATES = [
                 "django.contrib.messages.context_processors.messages",
             ],
         },
+    },
+    {
+        "NAME": "tex",
+        "BACKEND": "django_tex.engine.TeXEngine",
+        "APP_DIRS": True,
     },
 ]
 
