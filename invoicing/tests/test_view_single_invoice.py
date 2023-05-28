@@ -1,11 +1,22 @@
+import unittest
 from django.test import TestCase, Client
 from django.urls import reverse
 from django.contrib.auth.models import User
 from championship.models import *
 from invoicing.models import Invoice
 from championship.factories import EventFactory, EventOrganizerFactory
+from subprocess import check_call, SubprocessError, DEVNULL
 
 
+def has_latex():
+    try:
+        check_call(["lualatex", "--help"], stdout=DEVNULL, stderr=DEVNULL)
+    except FileNotFoundError:
+        return False
+    return True
+
+
+@unittest.skipUnless(has_latex(), "Can only run if lualatex is available")
 class InvoiceRenderingTest(TestCase):
     def setUp(self):
         self.client = Client()
