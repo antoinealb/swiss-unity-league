@@ -29,7 +29,7 @@
 \setkomavar{fromphone}{079 384 38 62}
 \setkomavar{fromurl}{unityleague.ch}
 \setkomavar{fromlogo}{\includegraphics[scale=.2]{../static/sul_logo.png}\vspace{-1cm}}
-\setkomavar{myref}{SUL36}
+\setkomavar{myref}{ {{- invoice.reference -}} }
 
 \begin{document}
 
@@ -58,7 +58,7 @@ This invoice covers the period ranging from \DTMdate{ {{- start_date -}} } to \D
 
 
 Please pay the amount to the following bank account under 30 days.
-Please include the text ``SUL36'' as part of the wire transfer message.
+Please include the text ``{{ invoice.reference }}'' as part of the wire transfer message.
 
 \begin{center}
     IBAN: CH93 0024 3243 2366 2340 E (Bank: UBS)\\

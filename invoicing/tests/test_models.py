@@ -3,6 +3,7 @@ from django.test import TestCase
 from invoicing.models import Invoice
 from championship.models import EventOrganizer
 from championship.factories import *
+from invoicing.factories import InvoiceFactory
 
 
 class InvoiceHelpersTest(TestCase):
@@ -13,6 +14,20 @@ class InvoiceHelpersTest(TestCase):
         i = Invoice(event_organizer=o, start_date=s, end_date=e)
 
         self.assertEqual(str(i), "Test TO (01.01.2023 - 31.01.2023)")
+
+    def test_reference_not_yet_saved(self):
+        """For invoices that are not yet in the database, they don't have a
+        reference number."""
+        o = EventOrganizerFactory()
+        s = datetime.date(2023, 1, 1)
+        e = datetime.date(2023, 1, 31)
+        i = Invoice(event_organizer=o, start_date=s, end_date=e)
+
+        self.assertEqual(i.reference, "SUL###-####")
+
+    def test_reference_saved(self):
+        i = InvoiceFactory()
+        self.assertEqual(i.reference, "SUL001-583")
 
 
 class FindEventsTest(TestCase):

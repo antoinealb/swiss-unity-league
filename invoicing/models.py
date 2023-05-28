@@ -3,6 +3,7 @@ import datetime
 from django.db import models
 from django.urls import reverse
 from championship.models import EventOrganizer, Event, EventPlayerResult
+from zlib import crc32
 
 FEE_PER_PLAYER = {
     Event.Category.REGULAR: 0,
@@ -50,6 +51,16 @@ class Invoice(models.Model):
         return self.event_organizer.event_set.filter(
             date__gte=self.start_date, date__lte=self.end_date
         )
+
+    @property
+    def reference(self) -> str:
+        """The reference number, for payers to include in their banking order."""
+        if self.id is None:
+            return "SUL###-####"
+
+        crc = crc32(str(self.id).encode()) % 1_000
+
+        return f"SUL{self.id:03d}-{crc:03d}"
 
     def get_absolute_url(self):
         return reverse("invoice_get", args=[self.id])
