@@ -3,6 +3,7 @@ from django.views.generic import DetailView
 from django_tex.shortcuts import render_to_pdf
 from .models import Invoice, fee_for_event
 from django.db.models import F, Q, Count
+from django.conf import settings
 
 
 class RenderInvoice(DetailView):
@@ -23,6 +24,7 @@ class RenderInvoice(DetailView):
         for e in events:
             e.fees = fee_for_event(e)
 
+        context["logo_path"] = str(settings.BASE_DIR / "static/sul_logo.png")
         context["start_date"] = self.object.start_date.strftime("%Y-%m-%d")
         context["end_date"] = self.object.end_date.strftime("%Y-%m-%d")
         context["events"] = events
