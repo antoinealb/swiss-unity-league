@@ -4,7 +4,7 @@ from django.db.models import Count
 
 from prettytable import PrettyTable
 from championship.models import Event
-from championship.billing import fee_for_event
+from invoicing.models import fee_for_event
 
 
 class Command(BaseCommand):

@@ -1,7 +1,7 @@
 from championship.factories import *
 from championship.models import *
 from django.test import TestCase
-from championship.billing import fee_for_event
+from invoicing.models import fee_for_event
 
 
 class BillingTestCase(TestCase):

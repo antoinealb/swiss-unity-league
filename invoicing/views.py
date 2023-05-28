@@ -1,9 +1,8 @@
 from django.shortcuts import render
 from django.views.generic import DetailView
 from django_tex.shortcuts import render_to_pdf
-from .models import Invoice
+from .models import Invoice, fee_for_event
 from django.db.models import F, Q, Count
-from championship.billing import fee_for_event
 
 
 class RenderInvoice(DetailView):
