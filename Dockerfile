@@ -3,6 +3,14 @@ FROM python:3.10
 RUN mkdir -p /app
 WORKDIR /app
 
+# Install latex for invoices
+RUN apt-get update && apt-get install -y \
+    texlive \
+	texlive-latex-recommended \
+	texlive-latex-extra \
+	texlive-science \
+  && rm -rf /var/lib/apt/lists/*
+
 # set environment variables
 ENV PYTHONDONTWRITEBYTECODE 1
 ENV PYTHONUNBUFFERED 1

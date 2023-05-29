@@ -1,3 +1,4 @@
+import datetime
 from django.contrib import admin
 from django.shortcuts import render, redirect
 from django.urls import reverse
@@ -5,6 +6,7 @@ from django import forms
 from django.conf import settings
 from django.contrib import messages
 from .models import *
+from invoicing.models import Invoice
 
 
 class ResultInline(admin.TabularInline):
@@ -122,6 +124,20 @@ admin.site.register(PlayerAlias, PlayerAliasAdmin)
 admin.site.register(Player, PlayerAdmin)
 
 
+def _last_day_of_month(any_day: datetime.date) -> datetime.date:
+    """Returns the last day of the month of the given date.
+
+    >>> _last_day_of_month(datetime.date(2023, 5, 10))
+    datetime.date(2023, 5, 31)
+    >>> _last_day_of_month(datetime.date(2023, 2, 10))
+    datetime.date(2023, 2, 28)
+    """
+    # The day 28 exists in every month. 4 days later, it's always next month
+    next_month = any_day.replace(day=28) + datetime.timedelta(days=4)
+    # subtracting the number of the current day brings us back one month
+    return next_month - datetime.timedelta(days=next_month.day)
+
+
 class EventOrganizerAdmin(admin.ModelAdmin):
     list_display = (
         "name",
@@ -130,6 +146,48 @@ class EventOrganizerAdmin(admin.ModelAdmin):
     )
 
     sortable_by = ["name"]
+    actions = ["create_invoices"]
+
+    @admin.action(
+        description="Create invoices for selected organizers",
+        permissions=["invoice"],
+    )
+    def create_invoices(self, request, queryset):
+        for organizer in queryset:
+            last_invoice = (
+                Invoice.objects.filter(event_organizer=organizer)
+                .order_by("-end_date")
+                .first()
+            )
+
+            if last_invoice:
+                start_date = last_invoice.end_date + datetime.timedelta(days=1)
+            else:
+                # Start at first day of the year
+                start_date = datetime.date(datetime.date.today().year, 1, 1)
+
+            # Take the last day of previous month where its not allowed to
+            # upload results anymore.
+            end_date = _last_day_of_month(
+                datetime.date.today()
+                - datetime.timedelta(days=31)
+                - settings.EVENT_MAX_AGE_FOR_RESULT_ENTRY
+            )
+
+            if start_date > end_date:
+                messages.add_message(
+                    request,
+                    messages.WARNING,
+                    f"Skipping {organizer.name} as the last invoice was too recent.",
+                )
+                continue
+
+            Invoice.objects.create(
+                event_organizer=organizer, start_date=start_date, end_date=end_date
+            )
+
+    def has_invoice_permission(self, request):
+        return request.user.has_perm("invoicing.add_invoice")
 
     @admin.display(description="Last event with published results")
     def last_event_with_results(self, instance):

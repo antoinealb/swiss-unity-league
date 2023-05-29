@@ -1,0 +1,79 @@
+\documentclass[a4paper,
+    SN,
+    pagenumber=false,
+    parskip=full,
+    fontsize=10pt,
+    firstfoot=false,
+    fromphone=true,
+    fromemail=true,
+    fromlogo=true,
+    fromfax=false
+    fromrule=false,
+    foldmarks=false,
+    enlargefirstpage,
+]{scrlttr2}
+\usepackage{lmodern}
+\usepackage{graphicx}
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage[USenglish]{babel}
+\usepackage[useregional]{datetime2}
+\usepackage{url}
+\usepackage{booktabs}
+\usepackage[per-mode=symbol]{siunitx}
+\usepackage{microtype}
+
+\DeclareSIUnit\chf{\textsc{chf}}
+
+\setkomavar{fromname}{Antoine Albertelli}
+\setkomavar{fromaddress}{Swiss Unity League\\Binzallee 6\\8055 Zürich}
+\setkomavar{fromphone}{079 384 38 62}
+\setkomavar{fromemail}{antoine@antoinealb.net}
+\setkomavar{fromurl}{unityleague.ch}
+\setkomavar{fromlogo}{\includegraphics[scale=.3]{ {{- logo_path -}} } \vspace{-1cm}}
+\setkomavar{myref}{ {{- invoice.reference -}} }
+
+\begin{document}
+
+\begin{letter}{ {{- invoice.event_organizer.name -}} }
+
+\setkomavar{subject}{Swiss Unity League}
+\opening{Dear Tournament Organizer,}
+
+
+Please find below the fees for the tournaments your organized as part of the Swiss Unity League.
+This invoice covers the period ranging from \DTMdate{ {{- start_date -}} } to \DTMdate{ {{- end_date -}} }.
+
+\begin{center}
+    \begin{tabular}{l l l r l r}
+        \toprule
+        Event & Date & Category & Player Count & Has top 8 & Fees\\
+        \midrule
+        {% for event in events %}
+        {{ event.name }} & {{ event.date }} & {{ event.get_category_display() }} & {{ event.eventplayerresult_set.count() }} & {% if event.top8_cnt > 0 %}Yes{%else%}No{%endif%} & \SI{ {{- event.fees -}} }{\chf} \\
+        {% endfor %}
+        \midrule
+        \textbf{\textsc{Total}} & & & & & \SI{ {{- total_fees -}} }{\chf} \\
+
+        \bottomrule
+    \end{tabular}
+\end{center}
+
+
+Please pay the amount to the following bank account under 30 days.
+Please include the text ``{{ invoice.reference }}'' as part of the wire transfer message.
+
+\begin{center}
+    IBAN: CH93 0024 3243 2366 2340 E (Bank: UBS)\\
+    Swiss Unity League\\
+    c/o Antoine Albertelli\\
+    Binzallee 6\\
+    8055 Zürich\\
+    BIC: UBSWCHZH80A\\
+\end{center}
+
+\closing{Best wishes,}
+
+\end{letter}
+
+\end{document}

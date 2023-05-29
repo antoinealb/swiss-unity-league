@@ -23,3 +23,4 @@ django-cid~=2.3
 django-auditlog @ git+https://github.com/jazzband/django-auditlog.git@0cb3eb2b996cc14498dbdd94429169c64e23cfb9
 django-hijack~=3.3.0
 parameterized==0.9.0
+django-tex==1.1.10
