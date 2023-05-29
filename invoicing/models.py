@@ -62,5 +62,10 @@ class Invoice(models.Model):
 
         return f"SUL{self.id:03d}-{crc:03d}"
 
+    @property
+    def total_amount(self) -> int:
+        """Returns total amount of the invoice, in Swiss francs."""
+        return sum(fee_for_event(e) for e in self.events)
+
     def get_absolute_url(self):
         return reverse("invoice_get", args=[self.id])
