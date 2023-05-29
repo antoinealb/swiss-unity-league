@@ -67,6 +67,7 @@ restart-service:
   tags:
     - infra
   script:
+    - sudo /usr/bin/docker pull antoinealb/league:latest
     - sudo /bin/systemctl restart league.service
-    - sleep 60
+    - sleep 30
     - sudo /usr/bin/docker exec league.service ./manage.py migrate --no-input
