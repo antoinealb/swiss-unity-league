@@ -18,7 +18,7 @@ python-typing:
     - pip install -r requirements.txt
     - pip install mypy
   script:
-    - mypy --install-types --non-interactive championship
+    - mypy --install-types --non-interactive championship invoicing
 
 python-format:
   stage: test
