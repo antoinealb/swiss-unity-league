@@ -1,5 +1,5 @@
 from django.shortcuts import render
-from django.views.generic import DetailView
+from django.views.generic import DetailView, ListView
 from django_tex.shortcuts import render_to_pdf
 from .models import Invoice, fee_for_event
 from django.db.models import F, Q, Count
@@ -45,3 +45,10 @@ class RenderInvoice(DetailView):
     def render_to_response(self, context):
         template = self.get_template_names()[0]
         return render_to_pdf(self.request, template, context, filename=f"invoice.pdf")
+
+
+class InvoiceList(ListView):
+    model = Invoice
+
+    def get_queryset(self):
+        return Invoice.objects.filter(event_organizer__user=self.request.user)

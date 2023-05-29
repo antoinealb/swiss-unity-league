@@ -34,7 +34,7 @@ templates-format:
   before_script:
     - pip install djhtml==1.5.2
   script:
-    - djhtml --check championship/templates
+    - djhtml --check championship/templates invoicing/templates
 
 web-format:
   stage: test
