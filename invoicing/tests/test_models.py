@@ -38,14 +38,24 @@ class FindEventsTest(TestCase):
         invoice = Invoice(event_organizer=o, start_date=s, end_date=e)
 
         want_events = [
-            EventFactory(organizer=o, date=datetime.date(2023, 1, day))
+            EventFactory(
+                organizer=o,
+                date=datetime.date(2023, 1, day),
+                category=Event.Category.REGIONAL,
+            )
             for day in (4, 5, 6)
         ]
 
         # This event is after the end of the invoice
-        EventFactory(organizer=o, date=datetime.date(2023, 3, 1))
+        EventFactory(
+            organizer=o,
+            date=datetime.date(2023, 3, 1),
+            category=Event.Category.REGIONAL,
+        )
 
-        # This event is not organized by the same to
-        EventFactory()
+        # This event is a Regular, should not be on invoice
+        EventFactory(
+            organizer=o, date=datetime.date(2023, 1, 5), category=Event.Category.REGULAR
+        )
 
         self.assertEqual(list(invoice.events), want_events)

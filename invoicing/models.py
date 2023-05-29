@@ -50,7 +50,7 @@ class Invoice(models.Model):
     def events(self) -> Iterable[Event]:
         return self.event_organizer.event_set.filter(
             date__gte=self.start_date, date__lte=self.end_date
-        )
+        ).exclude(category=Event.Category.REGULAR)
 
     @property
     def reference(self) -> str:
