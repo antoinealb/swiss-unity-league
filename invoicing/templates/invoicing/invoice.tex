@@ -52,7 +52,7 @@ This invoice covers the period ranging from \DTMdate{ {{- start_date -}} } to \D
         Event & Date & Category & Player Count & Has top 8 & Fees\\
         \midrule
         {% for event in events %}
-        {{ event.name }} & {{ event.date }} & {{ event.get_category_display() }} & {{ event.eventplayerresult_set.count() }} & {% if event.top8_cnt > 0 %}Yes{%else%}No{%endif%} & \SI{ {{- event.fees -}} }{\chf} \\
+        {{ event.name }} & {{ event.date.strftime('%d.%m.%Y') }} & {{ event.get_category_display() }} & {{ event.eventplayerresult_set.count() }} & {% if event.top8_cnt > 0 %}Yes{%else%}No{%endif%} & \SI{ {{- event.fees -}} }{\chf} \\
         {% endfor %}
         \midrule
         \textbf{\textsc{Total}} & & & & & \SI{ {{- total_fees -}} }{\chf} \\
