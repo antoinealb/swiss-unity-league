@@ -5,31 +5,40 @@ from .models import Invoice, fee_for_event
 from django.db.models import F, Q, Count
 from django.conf import settings
 
+INVOICE_TEMPLATE = "invoicing/invoice.tex"
+
+
+def get_invoice_pdf_context(invoice: Invoice):
+    """Returns the context dict needed for rendering the invoice."""
+    context = {}
+    events = invoice.events.annotate(
+        top8_cnt=Count(
+            "eventplayerresult",
+            filter=Q(eventplayerresult__single_elimination_result__gt=0),
+        ),
+        event_size=Count("eventplayerresult"),
+    ).order_by("date")[:]
+
+    for e in events:
+        e.fees = fee_for_event(e)
+
+    context["logo_path"] = str(settings.BASE_DIR / "static/sul_logo.png")
+    context["start_date"] = invoice.start_date.strftime("%Y-%m-%d")
+    context["end_date"] = invoice.end_date.strftime("%Y-%m-%d")
+    context["events"] = events
+    context["total_fees"] = sum(e.fees for e in events)
+    context["invoice"] = invoice
+
+    return context
+
 
 class RenderInvoice(DetailView):
     model = Invoice
-    template_name = "invoicing/invoice.tex"
+    template_name = INVOICE_TEMPLATE
     object_name = "invoice"
 
     def get_context_data(self, **kwargs):
-        context = dict()
-        events = self.object.events.annotate(
-            top8_cnt=Count(
-                "eventplayerresult",
-                filter=Q(eventplayerresult__single_elimination_result__gt=0),
-            ),
-            event_size=Count("eventplayerresult"),
-        ).order_by("date")[:]
-
-        for e in events:
-            e.fees = fee_for_event(e)
-
-        context["logo_path"] = str(settings.BASE_DIR / "static/sul_logo.png")
-        context["start_date"] = self.object.start_date.strftime("%Y-%m-%d")
-        context["end_date"] = self.object.end_date.strftime("%Y-%m-%d")
-        context["events"] = events
-        context["total_fees"] = sum(e.fees for e in events)
-
+        context = get_invoice_pdf_context(self.object)
         context.update(kwargs)
         return super().get_context_data(**context)
 
