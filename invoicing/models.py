@@ -36,6 +36,11 @@ class Invoice(models.Model):
     included in that invoice.
     """
 
+    created_date = models.DateField(
+        auto_now_add=True,
+        help_text="Creation date, will be used as date in the PDF",
+        null=False,
+    )
     event_organizer = models.ForeignKey(EventOrganizer, on_delete=models.PROTECT)
     start_date = models.DateField(help_text="Start of the invoicing period")
     end_date = models.DateField(help_text="End of invoicing period")

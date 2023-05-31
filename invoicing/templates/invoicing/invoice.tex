@@ -22,8 +22,11 @@
 \usepackage{booktabs}
 \usepackage[per-mode=symbol]{siunitx}
 \usepackage{microtype}
+\usepackage{datetime}
 \usepackage[left=1.5cm,right=1.5cm]{geometry}
 
+
+\setkomavar{date}{\formatdate{ {{- invoice.created_date.day -}} }{ {{- invoice.created_date.month -}} }{ {{- invoice.created_date.year -}} }}
 
 \DeclareSIUnit\chf{\textsc{chf}}
 
