@@ -11,6 +11,7 @@
         <thead>
             <tr>
                 <th scope="col">Reference</th>
+                <th scope="col">Payment Received</th>
                 <th scope="col">Amount</th>
                 <th scope="col">Start Date</th>
                 <th scope="col">End Date</th>
@@ -21,6 +22,7 @@
             {% for invoice in object_list %}
                 <tr>
                     <td>{{ invoice.reference }}</td>
+                    <td>{% if invoice.is_paid %}✅{% else %}❌{% endif %}</td>
                     <td>{{ invoice.total_amount }} CHF</td>
                     <td>{{ invoice.start_date|date:"d.n.Y" }}</td>
                     <td>{{ invoice.end_date|date:"d.n.Y" }}</td>

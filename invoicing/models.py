@@ -45,6 +45,8 @@ class Invoice(models.Model):
     start_date = models.DateField(help_text="Start of the invoicing period")
     end_date = models.DateField(help_text="End of invoicing period")
 
+    payment_received_date = models.DateField(null=True, blank=True)
+
     def __str__(self) -> str:
         fmt = "%d.%m.%Y"
         start = self.start_date.strftime(fmt)
@@ -71,6 +73,10 @@ class Invoice(models.Model):
     def total_amount(self) -> int:
         """Returns total amount of the invoice, in Swiss francs."""
         return sum(fee_for_event(e) for e in self.events)
+
+    @property
+    def is_paid(self) -> bool:
+        return self.payment_received_date is not None
 
     def get_absolute_url(self):
         return reverse("invoice_get", args=[self.id])

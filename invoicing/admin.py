@@ -19,6 +19,7 @@ class InvoiceAdmin(admin.ModelAdmin):
         "amount",
         "start_date",
         "end_date",
+        "payment_received_date",
     )
     actions = ["download"]
 
