@@ -1,7 +1,7 @@
 import datetime
 from django.test import TestCase
 from invoicing.models import Invoice
-from championship.models import EventOrganizer
+from championship.models import EventOrganizer, Event
 from championship.factories import *
 from invoicing.factories import InvoiceFactory
 
@@ -28,6 +28,22 @@ class InvoiceHelpersTest(TestCase):
     def test_reference_saved(self):
         i = InvoiceFactory()
         self.assertEqual(i.reference, "SUL001-583")
+
+    def test_discount_is_applied(self):
+        o = EventOrganizerFactory()
+        e = EventFactory(organizer=o, category=Event.Category.REGIONAL)
+        # No top8, 10 players = 20 CHF
+        for _ in range(10):
+            EventPlayerResultFactory(event=e)
+
+        i = InvoiceFactory(
+            event_organizer=o,
+            start_date=e.date,
+            end_date=datetime.date.today(),
+            discount=19,
+        )
+
+        self.assertEqual(1, i.total_amount, "Discount should be applied")
 
 
 class FindEventsTest(TestCase):

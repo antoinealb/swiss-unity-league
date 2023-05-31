@@ -44,8 +44,12 @@ class Invoice(models.Model):
     event_organizer = models.ForeignKey(EventOrganizer, on_delete=models.PROTECT)
     start_date = models.DateField(help_text="Start of the invoicing period")
     end_date = models.DateField(help_text="End of invoicing period")
-
+    discount = models.IntegerField(help_text="Flat discount in CHF", default=0)
     payment_received_date = models.DateField(null=True, blank=True)
+    notes = models.TextField(
+        help_text="Notes about this invoice, only visible by Unity League staff.",
+        blank=True,
+    )
 
     def __str__(self) -> str:
         fmt = "%d.%m.%Y"
@@ -72,7 +76,7 @@ class Invoice(models.Model):
     @property
     def total_amount(self) -> int:
         """Returns total amount of the invoice, in Swiss francs."""
-        return sum(fee_for_event(e) for e in self.events)
+        return sum(fee_for_event(e) for e in self.events) - self.discount
 
     @property
     def is_paid(self) -> bool:

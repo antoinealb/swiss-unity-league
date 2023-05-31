@@ -26,7 +26,6 @@ def get_invoice_pdf_context(invoice: Invoice):
     context["start_date"] = invoice.start_date.strftime("%Y-%m-%d")
     context["end_date"] = invoice.end_date.strftime("%Y-%m-%d")
     context["events"] = events
-    context["total_fees"] = sum(e.fees for e in events)
     context["invoice"] = invoice
 
     return context

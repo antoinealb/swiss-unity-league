@@ -58,8 +58,12 @@ This invoice covers the period ranging from \DTMdate{ {{- start_date -}} } to \D
         {{ event.name }} & {{ event.date.strftime('%d.%m.%Y') }} & {{ event.get_category_display() }} & {{ event.eventplayerresult_set.count() }} & {% if event.top8_cnt > 0 %}Yes{%else%}No{%endif%} & \SI{ {{- event.fees -}} }{\chf} \\
         {% endfor %}
         \midrule
-        \textbf{\textsc{Total}} & & & & & \SI{ {{- total_fees -}} }{\chf} \\
-
+        {% if invoice.discount %}
+        \textsc{Subtotal} & & & & & \SI{ {{- invoice.total_amount + invoice.discount -}} }{\chf} \\
+        Discount & & & & & \SI{- {{- invoice.discount -}} }{\chf} \\
+        \midrule
+        {% endif %}
+        \textsc{Total} & & & & & \SI{ {{- invoice.total_amount -}} }{\chf} \\
         \bottomrule
     \end{tabular}
 \end{center}
