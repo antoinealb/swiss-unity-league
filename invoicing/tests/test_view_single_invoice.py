@@ -4,6 +4,7 @@ from django.urls import reverse
 from django.contrib.auth.models import User
 from championship.models import *
 from invoicing.models import Invoice
+from invoicing.factories import *
 from championship.factories import EventFactory, EventOrganizerFactory
 from subprocess import check_call, SubprocessError, DEVNULL
 
@@ -34,5 +35,18 @@ class InvoiceRenderingTest(TestCase):
         invoice = Invoice.objects.create(
             event_organizer=self.to, start_date=yesterday, end_date=today
         )
+        resp = self.client.get(reverse("invoice_get", args=(invoice.id,)))
+        self.assertEqual(200, resp.status_code)
+
+    def test_get_invoice_of_another_to(self):
+        # Create an invoice belonging to another TO
+        invoice = InvoiceFactory()
+        resp = self.client.get(reverse("invoice_get", args=(invoice.id,)))
+        self.assertEqual(404, resp.status_code)
+
+    def test_staff_can_view_all_invoices(self):
+        self.user.is_staff = True
+        self.user.save()
+        invoice = InvoiceFactory()
         resp = self.client.get(reverse("invoice_get", args=(invoice.id,)))
         self.assertEqual(200, resp.status_code)

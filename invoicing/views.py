@@ -1,3 +1,4 @@
+from django.http import Http404
 from django.shortcuts import render
 from django.views.generic import DetailView, ListView
 from django_tex.shortcuts import render_to_pdf
@@ -36,6 +37,20 @@ class RenderInvoice(LoginRequiredMixin, DetailView):
     model = Invoice
     template_name = INVOICE_TEMPLATE
     object_name = "invoice"
+
+    def dispatch(self, request, *args, **kwargs):
+        allowed = False
+        if request.user.is_staff:
+            # Staff can view all invoices
+            allowed = True
+
+        if self.get_object().event_organizer.user == request.user:
+            allowed = True
+
+        if not allowed:
+            raise Http404
+
+        return super().dispatch(request, *args, **kwargs)
 
     def get_context_data(self, **kwargs):
         context = get_invoice_pdf_context(self.object)
