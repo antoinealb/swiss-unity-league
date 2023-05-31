@@ -4,6 +4,7 @@ from django_tex.shortcuts import render_to_pdf
 from .models import Invoice, fee_for_event
 from django.db.models import F, Q, Count
 from django.conf import settings
+from django.contrib.auth.mixins import LoginRequiredMixin
 
 INVOICE_TEMPLATE = "invoicing/invoice.tex"
 
@@ -31,7 +32,7 @@ def get_invoice_pdf_context(invoice: Invoice):
     return context
 
 
-class RenderInvoice(DetailView):
+class RenderInvoice(LoginRequiredMixin, DetailView):
     model = Invoice
     template_name = INVOICE_TEMPLATE
     object_name = "invoice"
@@ -46,7 +47,7 @@ class RenderInvoice(DetailView):
         return render_to_pdf(self.request, template, context, filename=f"invoice.pdf")
 
 
-class InvoiceList(ListView):
+class InvoiceList(LoginRequiredMixin, ListView):
     model = Invoice
 
     def get_queryset(self):
