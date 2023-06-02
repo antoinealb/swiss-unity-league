@@ -1,7 +1,7 @@
 import unittest
 from django.test import TestCase, Client
 from django.urls import reverse
-from django.contrib.auth.models import User
+from django.contrib.auth.models import User, Permission
 from championship.models import *
 from invoicing.models import Invoice
 from invoicing.factories import *
@@ -45,7 +45,8 @@ class InvoiceRenderingTest(TestCase):
         self.assertEqual(404, resp.status_code)
 
     def test_staff_can_view_all_invoices(self):
-        self.user.is_staff = True
+        perm = Permission.objects.get(codename="view_invoice")
+        self.user.user_permissions.add(perm)
         self.user.save()
         invoice = InvoiceFactory()
         resp = self.client.get(reverse("invoice_get", args=(invoice.id,)))

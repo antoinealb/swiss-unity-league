@@ -39,13 +39,9 @@ class RenderInvoice(LoginRequiredMixin, DetailView):
     object_name = "invoice"
 
     def dispatch(self, request, *args, **kwargs):
-        allowed = False
-        if request.user.is_staff:
-            # Staff can view all invoices
-            allowed = True
-
-        if self.get_object().event_organizer.user == request.user:
-            allowed = True
+        own_invoice = self.get_object().event_organizer.user == request.user
+        is_viewer = self.request.user.has_perm("invoicing.view_invoice")
+        allowed = own_invoice or is_viewer
 
         if not allowed:
             raise Http404
