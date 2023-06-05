@@ -42,7 +42,7 @@
                                 <li class="nav-item dropdown">
                                     <a class="nav-link dropdown-toggle" href="#" id="userDropDown" role="button" data-bs-toggle="dropdown" aria-expanded="false">Welcome, {{ user.username }}</a>
                                     <ul class="dropdown-menu" aria-labelledby="userDropDown">
-                                        {% if user.eventorganizer_set.count %}
+                                        {% if user.eventorganizer %}
                                             <li><a class="dropdown-item" href="{% url 'events_create' %}">Create new event</a></li>
                                             <li><a class="dropdown-item" href="{% url 'results_create' %}">Upload results</a></li>
                                             <li><a class="dropdown-item" href="{% url 'organizer_update' %}">Edit organizer profile</a></li>

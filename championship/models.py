@@ -21,7 +21,7 @@ class EventOrganizer(models.Model):
 
     name = models.CharField(max_length=200)
     contact = models.EmailField(help_text="Prefered contact email")
-    user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.PROTECT)
+    user = models.OneToOneField(settings.AUTH_USER_MODEL, on_delete=models.PROTECT)
 
     def __str__(self):
         return self.name
