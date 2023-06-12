@@ -110,6 +110,9 @@ class PlayerDetailsView(DetailView):
                 event_size=e.event_size,
                 has_top_8=has_top8,
             )
+            e.ranking_display = get_ranking_display(e)
+            e.category_display = Event.Category(e.category).label
+
         return context
 
 
@@ -135,16 +138,9 @@ class EventDetailsView(DetailView):
             r.qps = qps_for_result(
                 r, r.category, event_size=r.event_size, has_top_8=has_top8
             )
+            r.ranking_display = get_ranking_display(r)
 
-        results = sorted(results)
-
-        top_results = []
-
-        while results and results[0].single_elimination_result:
-            top_results.append(results.pop(0))
-
-        context["results"] = results
-        context["top_results"] = top_results
+        context["results"] = sorted(results)
 
         return context
 

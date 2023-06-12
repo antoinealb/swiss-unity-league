@@ -264,8 +264,6 @@ def qps_for_result(
     points = points * MULT[category]
 
     if result.single_elimination_result:
-        # TODO: Top 16 points for events which had a top 8 and more than 32
-        # players.
         points += POINTS_FOR_TOP[category, result.single_elimination_result]
     elif has_top_8:
         # For large tournaments, we award points for placing, even outside of
@@ -340,6 +338,13 @@ def compute_scores():
     scores_players_reaching_max_regular.set(players_reaching_max)
     return scores
 
+def get_ranking_display(event_player_result: EventPlayerResult):
+    """Gets a visual representation of the rank."""
+    if  event_player_result.single_elimination_result:
+        return event_player_result.get_single_elimination_result_display()
+    else:
+        #TODO add ordinal function
+        return event_player_result.ranking
 
 @receiver(post_save, sender=Event)
 @receiver(post_save, sender=EventPlayerResult)

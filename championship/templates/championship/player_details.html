@@ -22,6 +22,8 @@
                 <th scope="col">Event</th>
                 <th scope="col">Date</th>
                 <th scope="col">QPs awarded</th>
+                <th scope="col">Rank</th>
+                <th scope="col">Type</th>
             </tr>
         </thead>
         <tbody>
@@ -30,6 +32,8 @@
                     <td><a href="{% url 'event_details' event.event_id %}">{{ event.name }}</a></td>
                     <td>{{ event.date }}</td>
                     <td>{{ event.qps }}</td>
+                    <td>{{ event.ranking_display }}</td>
+                    <td>{{ event.category_display }}</td>
                 </tr>
             {% endfor %}
         </tbody>
