@@ -338,13 +338,15 @@ def compute_scores():
     scores_players_reaching_max_regular.set(players_reaching_max)
     return scores
 
+
 def get_ranking_display(event_player_result: EventPlayerResult):
     """Gets a visual representation of the rank."""
-    if  event_player_result.single_elimination_result:
+    if event_player_result.single_elimination_result:
         return event_player_result.get_single_elimination_result_display()
     else:
-        #TODO add ordinal function
+        # TODO add ordinal function
         return event_player_result.ranking
+
 
 @receiver(post_save, sender=Event)
 @receiver(post_save, sender=EventPlayerResult)

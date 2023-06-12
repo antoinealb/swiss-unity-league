@@ -82,6 +82,3 @@ class PlayerDetailsTest(TestCase):
         found_result = response.context_data["last_events"][0]
         self.assertEqual(found_result.category_display, "SUL Premier")
         self.assertEqual(found_result.ranking_display, "1st")
-
-
-
