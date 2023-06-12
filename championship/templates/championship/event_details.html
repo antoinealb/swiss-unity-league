@@ -77,7 +77,7 @@
                 {% for r in results %}
                     <tr>
                         <td>{{ r.ranking_display }}</td>
-                        <td>{{ r.player_name }}</td>
+                        <td><a href="{% url 'player_details' r.player_id %}">{{ r.player_name }}</a></td>
                         <td>{{ r.points }}</td>
                         <td>{{ r.qps }}</td>
                     </tr>
