@@ -56,6 +56,7 @@ class PlayerAdmin(admin.ModelAdmin):
     search_fields = ["name"]
     list_display = ["name"]
     actions = ["merge_players"]
+    list_per_page = 2000
 
     @admin.action(
         description="Merge selected players",
