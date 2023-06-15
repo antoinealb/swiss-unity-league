@@ -31,7 +31,7 @@ class EventDetailTestCase(TestCase):
 
     def test_get_result_with_top_8(self):
         category = Event.Category.PREMIER
-        event = EventFactory(category= category)
+        event = EventFactory(category=category)
 
         # Create 18 results with a top8
         results = (

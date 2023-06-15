@@ -74,7 +74,7 @@ class PlayerDetailsTest(TestCase):
         """
         player = PlayerFactory()
         category = Event.Category.PREMIER
-        event = EventFactory(category= category)
+        event = EventFactory(category=category)
         ep = EventPlayerResult.objects.create(
             points=10, player=player, event=event, ranking=1
         )

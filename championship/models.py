@@ -1,7 +1,6 @@
 from django.db import models
 from django.conf import settings
 from django.db.models import Count, F
-from django.core.validators import MinValueValidator
 from django_bleach.models import BleachField
 from django.core.cache import cache
 from django.db.models.signals import post_save, post_delete
@@ -12,6 +11,7 @@ import bleach
 import collections
 import datetime
 from prometheus_client import Gauge, Summary
+from humanize import ordinal
 
 
 class EventOrganizer(models.Model):
@@ -339,13 +339,20 @@ def compute_scores():
     return scores
 
 
+SINGLE_ELIM_TO_RANK = {
+    EventPlayerResult.SingleEliminationResult.WINNER: "1st",
+    EventPlayerResult.SingleEliminationResult.FINALIST: "2nd",
+    EventPlayerResult.SingleEliminationResult.SEMI_FINALIST: "3rd-4th",
+    EventPlayerResult.SingleEliminationResult.QUARTER_FINALIST: "5th-8th",
+}
+
+
 def get_ranking_display(event_player_result: EventPlayerResult):
     """Gets a visual representation of the rank."""
     if event_player_result.single_elimination_result:
-        return event_player_result.get_single_elimination_result_display()
+        return SINGLE_ELIM_TO_RANK[event_player_result.single_elimination_result]
     else:
-        # TODO add ordinal function
-        return event_player_result.ranking
+        return ordinal(event_player_result.ranking)
 
 
 @receiver(post_save, sender=Event)

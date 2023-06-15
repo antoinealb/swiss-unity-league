@@ -24,3 +24,4 @@ django-auditlog @ git+https://github.com/jazzband/django-auditlog.git@0cb3eb2b99
 django-hijack~=3.3.0
 parameterized==0.9.0
 django-tex==1.1.10
+humanize==4.6.0
