@@ -62,7 +62,7 @@ class EventDetailTestCase(TestCase):
         )
         self.assertEqual(
             results[0].ranking_display,
-            EventPlayerResult.SingleEliminationResult.WINNER.label,
+            "1st",
         )
         self.assertEqual(
             results[8].ranking_display,
