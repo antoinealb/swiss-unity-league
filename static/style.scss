@@ -8,6 +8,10 @@ html {
     padding: 10px;
 }
 
+.auto-width {
+    width: auto !important;   
+}
+
 $theme-colors: (
     'primary': #c6b098,
     'primary-light': #ffefde,

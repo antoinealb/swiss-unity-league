@@ -6,38 +6,108 @@
 
 {% block content %}
     {% load humanize %}
-    <h1>{{ player.name }}</h1>
+    <p>
+        <h1>{{ player.name }}</h1>
 
-    {% if user.is_staff %}
-        <a class="btn btn-warning" href="{% url 'admin:championship_player_change' player.id %}">Edit in admin</a>
-    {% endif %}
+        {% if user.is_staff %}
+            <a class="btn btn-warning" href="{% url 'admin:championship_player_change' player.id %}">Edit in admin</a>
+        {% endif %}
 
 
-    <p>{{ score }} QPs</p>
+        <h3>{{ score }} QPs</h3>
 
-    <h2>Latest events</h2>
-    <table class="table table-striped">
-        <thead>
-            <tr>
-                <th scope="col">Event</th>
-                <th scope="col">Date</th>
-                <th scope="col">QPs awarded</th>
-                <th scope="col">Rank</th>
-                <th scope="col">Type</th>
-            </tr>
-        </thead>
-        <tbody>
-            {% for event in last_events %}
-                <tr>
-                    <td><a href="{% url 'event_details' event.event_id %}">{{ event.name }}</a></td>
-                    <td>{{ event.date }}</td>
-                    <td>{{ event.qps }}</td>
-                    <td>{{ event.ranking_display }}</td>
-                    <td>{{ event.category_display }}</td>
-                </tr>
-            {% endfor %}
-        </tbody>
-    </table>
+        <p>
+            <h2>Top Finishes</h2>
 
+            <div class="container">
+                <div class="row align-middle">
+                    <div class="border col-md-3 d-flex align-items-center justify-content-center border-end">
+                        <div class="mt-3">
+                            <h3>SUL Premier</h3>
+                            <p>3 Events - 362 QPs</p>
+                        </div>
+                    </div>
+                    <div class="col-md-3 p-0 border">
+                        <table class="table table-striped m-0">
+                             <thead>
+                                <tr>
+                                    <th>With Top 8</th>
+                                    <th></th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td>1st</td>
+                                    <td>1x</td>
+                                </tr>
+                                <tr>
+                                    <td>3rd-4th</td>
+                                    <td>2x</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+                <div class="row border">
+                    <div class="col-md-3 d-flex align-items-center justify-content-center border-end">
+                        <div class="mt-3">
+                            <h3>SUL Regional</h3>
+                            <p>Description 2</p>
+                        </div>
+                    </div>
+                    <div class="col-md-3 p-0">
+                        <table class="table table-striped m-0">
+                            <thead>
+                                <tr>
+                                    <th>With Top 8</th>
+                                    <th></th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td>1st</td>
+                                    <td>1x</td>
+                                </tr>
+                                <tr>
+                                    <td>2nd</td>
+                                    <td>2x</td>
+                                </tr>
+                                <tr>
+                                    <td>5th-8th</td>
+                                    <td>2x</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </p>
+
+        <p>
+            <h2>Latest events</h2>
+            <table class="table table-striped">
+                <thead>
+                    <tr>
+                        <th scope="col">Event</th>
+                        <th scope="col">Date</th>
+                        <th scope="col">QPs awarded</th>
+                        <th scope="col">Rank</th>
+                        <th scope="col">Type</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for event in last_events %}
+                        <tr>
+                            <td><a href="{% url 'event_details' event.event_id %}">{{ event.name }}</a></td>
+                            <td>{{ event.date }}</td>
+                            <td>{{ event.qps }}</td>
+                            <td>{{ event.ranking_display }}</td>
+                            <td>{{ event.category_display }}</td>
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </p>
+    </p>
 
 {% endblock %}
