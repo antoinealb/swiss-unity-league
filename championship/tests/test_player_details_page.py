@@ -35,7 +35,7 @@ class PlayerDetailsTest(TestCase):
         )
 
         response = self.client.get(reverse("player_details", args=[player.id]))
-        gotScore = response.context_data["last_events"][0].qps
+        gotScore = response.context_data["last_results"][0].qps
 
         self.assertEqual(gotScore, (10 + 3) * 6)
 
@@ -67,3 +67,19 @@ class PlayerDetailsTest(TestCase):
             reverse("admin:championship_player_change", args=[player.id]),
             resp.content.decode(),
         )
+
+    def test_attributes(self):
+        """
+        Checks that the other attributes (ranking and category) are displayed.
+        """
+        player = PlayerFactory()
+        category = Event.Category.PREMIER
+        event = EventFactory(category=category)
+        ep = EventPlayerResult.objects.create(
+            points=10, player=player, event=event, ranking=1
+        )
+
+        response = self.client.get(reverse("player_details", args=[player.id]))
+        decoded = response.content.decode()
+        self.assertIn(category.label, decoded)
+        self.assertIn("1st", decoded)

@@ -30,10 +30,10 @@ class EventDetailTestCase(TestCase):
         self.assertEqual(resp.context_data["results"][0].qps, (10 + 3) * 6)
 
     def test_get_result_with_top_8(self):
-        event = EventFactory(category=Event.Category.PREMIER)
-        player = PlayerFactory()
+        category = Event.Category.PREMIER
+        event = EventFactory(category=category)
 
-        # Create 10 results with a top8
+        # Create 18 results with a top8
         results = (
             [
                 EventPlayerResult.SingleEliminationResult.WINNER,
@@ -55,11 +55,18 @@ class EventDetailTestCase(TestCase):
 
         resp = self.client.get(reverse("event_details", args=[event.id]))
         results = resp.context_data["results"]
-        top8_results = resp.context_data["top_results"]
-        self.assertEqual(results[0].ranking, 9)
+        self.assertEqual(results[8].ranking, 9)
         self.assertEqual(
-            top8_results[0].single_elimination_result,
+            results[0].single_elimination_result,
             EventPlayerResult.SingleEliminationResult.WINNER,
+        )
+        self.assertEqual(
+            results[0].get_ranking_display(),
+            "1st",
+        )
+        self.assertEqual(
+            results[8].get_ranking_display(),
+            "9th",
         )
 
     def test_escapes_content_description(self):

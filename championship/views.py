@@ -88,7 +88,7 @@ class PlayerDetailsView(DetailView):
         context = super().get_context_data(**kwargs)
         scores = compute_scores()
         context["score"] = scores.get(object.id, 0)
-        context["last_events"] = (
+        context["last_results"] = (
             EventPlayerResult.objects.filter(player=context["player"])
             .annotate(
                 name=F("event__name"),
@@ -102,12 +102,12 @@ class PlayerDetailsView(DetailView):
             )
             .order_by("-event__date")
         )
-        for e in context["last_events"]:
-            has_top8 = e.top8_cnt > 0
-            e.qps = qps_for_result(
-                e,
-                e.category,
-                event_size=e.event_size,
+        for result in context["last_results"]:
+            has_top8 = result.top8_cnt > 0
+            result.qps = qps_for_result(
+                result,
+                result.category,
+                event_size=result.event_size,
                 has_top_8=has_top8,
             )
         return context
@@ -136,15 +136,7 @@ class EventDetailsView(DetailView):
                 r, r.category, event_size=r.event_size, has_top_8=has_top8
             )
 
-        results = sorted(results)
-
-        top_results = []
-
-        while results and results[0].single_elimination_result:
-            top_results.append(results.pop(0))
-
-        context["results"] = results
-        context["top_results"] = top_results
+        context["results"] = sorted(results)
 
         return context
 

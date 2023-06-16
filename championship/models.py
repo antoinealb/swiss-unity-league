@@ -1,7 +1,6 @@
 from django.db import models
 from django.conf import settings
 from django.db.models import Count, F
-from django.core.validators import MinValueValidator
 from django_bleach.models import BleachField
 from django.core.cache import cache
 from django.db.models.signals import post_save, post_delete
@@ -12,6 +11,7 @@ import bleach
 import collections
 import datetime
 from prometheus_client import Gauge, Summary
+from django.contrib.humanize.templatetags.humanize import ordinal
 
 
 class EventOrganizer(models.Model):
@@ -200,6 +200,12 @@ class EventPlayerResult(models.Model):
 
         return self.ranking < other.ranking
 
+    def get_ranking_display(self):
+        if self.single_elimination_result:
+            return SINGLE_ELIM_TO_RANK[self.single_elimination_result]
+        else:
+            return ordinal(self.ranking)
+
 
 MULT = {
     Event.Category.REGULAR: 1,
@@ -249,6 +255,13 @@ POINTS_TOP_13_16 = {
     Event.Category.REGULAR: 0,
 }
 
+SINGLE_ELIM_TO_RANK = {
+    EventPlayerResult.SingleEliminationResult.WINNER: "1st",
+    EventPlayerResult.SingleEliminationResult.FINALIST: "2nd",
+    EventPlayerResult.SingleEliminationResult.SEMI_FINALIST: "3rd-4th",
+    EventPlayerResult.SingleEliminationResult.QUARTER_FINALIST: "5th-8th",
+}
+
 
 def qps_for_result(
     result: EventPlayerResult,
@@ -264,8 +277,6 @@ def qps_for_result(
     points = points * MULT[category]
 
     if result.single_elimination_result:
-        # TODO: Top 16 points for events which had a top 8 and more than 32
-        # players.
         points += POINTS_FOR_TOP[category, result.single_elimination_result]
     elif has_top_8:
         # For large tournaments, we award points for placing, even outside of
