@@ -27,13 +27,13 @@
             </tr>
         </thead>
         <tbody>
-            {% for event in last_events %}
+            {% for result in last_results %}
                 <tr>
-                    <td><a href="{% url 'event_details' event.event_id %}">{{ event.name }}</a></td>
-                    <td>{{ event.date }}</td>
-                    <td>{{ event.qps }}</td>
-                    <td>{{ event.ranking_display }}</td>
-                    <td>{{ event.category_display }}</td>
+                    <td><a href="{% url 'event_details' result.event_id %}">{{result.name }}</a></td>
+                    <td>{{ result.date }}</td>
+                    <td>{{ result.qps }}</td>
+                    <td>{{ result.get_ranking_display }}</td>
+                    <td>{{ result.event.get_category_display }}</td>
                 </tr>
             {% endfor %}
         </tbody>

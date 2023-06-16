@@ -11,7 +11,7 @@ import bleach
 import collections
 import datetime
 from prometheus_client import Gauge, Summary
-from humanize import ordinal
+from django.contrib.humanize.templatetags.humanize import ordinal
 
 
 class EventOrganizer(models.Model):
@@ -200,6 +200,12 @@ class EventPlayerResult(models.Model):
 
         return self.ranking < other.ranking
 
+    def get_ranking_display(self):
+        if self.single_elimination_result:
+            return SINGLE_ELIM_TO_RANK[self.single_elimination_result]
+        else:
+            return ordinal(self.ranking)
+
 
 MULT = {
     Event.Category.REGULAR: 1,
@@ -247,6 +253,13 @@ POINTS_TOP_13_16 = {
     Event.Category.PREMIER: 50,
     Event.Category.REGIONAL: 10,
     Event.Category.REGULAR: 0,
+}
+
+SINGLE_ELIM_TO_RANK = {
+    EventPlayerResult.SingleEliminationResult.WINNER: "1st",
+    EventPlayerResult.SingleEliminationResult.FINALIST: "2nd",
+    EventPlayerResult.SingleEliminationResult.SEMI_FINALIST: "3rd-4th",
+    EventPlayerResult.SingleEliminationResult.QUARTER_FINALIST: "5th-8th",
 }
 
 
@@ -337,22 +350,6 @@ def compute_scores():
 
     scores_players_reaching_max_regular.set(players_reaching_max)
     return scores
-
-
-SINGLE_ELIM_TO_RANK = {
-    EventPlayerResult.SingleEliminationResult.WINNER: "1st",
-    EventPlayerResult.SingleEliminationResult.FINALIST: "2nd",
-    EventPlayerResult.SingleEliminationResult.SEMI_FINALIST: "3rd-4th",
-    EventPlayerResult.SingleEliminationResult.QUARTER_FINALIST: "5th-8th",
-}
-
-
-def get_ranking_display(event_player_result: EventPlayerResult):
-    """Gets a visual representation of the rank."""
-    if event_player_result.single_elimination_result:
-        return SINGLE_ELIM_TO_RANK[event_player_result.single_elimination_result]
-    else:
-        return ordinal(event_player_result.ranking)
 
 
 @receiver(post_save, sender=Event)

@@ -35,7 +35,7 @@ class PlayerDetailsTest(TestCase):
         )
 
         response = self.client.get(reverse("player_details", args=[player.id]))
-        gotScore = response.context_data["last_events"][0].qps
+        gotScore = response.context_data["last_results"][0].qps
 
         self.assertEqual(gotScore, (10 + 3) * 6)
 
@@ -80,6 +80,6 @@ class PlayerDetailsTest(TestCase):
         )
 
         response = self.client.get(reverse("player_details", args=[player.id]))
-        found_result = response.context_data["last_events"][0]
-        self.assertEqual(found_result.category_display, category.label)
-        self.assertEqual(found_result.ranking_display, "1st")
+        decoded = response.content.decode()
+        self.assertIn(category.label, decoded)
+        self.assertIn("1st", decoded)
