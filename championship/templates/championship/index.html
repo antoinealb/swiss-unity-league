@@ -11,7 +11,7 @@
             <p>Any organizer can register their tournament for the league to make it award Qualification Points (QPs). Players need to collect these QPs in order to qualify for the invitational tournament.</p>
             <a class="btn btn-secondary" href="{% url 'info' %}">More info</a>
         </div>
-        <div class="col-lg-7"><img class="img-fluid rounded mb-4 mb-lg-0" src="{% static 'tournament.jpg' %}" alt="A Magic: The Gathering tournament" /></div>
+        <div class="col-lg-7"><img class="img-fluid rounded my-4 mb-lg-0" src="{% static 'tournament.jpg' %}" alt="A Magic: The Gathering tournament" /></div>
     </div>
 
 
@@ -63,7 +63,7 @@
 
         <h2>Our partners</h3>
         <div class="row text-center">
-            <div class="col-md-6 align-items-center mx-auto">
+            <div class="col-lg-6 align-items-center mx-auto">
                 <div id="carouselPartnersIndicators" class="carousel slide" data-bs-ride="carousel" data-bs-interval="{% if debug %}500{% else %}3000{% endif %}">
                     <div class="carousel-inner" style="height: 300px;">
                         {% for logo in partner_logos %}
