@@ -68,6 +68,7 @@ INSTALLED_APPS = [
     "hijack",
     "hijack.contrib.admin",
     "django_tex",
+    "tinymce",
 ]
 
 MIDDLEWARE = [

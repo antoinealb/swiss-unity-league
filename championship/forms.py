@@ -4,6 +4,7 @@ from django import forms
 from .models import Event, EventPlayerResult
 from crispy_forms.helper import FormHelper
 from crispy_forms.layout import Submit, Layout, Div, Field
+from tinymce.widgets import TinyMCE
 import datetime
 import bleach
 
@@ -26,7 +27,15 @@ class EventCreateForm(forms.ModelForm):
             "decklists_url",
             "description",
         ]
-        widgets = {"date": forms.DateInput(attrs={"type": "date"})}
+        widgets = {
+            "date": forms.DateInput(attrs={"type": "date"}),
+            "description": TinyMCE(
+                mce_attrs={
+                    "toolbar": "undo redo | bold italic | link unlink | bullist numlist",
+                    "link_assume_external_targets": "http",
+                },
+            ),
+        }
         help_texts = {
             "description": """Supports the following HTML tags: {}.
 You can copy/paste the description from a website like swissmtg.ch, and the formatting will be preserved.""".format(
