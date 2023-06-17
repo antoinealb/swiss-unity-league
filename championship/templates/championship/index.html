@@ -33,10 +33,18 @@
         <div class="col-lg-4 mb-5">
             <div class="card h-100">
                 <div class="card-body">
-                    <h2 class="card-title">Info for organizers</h2>
-                    <p class="card-text">Want to be a part of the adventure and start awarding points to your players?</p>
+                    <h2 class="card-title">How to participate?</h2>
+                    <p class="card-text">
+                        As an organizer you can register all of your events for the league to make them award points to your players.
+                        More information and a registration form can be found in this <a href="{% url 'info_organizer' %}"> guide</a>.
+                    </p>
+                    <p class="card-text">
+                        If you're a player, please tell your local tournament organizers about the league and show them the this page.
+                    </p>
                 </div>
-                <div class="card-footer"><a class="btn btn-secondary btn-sm" href="{% url 'info_organizer' %}">More Info</a></div>
+                <div class="card-footer">
+                    <a class="btn btn-secondary btn-sm" href="{% url 'info_organizer' %}">Guide for Organizers</a>
+                </div>
             </div>
         </div>
         <div class="col-lg-4 mb-5">
