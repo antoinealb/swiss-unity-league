@@ -22,8 +22,8 @@
                     <h2 class="card-title">Upcoming major events</h2>
                     <dl>
                         {% for event in future_events|slice:":5" %}
-                            <dt>{{ event.date }}</dt>
-                            <dd>{{ event.name }} by {{ event.organizer}} </dd>
+                            <dt>{{ event.date }} by {{ event.organizer}}</dt>
+                            <dd> <a href="{{ event.get_absolute_url}}">{{ event.name }} </a> </dd>
                         {% endfor %}
                     </dl>
                 </div>
