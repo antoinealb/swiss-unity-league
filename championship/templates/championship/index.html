@@ -16,7 +16,7 @@
 
 
     <div class="row gx-4 gx-lg-5">
-        <div class="col-md-4 mb-5">
+        <div class="col-lg-4 mb-5">
             <div class="card h-100">
                 <div class="card-body">
                     <h2 class="card-title">Upcoming major events</h2>
@@ -30,7 +30,7 @@
                 <div class="card-footer"><a class="btn btn-secondary btn-sm" href="{% url 'events' %}">View all upcoming events</a></div>
             </div>
         </div>
-        <div class="col-md-4 mb-5">
+        <div class="col-lg-4 mb-5">
             <div class="card h-100">
                 <div class="card-body">
                     <h2 class="card-title">Info for organizers</h2>
@@ -39,17 +39,24 @@
                 <div class="card-footer"><a class="btn btn-secondary btn-sm" href="{% url 'info_organizer' %}">More Info</a></div>
             </div>
         </div>
-        <div class="col-md-4 mb-5">
+        <div class="col-lg-4 mb-5">
             <div class="card h-100">
                 <div class="card-body">
-                    <h2 class="card-title">Top players</h2>
-                    <p class="card-text">
-                        <ol>{% for player in players|slice:":5" %}
-                            <li>{{ player.name }} ({{ player.score }} points)</li>
+                    <h2 class="card-title">Top Players</h2>
+                    <ol>
+                        {% for player in players|slice:":10" %}
+                            {% if forloop.counter <= 5 %}
+                                <li>{{ player.name }} ({{ player.score }} points)</li>
+                            {% else %}
+                                <div class="d-none d-md-block">
+                                    <li >{{ player.name }} ({{ player.score }} points)</li>
+                                </div>
+                            {% endif %}
                         {% endfor %}
-                        </ol>
-                    </div>
-                    <div class="card-footer"><a class="btn btn-secondary btn-sm" href="{% url 'ranking' %}">Full ranking</a></div>
+                    </ol>
+                </div>
+                <div class="card-footer">
+                    <a class="btn btn-secondary btn-sm" href="{% url 'ranking' %}">Full Ranking</a>
                 </div>
             </div>
         </div>
