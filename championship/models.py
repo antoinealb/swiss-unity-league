@@ -1,7 +1,6 @@
 from django.db import models
 from django.conf import settings
 from django.db.models import Count, F
-from django.core.validators import MinValueValidator
 from django_bleach.models import BleachField
 from django.core.cache import cache
 from django.db.models.signals import post_save, post_delete
@@ -12,6 +11,7 @@ import bleach
 import collections
 import datetime
 from prometheus_client import Gauge, Summary
+from django.contrib.humanize.templatetags.humanize import ordinal
 
 
 class EventOrganizer(models.Model):
@@ -64,7 +64,7 @@ class Event(models.Model):
     )
     description = BleachField(
         help_text="Supports the following HTML tags: {}".format(
-            ", ".join(bleach.ALLOWED_TAGS)
+            ", ".join(settings.BLEACH_ALLOWED_TAGS)
         ),
         blank=True,
         strip_tags=True,
@@ -200,6 +200,12 @@ class EventPlayerResult(models.Model):
 
         return self.ranking < other.ranking
 
+    def get_ranking_display(self):
+        if self.single_elimination_result:
+            return SINGLE_ELIM_TO_RANK[self.single_elimination_result]
+        else:
+            return ordinal(self.ranking)
+
 
 MULT = {
     Event.Category.REGULAR: 1,
@@ -247,6 +253,13 @@ POINTS_TOP_13_16 = {
     Event.Category.PREMIER: 50,
     Event.Category.REGIONAL: 10,
     Event.Category.REGULAR: 0,
+}
+
+SINGLE_ELIM_TO_RANK = {
+    EventPlayerResult.SingleEliminationResult.WINNER: "1st",
+    EventPlayerResult.SingleEliminationResult.FINALIST: "2nd",
+    EventPlayerResult.SingleEliminationResult.SEMI_FINALIST: "3rd-4th",
+    EventPlayerResult.SingleEliminationResult.QUARTER_FINALIST: "5th-8th",
 }
 
 
@@ -337,15 +350,6 @@ def compute_scores():
 
     scores_players_reaching_max_regular.set(players_reaching_max)
     return scores
-
-
-def get_ranking_display(event_player_result: EventPlayerResult):
-    """Gets a visual representation of the rank."""
-    if event_player_result.single_elimination_result:
-        return event_player_result.get_single_elimination_result_display()
-    else:
-        # TODO add ordinal function
-        return event_player_result.ranking
 
 
 @receiver(post_save, sender=Event)

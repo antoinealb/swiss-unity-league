@@ -2,6 +2,10 @@
 
 {% load crispy_forms_tags %}
 
+{% block extrahead %}
+    {{ form.media }}
+{% endblock %}
+
 {% block content %}
     <h1>Copy event</h1>
     You are currently creating a copy of your event "{{ original_event }}".
