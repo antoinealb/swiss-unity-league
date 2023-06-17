@@ -64,7 +64,7 @@ class Event(models.Model):
     )
     description = BleachField(
         help_text="Supports the following HTML tags: {}".format(
-            ", ".join(bleach.ALLOWED_TAGS)
+            ", ".join(settings.BLEACH_ALLOWED_TAGS)
         ),
         blank=True,
         strip_tags=True,

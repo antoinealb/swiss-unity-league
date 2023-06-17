@@ -231,3 +231,16 @@ CID_GENERATE = True
 import cid.locals
 
 AUDITLOG_CID_GETTER = cid.locals.get_cid
+
+BLEACH_ALLOWED_TAGS = [
+    "a",
+    "b",
+    "blockquote",
+    "em",
+    "i",
+    "li",
+    "ol",
+    "p",
+    "strong",
+    "ul",
+]
