@@ -5,109 +5,100 @@
 {% endblock %}
 
 {% block content %}
-    {% load humanize %}
-    <p>
-        <h1>{{ player.name }}</h1>
 
-        {% if user.is_staff %}
-            <a class="btn btn-warning" href="{% url 'admin:championship_player_change' player.id %}">Edit in admin</a>
-        {% endif %}
+    <h1>{{ player.name }}</h1>
 
+    {% if user.is_staff %}
+        <a class="btn btn-warning" href="{% url 'admin:championship_player_change' player.id %}">Edit in admin</a>
+    {% endif %}
 
-        <h3>{{ score }} QPs</h3>
-
-        <p>
-            <h2>Top Finishes</h2>
-
-            <div class="container">
-                <div class="row align-middle">
-                    <div class="border col-md-3 d-flex align-items-center justify-content-center border-end">
-                        <div class="mt-3">
-                            <h3>SUL Premier</h3>
-                            <p>3 Events - 362 QPs</p>
-                        </div>
-                    </div>
-                    <div class="col-md-3 p-0 border">
-                        <table class="table table-striped m-0">
-                            <thead>
+    <div class="container my-3">
+        <h2>Qualification Points</h2>
+        <div class="row">
+            <div class="col-lg-6 p-0">
+                <div class="table-responsive">
+                    <table class="table table-striped m-0">
+                        <thead>
+                            <tr>
+                                {% for event_type in qp_table.thead %}
+                                    <th>{{ event_type }}</th>
+                                {% endfor %}
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for rank_row in qp_table.tbody %}
                                 <tr>
-                                    <th>With Top 8</th>
-                                    <th></th>
+                                    {% for row_element in rank_row %}
+                                        <td>{{ row_element }}</td>
+                                    {% endfor %}
                                 </tr>
-                            </thead>
-                            <tbody>
-                                <tr>
-                                    <td>1st</td>
-                                    <td>1x</td>
-                                </tr>
-                                <tr>
-                                    <td>3rd-4th</td>
-                                    <td>2x</td>
-                                </tr>
-                            </tbody>
-                        </table>
-                    </div>
-                </div>
-                <div class="row border">
-                    <div class="col-md-3 d-flex align-items-center justify-content-center border-end">
-                        <div class="mt-3">
-                            <h3>SUL Regional</h3>
-                            <p>Description 2</p>
-                        </div>
-                    </div>
-                    <div class="col-md-3 p-0">
-                        <table class="table table-striped m-0">
-                            <thead>
-                                <tr>
-                                    <th>With Top 8</th>
-                                    <th></th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                <tr>
-                                    <td>1st</td>
-                                    <td>1x</td>
-                                </tr>
-                                <tr>
-                                    <td>2nd</td>
-                                    <td>2x</td>
-                                </tr>
-                                <tr>
-                                    <td>5th-8th</td>
-                                    <td>2x</td>
-                                </tr>
-                            </tbody>
-                        </table>
-                    </div>
+                            {% endfor %}
+                        </tbody>
+                    </table>
                 </div>
             </div>
-        </p>
+        </div>
+    </div>
 
-        <p>
-            <h2>Latest events</h2>
-            <table class="table table-striped">
-                <thead>
+    <div class="container">
+        <div class="row">
+            {% for top_finish_table in top_finishes %}
+                {% if top_finish_table.table.tbody|length != 0 %}
+                    <div class="col-lg-6 p-0 my-2">
+                        <h3 class="text-center">{{ top_finish_table.title }}</h3>
+                        <div class="table-responsive border-end">
+                            <table class="table table-striped m-0">
+                                <thead>
+                                    <tr>
+                                        {% for event_type in top_finish_table.table.thead %}
+                                            <th>{{ event_type }}</th>
+                                        {% endfor %}
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for rank_row in top_finish_table.table.tbody %}
+                                        <tr>
+                                            {% for row_element in rank_row %}
+                                                <td>{{ row_element }}</td>
+                                            {% endfor %}
+                                        </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                {% endif %}
+            {% endfor %}
+        </div>
+    </div>
+
+
+    <div class="table-responsive my-3">
+        <h2>Latest events</h2>
+        <table class="table table-striped">
+            <thead>
+                <tr>
+                    <th scope="col">Event</th>
+                    <th scope="col">Date</th>
+                    <th scope="col">QPs awarded</th>
+                    <th scope="col">Rank</th>
+                    <th scope="col">Type</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for result in last_results %}
                     <tr>
-                        <th scope="col">Event</th>
-                        <th scope="col">Date</th>
-                        <th scope="col">QPs awarded</th>
-                        <th scope="col">Rank</th>
-                        <th scope="col">Type</th>
+                        <td><a href="{% url 'event_details' result.event_id %}">{{result.name }}</a></td>
+                        <td>{{ result.date }}</td>
+                        <td>{{ result.qps }}</td>
+                        <td>{{ result.get_ranking_display }}</td>
+                        <td>{{ result.event.get_category_display }}</td>
                     </tr>
-                </thead>
-                <tbody>
-                    {% for result in last_results %}
-                        <tr>
-                            <td><a href="{% url 'event_details' result.event_id %}">{{result.name }}</a></td>
-                            <td>{{ result.date }}</td>
-                            <td>{{ result.qps }}</td>
-                            <td>{{ result.get_ranking_display }}</td>
-                            <td>{{ result.event.get_category_display }}</td>
-                        </tr>
-                    {% endfor %}
-                </tbody>
-            </table>
-        </p>
-    </p>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+
+
 
 {% endblock %}

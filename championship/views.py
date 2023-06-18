@@ -79,16 +79,41 @@ class IndexView(TemplateView):
         return images
 
 
+LAST_RESULTS = "last_results"
+TOP_FINISHES = "top_finishes"
+QP_TABLE = "qp_table"
+THEAD = "thead"
+TBODY = "tbody"
+TABLE = "table"
+QPS = "QPs"
+EVENTS = "Events"
+REGULAR_MAX_STRING = "{}" + f" (Max {REGULAR_MAX_SCORE})"
+
+
+def add_to_table(table, column_title, row_title, value=1):
+    """Increases the entry of the table in the given column-row pair by the value."""
+    thead = table[THEAD]
+    if column_title not in thead:
+        return
+    column_index = thead.index(column_title)
+    tbody = table[TBODY]
+    for existing_row in tbody:
+        if existing_row[0] == row_title:
+            existing_row[column_index] += value
+            return
+    new_row = [row_title] + [0] * (len(thead) - 1)
+    new_row[column_index] = value
+    tbody.append(new_row)
+
+
 class PlayerDetailsView(DetailView):
     template_name = "championship/player_details.html"
     model = Player
     context_object_name = "player"
 
-    def get_context_data(self, object, **kwargs):
+    def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        scores = compute_scores()
-        context["score"] = scores.get(object.id, 0)
-        context["last_results"] = (
+        context[LAST_RESULTS] = (
             EventPlayerResult.objects.filter(player=context["player"])
             .annotate(
                 name=F("event__name"),
@@ -102,7 +127,7 @@ class PlayerDetailsView(DetailView):
             )
             .order_by("-event__date")
         )
-        for result in context["last_results"]:
+        for result in context[LAST_RESULTS]:
             has_top8 = result.top8_cnt > 0
             result.qps = qps_for_result(
                 result,
@@ -110,6 +135,75 @@ class PlayerDetailsView(DetailView):
                 event_size=result.event_size,
                 has_top_8=has_top8,
             )
+
+        qp_table = {
+            THEAD: [
+                "",
+                Event.Category.PREMIER.label,
+                Event.Category.REGIONAL.label,
+                Event.Category.REGULAR.label,
+                "Total",
+            ],
+            TBODY: [],
+        }
+        with_top_8_table = {
+            THEAD: ["", Event.Category.PREMIER.label, Event.Category.REGIONAL.label],
+            TBODY: [],
+        }
+        without_top_8_table = {
+            THEAD: ["", Event.Category.REGIONAL.label, Event.Category.REGULAR.label],
+            TBODY: [],
+        }
+        for result in sorted(context[LAST_RESULTS]):
+            add_to_table(
+                qp_table,
+                column_title=result.event.get_category_display(),
+                row_title=QPS,
+                value=result.qps,
+            )
+            add_to_table(
+                qp_table,
+                column_title=result.event.get_category_display(),
+                row_title=EVENTS,
+            )
+
+            has_top8 = result.top8_cnt > 0
+            if has_top8:
+                # For events with top 8 only display the results if the player made top 8
+                if result.single_elimination_result:
+                    add_to_table(
+                        with_top_8_table,
+                        column_title=result.event.get_category_display(),
+                        row_title=result.get_ranking_display(),
+                    )
+            else:
+                # For swiss rounds only display top 3 finishes
+                if result.ranking < 4:
+                    add_to_table(
+                        without_top_8_table,
+                        column_title=result.event.get_category_display(),
+                        row_title=result.get_ranking_display(),
+                    )
+
+        if len(qp_table[TBODY]) > 0:
+            # Compute the total and add it in the last column
+            for row in qp_table[TBODY]:
+                row[-1] = sum(row[1:])
+
+            regular_qps = qp_table[TBODY][0][3]
+            if regular_qps > REGULAR_MAX_SCORE:
+                difference = regular_qps - REGULAR_MAX_SCORE
+                # Reduce total qps by difference
+                qp_table[TBODY][0][4] -= difference
+                # Mention the maximum for regular events
+                qp_table[TBODY][0][3] = REGULAR_MAX_STRING.format(regular_qps)
+
+            context[QP_TABLE] = qp_table
+
+        context[TOP_FINISHES] = [
+            {"title": "Top 8 Finishes", TABLE: with_top_8_table},
+            {"title": "Best Swiss Round Finishes", TABLE: without_top_8_table},
+        ]
         return context
 
 
