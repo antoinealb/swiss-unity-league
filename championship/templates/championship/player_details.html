@@ -6,16 +6,16 @@
 
 {% block content %}
 
-    <h1>{{ player.name }}</h1>
+    <h1 class="my-4">{{ player.name }}</h1>
 
     {% if user.is_staff %}
         <a class="btn btn-warning" href="{% url 'admin:championship_player_change' player.id %}">Edit in admin</a>
     {% endif %}
 
-    <div class="container my-3">
+    <div class="container my-4">
         <h2>Qualification Points</h2>
         <div class="row">
-            <div class="col-lg-6 p-0">
+            <div class="col-lg-6 p-0 pe-lg-5">
                 <div class="table-responsive">
                     <table class="table table-striped m-0">
                         <thead>
@@ -44,9 +44,9 @@
         <div class="row">
             {% for top_finish_table in top_finishes %}
                 {% if top_finish_table.table.tbody|length != 0 %}
-                    <div class="col-lg-6 p-0 my-2">
-                        <h3 class="text-center">{{ top_finish_table.title }}</h3>
-                        <div class="table-responsive border-end">
+                    <div class="col-lg-6 p-0 my-4 {% cycle 'pe' 'ps' %}-lg-5">
+                        <h3 class="text-lg-center">{{ top_finish_table.title }}</h3>
+                        <div class="table-responsive">
                             <table class="table table-striped m-0">
                                 <thead>
                                     <tr>
@@ -73,7 +73,7 @@
     </div>
 
 
-    <div class="table-responsive my-3">
+    <div class="table-responsive my-4">
         <h2>Latest events</h2>
         <table class="table table-striped">
             <thead>
