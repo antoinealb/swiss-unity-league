@@ -129,6 +129,8 @@ class Player(models.Model):
     # for why this was not a good idea.
     name = models.CharField(max_length=200)
     events = models.ManyToManyField(Event, through="EventPlayerResult")
+    email = models.EmailField(max_length=254, blank=True, null=True)
+
 
     hidden_from_leaderboard = models.BooleanField(
         help_text="If true, this should be hidden from the global leaderboard. Useful for virtual players, such as Eventlink's REDACTED.",
