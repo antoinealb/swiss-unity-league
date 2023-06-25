@@ -7,6 +7,7 @@ from django.conf import settings
 from django.contrib import messages
 from .models import *
 from invoicing.models import Invoice
+from django.urls import path
 
 
 class ResultInline(admin.TabularInline):
@@ -54,9 +55,46 @@ class PlayerMergeForm(forms.Form):
 class PlayerAdmin(admin.ModelAdmin):
     inlines = [ResultInline, PlayerAliasInline]
     search_fields = ["name"]
-    list_display = ["name"]
+    list_display = ["name", "email"]
     actions = ["merge_players"]
     list_per_page = 2000
+
+    def get_urls(self):
+        urls = super().get_urls()
+        custom_urls = [
+            path(
+                "top_emails/",
+                self.admin_site.admin_view(self.top_players_emails_view),
+                name="top_players_emails",
+            )
+        ]
+        return custom_urls + urls
+
+    def top_players_emails_view(self, request):
+        context = None
+        if request.method == "POST":
+            num_of_players = (
+                int(request.POST.get("num_of_players"))
+                if request.method == "POST"
+                else 32
+            )
+            players = list(Player.objects.all())
+            scores_by_player = compute_scores()
+            for p in players:
+                p.score = scores_by_player.get(p.id, 0)
+            players.sort(key=lambda l: l.score, reverse=True)
+            top_players = players[:num_of_players]
+            entries = [
+                {
+                    "rank": i + 1,
+                    "player": player.name,
+                    "email": player.email if player.email else "",
+                }
+                for i, player in enumerate(top_players)
+            ]
+            emails = "; ".join(player.email for player in top_players if player.email)
+            context = {"entries": entries, "emails": emails}
+        return render(request, "admin/top_players_emails.html", context)
 
     @admin.action(
         description="Merge selected players",
