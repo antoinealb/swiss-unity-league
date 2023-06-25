@@ -2,6 +2,10 @@
 
 {% load crispy_forms_tags %}
 
+{% block extrahead %}
+    {{ form.media }}
+{% endblock %}
+
 {% block content %}
     <h1>Edit organizer settings</h1>
     <form action="{% url 'organizer_update' %}" method="post">

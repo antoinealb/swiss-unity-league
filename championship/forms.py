@@ -1,7 +1,7 @@
 from django.db.models import TextChoices, Count
 from django.core.validators import RegexValidator
 from django import forms
-from .models import Event, EventPlayerResult
+from .models import Event, EventPlayerResult, EventOrganizer
 from crispy_forms.helper import FormHelper
 from crispy_forms.layout import Submit, Layout, Div, Field
 from tinymce.widgets import TinyMCE
@@ -42,6 +42,29 @@ You can copy/paste the description from a website like swissmtg.ch, and the form
                 ", ".join(bleach.ALLOWED_TAGS)
             ),
             "format": "If your desired format is not listed, please contact us and we'll add it.",
+        }
+
+
+class OrganizerProfileEditForm(forms.ModelForm):
+    class Meta:
+        model = EventOrganizer
+        fields = [
+            "name",
+            "contact",
+            "description",
+        ]
+        widgets = {
+            "description": TinyMCE(
+                mce_attrs={
+                    "toolbar": "undo redo | bold italic | link unlink | bullist numlist",
+                    "link_assume_external_targets": "http",
+                },
+            ),
+        }
+        help_texts = {
+            "description": """Supports the following HTML tags: {}.""".format(
+                ", ".join(bleach.ALLOWED_TAGS)
+            ),
         }
 
 

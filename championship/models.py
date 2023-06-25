@@ -19,7 +19,9 @@ class EventOrganizer(models.Model):
     """
 
     name = models.CharField(max_length=200)
-    contact = models.EmailField(help_text="Prefered contact email (not visible to players)")
+    contact = models.EmailField(
+        help_text="Prefered contact email (not visible to players)"
+    )
     description = BleachField(
         help_text="Supports the following HTML tags: {}".format(
             ", ".join(settings.BLEACH_ALLOWED_TAGS)
@@ -28,6 +30,9 @@ class EventOrganizer(models.Model):
         strip_tags=True,
     )
     user = models.OneToOneField(settings.AUTH_USER_MODEL, on_delete=models.PROTECT)
+
+    def get_absolute_url(self):
+        return reverse("organizer_update")
 
     def __str__(self):
         return self.name

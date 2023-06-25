@@ -688,11 +688,20 @@ class FutureEventView(TemplateView):
     template_name = "championship/future_events.html"
 
 
-class OrganizerProfileEdit(LoginRequiredMixin, UpdateView):
-    model = EventOrganizer
-    fields = ["name", "contact"]
+class OrganizerProfileEditView(LoginRequiredMixin, UpdateView):
     template_name = "championship/update_organizer.html"
-    success_url = reverse_lazy("organizer_update")
+    form_class = OrganizerProfileEditForm
+
+    def get_organizer(self):
+        return get_object_or_404(EventOrganizer, user=self.request.user)
 
     def get_object(self):
-        return EventOrganizer.objects.get(user=self.request.user)
+        return self.get_organizer()
+
+    def get_success_url(self):
+        return self.get_organizer().get_absolute_url()
+
+    def form_valid(self, form):
+        form.save()
+        messages.success(self.request, "Succesfully updated organizer profile!")
+        return super().form_valid(form)
