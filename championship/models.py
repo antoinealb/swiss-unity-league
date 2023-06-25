@@ -21,6 +21,13 @@ class EventOrganizer(models.Model):
 
     name = models.CharField(max_length=200)
     contact = models.EmailField(help_text="Prefered contact email (not visible to players)")
+    description = BleachField(
+        help_text="Supports the following HTML tags: {}".format(
+            ", ".join(settings.BLEACH_ALLOWED_TAGS)
+        ),
+        blank=True,
+        strip_tags=True,
+    )
     user = models.OneToOneField(settings.AUTH_USER_MODEL, on_delete=models.PROTECT)
 
     def __str__(self):
