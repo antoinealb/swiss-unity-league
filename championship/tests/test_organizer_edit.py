@@ -51,8 +51,12 @@ class EventCreationTestCase(TestCase):
         data = {
             "contact": "foo@foo.org",
             "name": "My test events",
+            "region": EventOrganizer.Region.ZURICH,
+            "description": "This is a test description",
         }
         self.client.post(reverse("organizer_update"), data=data)
         to = EventOrganizer.objects.get(user=self.user)
         self.assertEqual(to.name, data["name"])
         self.assertEqual(to.contact, data["contact"])
+        self.assertEqual(to.region, data["region"])
+        self.assertEqual(to.description, data["description"])

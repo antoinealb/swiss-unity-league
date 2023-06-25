@@ -32,6 +32,11 @@ class EventOrganizerFactory(DjangoModelFactory):
 
     name = factory.Faker("company", locale="fr_CH")
     contact = factory.Faker("email")
+    region = factory.Faker(
+        "random_element",
+        elements=EventOrganizer.Region.values,
+    )
+    description = factory.Faker("text")
     user = factory.SubFactory(UserFactory)
 
 

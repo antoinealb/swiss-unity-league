@@ -51,6 +51,7 @@ class OrganizerProfileEditForm(forms.ModelForm):
         fields = [
             "name",
             "contact",
+            "region",
             "description",
         ]
         widgets = {
