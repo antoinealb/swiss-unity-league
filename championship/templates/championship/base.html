@@ -47,7 +47,7 @@
                                         {% if user.eventorganizer %}
                                             <li><a class="dropdown-item" href="{% url 'events_create' %}">Create new event</a></li>
                                             <li><a class="dropdown-item" href="{% url 'results_create' %}">Upload results</a></li>
-                                            <li><a class="dropdown-item" href="{% url 'organizer_update' %}">Edit organizer profile</a></li>
+                                            <li><a class="dropdown-item" href="{% url 'organizer_details' user.eventorganizer.pk %}">My Events</a></li>
                                             <li><a class="dropdown-item" href="{% url 'invoice_list' %}">My invoices</a></li>
                                         {% endif %}
                                         {% if user.is_staff %}

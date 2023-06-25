@@ -68,7 +68,7 @@ class EventOrganizer(models.Model):
     )
 
     def get_absolute_url(self):
-        return reverse("organizer_update")
+        return reverse("organizer_details", args=[self.pk])
 
     def __str__(self):
         return self.name

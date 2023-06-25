@@ -40,7 +40,7 @@ class EventCreationTestCase(TestCase):
         to = EventOrganizerFactory(user=self.user)
         response = self.client.get("/")
         self.assertIn(
-            reverse("organizer_update"),
+            reverse("organizer_details", args=(to.id,)),
             response.content.decode(),
             "Logged in users should get a link to creating events",
         )

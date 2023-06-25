@@ -688,6 +688,30 @@ class FutureEventView(TemplateView):
     template_name = "championship/future_events.html"
 
 
+class EventOrganizerDetailView(DetailView):
+    model = EventOrganizer
+    template_name = "championship/organizer_details.html"
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        organizer = self.get_object()
+
+        future_events = Event.objects.filter(
+            organizer=organizer, date__gte=datetime.date.today()
+        ).order_by("date")
+        past_events = Event.objects.filter(
+            organizer=organizer, date__lt=datetime.date.today()
+        ).order_by("-date")
+
+        all_events = []
+        if future_events:
+            all_events.append({"title": "Upcoming Events", "list": future_events})
+        if past_events:
+            all_events.append({"title": "Past Events", "list": past_events})
+        context["all_events"] = all_events
+        return context
+
+
 class OrganizerProfileEditView(LoginRequiredMixin, UpdateView):
     template_name = "championship/update_organizer.html"
     form_class = OrganizerProfileEditForm
