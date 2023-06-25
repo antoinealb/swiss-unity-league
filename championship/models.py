@@ -20,7 +20,7 @@ class EventOrganizer(models.Model):
     """
 
     name = models.CharField(max_length=200)
-    contact = models.EmailField(help_text="Prefered contact email")
+    contact = models.EmailField(help_text="Prefered contact email (not visible to players)")
     user = models.OneToOneField(settings.AUTH_USER_MODEL, on_delete=models.PROTECT)
 
     def __str__(self):
