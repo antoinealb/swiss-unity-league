@@ -1,5 +1,4 @@
 import datetime
-import math
 import re
 import logging
 import os
@@ -10,7 +9,7 @@ from typing import *
 from django.core.exceptions import ImproperlyConfigured
 from django.shortcuts import render, get_object_or_404, redirect
 from django.views.generic.base import TemplateView
-from django.views.generic.edit import DeleteView, FormView, UpdateView
+from django.views.generic.edit import DeleteView, FormView, UpdateView, CreateView
 from django.views.generic import DetailView
 from django.http import HttpResponseRedirect, HttpResponseForbidden
 from django.urls import reverse, reverse_lazy
@@ -167,6 +166,14 @@ class InformationForOrganizerView(TemplateView):
 class CreateEventView(LoginRequiredMixin, FormView):
     template_name = "championship/create_event.html"
     form_class = EventCreateForm
+
+    def get_form_kwargs(self):
+        kwargs = super(CreateEventView, self).get_form_kwargs()
+        kwargs["organizer"] = EventOrganizer.objects.get(user=self.request.user)
+        kwargs["initial"][
+            "address"
+        ] = self.request.user.eventorganizer.default_address.id
+        return kwargs
 
     def form_valid(self, form):
         event = form.save(commit=False)
@@ -729,3 +736,54 @@ class OrganizerProfileEditView(LoginRequiredMixin, UpdateView):
         form.save()
         messages.success(self.request, "Succesfully updated organizer profile!")
         return super().form_valid(form)
+
+
+class AddressListView(LoginRequiredMixin, TemplateView):
+    template_name = "championship/address_list.html"
+
+    def get_queryset(self):
+        return Address.objects.filter(organizers__user=self.request.user)
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context["organizer_url"] = self.request.user.eventorganizer.get_absolute_url()
+        return context
+
+
+class AddressViewMixin:
+    model = Address
+    form_class = AddressForm
+    template_name = "championship/address_form.html"
+    success_url = reverse_lazy("address_list")
+
+    def form_valid(self, form):
+        organizer = self.request.user.eventorganizer
+        self.object = form.save()
+        self.object.organizers.add(organizer)
+        if form.cleaned_data["set_as_organizer_address"]:
+            organizer.default_address = self.object
+            organizer.save()
+        return super().form_valid(form)
+
+
+class AddressCreateView(LoginRequiredMixin, AddressViewMixin, CreateView):
+    None
+
+
+class AddressUpdateView(LoginRequiredMixin, AddressViewMixin, UpdateView):
+    def get_queryset(self):
+        return Address.objects.filter(organizers__user=self.request.user)
+
+
+@login_required
+def address_delete_view(request, pk):
+    address = get_object_or_404(Address, id=pk)
+    if (
+        request.method == "POST"
+        and address in request.user.eventorganizer.addresses.all()
+    ):
+        address.delete()
+        messages.success(request, "Succesfully deleted address!")
+        return HttpResponseRedirect(reverse("address_list"))
+    else:
+        return HttpResponseForbidden("You are not authorized to delete this address!")

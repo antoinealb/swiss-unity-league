@@ -11,13 +11,11 @@ import collections
 import datetime
 from prometheus_client import Gauge, Summary
 from django.contrib.humanize.templatetags.humanize import ordinal
+import urllib.parse
+from django.contrib.auth.models import User
 
 
-class EventOrganizer(models.Model):
-    """
-    An organizer, who organizes several events in the championship.
-    """
-
+class Address(models.Model):
     class Region(models.TextChoices):
         AARGAU = "AG", "Aargau"  # German
         APPENZELL_AUSSERRHODEN = "AR", "Appenzell Ausserrhoden"  # German
@@ -47,6 +45,47 @@ class EventOrganizer(models.Model):
         ZURICH = "ZH", "Zürich"  # German
         FREIBURG_DE = "FR_DE", "Freiburg im Breisgau (DE)"  # German
 
+    location_name = models.CharField(max_length=255)
+    street_address = models.CharField(max_length=255)
+    city = models.CharField(max_length=255)
+    postal_code = models.CharField(max_length=10)
+    region = models.CharField(
+        max_length=50,
+        choices=Region.choices,
+        default=Region.ZURICH,
+    )
+    country = models.CharField(max_length=255, default="Switzerland")
+    # Used for deletion
+    name = "Address"
+
+    def get_delete_url(self):
+        return reverse("address_delete", args=[self.pk])
+
+    def get_absolute_url(self):
+        return reverse("address_edit", args=[self.pk])
+
+    def __str__(self):
+        address_parts = [
+            self.location_name,
+            self.street_address,
+            self.postal_code,
+            self.city,
+            Address.Region(self.region).label,
+            self.country,
+        ]
+        return ", ".join(address_parts)
+
+    def get_google_maps_url(self):
+        """Return a URL for this address on Google Maps."""
+        query = urllib.parse.quote(self.__str__())
+        return f"https://www.google.com/maps/search/?api=1&query={query}"
+
+
+class EventOrganizer(models.Model):
+    """
+    An organizer, who organizes several events in the championship.
+    """
+
     name = models.CharField(max_length=200)
     contact = models.EmailField(
         help_text="Prefered contact email (not visible to players)"
@@ -59,12 +98,9 @@ class EventOrganizer(models.Model):
         strip_tags=True,
     )
     user = models.OneToOneField(settings.AUTH_USER_MODEL, on_delete=models.PROTECT)
-
-    region = models.CharField(
-        max_length=5,
-        choices=Region.choices,
-        default=Region.ZURICH,
-        help_text="The main region where your events are held",
+    addresses = models.ManyToManyField(Address, related_name="organizers", blank=True)
+    default_address = models.ForeignKey(
+        Address, on_delete=models.SET_NULL, null=True, blank=True
     )
 
     def get_absolute_url(self):
@@ -115,6 +151,9 @@ class Event(models.Model):
         ),
         blank=True,
         strip_tags=True,
+    )
+    address = models.ForeignKey(
+        Address, on_delete=models.SET_NULL, null=True, blank=True
     )
 
     class Format(models.TextChoices):

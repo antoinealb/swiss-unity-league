@@ -26,18 +26,49 @@ class UserFactory(DjangoModelFactory):
     password = factory.LazyFunction(lambda: make_password("foobar"))
 
 
+class AddressFactory(DjangoModelFactory):
+    class Meta:
+        model = Address
+
+    location_name = factory.Faker("company", locale="fr_CH")
+    street_address = factory.Faker("street_address", locale="fr_CH")
+    city = factory.Faker("city", locale="fr_CH")
+    postal_code = factory.Faker("postcode", locale="fr_CH")
+    region = factory.Faker(
+        "random_element",
+        elements=Address.Region.values,
+    )
+    country = factory.Faker("country", locale="fr_CH")
+
+
 class EventOrganizerFactory(DjangoModelFactory):
     class Meta:
         model = EventOrganizer
 
     name = factory.Faker("company", locale="fr_CH")
     contact = factory.Faker("email")
-    region = factory.Faker(
-        "random_element",
-        elements=EventOrganizer.Region.values,
-    )
     description = factory.Faker("text")
     user = factory.SubFactory(UserFactory)
+
+    @factory.post_generation
+    def addresses(self, create, extracted, **kwargs):
+        if not create:
+            # Simple build, do nothing.
+            return
+
+        if extracted == None:
+            # Create 3 new random addresses.
+            addresses = AddressFactory.create_batch(3)
+            for address in addresses:
+                self.addresses.add(address)
+
+            # Set one as the default
+            self.default_address = addresses[0]
+            self.save()
+        elif extracted:
+            # A list of addresses were passed in, use them
+            for address in extracted:
+                self.addresses.add(address)
 
 
 class PlayerFactory(DjangoModelFactory):

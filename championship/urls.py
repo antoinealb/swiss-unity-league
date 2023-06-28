@@ -52,6 +52,12 @@ urlpatterns = [
         views.OrganizerProfileEditView.as_view(),
         name="organizer_update",
     ),
+    path("address/", views.AddressListView.as_view(), name="address_list"),
+    path("address/create/", views.AddressCreateView.as_view(), name="address_create"),
+    path(
+        "address/<int:pk>/edit/", views.AddressUpdateView.as_view(), name="address_edit"
+    ),
+    path("address/<int:pk>/delete/", views.address_delete_view, name="address_delete"),
     path("api/", include(api_router.urls)),
     path("api/formats/", views.ListFormats.as_view(), name="formats-list"),
 ]

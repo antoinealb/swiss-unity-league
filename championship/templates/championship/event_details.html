@@ -13,6 +13,10 @@
         <dd class="col-sm-9">{{ event.organizer.name }}</dd>
         <dt class="col-sm-3">Date</dt>
         <dd class="col-sm-9">{{ event.date }}</dd>
+        {% if event.address %}
+            <dt class="col-sm-3">Location</dt>
+            <dd class="col-sm-9">{{ event.address }} (<a href="{{ event.address.get_google_maps_url }}" target="_blank">View on Google Maps</a>)</dd>
+        {% endif %}
         <dt class="col-sm-3">Category</dt>
         <dd class="col-sm-9">{{ event.get_category_display }}</dd>
         <dt class="col-sm-3">Format</dt>
