@@ -5,19 +5,21 @@ from championship.factories import AddressFactory, EventOrganizerFactory
 from championship.models import Address
 
 
-def base_set_up(self, with_address=True, username="testuser"):
-    self.client = Client()
-    self.user = User.objects.create_user(username=username, password="testpass")
-    self.organizer = EventOrganizerFactory(user=self.user, addresses=[])
-    if with_address:
-        self.address = AddressFactory()
-        self.address.organizers.add(self.organizer)
-    self.client.login(username=username, password="testpass")
+class BaseSetupTest(TestCase):
+    def base_set_up(self, with_address=True, username="testuser"):
+        self.client = Client()
+        self.user = User.objects.create_user(username=username, password="testpass")
+        self.organizer = EventOrganizerFactory(user=self.user, addresses=[])
+        if with_address:
+            self.address = AddressFactory()
+            self.address.organizers.add(self.organizer)
+        self.client.login(username=username, password="testpass")
 
 
-class AddressListViewTest(TestCase):
+
+class AddressListViewTest(BaseSetupTest):
     def setUp(self):
-        base_set_up(self)
+        self.base_set_up()
 
     def test_view_url_exists(self):
         response = self.client.get(reverse("address_list"))
@@ -28,9 +30,9 @@ class AddressListViewTest(TestCase):
         self.assertContains(response, str(self.address))
 
 
-class AddressCreateViewTest(TestCase):
+class AddressCreateViewTest(BaseSetupTest):
     def setUp(self):
-        base_set_up(self, with_address=False)
+        self.base_set_up(with_address=False)
 
     def test_view_url_exists(self):
         response = self.client.get(reverse("address_create"))
@@ -46,7 +48,7 @@ class AddressCreateViewTest(TestCase):
                 "city": "Test City",
                 "postal_code": "123456",
                 "region": Address.Region.AARGAU,
-                "country": "Test Country",
+                "country": Address.Country.SWITZERLAND,
                 "set_as_organizer_address": True,
             },
         )
@@ -56,9 +58,9 @@ class AddressCreateViewTest(TestCase):
         self.assertEqual(self.organizer.default_address.location_name, "Test Location")
 
 
-class AddressUpdateViewTest(TestCase):
+class AddressUpdateViewTest(BaseSetupTest):
     def setUp(self):
-        base_set_up(self)
+        self.base_set_up()
 
     def test_view_url_exists(self):
         response = self.client.get(reverse("address_edit", args=[self.address.pk]))
@@ -73,7 +75,7 @@ class AddressUpdateViewTest(TestCase):
                 "city": "New City",
                 "postal_code": "654321",
                 "region": Address.Region.BERN,
-                "country": "New Country",
+                "country": Address.Country.SWITZERLAND,
                 "set_as_organizer_address": False,
             },
         )
@@ -82,9 +84,9 @@ class AddressUpdateViewTest(TestCase):
         self.assertEqual(self.address.location_name, "New Location")
 
 
-class AddressDeleteViewTest(TestCase):
+class AddressDeleteViewTest(BaseSetupTest):
     def setUp(self):
-        base_set_up(self)
+        self.base_set_up()
 
     def test_delete_default_address(self):
         self.assertEqual(Address.objects.count(), 1)
@@ -96,7 +98,7 @@ class AddressDeleteViewTest(TestCase):
 
     def test_delete_not_owned_address(self):
         self.client.logout()
-        base_set_up(self, with_address=False, username="testuser2")
+        self.base_set_up(with_address=False, username="testuser2")
         response = self.client.post(reverse("address_delete", args=[self.address.pk]))
         self.assertEqual(response.status_code, 403)
         self.assertTrue(Address.objects.filter(pk=self.address.pk).exists())

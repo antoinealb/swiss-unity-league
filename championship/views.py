@@ -9,6 +9,7 @@ from typing import *
 from django.core.exceptions import ImproperlyConfigured
 from django.shortcuts import render, get_object_or_404, redirect
 from django.views.generic.base import TemplateView
+from django.views.generic.list import ListView
 from django.views.generic.edit import DeleteView, FormView, UpdateView, CreateView
 from django.views.generic import DetailView
 from django.http import HttpResponseRedirect, HttpResponseForbidden
@@ -723,22 +724,19 @@ class OrganizerProfileEditView(LoginRequiredMixin, UpdateView):
     template_name = "championship/update_organizer.html"
     form_class = OrganizerProfileEditForm
 
-    def get_organizer(self):
+    def get_object(self):
         return get_object_or_404(EventOrganizer, user=self.request.user)
 
-    def get_object(self):
-        return self.get_organizer()
-
     def get_success_url(self):
-        return self.get_organizer().get_absolute_url()
+        return self.get_object().get_absolute_url()
 
     def form_valid(self, form):
-        form.save()
         messages.success(self.request, "Succesfully updated organizer profile!")
         return super().form_valid(form)
 
 
-class AddressListView(LoginRequiredMixin, TemplateView):
+class AddressListView(LoginRequiredMixin, ListView):
+    model = Address
     template_name = "championship/address_list.html"
 
     def get_queryset(self):
@@ -767,7 +765,7 @@ class AddressViewMixin:
 
 
 class AddressCreateView(LoginRequiredMixin, AddressViewMixin, CreateView):
-    None
+    pass
 
 
 class AddressUpdateView(LoginRequiredMixin, AddressViewMixin, UpdateView):

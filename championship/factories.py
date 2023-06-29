@@ -38,7 +38,10 @@ class AddressFactory(DjangoModelFactory):
         "random_element",
         elements=Address.Region.values,
     )
-    country = factory.Faker("country", locale="fr_CH")
+    country = factory.Faker(
+        "random_element",
+        elements=Address.Country.values,
+    )
 
 
 class EventOrganizerFactory(DjangoModelFactory):

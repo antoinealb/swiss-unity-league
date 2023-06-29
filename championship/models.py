@@ -44,19 +44,27 @@ class Address(models.Model):
         ZUG = "ZG", "Zug"  # German
         ZURICH = "ZH", "Zürich"  # German
         FREIBURG_DE = "FR_DE", "Freiburg im Breisgau (DE)"  # German
+    
+    class Country(models.TextChoices):
+        SWITZERLAND = 'CH', 'Switzerland'
+        AUSTRIA = 'AT', 'Austria'
+        GERMANY = 'DE', 'Germany'
+        ITALY = 'IT', 'Italy'
+        LIECHTENSTEIN = 'LI', 'Liechtenstein'
+        FRANCE = 'FR', 'France'
 
     location_name = models.CharField(max_length=255)
     street_address = models.CharField(max_length=255)
     city = models.CharField(max_length=255)
     postal_code = models.CharField(max_length=10)
     region = models.CharField(
-        max_length=50,
+        max_length=5,
         choices=Region.choices,
         default=Region.ZURICH,
     )
-    country = models.CharField(max_length=255, default="Switzerland")
-    # Used for deletion
-    name = "Address"
+    country = models.CharField(max_length=2, choices=Country.choices, default=Country.SWITZERLAND)
+    # Used for naming this object in the deletion popup
+    display_name = "Address"
 
     def get_delete_url(self):
         return reverse("address_delete", args=[self.pk])
@@ -70,9 +78,11 @@ class Address(models.Model):
             self.street_address,
             self.postal_code,
             self.city,
-            Address.Region(self.region).label,
-            self.country,
         ]
+        # If the city is the same as the region, we don't need it twice
+        if self.get_region_display() != self.city:
+            address_parts.append(self.get_region_display())
+        address_parts.append(self.country)
         return ", ".join(address_parts)
 
     def get_google_maps_url(self):
