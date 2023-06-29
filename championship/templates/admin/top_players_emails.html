@@ -12,8 +12,7 @@
 {% block content %}
     <form method="POST">
         {% csrf_token %}
-        <label for="num_of_players">Number of players:</label>
-        <input type="number" id="num_of_players" name="num_of_players" value="32" min="1">
+        {{ form.as_p }}
         <input type="submit" value="Submit">
     </form>
     {% if entries %}

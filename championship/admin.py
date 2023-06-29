@@ -5,6 +5,8 @@ from django.urls import reverse
 from django import forms
 from django.conf import settings
 from django.contrib import messages
+
+from championship.forms import TopPlayersEmailForm
 from .models import *
 from invoicing.models import Invoice
 from django.urls import path
@@ -71,17 +73,14 @@ class PlayerAdmin(admin.ModelAdmin):
         return custom_urls + urls
 
     def top_players_emails_view(self, request):
-        context = None
-        if request.method == "POST":
-            num_of_players = (
-                int(request.POST.get("num_of_players"))
-                if request.method == "POST"
-                else 32
-            )
+        form = TopPlayersEmailForm(request.POST or None)
+        context = {"form": form}
+        if request.method == "POST" and form.is_valid():
+            num_of_players = form.cleaned_data['num_of_players']
             players = list(Player.objects.all())
             scores_by_player = compute_scores()
             for p in players:
-                p.score = scores_by_player.get(p.id, 0)
+                p.score = scores_by_player[p.id]
             players.sort(key=lambda l: l.score, reverse=True)
             top_players = players[:num_of_players]
             entries = [
@@ -92,8 +91,9 @@ class PlayerAdmin(admin.ModelAdmin):
                 }
                 for i, player in enumerate(top_players)
             ]
-            emails = "; ".join(player.email for player in top_players if player.email)
-            context = {"entries": entries, "emails": emails}
+            emails = "; ".join(player.email for player in top_players if player.email and player.email != "")
+            context["entries"] = entries
+            context["emails"] = emails        
         return render(request, "admin/top_players_emails.html", context)
 
     @admin.action(
