@@ -76,7 +76,7 @@ class PlayerAdmin(admin.ModelAdmin):
         form = TopPlayersEmailForm(request.POST or None)
         context = {"form": form}
         if request.method == "POST" and form.is_valid():
-            num_of_players = form.cleaned_data['num_of_players']
+            num_of_players = form.cleaned_data["num_of_players"]
             players = list(Player.objects.all())
             scores_by_player = compute_scores()
             for p in players:
@@ -91,9 +91,13 @@ class PlayerAdmin(admin.ModelAdmin):
                 }
                 for i, player in enumerate(top_players)
             ]
-            emails = "; ".join(player.email for player in top_players if player.email and player.email != "")
+            emails = "; ".join(
+                player.email
+                for player in top_players
+                if player.email and player.email != ""
+            )
             context["entries"] = entries
-            context["emails"] = emails        
+            context["emails"] = emails
         return render(request, "admin/top_players_emails.html", context)
 
     @admin.action(
