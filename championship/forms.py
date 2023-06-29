@@ -263,3 +263,7 @@ class ResultsDeleteForm(forms.Form, SubmitButtonMixin):
     """
 
     pass
+
+class TopPlayersEmailForm(forms.Form):
+    num_of_players = forms.IntegerField(initial=32, min_value=1)
+
