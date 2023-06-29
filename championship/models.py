@@ -44,14 +44,14 @@ class Address(models.Model):
         ZUG = "ZG", "Zug"  # German
         ZURICH = "ZH", "Zürich"  # German
         FREIBURG_DE = "FR_DE", "Freiburg im Breisgau (DE)"  # German
-    
+
     class Country(models.TextChoices):
-        SWITZERLAND = 'CH', 'Switzerland'
-        AUSTRIA = 'AT', 'Austria'
-        GERMANY = 'DE', 'Germany'
-        ITALY = 'IT', 'Italy'
-        LIECHTENSTEIN = 'LI', 'Liechtenstein'
-        FRANCE = 'FR', 'France'
+        SWITZERLAND = "CH", "Switzerland"
+        AUSTRIA = "AT", "Austria"
+        GERMANY = "DE", "Germany"
+        ITALY = "IT", "Italy"
+        LIECHTENSTEIN = "LI", "Liechtenstein"
+        FRANCE = "FR", "France"
 
     location_name = models.CharField(max_length=255)
     street_address = models.CharField(max_length=255)
@@ -62,7 +62,9 @@ class Address(models.Model):
         choices=Region.choices,
         default=Region.ZURICH,
     )
-    country = models.CharField(max_length=2, choices=Country.choices, default=Country.SWITZERLAND)
+    country = models.CharField(
+        max_length=2, choices=Country.choices, default=Country.SWITZERLAND
+    )
     # Used for naming this object in the deletion popup
     display_name = "Address"
 

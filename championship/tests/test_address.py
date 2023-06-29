@@ -16,7 +16,6 @@ class BaseSetupTest(TestCase):
         self.client.login(username=username, password="testpass")
 
 
-
 class AddressListViewTest(BaseSetupTest):
     def setUp(self):
         self.base_set_up()
