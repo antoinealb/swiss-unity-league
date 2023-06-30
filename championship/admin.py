@@ -5,8 +5,11 @@ from django.urls import reverse
 from django import forms
 from django.conf import settings
 from django.contrib import messages
+
+from championship.forms import TopPlayersEmailForm
 from .models import *
 from invoicing.models import Invoice
+from django.urls import path
 
 
 class ResultInline(admin.TabularInline):
@@ -54,9 +57,48 @@ class PlayerMergeForm(forms.Form):
 class PlayerAdmin(admin.ModelAdmin):
     inlines = [ResultInline, PlayerAliasInline]
     search_fields = ["name"]
-    list_display = ["name"]
+    list_display = ["name", "email"]
     actions = ["merge_players"]
     list_per_page = 2000
+
+    def get_urls(self):
+        urls = super().get_urls()
+        custom_urls = [
+            path(
+                "top_emails/",
+                self.admin_site.admin_view(self.top_players_emails_view),
+                name="top_players_emails",
+            )
+        ]
+        return custom_urls + urls
+
+    def top_players_emails_view(self, request):
+        form = TopPlayersEmailForm(request.POST or None)
+        context = {"form": form}
+        if request.method == "POST" and form.is_valid():
+            num_of_players = form.cleaned_data["num_of_players"]
+            players = list(Player.objects.all())
+            scores_by_player = compute_scores()
+            for p in players:
+                p.score = scores_by_player[p.id]
+            players.sort(key=lambda l: l.score, reverse=True)
+            top_players = players[:num_of_players]
+            entries = [
+                {
+                    "rank": i + 1,
+                    "player": player.name,
+                    "email": player.email if player.email else "",
+                }
+                for i, player in enumerate(top_players)
+            ]
+            emails = "; ".join(
+                player.email
+                for player in top_players
+                if player.email and player.email != ""
+            )
+            context["entries"] = entries
+            context["emails"] = emails
+        return render(request, "admin/top_players_emails.html", context)
 
     @admin.action(
         description="Merge selected players",

@@ -1,0 +1,57 @@
+{% extends "admin/base_site.html" %}
+{% load i18n admin_urls static %}
+
+{% block breadcrumbs %}
+    <div class="breadcrumbs">
+        <a href="{% url 'admin:index' %}">{% trans 'Home' %}</a> &rsaquo;
+        <a href="{% url 'admin:championship_player_changelist' %}">Players</a> &rsaquo;
+        Top players' emails
+    </div>
+{% endblock %}
+
+{% block content %}
+    <form method="POST">
+        {% csrf_token %}
+        {{ form.as_p }}
+        <input type="submit" value="Submit">
+    </form>
+    {% if entries %}
+        <br>
+        <!-- The hidden textarea of available emails -->
+        <textarea id="emails" style="display: none;">{{ emails }}</textarea>
+        <input type="submit" value="Copy emails to clipboard" onclick="copyToClipboard()">
+        <p id="notification"></p>
+        <script>
+            function copyToClipboard() {
+                var emails = document.getElementById('emails').value;
+                var notification = document.getElementById('notification');
+                navigator.clipboard.writeText(emails).then(function() {
+                    notification.innerText = 'Emails copied to clipboard successfully!';
+                    notification.style.color = 'green';
+                    notification.style.visibility = 'visible';
+                }, function(err) {
+                    notification.innerText = 'Failed to copy emails to clipboard.';
+                    notification.style.color = 'red';
+                    notification.style.visibility = 'visible';
+                });
+            }
+        </script>
+        <br>
+        <table>
+            <tr>
+                <th>Rank</th>
+                <th>Player</th>
+                <th>Email</th>
+            </tr>
+            {% for entry in entries %}
+                <tr>
+                    <td>{{ entry.rank }}</td>
+                    <td>{{ entry.player }}</td>
+                    <td>{{ entry.email }}</td>
+                </tr>
+            {% endfor %}
+        </table>
+    {% endif %}
+{% endblock %}
+
+

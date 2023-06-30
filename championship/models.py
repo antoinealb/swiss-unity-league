@@ -7,7 +7,6 @@ from django.db.models.signals import post_save, post_delete
 from django.dispatch import receiver
 from django.urls import reverse
 from auditlog.registry import auditlog
-import bleach
 import collections
 import datetime
 from prometheus_client import Gauge, Summary
@@ -129,6 +128,7 @@ class Player(models.Model):
     # for why this was not a good idea.
     name = models.CharField(max_length=200)
     events = models.ManyToManyField(Event, through="EventPlayerResult")
+    email = models.EmailField(max_length=254, blank=True)
 
     hidden_from_leaderboard = models.BooleanField(
         help_text="If true, this should be hidden from the global leaderboard. Useful for virtual players, such as Eventlink's REDACTED.",
