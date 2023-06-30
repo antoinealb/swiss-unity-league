@@ -49,9 +49,7 @@ You can copy/paste the description from a website like swissmtg.ch, and the form
         organizer = kwargs.pop("organizer", None)
         super(EventCreateForm, self).__init__(*args, **kwargs)
         if organizer is not None:
-            self.fields["address"].queryset = Address.objects.filter(
-                organizers=organizer
-            )
+            self.fields["address"].queryset = organizer.get_addresses()
 
 
 class AddressForm(forms.ModelForm):
@@ -96,9 +94,7 @@ class OrganizerProfileEditForm(forms.ModelForm):
     def __init__(self, *args, **kwargs):
         organizer = kwargs.get("instance", None)
         super().__init__(*args, **kwargs)
-        self.fields["default_address"].queryset = Address.objects.filter(
-            organizers=organizer
-        )
+        self.fields["default_address"].queryset = organizer.get_addresses()
 
 
 class LinkImporterForm(forms.Form, SubmitButtonMixin):

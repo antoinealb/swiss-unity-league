@@ -20,9 +20,9 @@
                 <a class="btn btn-warning" href="{% url 'admin:championship_eventorganizer_change' eventorganizer.id %}">Edit in admin</a>
             </dd>
         {% endif %}
-        <dt class="col-sm-3">Region</dt>
-        <dd class="col-sm-9">{{ eventorganizer.default_address.get_region_display }}</dd>
         {% if eventorganizer.default_address %}
+            <dt class="col-sm-3">Region</dt>
+            <dd class="col-sm-9">{{ eventorganizer.default_address.get_region_display }}</dd>
             <dt class="col-sm-3">Address</dt>
             <dd class="col-sm-9">{{ eventorganizer.default_address }} (<a href="{{ eventorganizer.default_address.get_google_maps_url }}" target="_blank">View on Google Maps</a>)</dd>
         {% endif %}

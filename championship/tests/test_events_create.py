@@ -242,7 +242,7 @@ class EventCopyTestCase(TestCase):
 
     def test_initial_address_not_overwritten_by_default_address(self):
         self.login()
-        not_default_address = self.organizer.addresses.all()[1]
+        not_default_address = self.organizer.get_addresses()[1]
         event = EventFactory(address=not_default_address, organizer=self.organizer)
         respone = self.client.get(reverse("event_copy", args=[event.id]))
         initial_address = respone.context["form"].initial["address"]

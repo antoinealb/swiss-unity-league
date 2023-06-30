@@ -11,8 +11,7 @@ class BaseSetupTest(TestCase):
         self.user = User.objects.create_user(username=username, password="testpass")
         self.organizer = EventOrganizerFactory(user=self.user, addresses=[])
         if with_address:
-            self.address = AddressFactory()
-            self.address.organizers.add(self.organizer)
+            self.address = AddressFactory(organizer=self.organizer)
         self.client.login(username=username, password="testpass")
 
 

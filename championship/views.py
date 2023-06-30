@@ -740,7 +740,7 @@ class AddressListView(LoginRequiredMixin, ListView):
     template_name = "championship/address_list.html"
 
     def get_queryset(self):
-        return Address.objects.filter(organizers__user=self.request.user)
+        return self.request.user.eventorganizer.get_addresses()
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
@@ -756,8 +756,8 @@ class AddressViewMixin:
 
     def form_valid(self, form):
         organizer = self.request.user.eventorganizer
+        form.instance.organizer = organizer
         self.object = form.save()
-        self.object.organizers.add(organizer)
         if form.cleaned_data["set_as_organizer_address"]:
             organizer.default_address = self.object
             organizer.save()
@@ -770,15 +770,15 @@ class AddressCreateView(LoginRequiredMixin, AddressViewMixin, CreateView):
 
 class AddressUpdateView(LoginRequiredMixin, AddressViewMixin, UpdateView):
     def get_queryset(self):
-        return Address.objects.filter(organizers__user=self.request.user)
+        return self.request.user.eventorganizer.get_addresses()
 
 
 @login_required
-def address_delete_view(request, pk):
+def address_delete(request, pk):
     address = get_object_or_404(Address, id=pk)
     if (
         request.method == "POST"
-        and address in request.user.eventorganizer.addresses.all()
+        and address in request.user.eventorganizer.get_addresses()
     ):
         address.delete()
         messages.success(request, "Succesfully deleted address!")

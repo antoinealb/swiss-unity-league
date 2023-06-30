@@ -65,6 +65,11 @@ class Address(models.Model):
     country = models.CharField(
         max_length=2, choices=Country.choices, default=Country.SWITZERLAND
     )
+
+    organizer = models.ForeignKey(
+        "EventOrganizer", on_delete=models.CASCADE, related_name="addresses"
+    )
+
     # Used for naming this object in the deletion popup
     display_name = "Address"
 
@@ -84,7 +89,7 @@ class Address(models.Model):
         # If the city is the same as the region, we don't need it twice
         if self.get_region_display() != self.city:
             address_parts.append(self.get_region_display())
-        address_parts.append(self.country)
+        address_parts.append(self.get_country_display())
         return ", ".join(address_parts)
 
     def get_google_maps_url(self):
@@ -110,13 +115,15 @@ class EventOrganizer(models.Model):
         strip_tags=True,
     )
     user = models.OneToOneField(settings.AUTH_USER_MODEL, on_delete=models.PROTECT)
-    addresses = models.ManyToManyField(Address, related_name="organizers", blank=True)
     default_address = models.ForeignKey(
         Address, on_delete=models.SET_NULL, null=True, blank=True
     )
 
     def get_absolute_url(self):
         return reverse("organizer_details", args=[self.pk])
+
+    def get_addresses(self):
+        return self.addresses.all()
 
     def __str__(self):
         return self.name

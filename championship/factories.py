@@ -61,17 +61,13 @@ class EventOrganizerFactory(DjangoModelFactory):
 
         if extracted == None:
             # Create 3 new random addresses.
-            addresses = AddressFactory.create_batch(3)
+            addresses = AddressFactory.create_batch(3, organizer=self)
             for address in addresses:
                 self.addresses.add(address)
 
             # Set one as the default
             self.default_address = addresses[0]
             self.save()
-        elif extracted:
-            # A list of addresses were passed in, use them
-            for address in extracted:
-                self.addresses.add(address)
 
 
 class PlayerFactory(DjangoModelFactory):
