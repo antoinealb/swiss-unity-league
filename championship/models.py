@@ -11,6 +11,91 @@ import collections
 import datetime
 from prometheus_client import Gauge, Summary
 from django.contrib.humanize.templatetags.humanize import ordinal
+import urllib.parse
+from django.contrib.auth.models import User
+
+
+class Address(models.Model):
+    class Region(models.TextChoices):
+        AARGAU = "AG", "Aargau"  # German
+        APPENZELL_AUSSERRHODEN = "AR", "Appenzell Ausserrhoden"  # German
+        APPENZELL_INNERRHODEN = "AI", "Appenzell Innerrhoden"  # German
+        BASEL_LANDSCHAFT = "BL", "Basel-Landschaft"  # German
+        BASEL_STADT = "BS", "Basel-Stadt"  # German
+        BERN = "BE", "Bern"  # German
+        FRIBOURG = "FR", "Fribourg"  # French
+        GENEVA = "GE", "Genève"  # French
+        GLARUS = "GL", "Glarus"  # German
+        GRAUBUNDEN = "GR", "Graubünden"  # German
+        JURA = "JU", "Jura"  # French
+        LUCERNE = "LU", "Luzern"  # German
+        NEUCHATEL = "NE", "Neuchâtel"  # French
+        NIDWALDEN = "NW", "Nidwalden"  # German
+        OBWALDEN = "OW", "Obwalden"  # German
+        SCHAFFHAUSEN = "SH", "Schaffhausen"  # German
+        SCHWYZ = "SZ", "Schwyz"  # German
+        SOLOTHURN = "SO", "Solothurn"  # German
+        ST_GALLEN = "SG", "Sankt Gallen"  # German
+        THURGAU = "TG", "Thurgau"  # German
+        TICINO = "TI", "Ticino"  # Italian
+        URI = "UR", "Uri"  # German
+        VALAIS = "VS", "Valais"  # French
+        VAUD = "VD", "Vaud"  # French
+        ZUG = "ZG", "Zug"  # German
+        ZURICH = "ZH", "Zürich"  # German
+        FREIBURG_DE = "FR_DE", "Freiburg im Breisgau (DE)"  # German
+
+    class Country(models.TextChoices):
+        SWITZERLAND = "CH", "Switzerland"
+        AUSTRIA = "AT", "Austria"
+        GERMANY = "DE", "Germany"
+        ITALY = "IT", "Italy"
+        LIECHTENSTEIN = "LI", "Liechtenstein"
+        FRANCE = "FR", "France"
+
+    location_name = models.CharField(max_length=255)
+    street_address = models.CharField(max_length=255)
+    city = models.CharField(max_length=255)
+    postal_code = models.CharField(max_length=10)
+    region = models.CharField(
+        max_length=5,
+        choices=Region.choices,
+        default=Region.ZURICH,
+    )
+    country = models.CharField(
+        max_length=2, choices=Country.choices, default=Country.SWITZERLAND
+    )
+
+    organizer = models.ForeignKey(
+        "EventOrganizer", on_delete=models.CASCADE, related_name="addresses"
+    )
+
+    # Used for naming this object in the deletion popup
+    display_name = "Address"
+
+    def get_delete_url(self):
+        return reverse("address_delete", args=[self.pk])
+
+    def get_absolute_url(self):
+        return reverse("address_edit", args=[self.pk])
+
+    def __str__(self):
+        address_parts = [
+            self.location_name,
+            self.street_address,
+            self.postal_code,
+            self.city,
+        ]
+        # If the city is the same as the region, we don't need it twice
+        if self.get_region_display() != self.city:
+            address_parts.append(self.get_region_display())
+        address_parts.append(self.get_country_display())
+        return ", ".join(address_parts)
+
+    def get_google_maps_url(self):
+        """Return a URL for this address on Google Maps."""
+        query = urllib.parse.quote(self.__str__())
+        return f"https://www.google.com/maps/search/?api=1&query={query}"
 
 
 class EventOrganizer(models.Model):
@@ -19,8 +104,26 @@ class EventOrganizer(models.Model):
     """
 
     name = models.CharField(max_length=200)
-    contact = models.EmailField(help_text="Prefered contact email")
+    contact = models.EmailField(
+        help_text="Prefered contact email (not visible to players)"
+    )
+    description = BleachField(
+        help_text="Supports the following HTML tags: {}".format(
+            ", ".join(settings.BLEACH_ALLOWED_TAGS)
+        ),
+        blank=True,
+        strip_tags=True,
+    )
     user = models.OneToOneField(settings.AUTH_USER_MODEL, on_delete=models.PROTECT)
+    default_address = models.ForeignKey(
+        Address, on_delete=models.SET_NULL, null=True, blank=True
+    )
+
+    def get_absolute_url(self):
+        return reverse("organizer_details", args=[self.pk])
+
+    def get_addresses(self):
+        return self.addresses.all()
 
     def __str__(self):
         return self.name
@@ -67,6 +170,9 @@ class Event(models.Model):
         ),
         blank=True,
         strip_tags=True,
+    )
+    address = models.ForeignKey(
+        Address, on_delete=models.SET_NULL, null=True, blank=True
     )
 
     class Format(models.TextChoices):

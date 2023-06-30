@@ -1,5 +1,4 @@
 import datetime
-import math
 import re
 import logging
 import os
@@ -10,7 +9,8 @@ from typing import *
 from django.core.exceptions import ImproperlyConfigured
 from django.shortcuts import render, get_object_or_404, redirect
 from django.views.generic.base import TemplateView
-from django.views.generic.edit import DeleteView, FormView, UpdateView
+from django.views.generic.list import ListView
+from django.views.generic.edit import DeleteView, FormView, UpdateView, CreateView
 from django.views.generic import DetailView
 from django.http import HttpResponseRedirect, HttpResponseForbidden
 from django.urls import reverse, reverse_lazy
@@ -261,6 +261,14 @@ class InformationForOrganizerView(TemplateView):
 class CreateEventView(LoginRequiredMixin, FormView):
     template_name = "championship/create_event.html"
     form_class = EventCreateForm
+
+    def get_form_kwargs(self):
+        kwargs = super(CreateEventView, self).get_form_kwargs()
+        kwargs["organizer"] = EventOrganizer.objects.get(user=self.request.user)
+        kwargs["initial"][
+            "address"
+        ] = self.request.user.eventorganizer.default_address.id
+        return kwargs
 
     def form_valid(self, form):
         event = form.save(commit=False)
@@ -782,11 +790,92 @@ class FutureEventView(TemplateView):
     template_name = "championship/future_events.html"
 
 
-class OrganizerProfileEdit(LoginRequiredMixin, UpdateView):
+class EventOrganizerDetailView(DetailView):
     model = EventOrganizer
-    fields = ["name", "contact"]
+    template_name = "championship/organizer_details.html"
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        organizer = self.get_object()
+
+        future_events = Event.objects.filter(
+            organizer=organizer, date__gte=datetime.date.today()
+        ).order_by("date")
+        past_events = Event.objects.filter(
+            organizer=organizer, date__lt=datetime.date.today()
+        ).order_by("-date")
+
+        all_events = []
+        if future_events:
+            all_events.append({"title": "Upcoming Events", "list": future_events})
+        if past_events:
+            all_events.append({"title": "Past Events", "list": past_events})
+        context["all_events"] = all_events
+        return context
+
+
+class OrganizerProfileEditView(LoginRequiredMixin, UpdateView):
     template_name = "championship/update_organizer.html"
-    success_url = reverse_lazy("organizer_update")
+    form_class = OrganizerProfileEditForm
 
     def get_object(self):
-        return EventOrganizer.objects.get(user=self.request.user)
+        return get_object_or_404(EventOrganizer, user=self.request.user)
+
+    def get_success_url(self):
+        return self.get_object().get_absolute_url()
+
+    def form_valid(self, form):
+        messages.success(self.request, "Succesfully updated organizer profile!")
+        return super().form_valid(form)
+
+
+class AddressListView(LoginRequiredMixin, ListView):
+    model = Address
+    template_name = "championship/address_list.html"
+
+    def get_queryset(self):
+        return self.request.user.eventorganizer.get_addresses()
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context["organizer_url"] = self.request.user.eventorganizer.get_absolute_url()
+        return context
+
+
+class AddressViewMixin:
+    model = Address
+    form_class = AddressForm
+    template_name = "championship/address_form.html"
+    success_url = reverse_lazy("address_list")
+
+    def form_valid(self, form):
+        organizer = self.request.user.eventorganizer
+        form.instance.organizer = organizer
+        self.object = form.save()
+        if form.cleaned_data["set_as_organizer_address"]:
+            organizer.default_address = self.object
+            organizer.save()
+        return super().form_valid(form)
+
+
+class AddressCreateView(LoginRequiredMixin, AddressViewMixin, CreateView):
+    pass
+
+
+class AddressUpdateView(LoginRequiredMixin, AddressViewMixin, UpdateView):
+    def get_queryset(self):
+        return self.request.user.eventorganizer.get_addresses()
+
+
+@login_required
+def address_delete(request, pk):
+    address = get_object_or_404(Address, id=pk)
+    if (
+        request.method == "POST"
+        and address in request.user.eventorganizer.get_addresses()
+    ):
+        address.delete()
+        messages.success(request, "Succesfully deleted address!")
+        return HttpResponseRedirect(reverse("address_list"))
+    else:
+        return HttpResponseForbidden("You are not authorized to delete this address!")

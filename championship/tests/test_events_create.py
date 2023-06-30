@@ -3,7 +3,7 @@ from django.test import TestCase, Client
 from django.contrib.auth.models import User
 from django.urls import reverse
 from championship.models import Event, EventOrganizer
-from championship.factories import EventOrganizerFactory, EventFactory
+from championship.factories import AddressFactory, EventOrganizerFactory, EventFactory
 
 
 class EventCreationTestCase(TestCase):
@@ -182,6 +182,24 @@ class EventCreationTestCase(TestCase):
         resp = self.client.post(reverse("event_delete", args=[event.id]))
         self.assertEqual(404, resp.status_code)
 
+    def test_default_address_is_initial(self):
+        self.login()
+        to = EventOrganizerFactory(user=self.user)
+        respone = self.client.get(reverse("events_create"))
+        initial_address = respone.context["form"].initial["address"]
+        self.assertEquals(to.default_address.id, initial_address)
+
+    def test_initial_address_not_overwritten_by_default_address(self):
+        to = EventOrganizerFactory(user=self.user)
+        not_default_address = to.addresses.all()[1]
+        event = EventFactory(address=not_default_address, organizer=to)
+        self.login()
+        response = self.client.get(reverse("event_update", args=[event.id]))
+        self.assertEqual(200, response.status_code)
+        initial_address = response.context["form"].initial["address"]
+        self.assertNotEquals(not_default_address, to.default_address)
+        self.assertEquals(not_default_address.id, initial_address)
+
 
 class EventCopyTestCase(TestCase):
     def setUp(self):
@@ -221,3 +239,12 @@ class EventCopyTestCase(TestCase):
 
         resp = self.client.get(reverse("event_details", args=[event.id]))
         self.assertIn("Copy event", resp.content.decode())
+
+    def test_initial_address_not_overwritten_by_default_address(self):
+        self.login()
+        not_default_address = self.organizer.get_addresses()[1]
+        event = EventFactory(address=not_default_address, organizer=self.organizer)
+        respone = self.client.get(reverse("event_copy", args=[event.id]))
+        initial_address = respone.context["form"].initial["address"]
+        self.assertNotEquals(not_default_address, self.organizer.default_address)
+        self.assertEquals(not_default_address.id, initial_address)

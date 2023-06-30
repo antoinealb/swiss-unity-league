@@ -1,7 +1,7 @@
 from django.db.models import TextChoices, Count
 from django.core.validators import RegexValidator
 from django import forms
-from .models import Event, EventPlayerResult
+from .models import Address, Event, EventPlayerResult, EventOrganizer
 from crispy_forms.helper import FormHelper
 from crispy_forms.layout import Submit, Layout, Div, Field
 from tinymce.widgets import TinyMCE
@@ -23,6 +23,7 @@ class EventCreateForm(forms.ModelForm):
             "date",
             "format",
             "category",
+            "address",
             "url",
             "decklists_url",
             "description",
@@ -43,6 +44,57 @@ You can copy/paste the description from a website like swissmtg.ch, and the form
             ),
             "format": "If your desired format is not listed, please contact us and we'll add it.",
         }
+
+    def __init__(self, *args, **kwargs):
+        organizer = kwargs.pop("organizer", None)
+        super(EventCreateForm, self).__init__(*args, **kwargs)
+        if organizer is not None:
+            self.fields["address"].queryset = organizer.get_addresses()
+
+
+class AddressForm(forms.ModelForm):
+    set_as_organizer_address = forms.BooleanField(required=False, initial=False)
+
+    class Meta:
+        model = Address
+        fields = [
+            "location_name",
+            "street_address",
+            "city",
+            "postal_code",
+            "region",
+            "country",
+            "set_as_organizer_address",
+        ]
+
+
+class OrganizerProfileEditForm(forms.ModelForm):
+    class Meta:
+        model = EventOrganizer
+        fields = [
+            "name",
+            "contact",
+            "default_address",
+            "description",
+        ]
+        widgets = {
+            "description": TinyMCE(
+                mce_attrs={
+                    "toolbar": "undo redo | bold italic | link unlink | bullist numlist",
+                    "link_assume_external_targets": "http",
+                },
+            ),
+        }
+        help_texts = {
+            "description": """Supports the following HTML tags: {}.""".format(
+                ", ".join(bleach.ALLOWED_TAGS)
+            ),
+        }
+
+    def __init__(self, *args, **kwargs):
+        organizer = kwargs.get("instance", None)
+        super().__init__(*args, **kwargs)
+        self.fields["default_address"].queryset = organizer.get_addresses()
 
 
 class LinkImporterForm(forms.Form, SubmitButtonMixin):

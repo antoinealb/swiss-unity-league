@@ -2,8 +2,14 @@
 
 {% load crispy_forms_tags %}
 
+{% block extrahead %}
+    {{ form.media }}
+{% endblock %}
+
 {% block content %}
     <h1>Edit organizer settings</h1>
+    <a class="btn btn-secondary" href="{% url 'address_list' %}">Edit Addresses</a>
+    <br>
     <form action="{% url 'organizer_update' %}" method="post">
         {% csrf_token %}
         {{ form|crispy }}

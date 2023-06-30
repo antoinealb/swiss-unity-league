@@ -2,7 +2,7 @@ from django.test import TestCase, Client
 from django.contrib.auth.models import User
 from django.urls import reverse
 from championship.models import EventOrganizer
-from championship.factories import EventOrganizerFactory
+from championship.factories import AddressFactory, EventOrganizerFactory
 
 
 class EventCreationTestCase(TestCase):
@@ -40,7 +40,7 @@ class EventCreationTestCase(TestCase):
         to = EventOrganizerFactory(user=self.user)
         response = self.client.get("/")
         self.assertIn(
-            reverse("organizer_update"),
+            reverse("organizer_details", args=(to.id,)),
             response.content.decode(),
             "Logged in users should get a link to creating events",
         )
@@ -48,11 +48,17 @@ class EventCreationTestCase(TestCase):
     def test_post_data(self):
         self.login()
         to = EventOrganizerFactory(user=self.user)
+        new_address = to.addresses.all()[1]
+        self.assertNotEquals(to.default_address.id, new_address.id)
         data = {
             "contact": "foo@foo.org",
             "name": "My test events",
+            "default_address": new_address.id,
+            "description": "This is a test description",
         }
         self.client.post(reverse("organizer_update"), data=data)
         to = EventOrganizer.objects.get(user=self.user)
         self.assertEqual(to.name, data["name"])
         self.assertEqual(to.contact, data["contact"])
+        self.assertEqual(to.default_address.id, new_address.id)
+        self.assertEqual(to.description, data["description"])
