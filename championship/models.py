@@ -410,10 +410,11 @@ scores_players_reaching_max_regular = Gauge(
     "Number of players hitting the cap of points at Regular",
 )
 
+REGULAR_MAX_SCORE = 500
+
 
 @scores_computation_time_seconds.time()
 def compute_scores():
-    REGULAR_MAX_SCORE = 500
     players_reaching_max = 0
 
     if settings.SCORES_CACHE_ENABLED:
