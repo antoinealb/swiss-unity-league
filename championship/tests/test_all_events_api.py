@@ -3,6 +3,7 @@ from django.urls import reverse
 from championship.factories import *
 from championship.models import *
 
+TEST_SERVER = "http://testserver"
 
 class EventApiTestCase(TestCase):
     def test_get_all_future_events(self):
@@ -22,8 +23,10 @@ class EventApiTestCase(TestCase):
                 "organizer": eo.name,
                 "format": "Legacy",
                 "category": "SUL Premier",
-                "details_url": "http://testserver"
+                "details_url": TEST_SERVER
                 + reverse("event_details", args=[a.id]),
+                "organizer_url": TEST_SERVER
+                + reverse("organizer_details", args=[a.id]),
             }
         ]
         self.assertEqual(want, resp.json())
@@ -45,8 +48,10 @@ class EventApiTestCase(TestCase):
                 "organizer": eo.name,
                 "format": "Legacy",
                 "category": "SUL Premier",
-                "details_url": "http://testserver"
+                "details_url": TEST_SERVER
                 + reverse("event_details", args=[a.id]),
+                "organizer_url": TEST_SERVER
+                + reverse("organizer_details", args=[a.id]),
             }
         ]
         self.assertEqual(want, resp.json())
