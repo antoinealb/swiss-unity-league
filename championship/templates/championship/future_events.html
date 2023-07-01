@@ -104,7 +104,9 @@
                             </td>
                             <td x-text="event.category"></td>
                             <td x-text="event.format"></td>
-                            <td x-text="event.organizer"></td>
+                            <td>
+                                <a x-text="event.organizer" :href="event.organizer_url"></a>
+                            </td>
                         </tr>
                     </template>
                 </tbody>
