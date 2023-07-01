@@ -265,9 +265,10 @@ class CreateEventView(LoginRequiredMixin, FormView):
     def get_form_kwargs(self):
         kwargs = super(CreateEventView, self).get_form_kwargs()
         kwargs["organizer"] = EventOrganizer.objects.get(user=self.request.user)
-        kwargs["initial"][
-            "address"
-        ] = self.request.user.eventorganizer.default_address.id
+
+        default_address = self.request.user.eventorganizer.default_address
+        if default_address:
+            kwargs["initial"]["address"] = default_address.id
         return kwargs
 
     def form_valid(self, form):
