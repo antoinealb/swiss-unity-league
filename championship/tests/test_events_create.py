@@ -2,7 +2,7 @@ import datetime
 from django.test import TestCase, Client
 from django.contrib.auth.models import User
 from django.urls import reverse
-from championship.models import Event, EventOrganizer
+from championship.models import Event, EventOrganizer, Address
 from championship.factories import AddressFactory, EventOrganizerFactory, EventFactory
 
 
@@ -185,9 +185,15 @@ class EventCreationTestCase(TestCase):
     def test_default_address_is_initial(self):
         self.login()
         to = EventOrganizerFactory(user=self.user)
-        respone = self.client.get(reverse("events_create"))
-        initial_address = respone.context["form"].initial["address"]
+        response = self.client.get(reverse("events_create"))
+        initial_address = response.context["form"].initial["address"]
         self.assertEquals(to.default_address.id, initial_address)
+
+    def test_create_event_form_without_any_address(self):
+        self.login()
+        to = EventOrganizerFactory(user=self.user)
+        Address.objects.all().delete()
+        self.client.get(reverse("events_create"))
 
     def test_initial_address_not_overwritten_by_default_address(self):
         to = EventOrganizerFactory(user=self.user)
@@ -244,7 +250,7 @@ class EventCopyTestCase(TestCase):
         self.login()
         not_default_address = self.organizer.get_addresses()[1]
         event = EventFactory(address=not_default_address, organizer=self.organizer)
-        respone = self.client.get(reverse("event_copy", args=[event.id]))
-        initial_address = respone.context["form"].initial["address"]
+        response = self.client.get(reverse("event_copy", args=[event.id]))
+        initial_address = response.context["form"].initial["address"]
         self.assertNotEquals(not_default_address, self.organizer.default_address)
         self.assertEquals(not_default_address.id, initial_address)
