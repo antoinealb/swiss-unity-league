@@ -5,6 +5,7 @@ from championship.models import *
 
 TEST_SERVER = "http://testserver"
 
+
 class EventApiTestCase(TestCase):
     def test_get_all_future_events(self):
         eo = EventOrganizerFactory(name="Test TO")
@@ -23,8 +24,7 @@ class EventApiTestCase(TestCase):
                 "organizer": eo.name,
                 "format": "Legacy",
                 "category": "SUL Premier",
-                "details_url": TEST_SERVER
-                + reverse("event_details", args=[a.id]),
+                "details_url": TEST_SERVER + reverse("event_details", args=[a.id]),
                 "organizer_url": TEST_SERVER
                 + reverse("organizer_details", args=[a.id]),
             }
@@ -48,8 +48,7 @@ class EventApiTestCase(TestCase):
                 "organizer": eo.name,
                 "format": "Legacy",
                 "category": "SUL Premier",
-                "details_url": TEST_SERVER
-                + reverse("event_details", args=[a.id]),
+                "details_url": TEST_SERVER + reverse("event_details", args=[a.id]),
                 "organizer_url": TEST_SERVER
                 + reverse("organizer_details", args=[a.id]),
             }
