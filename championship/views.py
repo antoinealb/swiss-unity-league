@@ -61,7 +61,7 @@ class IndexView(TemplateView):
 
     def _future_events(self):
         future_events = (
-            Event.objects.filter(date__gt=datetime.date.today())
+            Event.objects.filter(date__gte=datetime.date.today())
             .exclude(category=Event.Category.REGULAR)
             .order_by("date")[:EVENTS_ON_PAGE]
             .select_related("organizer")
