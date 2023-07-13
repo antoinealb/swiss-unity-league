@@ -127,6 +127,11 @@ class PlayerAdmin(admin.ModelAdmin):
                     name=player.name, true_player=original_player
                 )
 
+                # Merge the email if the original_player has no email yet
+                if original_player.email == "" and player.email != "":
+                    original_player.email = player.email
+                    original_player.save()
+
                 # Finally, delete the extra player
                 player.delete()
 
