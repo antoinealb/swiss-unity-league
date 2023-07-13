@@ -78,15 +78,6 @@ class IndexView(TemplateView):
         random.shuffle(images)
         return images
 
-    def _future_events(self):
-        future_events = (
-            Event.objects.filter(date__gt=datetime.date.today())
-            .exclude(category=Event.Category.REGULAR)
-            .order_by("date")[:EVENTS_ON_PAGE]
-            .select_related("organizer")
-        )
-        return future_events
-
 
 LAST_RESULTS = "last_results"
 TOP_FINISHES = "top_finishes"
