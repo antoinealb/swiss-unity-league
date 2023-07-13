@@ -244,6 +244,17 @@ class Player(models.Model):
     objects = models.Manager()
     leaderboard_objects = LeaderBoardPlayerManager()
 
+    def get_ranking(num_players=None):
+        scores_by_player = compute_scores()
+        players = list(Player.leaderboard_objects.all())
+        for p in players:
+            p.score = scores_by_player.get(p.id, 0)
+        players.sort(key=lambda l: l.score, reverse=True)
+
+        if num_players != None:
+            players = players[:num_players]
+        return players
+
     def __str__(self):
         return self.name
 
