@@ -301,7 +301,7 @@ class EventPlayerResult(models.Model):
         """
         self_single_elim = self.single_elimination_result or 32
         other_single_elim = other.single_elimination_result or 32
-        if  self_single_elim < other_single_elim:
+        if self_single_elim < other_single_elim:
             return True
         elif self_single_elim > other_single_elim:
             return False
