@@ -266,7 +266,7 @@ class CreateEventView(LoginRequiredMixin, FormView):
         kwargs = super(CreateEventView, self).get_form_kwargs()
         kwargs["organizer"] = EventOrganizer.objects.get(user=self.request.user)
 
-        default_address = self.request.user.eventorganizer.default_address
+        default_address = kwargs["organizer"].default_address
         if default_address:
             kwargs["initial"]["address"] = default_address.id
         return kwargs
@@ -284,12 +284,13 @@ class CreateEventView(LoginRequiredMixin, FormView):
 @login_required
 def copy_event(request, pk):
     original_event = get_object_or_404(Event, pk=pk)
+    organizer = EventOrganizer.objects.get(user=request.user)
     if request.method == "POST":
         form = EventCreateForm(request.POST)
         if form.is_valid():
             event = form.save(commit=False)
             event.pk = None  # Force django to commit
-            event.organizer = EventOrganizer.objects.get(user=request.user)
+            event.organizer = organizer
             event.save()
 
             messages.success(request, "Succesfully created event!")
@@ -299,7 +300,7 @@ def copy_event(request, pk):
         # By default, copy it one week later
         new_event = get_object_or_404(Event, pk=pk)
         new_event.date += datetime.timedelta(days=7)
-        form = EventCreateForm(instance=new_event)
+        form = EventCreateForm(instance=new_event, organizer=organizer)
 
     return render(
         request,
@@ -322,7 +323,7 @@ def update_event(request, pk):
             messages.success(request, "Succesfully saved event")
             return HttpResponseRedirect(reverse("event_details", args=[event.id]))
     else:
-        form = EventCreateForm(instance=event)
+        form = EventCreateForm(instance=event, organizer=event.organizer)
 
     return render(
         request, "championship/update_event.html", {"form": form, "event": event}
