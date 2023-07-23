@@ -830,6 +830,26 @@ class OrganizerProfileEditView(LoginRequiredMixin, UpdateView):
         return super().form_valid(form)
 
 
+class OrganizerListView(ListView):
+    template_name = "championship/organizer_list.html"
+    context_object_name = "organizers"
+
+    def get_queryset(self):
+        organizers = (
+            EventOrganizer.objects.select_related("default_address")
+            .annotate(num_events=Count("event"))
+            .filter(num_events__gt=0)
+            .all()
+        )
+        organizers = sorted(organizers, key=lambda o: o.name)
+        organizers_with_address = [o for o in organizers if o.default_address]
+        organizers_without_address = [o for o in organizers if not o.default_address]
+        return (
+            sorted(organizers_with_address, key=lambda o: o.default_address)
+            + organizers_without_address
+        )
+
+
 class AddressListView(LoginRequiredMixin, ListView):
     model = Address
     template_name = "championship/address_list.html"

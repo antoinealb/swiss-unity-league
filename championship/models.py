@@ -92,6 +92,27 @@ class Address(models.Model):
         address_parts.append(self.get_country_display())
         return ", ".join(address_parts)
 
+    def __lt__(self, other):
+        def compare_string(first, second):
+            return first.lower() < second.lower()
+
+        ret = None
+        if self.country != other.country:
+            ch = Address.Country.SWITZERLAND
+            if self.country == ch:
+                ret = True
+            elif other.country == ch:
+                ret = False
+            else:
+                ret = compare_string(
+                    self.get_country_display(), other.get_country_display()
+                )
+        elif self.region != other.region:
+            ret = compare_string(self.get_region_display(), other.get_region_display())
+        else:
+            ret = compare_string(self.city, other.city)
+        return ret
+
     def get_google_maps_url(self):
         """Return a URL for this address on Google Maps."""
         query = urllib.parse.quote(self.__str__())

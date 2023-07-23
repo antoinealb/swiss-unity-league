@@ -1,0 +1,30 @@
+
+{% extends "championship/base.html" %}
+
+{% block content %}
+    <div class="container">
+        <h2>Organizers</h2>
+        <div class="table-responsive">
+            <table class="table table-striped">
+                <thead>
+                    <tr>
+                        <th>Organizer</th>
+                        <th>Number of Events</th>
+                        <th>City</th>
+                        <th>Region</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for organizer in organizers %}
+                        <tr>
+                            <td><a href="{{ organizer.get_absolute_url }}">{{ organizer.name }}</a></td>
+                            <td>{{ organizer.num_events }}</td>
+                            <td>{{ organizer.default_address.city }}</td>
+                            <td>{{ organizer.default_address.get_region_display }}</td>
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+{% endblock %}
