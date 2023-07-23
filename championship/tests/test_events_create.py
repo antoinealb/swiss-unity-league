@@ -212,20 +212,24 @@ class EventCreationTestCase(TestCase):
             ("events_create", False),
             ("event_update", True),
             ("event_copy", True),
-        ])
+        ]
+    )
     def test_update_event_contains_only_organizer_addresses(self, view_name, has_id):
         to = EventOrganizerFactory(user=self.user)
-        #Create another TO with addresses and check that both have 3 addresses
+        # Create another TO with addresses and check that both have 3 addresses
         for current_to in [to, EventOrganizerFactory()]:
             self.assertEquals(3, current_to.addresses.count())
         event = EventFactory(organizer=to)
         self.login()
-        response = self.client.get(reverse(view_name, args=[event.id]) if has_id else reverse(view_name))
+        response = self.client.get(
+            reverse(view_name, args=[event.id]) if has_id else reverse(view_name)
+        )
         self.assertEqual(200, response.status_code)
         form_addresses = response.context["form"].fields["address"].queryset
         self.assertEquals(to.addresses.count(), form_addresses.count())
         for address in form_addresses:
             self.assertIn(address, to.addresses.all())
+
 
 class EventCopyTestCase(TestCase):
     def setUp(self):
