@@ -760,7 +760,7 @@ class FutureEventViewSet(viewsets.ReadOnlyModelViewSet):
         # This needs to be a function (get_queryset) instead of an attribute as
         # otherwise the today means "when the app was started.
         qs = Event.objects.filter(date__gte=datetime.date.today())
-        qs = qs.select_related("organizer")
+        qs = additional_event_queries(qs)
         return qs.order_by("date")
 
 
@@ -777,7 +777,13 @@ class PastEventViewSet(viewsets.ReadOnlyModelViewSet):
         # This needs to be a function (get_queryset) instead of an attribute as
         # otherwise the today means "when the app was started.
         qs = Event.objects.filter(date__lt=datetime.date.today())
+        qs = additional_event_queries(qs)
         return qs.order_by("-date")
+
+
+def additional_event_queries(qs):
+    qs = qs.select_related("organizer", "address", "organizer__default_address")
+    return qs
 
 
 class ListFormats(views.APIView):

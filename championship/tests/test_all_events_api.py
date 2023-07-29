@@ -8,11 +8,19 @@ class EventApiTestCase(TestCase):
     def test_get_all_future_events(self):
         eo = EventOrganizerFactory(name="Test TO")
         tomorrow = datetime.date.today() + datetime.timedelta(days=1)
+        in_2_days = datetime.date.today() + datetime.timedelta(days=2)
         a = EventFactory(
             organizer=eo,
             date=tomorrow,
             format=Event.Format.LEGACY,
             category=Event.Category.PREMIER,
+            address=AddressFactory(organizer=eo),
+        )
+        b = EventFactory(
+            organizer=eo,
+            date=in_2_days,
+            format=Event.Format.MODERN,
+            category=Event.Category.REGIONAL,
         )
         resp = Client().get(reverse("future-events-list"))
         want = [
@@ -21,15 +29,26 @@ class EventApiTestCase(TestCase):
                 "date": tomorrow.strftime("%d.%m.%Y"),
                 "organizer": eo.name,
                 "format": "Legacy",
+                "region": a.address.get_region_display(),
                 "category": "SUL Premier",
                 "details_url": "http://testserver"
                 + reverse("event_details", args=[a.id]),
-            }
+            },
+            {
+                "name": b.name,
+                "date": in_2_days.strftime("%d.%m.%Y"),
+                "organizer": eo.name,
+                "format": "Modern",
+                "region": eo.default_address.get_region_display(),
+                "category": "SUL Regional",
+                "details_url": "http://testserver"
+                + reverse("event_details", args=[b.id]),
+            },
         ]
         self.assertEqual(want, resp.json())
 
     def test_get_all_past_events(self):
-        eo = EventOrganizerFactory(name="Test TO")
+        eo = EventOrganizerFactory(name="Test TO", addresses=[])
         yesterday = datetime.date.today() - datetime.timedelta(days=1)
         a = EventFactory(
             organizer=eo,
@@ -44,6 +63,7 @@ class EventApiTestCase(TestCase):
                 "date": yesterday.strftime("%d.%m.%Y"),
                 "organizer": eo.name,
                 "format": "Legacy",
+                "region": "",
                 "category": "SUL Premier",
                 "details_url": "http://testserver"
                 + reverse("event_details", args=[a.id]),
