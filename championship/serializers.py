@@ -13,6 +13,7 @@ class EventSerializer(serializers.ModelSerializer):
             "region",
             "category",
             "details_url",
+            "organizer_url",
         ]
 
     date = serializers.DateField(format="%d.%m.%Y")
@@ -21,7 +22,9 @@ class EventSerializer(serializers.ModelSerializer):
     region = serializers.SerializerMethodField()
     category = serializers.CharField(source="get_category_display")
     details_url = serializers.HyperlinkedIdentityField(view_name="event_details")
-
+    organizer_url = serializers.HyperlinkedRelatedField(
+        source="organizer", view_name="organizer_details", read_only=True
+    )
     def get_region(self, obj):
         # Try getting the region from the event's address
         if obj.address:
@@ -33,3 +36,5 @@ class EventSerializer(serializers.ModelSerializer):
             region = ""
 
         return region
+    
+   
