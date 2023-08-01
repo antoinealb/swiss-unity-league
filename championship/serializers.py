@@ -25,6 +25,7 @@ class EventSerializer(serializers.ModelSerializer):
     organizer_url = serializers.HyperlinkedRelatedField(
         source="organizer", view_name="organizer_details", read_only=True
     )
+
     def get_region(self, obj):
         # Try getting the region from the event's address
         if obj.address:
@@ -36,5 +37,3 @@ class EventSerializer(serializers.ModelSerializer):
             region = ""
 
         return region
-    
-   

@@ -33,8 +33,7 @@ class EventApiTestCase(TestCase):
                 "format": "Legacy",
                 "region": a.address.get_region_display(),
                 "category": "SUL Premier",
-                "details_url": TEST_SERVER
-                + reverse("event_details", args=[a.id]),
+                "details_url": TEST_SERVER + reverse("event_details", args=[a.id]),
                 "organizer_url": TEST_SERVER
                 + reverse("organizer_details", args=[eo.id]),
             },
@@ -48,7 +47,7 @@ class EventApiTestCase(TestCase):
                 "details_url": TEST_SERVER + reverse("event_details", args=[b.id]),
                 "organizer_url": TEST_SERVER
                 + reverse("organizer_details", args=[eo.id]),
-            }
+            },
         ]
         self.assertEqual(want, resp.json())
 
