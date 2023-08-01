@@ -14,6 +14,7 @@ function events() {
             title: 'Organizer',
             titleAll: 'All Organizers',
             lambda: (x) => x.organizer,
+            linkLambda: (x) => x.organizer_url,
         },
         {
             title: 'Region',

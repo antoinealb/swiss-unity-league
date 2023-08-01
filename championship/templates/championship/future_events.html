@@ -64,9 +64,10 @@
                                 <a x-text="event.name" :href="event.details_url"></a>
                             </td>
                             <template x-for="filter in filterList">
-                                <td x-text="filter.lambda(event)"></td>
+                                <td>
+                                    <a x-bind:href="filter.linkLambda ? filter.linkLambda(event) : null" x-text="filter.lambda(event)"></a>
+                                </td>
                             </template>
-
                         </tr>
                     </template>
                 </tbody>
