@@ -53,3 +53,25 @@ class PlayerMergeActionTest(TestCase):
         self.assertEqual(
             [p.name for p in PlayerAlias.objects.all()], [p.name for p in players[1:]]
         )
+
+    def test_merge_player_emails(self):
+        EXAMPLE_EMAIL = "example@email.com"
+        mergeToPlayer = PlayerFactory()
+        mergeFromPlayer = PlayerFactory(email=EXAMPLE_EMAIL)
+        data = {
+            "action": "merge_players",
+            "_selected_action": [
+                mergeToPlayer.pk,
+                PlayerFactory().pk,
+                mergeFromPlayer.pk,
+                PlayerFactory().pk,
+            ],
+            "player_to_keep": mergeToPlayer.pk,
+        }
+
+        self.client.post(
+            reverse("admin:championship_player_changelist"), data, follow=True
+        )
+        mergeToPlayer.refresh_from_db()
+        self.assertEqual(Player.objects.count(), 1)
+        self.assertEqual(mergeToPlayer.email, EXAMPLE_EMAIL)
