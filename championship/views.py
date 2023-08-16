@@ -802,15 +802,19 @@ class EventOrganizerDetailView(DetailView):
         future_events = Event.objects.filter(
             organizer=organizer, date__gte=datetime.date.today()
         ).order_by("date")
-        past_events = Event.objects.filter(
-            organizer=organizer, date__lt=datetime.date.today()
-        ).order_by("-date")
+        past_events = (
+            Event.objects.filter(organizer=organizer, date__lt=datetime.date.today())
+            .annotate(num_players=Count("eventplayerresult"))
+            .order_by("-date")
+        )
 
         all_events = []
         if future_events:
             all_events.append({"title": "Upcoming Events", "list": future_events})
         if past_events:
-            all_events.append({"title": "Past Events", "list": past_events})
+            all_events.append(
+                {"title": "Past Events", "list": past_events, "has_num_players": True}
+            )
         context["all_events"] = all_events
         return context
 
