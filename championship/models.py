@@ -12,7 +12,6 @@ import datetime
 from prometheus_client import Gauge, Summary
 from django.contrib.humanize.templatetags.humanize import ordinal
 import urllib.parse
-from django.contrib.auth.models import User
 
 
 class Address(models.Model):
@@ -244,17 +243,6 @@ class Player(models.Model):
     objects = models.Manager()
     leaderboard_objects = LeaderBoardPlayerManager()
 
-    def get_ranking(num_players=None):
-        scores_by_player = compute_scores()
-        players = list(Player.leaderboard_objects.all())
-        for p in players:
-            p.score = scores_by_player.get(p.id, 0)
-        players.sort(key=lambda l: l.score, reverse=True)
-
-        if num_players != None:
-            players = players[:num_players]
-        return players
-
     def __str__(self):
         return self.name
 
@@ -422,6 +410,15 @@ scores_players_reaching_max_regular = Gauge(
 )
 
 REGULAR_MAX_SCORE = 500
+
+
+def get_leaderboard():
+    scores_by_player = compute_scores()
+    players = list(Player.leaderboard_objects.all())
+    for p in players:
+        p.score = scores_by_player.get(p.id, 0)
+    players.sort(key=lambda l: l.score, reverse=True)
+    return players
 
 
 @scores_computation_time_seconds.time()

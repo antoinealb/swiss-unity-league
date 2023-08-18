@@ -45,7 +45,7 @@ class IndexView(TemplateView):
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        context["players"] = Player.get_ranking(PLAYERS_TOP)
+        context["players"] = get_leaderboard()[:PLAYERS_TOP]
         context["future_events"] = self._future_events()
         context["partner_logos"] = self._partner_logos()
         return context
@@ -231,7 +231,7 @@ class CompleteRankingView(TemplateView):
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        context["players"] = Player.get_ranking()
+        context["players"] = get_leaderboard()
         return context
 
 
