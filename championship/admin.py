@@ -230,9 +230,12 @@ class EventOrganizerAdmin(admin.ModelAdmin):
                 )
                 continue
 
-            Invoice.objects.create(
+            invoice = Invoice(
                 event_organizer=organizer, start_date=start_date, end_date=end_date
             )
+
+            if invoice.total_amount > 0:
+                invoice.save()
 
     def has_invoice_permission(self, request):
         return request.user.has_perm("invoicing.add_invoice")

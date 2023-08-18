@@ -3,7 +3,6 @@ from django.contrib.auth.models import User
 from django.urls import reverse
 from championship.factories import *
 from championship.models import *
-from django.contrib.auth.models import User
 
 
 class PlayerMergeActionTest(TestCase):
