@@ -264,7 +264,7 @@ class CreateEventView(LoginRequiredMixin, FormView):
 
     def get_form_kwargs(self):
         kwargs = super(CreateEventView, self).get_form_kwargs()
-        kwargs["organizer"] = EventOrganizer.objects.get(user=self.request.user)
+        kwargs["organizer"] = self.request.user.eventorganizer
 
         default_address = kwargs["organizer"].default_address
         if default_address:
@@ -273,7 +273,7 @@ class CreateEventView(LoginRequiredMixin, FormView):
 
     def form_valid(self, form):
         event = form.save(commit=False)
-        event.organizer = EventOrganizer.objects.get(user=self.request.user)
+        event.organizer = self.request.user.eventorganizer
         event.save()
 
         messages.success(self.request, "Succesfully created event!")
@@ -284,7 +284,7 @@ class CreateEventView(LoginRequiredMixin, FormView):
 @login_required
 def copy_event(request, pk):
     original_event = get_object_or_404(Event, pk=pk)
-    organizer = EventOrganizer.objects.get(user=request.user)
+    organizer = request.user.eventorganizer
     if request.method == "POST":
         form = EventCreateForm(request.POST)
         if form.is_valid():
