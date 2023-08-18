@@ -1,7 +1,7 @@
 from django.test import TestCase, Client
 from django.urls import reverse
 from django.contrib.auth.models import User
-from championship.factories import AddressFactory, EventOrganizerFactory
+from championship.factories import AddressFactory, EventFactory, EventOrganizerFactory
 from championship.models import Address
 
 
@@ -106,3 +106,28 @@ class AddressDeleteViewTest(BaseSetupTest):
         response = self.client.get(reverse("address_delete", args=[self.address.pk]))
         self.assertEqual(response.status_code, 403)
         self.assertTrue(Address.objects.filter(pk=self.address.pk).exists())
+
+
+class AddressSortingTest(TestCase):
+    def test_sorting(self):
+        properties_in_correct_order = [
+            (Address.Region.AARGAU, "AR", Address.Country.SWITZERLAND),
+            (Address.Region.BERN, "aB", Address.Country.SWITZERLAND),
+            (Address.Region.BERN, "B", Address.Country.SWITZERLAND),
+            (Address.Region.FREIBURG_DE, "B", Address.Country.FRANCE),
+            (Address.Region.FREIBURG_DE, "B", Address.Country.GERMANY),
+        ]
+        to = EventOrganizerFactory(addresses=[])
+        addresses = [
+            AddressFactory(organizer=to, region=region, city=city, country=country)
+            for region, city, country in properties_in_correct_order[::-1]
+        ]
+        self.assertEqual(addresses[0].region, Address.Region.FREIBURG_DE)
+
+        sorted_addresses = sorted(addresses)
+
+        for i in range(len(properties_in_correct_order)):
+            region, city, country = properties_in_correct_order[i]
+            self.assertEqual(sorted_addresses[i].region, region)
+            self.assertEqual(sorted_addresses[i].city, city)
+            self.assertEqual(sorted_addresses[i].country, country)
