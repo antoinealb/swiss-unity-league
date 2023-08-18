@@ -258,19 +258,39 @@ class TestSortEventPlayerResults(TestCase):
         self.assertEqual(list(range(1, 11)), sorted_rankings)
 
     def test_can_order_results_based_on_single_elimination_results(self):
-        e = EventFactory()
-        for i in range(10):
+        e = EventFactory(category=Event.Category.PREMIER)
+        num_players = 16
+        results = [
             EventPlayerResult.objects.create(
                 player=PlayerFactory(),
                 ranking=i + 1,
-                points=5,
+                points=num_players - i,
                 event=e,
             )
+            for i in range(num_players)
+        ]
 
-        e = EventPlayerResult.objects.filter(ranking=3)[0]
-        e.single_elimination_result = EventPlayerResult.SingleEliminationResult.WINNER
-        e.save()
+        # We invert the order of the top 8 players with the single elimination results
+        inverse_top_8_results = [results[7], results[6]] + results[4:6] + results[:4]
+        for i, r in enumerate(inverse_top_8_results, 1):
+            if i == 1:
+                r.single_elimination_result = (
+                    EventPlayerResult.SingleEliminationResult.WINNER
+                )
+            elif i == 2:
+                r.single_elimination_result = (
+                    EventPlayerResult.SingleEliminationResult.FINALIST
+                )
+            elif i <= 4:
+                r.single_elimination_result = (
+                    EventPlayerResult.SingleEliminationResult.SEMI_FINALIST
+                )
+            elif i <= 8:
+                r.single_elimination_result = (
+                    EventPlayerResult.SingleEliminationResult.QUARTER_FINALIST
+                )
+            r.save()
 
-        sorted_rankings = [s.ranking for s in sorted(EventPlayerResult.objects.all())]
-        self.assertEqual(3, sorted_rankings[0])
-        self.assertEqual(1, sorted_rankings[1])
+        sorted_rankings = sorted(EventPlayerResult.objects.all())
+        self.assertEqual(inverse_top_8_results, sorted_rankings[:8])
+        self.assertEqual(results[8:], sorted_rankings[8:])
