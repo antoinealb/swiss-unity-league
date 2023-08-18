@@ -839,7 +839,7 @@ class OrganizerListView(ListView):
             EventOrganizer.objects.select_related("default_address")
             .annotate(num_events=Count("event"))
             .filter(num_events__gt=0)
-            .order_by('name')
+            .order_by("name")
             .all()
         )
         organizers_with_address = [o for o in organizers if o.default_address]
