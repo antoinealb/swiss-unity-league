@@ -38,6 +38,8 @@ class CreateInvoiceForOrganizerTestCase(TestCase):
         for _ in range(10):
             EventPlayerResultFactory(event=event)
 
+        return event
+
     def test_can_create_invoice_for_organizers(self):
         """Checks that we can create invoices for an organizer from the admin page."""
         for o in self.organizers:
