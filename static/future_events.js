@@ -3,23 +3,23 @@ function events() {
         {
             title: 'Category',
             titleAll: 'All Categories',
-            lambda: (x) => x.category,
+            extractProperty: (x) => x.category,
         },
         {
             title: 'Format',
             titleAll: 'All Formats',
-            lambda: (x) => x.format,
+            extractProperty: (x) => x.format,
         },
         {
             title: 'Organizer',
             titleAll: 'All Organizers',
-            lambda: (x) => x.organizer,
-            linkLambda: (x) => x.organizer_url,
+            extractProperty: (x) => x.organizer,
+            extractLink: (x) => x.organizer_url,
         },
         {
             title: 'Region',
             titleAll: 'All Regions',
-            lambda: (x) => x.region,
+            extractProperty: (x) => x.region,
         },
     ]
     filterList = filterList.map((filter) => {
@@ -33,7 +33,7 @@ function events() {
         shouldShow(event) {
             // Used to check if a given event should be shown. (If each of it's properties is selected)
             return this.filterList.every((filter) => {
-                let property = filter.lambda(event)
+                let property = filter.extractProperty(event)
                 return filter.selected[property]
             })
         },
@@ -82,7 +82,7 @@ function events() {
 
             // Adds for each filter the options that can be selected. Initially each option is selected.
             self.filterList.forEach((filter) => {
-                let stringList = self.events.map(filter.lambda)
+                let stringList = self.events.map(filter.extractProperty)
                 stringList.forEach((item) => {
                     // If key isn't present, add it
                     if (!filter.selected.hasOwnProperty(item)) {

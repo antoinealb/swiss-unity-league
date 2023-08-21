@@ -65,7 +65,7 @@
                             </td>
                             <template x-for="filter in filterList">
                                 <td>
-                                    <a x-bind:href="filter.linkLambda ? filter.linkLambda(event) : null" x-text="filter.lambda(event)"></a>
+                                    <a x-bind:href="filter.extractLink ? filter.extractLink(event) : null" x-text="filter.extractProperty(event)"></a>
                                 </td>
                             </template>
                         </tr>
