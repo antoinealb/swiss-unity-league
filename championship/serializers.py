@@ -26,13 +26,13 @@ class EventSerializer(serializers.ModelSerializer):
         source="organizer", view_name="organizer_details", read_only=True
     )
 
-    def get_region(self, obj):
+    def get_region(self, event):
         # Try getting the region from the event's address
-        if obj.address:
-            region = obj.address.get_region_display()
+        if event.address:
+            region = event.address.get_region_display()
         # If there is no address, try getting the region from the organizer's default address
-        elif obj.organizer and obj.organizer.default_address:
-            region = obj.organizer.default_address.get_region_display()
+        elif event.organizer and event.organizer.default_address:
+            region = event.organizer.default_address.get_region_display()
         else:
             region = ""
 
