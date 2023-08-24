@@ -129,6 +129,8 @@ class EventDetailTestCase(TestCase):
 
     @parameterized.expand(
         [
+            (datetime.timedelta(32), False),
+            (datetime.timedelta(31), True),
             (datetime.timedelta(5), True),
             (datetime.timedelta(4), False),
             (datetime.timedelta(0), False),
