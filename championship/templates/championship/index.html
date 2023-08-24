@@ -56,7 +56,7 @@
                             {% if forloop.counter <= 5 %}
                                 <li>{{ player.name }} ({{ player.score }} points)</li>
                             {% else %}
-                                <div class="d-none d-md-block">
+                                <div class="d-none d-lg-block">
                                     <li >{{ player.name }} ({{ player.score }} points)</li>
                                 </div>
                             {% endif %}
@@ -71,7 +71,7 @@
 
         <h2>Our partners</h3>
         <div class="row text-center">
-            <div class="col-lg-6 align-items-center mx-auto">
+            <div class="col-lg-6 align-items-center mx-auto my-2">
                 <div id="carouselPartnersIndicators" class="carousel slide" data-bs-ride="carousel" data-bs-interval="{% if debug %}500{% else %}3000{% endif %}">
                     <div class="carousel-inner" style="height: 300px;">
                         {% for logo in partner_logos %}
@@ -81,6 +81,7 @@
                         {% endfor %}
                     </div>
                 </div>
+                <a href="{% url 'organizer_view' %}" class="btn btn-secondary">View all organizers</a>
             </div>
         </div>
 {% endblock %}

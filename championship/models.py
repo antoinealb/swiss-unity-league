@@ -92,6 +92,17 @@ class Address(models.Model):
         address_parts.append(self.get_country_display())
         return ", ".join(address_parts)
 
+    def sort_key(self):
+        return (
+            self.country != Address.Country.SWITZERLAND,
+            self.get_country_display().lower(),
+            self.get_region_display().lower(),
+            self.city.lower(),
+        )
+
+    def __lt__(self, other):
+        return self.sort_key() < other.sort_key()
+
     def get_google_maps_url(self):
         """Return a URL for this address on Google Maps."""
         query = urllib.parse.quote(self.__str__())
