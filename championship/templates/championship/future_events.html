@@ -10,69 +10,9 @@
 
     <div x-data="events()" x-init="loadEvents()">
         {% for cnt in "12"|make_list %}
-            <form class="{% cycle 'btn-group d-none d-md-flex' 'btn-group-vertical d-block d-md-none' %}">
-                <div class="dropdown btn-group">
-                    <button class="btn btn-secondary dropdown-toggle" type="button"  data-bs-toggle="dropdown" data-bs-auto-close="outside">
-                        Format
-                    </button>
-                    <div class="dropdown-menu">
-                        <div class="dropdown-item" x-on:click="toggleAll(showFormats)">
-                            <div class="form-check">
-                                <label class="form-check-label" >All formats</label>
-                            </div>
-                        </div>
-                        <template x-for="format in Object.keys(showFormats)">
-                            <div class="dropdown-item" x-on:click="showFormats[format] = !showFormats[format]">
-                                <div class="form-check">
-                                    <input class="form-check-input" type="checkbox" x-bind:id="format" x-model="showFormats[format]">
-                                    <label class="form-check-label" x-bind:for="format" x-text="format"></label>
-                                </div>
-                            </div>
-                        </template>
-                    </div>
-                </div>
+            <div class="{% cycle 'btn-group d-none d-md-flex' 'btn-group-vertical d-block d-md-none' %}" role="group" aria-label="Filtering the events">
 
-                <div class="dropdown btn-group">
-                    <button class="btn btn-secondary dropdown-toggle" type="button"  data-bs-toggle="dropdown" data-bs-auto-close="outside">
-                        SUL Category
-                    </button>
-                    <div class="dropdown-menu">
-                        <div class="dropdown-item" x-on:click="toggleAll(showCategories)">
-                            <div class="form-check">
-                                <label class="form-check-label" >All categories</label>
-                            </div></div>
-                        <template x-for="cat in Object.keys(showCategories)">
-                            <div class="dropdown-item" x-on:click="showCategories[cat] = !showCategories[cat]">
-                                <div class="form-check">
-                                    <input class="form-check-input" type="checkbox" x-bind:id="cat.replace(/\s/g, '')" x-model="showCategories[cat]">
-                                    <label class="form-check-label" x-bind:for="cat.replace(/\s/g, '')" x-text="cat"></label>
-                                </div>
-                            </div>
-                        </template>
-                    </div>
-                </div>
-
-                <div class="dropdown btn-group">
-                    <button class="btn btn-secondary dropdown-toggle" type="button"  data-bs-toggle="dropdown" data-bs-auto-close="outside">
-                        Organizer
-                    </button>
-                    <div class="dropdown-menu">
-                        <div class="dropdown-item" x-on:click="toggleAll(showOrganizers)">
-                            <div class="form-check">
-                                <label class="form-check-label">All organizers</label>
-                            </div></div>
-                        <template x-for="organizer in Object.keys(showOrganizers)">
-                            <div class="dropdown-item" x-on:click="showOrganizers[organizer] = !showOrganizers[organizer]">
-                                <div class="form-check">
-                                    <input class="form-check-input" type="checkbox" x-bind:id="organizer" x-model="showOrganizers[organizer]">
-                                    <label class="form-check-label" x-bind:for="organizer" x-text="organizer"></label>
-                                </div>
-                            </div>
-                        </template>
-                    </div>
-                </div>
-
-                <div class="dropdown btn-group">
+                <div class="btn-group">
                     <button class="btn btn-secondary dropdown-toggle" type="button"  data-bs-toggle="dropdown" x-text="currentEventType"></button>
                     <div class="dropdown-menu">
                         <template x-for="type in Object.keys(eventTypes)">
@@ -81,7 +21,28 @@
                     </div>
                 </div>
 
-            </form>
+                <template x-for="(filter, index) in filterList" :key="index">
+                    <div class="btn-group">
+                        <button x-text="filter.title" class="btn btn-secondary dropdown-toggle" type="button"  data-bs-toggle="dropdown" data-bs-auto-close="outside"></button>
+                        <div class="dropdown-menu">
+                            <div class="dropdown-item" x-on:click="toggleAll(index)">
+                                <div class="form-check">
+                                    <label x-text="filter.titleAll" class="form-check-label"></label>
+                                </div>
+                            </div>
+                            <template x-for="selectedItem in Object.keys(filter.selected)">
+                                <div class="dropdown-item" x-on:click="filter.selected[selectedItem] = !filter.selected[selectedItem]">
+                                    <div class="form-check">
+                                        <input class="form-check-input" type="checkbox" x-bind:id="selectedItem" x-model="filter.selected[selectedItem]">
+                                        <label class="form-check-label" x-bind:for="selectedItem" x-text="selectedItem.trim() === '' ? 'No '+filter.title : selectedItem"></label>
+                                    </div>
+                                </div>
+                            </template>
+                        </div>
+                    </div>
+                </template>
+
+            </div>
         {% endfor %}
 
         <div class="table-responsive">
@@ -90,21 +51,23 @@
                     <tr>
                         <th scope="col">Date</th>
                         <th scope="col">Event</th>
-                        <th scope="col">Category</th>
-                        <th scope="col">Format</th>
-                        <th scope="col">Organizer</th>
+                        <template x-for="filter in filterList">
+                            <td x-text="filter.title"></td>
+                        </template>
                     </tr>
                 </thead>
                 <tbody>
                     <template x-for="event in events">
-                        <tr x-show="showCategories[event.category] && showFormats[event.format] && showOrganizers[event.organizer]">
+                        <tr x-show="shouldShow(event)">
                             <td x-text="event.date"></td>
                             <td>
                                 <a x-text="event.name" :href="event.details_url"></a>
                             </td>
-                            <td x-text="event.category"></td>
-                            <td x-text="event.format"></td>
-                            <td x-text="event.organizer"></td>
+                            <template x-for="filter in filterList">
+                                <td>
+                                    <a x-bind:href="filter.extractLink ? filter.extractLink(event) : null" x-text="filter.extractProperty(event)"></a>
+                                </td>
+                            </template>
                         </tr>
                     </template>
                 </tbody>
