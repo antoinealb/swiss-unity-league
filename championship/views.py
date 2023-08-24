@@ -45,19 +45,10 @@ class IndexView(TemplateView):
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        context["players"] = self._players()
+        context["players"] = get_leaderboard()[:PLAYERS_TOP]
         context["future_events"] = self._future_events()
         context["partner_logos"] = self._partner_logos()
         return context
-
-    def _players(self):
-        players = list(Player.leaderboard_objects.all())
-        scores_by_player = compute_scores()
-        for p in players:
-            p.score = scores_by_player.get(p.id, 0)
-        players.sort(key=lambda l: l.score, reverse=True)
-        players = players[:PLAYERS_TOP]
-        return players
 
     def _future_events(self):
         future_events = (
@@ -240,13 +231,7 @@ class CompleteRankingView(TemplateView):
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        players = list(Player.leaderboard_objects.all())
-        scores_by_player = compute_scores()
-        for p in players:
-            p.score = scores_by_player.get(p.id, 0)
-        players.sort(key=lambda l: l.score, reverse=True)
-        context["players"] = players
-
+        context["players"] = get_leaderboard()
         return context
 
 

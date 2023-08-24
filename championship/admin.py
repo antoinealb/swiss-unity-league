@@ -77,12 +77,7 @@ class PlayerAdmin(admin.ModelAdmin):
         context = {"form": form}
         if request.method == "POST" and form.is_valid():
             num_of_players = form.cleaned_data["num_of_players"]
-            players = list(Player.objects.all())
-            scores_by_player = compute_scores()
-            for p in players:
-                p.score = scores_by_player[p.id]
-            players.sort(key=lambda l: l.score, reverse=True)
-            top_players = players[:num_of_players]
+            top_players = get_leaderboard()[:num_of_players]
             entries = [
                 {
                     "rank": i + 1,
