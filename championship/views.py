@@ -419,7 +419,9 @@ class CreateManualResultsView(LoginRequiredMixin, TemplateView):
 
         standings.sort(key=lambda s: s[1], reverse=True)
 
-        if validate_standings_and_show_error(request, standings, event.category):
+        if event.results_validation_enabled and validate_standings_and_show_error(
+            request, standings, event.category
+        ):
             context = self.get_context_data(
                 formset=formset, metadata_form=metadata_form
             )
@@ -540,7 +542,7 @@ class CreateResultsView(FormView):
         if not standings:
             return render_error_standings_form()
 
-        if validate_standings_and_show_error(
+        if self.event.results_validation_enabled and validate_standings_and_show_error(
             self.request, standings, self.event.category
         ):
             return render_error_standings_form()
