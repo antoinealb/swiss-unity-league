@@ -2,6 +2,7 @@ from django.test import TestCase, Client
 from django.urls import reverse
 from championship.factories import *
 from championship.models import *
+from parameterized import parameterized
 
 
 class EventDetailTestCase(TestCase):
@@ -124,4 +125,22 @@ class EventDetailTestCase(TestCase):
         self.assertIn(
             reverse("event_clear_results", args=[event.id]),
             resp.content.decode(),
+        )
+
+    @parameterized.expand(
+        [
+            (datetime.timedelta(32), False),
+            (datetime.timedelta(31), True),
+            (datetime.timedelta(5), True),
+            (datetime.timedelta(4), False),
+            (datetime.timedelta(0), False),
+        ]
+    )
+    def test_missing_results_info(self, minus_delta, missing_results_info_expected):
+        event = EventFactory(
+            category=Event.Category.REGULAR, date=datetime.date.today() - minus_delta
+        )
+        resp = self.client.get(reverse("event_details", args=[event.id]))
+        self.assertEquals(
+            missing_results_info_expected, resp.context_data["notify_missing_results"]
         )

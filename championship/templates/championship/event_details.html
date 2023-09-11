@@ -65,7 +65,7 @@
             {{ event.description|linebreaksbr }}
         </div>
     {% endif %}
-
+    <br>
     {% if results %}
         <h3 id="results">Results</h3>
         <div class="table-responsive">
@@ -90,5 +90,18 @@
                 </tbody>
             </table>
         </div>
+        <p>
+            <small>
+                To ensure correct results, always enter your real name in the tournament software. If you find any errors, contact the organizer of this tournament or email <a href="mailto:leoninleague@gmail.com"><u>leoninleague@gmail.com</u></a>.
+            </small>
+        </p>
+    {% else %}
+        {% if notify_missing_results %}
+            <p>
+                <small>
+                    The organizer has not yet uploaded results for this event. Please notify the organizer or write an email to <a href="mailto:leoninleague@gmail.com"><u>leoninleague@gmail.com</u></a>.
+                </small>
+            </p>
+        {% endif %}
     {% endif %}
 {% endblock %}

@@ -223,6 +223,12 @@ class EventDetailsView(DetailView):
 
         context["results"] = sorted(results)
 
+        # Prompt the players to notify the organizer that they forgot to upload results
+        # Only do so when the event is finished longer than 4 days ago and results can still be uploaded.
+        context["notify_missing_results"] = (
+            context["event"].date < datetime.date.today() - datetime.timedelta(days=4)
+            and context["event"].can_change_results()
+        )
         return context
 
 
