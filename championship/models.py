@@ -211,6 +211,11 @@ class Event(models.Model):
         null=True,
     )
 
+    results_validation_enabled = models.BooleanField(
+        help_text="Whether results will be validated for coherency before being stored.",
+        default=True,
+    )
+
     def __str__(self):
         return f"{self.name} - {self.date} ({self.get_category_display()})"
 
