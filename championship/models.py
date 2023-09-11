@@ -309,10 +309,12 @@ class EventPlayerResult(models.Model):
 
         First checks single elimination results, then swiss rounds ranking.
         """
-        if (other.single_elimination_result or 32) > (
-            self.single_elimination_result or 32
-        ):
+        self_single_elim = self.single_elimination_result or 32
+        other_single_elim = other.single_elimination_result or 32
+        if self_single_elim < other_single_elim:
             return True
+        elif self_single_elim > other_single_elim:
+            return False
 
         return self.ranking < other.ranking
 
