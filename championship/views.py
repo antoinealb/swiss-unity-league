@@ -641,7 +641,10 @@ class CreateChallongeResultsView(CreateLinkParserResultsView):
     placeholder = "https://challonge.com/de/rk6vluaa"
 
     def extract_standings_from_page(self, text):
-        return challonge.parse_standings_page(text)
+        # TODO(antoinealb): Don't drop the record once we can store them
+        return [
+            (name, points) for (name, points, _) in challonge.parse_standings_page(text)
+        ]
 
     def clean_url(self, url):
         return challonge.clean_url(url)

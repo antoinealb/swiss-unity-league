@@ -46,9 +46,9 @@ class ChallongeStandingsParser(TestCase):
         self.text = load_test_html("challonge_en_ranking.html")
         self.results = challonge.parse_standings_page(self.text)
         want_standings = [
-            ("Dario Maz", 10),
-            ("Aleks Col", 10),
-            ("Antoine Alb", 9),
+            ("Dario Maz", 10, (3, 0, 1)),
+            ("Aleks Col", 10, (3, 0, 1)),
+            ("Antoine Alb", 9, (3, 1, 0)),
         ]
         self.assertEqual(want_standings, self.results[:3])
 
@@ -56,10 +56,10 @@ class ChallongeStandingsParser(TestCase):
         self.text = load_test_html("challonge_de_ranking.html")
         self.results = challonge.parse_standings_page(self.text)
         want_standings = [
-            ("Jari Rentsch", 10),
-            ("Aleksander Colovic", 9),
-            ("Derek Kwan", 9),
-            ("Mikko Tuhkannen", 9),
+            ("Jari Rentsch", 10, (3, 0, 1)),
+            ("Aleksander Colovic", 9, (3, 1, 0)),
+            ("Derek Kwan", 9, (3, 1, 0)),
+            ("Mikko Tuhkannen", 9, (3, 1, 0)),
         ]
         self.assertEqual(want_standings, self.results[:4])
 
