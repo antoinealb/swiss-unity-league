@@ -10,8 +10,8 @@ class AetherhubStandingsParser(TestCase):
 
     def test_parse_standings(self):
         want_standings = [
-            ("DarioMazzola", 13),
-            ("Dominik Horber", 13),
-            ("Christopher Weber", 12),
+            ("DarioMazzola", 13, (4, 0, 1)),
+            ("Dominik Horber", 13, (4, 0, 1)),
+            ("Christopher Weber", 12, (4, 1, 0)),
         ]
         self.assertEqual(want_standings, self.results[:3])

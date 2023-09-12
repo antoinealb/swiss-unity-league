@@ -622,7 +622,10 @@ class CreateAetherhubResultsView(CreateLinkParserResultsView):
     placeholder = "https://aetherhub.com/Tourney/RoundTourney/123456"
 
     def extract_standings_from_page(self, text):
-        return aetherhub.parse_standings_page(text)
+        # TODO(antoinealb): Don't drop the record once we can store them
+        return [
+            (name, points) for (name, points, _) in aetherhub.parse_standings_page(text)
+        ]
 
     def clean_url(self, url):
         """Normalizes the given tournament url to point to the RoundTourney page."""
