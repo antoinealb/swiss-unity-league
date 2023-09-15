@@ -13,9 +13,12 @@ https://docs.djangoproject.com/en/4.1/ref/settings/
 from pathlib import Path
 import os
 import datetime
+from datetime import date
 import logging
 from prometheus_client import Info
 from django.contrib.messages import constants as messages
+
+from championship.models import Season
 
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
@@ -244,3 +247,15 @@ BLEACH_ALLOWED_TAGS = [
     "strong",
     "ul",
 ]
+
+
+SEASON = {
+    1: Season(
+        start_date=date(2023, 1, 1), end_date=date(2023, 10, 31), name="2023 Season"
+    ),
+    2: Season(
+        start_date=date(2023, 11, 1), end_date=date(2024, 10, 31), name="2024 Season"
+    ),
+}
+
+DEFAULT_SEASON_ID = 1

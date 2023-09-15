@@ -1,3 +1,4 @@
+from dataclasses import dataclass
 from django.db import models
 from django.conf import settings
 from django.db.models import Count, F
@@ -384,6 +385,13 @@ SINGLE_ELIM_TO_RANK = {
     EventPlayerResult.SingleEliminationResult.SEMI_FINALIST: "3rd-4th",
     EventPlayerResult.SingleEliminationResult.QUARTER_FINALIST: "5th-8th",
 }
+
+
+@dataclass
+class Season:
+    name: str
+    start_date: datetime.date
+    end_date: datetime.date
 
 
 def qps_for_result(
