@@ -16,7 +16,7 @@ class EventSerializer(serializers.ModelSerializer):
             "organizer_url",
         ]
 
-    date = serializers.DateField(format="%d.%m.%Y")
+    date = serializers.DateField(format="%a, %d.%m.%Y")
     organizer = serializers.CharField(source="organizer.name")
     format = serializers.CharField(source="get_format_display")
     region = serializers.SerializerMethodField()
