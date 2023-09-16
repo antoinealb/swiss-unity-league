@@ -660,7 +660,10 @@ class CreateEventlinkResultsView(CreateHTMLParserResultsView):
 
 class CreateMtgEventResultsView(CreateHTMLParserResultsView):
     def extract_standings_from_page(self, text):
-        return mtgevent.parse_standings_page(text)
+        # TODO(antoinealb): Don't drop the record once we can store them
+        return [
+            (name, points) for (name, points, _) in mtgevent.parse_standings_page(text)
+        ]
 
 
 class ChooseUploaderView(LoginRequiredMixin, FormView):
