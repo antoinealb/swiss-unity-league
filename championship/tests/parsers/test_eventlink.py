@@ -9,9 +9,9 @@ class EventlinkStandingParser(TestCase):
         self.results = eventlink.parse_standings_page(self.text)
 
     def test_can_parse(self):
-        wantStandings = [
-            ("Jeremias Wildi", 10),
-            ("Silvan Aeschbach", 9),
-            ("Janosh Georg", 7),
+        want = [
+            ("Jeremias Wildi", 10, (3, 0, 1)),
+            ("Silvan Aeschbach", 9, (3, 1, 0)),
+            ("Janosh Georg", 7, (2, 1, 1)),
         ]
-        self.assertEqual(wantStandings, self.results[:3])
+        self.assertEqual(want, self.results[:3])

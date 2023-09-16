@@ -652,7 +652,10 @@ class CreateChallongeResultsView(CreateLinkParserResultsView):
 
 class CreateEventlinkResultsView(CreateHTMLParserResultsView):
     def extract_standings_from_page(self, text):
-        return eventlink.parse_standings_page(text)
+        # TODO(antoinealb): Don't drop the record once we can store them
+        return [
+            (name, points) for (name, points, _) in eventlink.parse_standings_page(text)
+        ]
 
 
 class CreateMtgEventResultsView(CreateHTMLParserResultsView):
