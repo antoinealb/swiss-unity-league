@@ -28,7 +28,7 @@ class EventApiTestCase(TestCase):
         want = [
             {
                 "name": a.name,
-                "date": tomorrow.strftime("%d.%m.%Y"),
+                "date": tomorrow.strftime("%a, %d.%m.%Y"),
                 "organizer": eo.name,
                 "format": "Legacy",
                 "region": a.address.get_region_display(),
@@ -39,7 +39,7 @@ class EventApiTestCase(TestCase):
             },
             {
                 "name": b.name,
-                "date": in_2_days.strftime("%d.%m.%Y"),
+                "date": in_2_days.strftime("%a, %d.%m.%Y"),
                 "organizer": eo.name,
                 "format": "Modern",
                 "region": eo.default_address.get_region_display(),
@@ -64,7 +64,7 @@ class EventApiTestCase(TestCase):
         want = [
             {
                 "name": a.name,
-                "date": yesterday.strftime("%d.%m.%Y"),
+                "date": yesterday.strftime("%a, %d.%m.%Y"),
                 "organizer": eo.name,
                 "format": "Legacy",
                 "region": "",
