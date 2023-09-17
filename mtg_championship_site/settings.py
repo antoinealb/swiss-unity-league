@@ -10,6 +10,7 @@ For the full list of settings and their values, see
 https://docs.djangoproject.com/en/4.1/ref/settings/
 """
 
+from dataclasses import dataclass
 from pathlib import Path
 import os
 import datetime
@@ -17,9 +18,6 @@ from datetime import date
 import logging
 from prometheus_client import Info
 from django.contrib.messages import constants as messages
-
-from championship.models import Season
-
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -247,6 +245,13 @@ BLEACH_ALLOWED_TAGS = [
     "strong",
     "ul",
 ]
+
+
+@dataclass
+class Season:
+    name: str
+    start_date: datetime.date
+    end_date: datetime.date
 
 
 SEASON = {
