@@ -2,10 +2,15 @@ import unittest
 from django.test import TestCase, Client
 from django.urls import reverse
 from django.contrib.auth.models import User, Permission
+from parameterized import parameterized
 from championship.models import *
 from invoicing.models import Invoice
 from invoicing.factories import *
-from championship.factories import EventFactory, EventOrganizerFactory
+from championship.factories import (
+    EventFactory,
+    EventOrganizerFactory,
+    EventPlayerResultFactory,
+)
 from subprocess import check_call, SubprocessError, DEVNULL
 
 
@@ -49,5 +54,40 @@ class InvoiceRenderingTest(TestCase):
         self.user.user_permissions.add(perm)
         self.user.save()
         invoice = InvoiceFactory()
+        resp = self.client.get(reverse("invoice_get", args=(invoice.id,)))
+        self.assertEqual(200, resp.status_code)
+
+    def test_with_weird_characters_in_event_name(self):
+        """Checks for invoices with special names.
+
+        Some characters are considered special characters by Latex and need
+        proper escaping. This test checks that those are handled correctly.
+        """
+        today = datetime.date.today()
+        yesterday = today - datetime.timedelta(days=1)
+        last_week = today - datetime.timedelta(days=7)
+        event = EventFactory(
+            organizer=self.to,
+            date=yesterday,
+            category=Event.Category.REGIONAL,
+            name=f"Dangerous event '#'",
+        )
+
+        for _ in range(10):
+            EventPlayerResultFactory(event=event)
+
+        invoice = InvoiceFactory(
+            start_date=last_week, end_date=today, event_organizer=self.to
+        )
+
+        self.login()
+        resp = self.client.get(reverse("invoice_get", args=(invoice.id,)))
+        self.assertEqual(200, resp.status_code)
+
+    def test_weird_characters_in_organizer_name(self):
+        self.to.name = "Dangerous char '#'"
+        self.to.save()
+        invoice = InvoiceFactory(event_organizer=self.to)
+        self.login()
         resp = self.client.get(reverse("invoice_get", args=(invoice.id,)))
         self.assertEqual(200, resp.status_code)

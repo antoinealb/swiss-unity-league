@@ -371,6 +371,19 @@ class MtgEventUploadTest(TestCase):
         )
         self.assertFalse(self.event.eventplayerresult_set.exists())
 
+    def test_disable_tournament_validation(self):
+        """Check that we can disable event results validation in case a
+        tournament requires it (e.g. because of byes)."""
+        self.login()
+        self.event.category = Event.Category.PREMIER
+        self.event.results_validation_enabled = False
+        self.event.save()
+        self.client.post(reverse("results_create_mtgevent"), self.data)
+        self.assertTrue(
+            self.event.eventplayerresult_set.exists(),
+            "Results should have been created.",
+        )
+
 
 class ManualImportTestCase(TestCase):
     def setUp(self):
@@ -506,6 +519,27 @@ class ManualImportTestCase(TestCase):
             content,
         )
         self.assertFalse(self.event.eventplayerresult_set.exists())
+
+    def test_disable_tournament_validation(self):
+        """Checks that we can override tournament validation.
+
+        This feature is required for some very large events which have byes for
+        select players, which for example result in too many points in total
+        for the event.
+        """
+        # First create a large event with validation disabled
+        self.event.category = Event.Category.REGIONAL
+        self.event.results_validation_enabled = False
+        self.event.save()
+
+        # Then enter too many points
+        self.data["form-0-points"] = "5-0-1"
+
+        # And we should still have a succesful result
+        self.client.post(reverse("results_create_manual"), self.data)
+        self.assertTrue(
+            self.event.eventplayerresult_set.exists(), "Should have accepted results"
+        )
 
 
 class ImportSelectorTestCase(TestCase):

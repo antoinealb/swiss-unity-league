@@ -12,7 +12,6 @@ import datetime
 from prometheus_client import Gauge, Summary
 from django.contrib.humanize.templatetags.humanize import ordinal
 import urllib.parse
-from django.contrib.auth.models import User
 
 
 class Address(models.Model):
@@ -91,6 +90,17 @@ class Address(models.Model):
             address_parts.append(self.get_region_display())
         address_parts.append(self.get_country_display())
         return ", ".join(address_parts)
+
+    def sort_key(self):
+        return (
+            self.country != Address.Country.SWITZERLAND,
+            self.get_country_display().lower(),
+            self.get_region_display().lower(),
+            self.city.lower(),
+        )
+
+    def __lt__(self, other):
+        return self.sort_key() < other.sort_key()
 
     def get_google_maps_url(self):
         """Return a URL for this address on Google Maps."""
@@ -201,6 +211,11 @@ class Event(models.Model):
         null=True,
     )
 
+    results_validation_enabled = models.BooleanField(
+        help_text="Whether results will be validated for coherency before being stored.",
+        default=True,
+    )
+
     def __str__(self):
         return f"{self.name} - {self.date} ({self.get_category_display()})"
 
@@ -299,10 +314,12 @@ class EventPlayerResult(models.Model):
 
         First checks single elimination results, then swiss rounds ranking.
         """
-        if (other.single_elimination_result or 32) > (
-            self.single_elimination_result or 32
-        ):
+        self_single_elim = self.single_elimination_result or 32
+        other_single_elim = other.single_elimination_result or 32
+        if self_single_elim < other_single_elim:
             return True
+        elif self_single_elim > other_single_elim:
+            return False
 
         return self.ranking < other.ranking
 
@@ -411,6 +428,15 @@ scores_players_reaching_max_regular = Gauge(
 )
 
 REGULAR_MAX_SCORE = 500
+
+
+def get_leaderboard():
+    scores_by_player = compute_scores()
+    players = list(Player.leaderboard_objects.all())
+    for p in players:
+        p.score = scores_by_player.get(p.id, 0)
+    players.sort(key=lambda l: l.score, reverse=True)
+    return players
 
 
 @scores_computation_time_seconds.time()

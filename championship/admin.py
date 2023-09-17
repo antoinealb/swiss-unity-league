@@ -77,12 +77,7 @@ class PlayerAdmin(admin.ModelAdmin):
         context = {"form": form}
         if request.method == "POST" and form.is_valid():
             num_of_players = form.cleaned_data["num_of_players"]
-            players = list(Player.objects.all())
-            scores_by_player = compute_scores()
-            for p in players:
-                p.score = scores_by_player[p.id]
-            players.sort(key=lambda l: l.score, reverse=True)
-            top_players = players[:num_of_players]
+            top_players = get_leaderboard()[:num_of_players]
             entries = [
                 {
                     "rank": i + 1,
@@ -126,6 +121,11 @@ class PlayerAdmin(admin.ModelAdmin):
                 PlayerAlias.objects.create(
                     name=player.name, true_player=original_player
                 )
+
+                # Merge the email if the original_player has no email yet
+                if original_player.email == "" and player.email != "":
+                    original_player.email = player.email
+                    original_player.save()
 
                 # Finally, delete the extra player
                 player.delete()
@@ -225,9 +225,12 @@ class EventOrganizerAdmin(admin.ModelAdmin):
                 )
                 continue
 
-            Invoice.objects.create(
+            invoice = Invoice(
                 event_organizer=organizer, start_date=start_date, end_date=end_date
             )
+
+            if invoice.total_amount > 0:
+                invoice.save()
 
     def has_invoice_permission(self, request):
         return request.user.has_perm("invoicing.add_invoice")

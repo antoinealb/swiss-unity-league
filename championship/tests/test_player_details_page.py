@@ -118,19 +118,26 @@ class PlayerDetailsTest(TestCase):
 
     def test_top_finishes(self):
         player = PlayerFactory()
-        event = EventFactory(category=Event.Category.PREMIER, id=1234)
-        premier_elim_result = EventPlayerResult.SingleEliminationResult.QUARTER_FINALIST
-        EventPlayerResult.objects.create(
+        ser_winner = EventPlayerResult.SingleEliminationResult.WINNER
+        ser_quarter = EventPlayerResult.SingleEliminationResult.QUARTER_FINALIST
+        event1 = EventFactory(category=Event.Category.PREMIER)
+        event2 = EventFactory(category=Event.Category.REGIONAL)
+        EventPlayerResultFactory(
             points=10,
             player=player,
-            event=event,
+            event=event1,
             ranking=1,
-            single_elimination_result=premier_elim_result,
+            single_elimination_result=ser_quarter,
         )
-        event = EventFactory(category=Event.Category.REGIONAL, id=12345)
-        EventPlayerResult.objects.create(
-            points=10, player=player, event=event, ranking=1
+        EventPlayerResultFactory(
+            points=10,
+            player=player,
+            event=event2,
+            ranking=2,
+            single_elimination_result=ser_winner,
         )
+        event3 = EventFactory(category=Event.Category.REGIONAL)
+        EventPlayerResultFactory(points=10, player=player, event=event3, ranking=1)
         response = self.client.get(reverse("player_details", args=[player.id]))
         expected_top_finishes = [
             {
@@ -139,7 +146,10 @@ class PlayerDetailsTest(TestCase):
                     Event.Category.PREMIER.label,
                     Event.Category.REGIONAL.label,
                 ],
-                TBODY: [[SINGLE_ELIM_TO_RANK[premier_elim_result], 1, 0]],
+                TBODY: [
+                    [SINGLE_ELIM_TO_RANK[ser_winner], 0, 1],
+                    [SINGLE_ELIM_TO_RANK[ser_quarter], 1, 0],
+                ],
             },
             {
                 THEAD: [

@@ -66,3 +66,20 @@ class EventOrganizerDetailViewTests(TestCase):
     def test_organizer_reverse(self):
         edit_organizer_url = reverse("organizer_update")
         self.assertContains(self.response, f'href="{edit_organizer_url}"')
+
+
+class OrganizerListViewTest(TestCase):
+    def test_organizer_view(self):
+        self.client = Client()
+        to_with_event = EventOrganizerFactory()
+        EventFactory(organizer=to_with_event)
+
+        # create TO without events, so they shouldn't show up in list
+        to_without_event = EventOrganizerFactory()
+
+        response = self.client.get(reverse("organizer_view"))
+
+        self.assertNotContains(response, to_without_event.name)
+        self.assertContains(response, to_with_event.name)
+        # Check that the city of the default address of the organizer is shown
+        self.assertContains(response, to_with_event.default_address.city)

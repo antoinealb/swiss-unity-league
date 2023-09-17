@@ -45,23 +45,14 @@ class IndexView(TemplateView):
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        context["players"] = self._players()
+        context["players"] = get_leaderboard()[:PLAYERS_TOP]
         context["future_events"] = self._future_events()
         context["partner_logos"] = self._partner_logos()
         return context
 
-    def _players(self):
-        players = list(Player.leaderboard_objects.all())
-        scores_by_player = compute_scores()
-        for p in players:
-            p.score = scores_by_player.get(p.id, 0)
-        players.sort(key=lambda l: l.score, reverse=True)
-        players = players[:PLAYERS_TOP]
-        return players
-
     def _future_events(self):
         future_events = (
-            Event.objects.filter(date__gt=datetime.date.today())
+            Event.objects.filter(date__gte=datetime.date.today())
             .exclude(category=Event.Category.REGULAR)
             .order_by("date")[:EVENTS_ON_PAGE]
             .select_related("organizer")
@@ -232,6 +223,12 @@ class EventDetailsView(DetailView):
 
         context["results"] = sorted(results)
 
+        # Prompt the players to notify the organizer that they forgot to upload results
+        # Only do so when the event is finished longer than 4 days ago and results can still be uploaded.
+        context["notify_missing_results"] = (
+            context["event"].date < datetime.date.today() - datetime.timedelta(days=4)
+            and context["event"].can_change_results()
+        )
         return context
 
 
@@ -240,13 +237,7 @@ class CompleteRankingView(TemplateView):
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        players = list(Player.leaderboard_objects.all())
-        scores_by_player = compute_scores()
-        for p in players:
-            p.score = scores_by_player.get(p.id, 0)
-        players.sort(key=lambda l: l.score, reverse=True)
-        context["players"] = players
-
+        context["players"] = get_leaderboard()
         return context
 
 
@@ -264,16 +255,16 @@ class CreateEventView(LoginRequiredMixin, FormView):
 
     def get_form_kwargs(self):
         kwargs = super(CreateEventView, self).get_form_kwargs()
-        kwargs["organizer"] = EventOrganizer.objects.get(user=self.request.user)
+        kwargs["organizer"] = self.request.user.eventorganizer
 
-        default_address = self.request.user.eventorganizer.default_address
+        default_address = kwargs["organizer"].default_address
         if default_address:
             kwargs["initial"]["address"] = default_address.id
         return kwargs
 
     def form_valid(self, form):
         event = form.save(commit=False)
-        event.organizer = EventOrganizer.objects.get(user=self.request.user)
+        event.organizer = self.request.user.eventorganizer
         event.save()
 
         messages.success(self.request, "Succesfully created event!")
@@ -284,12 +275,13 @@ class CreateEventView(LoginRequiredMixin, FormView):
 @login_required
 def copy_event(request, pk):
     original_event = get_object_or_404(Event, pk=pk)
+    organizer = request.user.eventorganizer
     if request.method == "POST":
         form = EventCreateForm(request.POST)
         if form.is_valid():
             event = form.save(commit=False)
             event.pk = None  # Force django to commit
-            event.organizer = EventOrganizer.objects.get(user=request.user)
+            event.organizer = organizer
             event.save()
 
             messages.success(request, "Succesfully created event!")
@@ -299,7 +291,7 @@ def copy_event(request, pk):
         # By default, copy it one week later
         new_event = get_object_or_404(Event, pk=pk)
         new_event.date += datetime.timedelta(days=7)
-        form = EventCreateForm(instance=new_event)
+        form = EventCreateForm(instance=new_event, organizer=organizer)
 
     return render(
         request,
@@ -322,7 +314,7 @@ def update_event(request, pk):
             messages.success(request, "Succesfully saved event")
             return HttpResponseRedirect(reverse("event_details", args=[event.id]))
     else:
-        form = EventCreateForm(instance=event)
+        form = EventCreateForm(instance=event, organizer=event.organizer)
 
     return render(
         request, "championship/update_event.html", {"form": form, "event": event}
@@ -427,7 +419,9 @@ class CreateManualResultsView(LoginRequiredMixin, TemplateView):
 
         standings.sort(key=lambda s: s[1], reverse=True)
 
-        if validate_standings_and_show_error(request, standings, event.category):
+        if event.results_validation_enabled and validate_standings_and_show_error(
+            request, standings, event.category
+        ):
             context = self.get_context_data(
                 formset=formset, metadata_form=metadata_form
             )
@@ -548,7 +542,7 @@ class CreateResultsView(FormView):
         if not standings:
             return render_error_standings_form()
 
-        if validate_standings_and_show_error(
+        if self.event.results_validation_enabled and validate_standings_and_show_error(
             self.request, standings, self.event.category
         ):
             return render_error_standings_form()
@@ -760,7 +754,7 @@ class FutureEventViewSet(viewsets.ReadOnlyModelViewSet):
         # This needs to be a function (get_queryset) instead of an attribute as
         # otherwise the today means "when the app was started.
         qs = Event.objects.filter(date__gte=datetime.date.today())
-        qs = qs.select_related("organizer")
+        qs = qs.select_related("organizer", "address", "organizer__default_address")
         return qs.order_by("date")
 
 
@@ -777,6 +771,7 @@ class PastEventViewSet(viewsets.ReadOnlyModelViewSet):
         # This needs to be a function (get_queryset) instead of an attribute as
         # otherwise the today means "when the app was started.
         qs = Event.objects.filter(date__lt=datetime.date.today())
+        qs = qs.select_related("organizer", "address", "organizer__default_address")
         return qs.order_by("-date")
 
 
@@ -832,6 +827,26 @@ class OrganizerProfileEditView(LoginRequiredMixin, UpdateView):
     def form_valid(self, form):
         messages.success(self.request, "Succesfully updated organizer profile!")
         return super().form_valid(form)
+
+
+class OrganizerListView(ListView):
+    template_name = "championship/organizer_list.html"
+    context_object_name = "organizers"
+
+    def get_queryset(self):
+        organizers = (
+            EventOrganizer.objects.select_related("default_address")
+            .annotate(num_events=Count("event"))
+            .filter(num_events__gt=0)
+            .order_by("name")
+            .all()
+        )
+        organizers_with_address = [o for o in organizers if o.default_address]
+        organizers_without_address = [o for o in organizers if not o.default_address]
+        return (
+            sorted(organizers_with_address, key=lambda o: o.default_address)
+            + organizers_without_address
+        )
 
 
 class AddressListView(LoginRequiredMixin, ListView):

@@ -46,6 +46,11 @@ class Invoice(models.Model):
     end_date = models.DateField(help_text="End of invoicing period")
     discount = models.IntegerField(help_text="Flat discount in CHF", default=0)
     payment_received_date = models.DateField(null=True, blank=True)
+    sent_date = models.DateField(
+        null=True,
+        blank=True,
+        help_text="Date at which we sent the invoice to an organizer.",
+    )
     notes = models.TextField(
         help_text="Notes about this invoice, only visible by Unity League staff.",
         blank=True,

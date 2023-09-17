@@ -42,6 +42,7 @@ urlpatterns = [
         views.ClearEventResultsView.as_view(),
         name="event_clear_results",
     ),
+    path("organizer/", views.OrganizerListView.as_view(), name="organizer_view"),
     path(
         "organizer/<int:pk>",
         views.EventOrganizerDetailView.as_view(),

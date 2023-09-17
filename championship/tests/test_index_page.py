@@ -16,7 +16,7 @@ class HomepageTestCase(TestCase):
         """
         Checks that the home page contains a list of coming up events.
         """
-        d = datetime.date.today() + datetime.timedelta(days=1)
+        d = datetime.date.today()
         EventFactory(name="TestEvent2000", date=d, category=Event.Category.REGIONAL)
         EventFactory(name="TestEvent1000", date=d, category=Event.Category.PREMIER)
         EventFactory(name="RegularEvent", date=d, category=Event.Category.REGULAR)
