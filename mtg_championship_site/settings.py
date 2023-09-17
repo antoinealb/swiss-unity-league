@@ -10,13 +10,14 @@ For the full list of settings and their values, see
 https://docs.djangoproject.com/en/4.1/ref/settings/
 """
 
+from dataclasses import dataclass
 from pathlib import Path
 import os
 import datetime
+from datetime import date
 import logging
 from prometheus_client import Info
 from django.contrib.messages import constants as messages
-
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -244,3 +245,22 @@ BLEACH_ALLOWED_TAGS = [
     "strong",
     "ul",
 ]
+
+
+@dataclass
+class Season:
+    name: str
+    start_date: datetime.date
+    end_date: datetime.date
+
+
+SEASON = {
+    1: Season(
+        start_date=date(2023, 1, 1), end_date=date(2023, 10, 31), name="2023 Season"
+    ),
+    2: Season(
+        start_date=date(2023, 11, 1), end_date=date(2024, 10, 31), name="2024 Season"
+    ),
+}
+
+DEFAULT_SEASON_ID = 1
