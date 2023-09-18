@@ -1,6 +1,8 @@
 import re
 from bs4 import BeautifulSoup
 
+RECORD_REGEXP = re.compile(r"(\d+) - (\d+)(?: - (\d+))?")
+
 
 def _standings(soup):
     matchs = soup.find(id="tab_results").find("tbody")
@@ -18,7 +20,11 @@ def _standings(soup):
         row = [s for s in row.find_all("td")]
         name = _value(row, "Name")
         points = int(_value(row, "Points"))
-        yield (name, points)
+
+        m = RECORD_REGEXP.match(_value(row, "Results"))
+        record = tuple(int(s or "0") for s in m.groups())
+
+        yield (name, points, record)
 
 
 def parse_standings_page(text):

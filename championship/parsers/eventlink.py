@@ -1,4 +1,8 @@
+import re
 from bs4 import BeautifulSoup
+
+
+RECORD_RE = re.compile(r"\s(\d+)/(\d+)/(\d+)\s")
 
 
 def _standings(soup):
@@ -11,7 +15,9 @@ def _standings(soup):
     for row in standings.find("tbody").find_all("tr"):
         name = clean(row.find(class_="name").string)
         points = int(clean(row.find(class_="points").string))
-        yield (name, points)
+        win_loss_draw = RECORD_RE.match(row.find(class_="wldb").string)
+        win_loss_draw = tuple(int(s) for s in win_loss_draw.groups())
+        yield (name, points, win_loss_draw)
 
 
 def parse_standings_page(text):

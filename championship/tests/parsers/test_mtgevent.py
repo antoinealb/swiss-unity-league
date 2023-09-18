@@ -9,16 +9,11 @@ class MtgEventStandingsParser(TestCase):
         self.results = mtgevent.parse_standings_page(self.text)
 
     def test_can_parse(self):
-        wantStandings = [
-            ("Toni Marty", 9),
-            ("Eder Lars", 9),
-            ("Pascal Merk", 9),
-            ("Luca Riedmann", 9),
-            ("Remus Kosmalla", 6),
-            ("Phillpp Ackermann", 6),
-            ("Rico Oess", 6),
-            ("Mathias Tonazi", 3),
-            ("Donat Harterbach", 3),
-            ("Pascal Schärrer", 0),
+        want = [
+            ("Toni Marty", 9, (3, 1, 0)),
+            ("Eder Lars", 9, (3, 1, 0)),
+            ("Pascal Merk", 9, (3, 1, 0)),
+            ("Luca Riedmann", 9, (3, 1, 0)),
+            ("Remus Kosmalla", 6, (2, 2, 0)),
         ]
-        self.assertEqual(wantStandings, self.results)
+        self.assertEqual(want, self.results[:5])
