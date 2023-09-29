@@ -477,13 +477,6 @@ def compute_scores():
     return scores
 
 
-@receiver(post_save, sender=Event)
-@receiver(post_save, sender=EventPlayerResult)
-@receiver(post_delete, sender=EventPlayerResult)
-def invalidate_cache_on_result_changes(*args, **kwargs):
-    cache.delete(settings.SCORES_CACHE_KEY)
-
-
 auditlog.register(EventOrganizer)
 auditlog.register(Player, m2m_fields={"events"})
 auditlog.register(Event)
