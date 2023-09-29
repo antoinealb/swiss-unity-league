@@ -1,3 +1,4 @@
+from typing import Any
 from django.db import models
 from django.conf import settings
 from django.db.models import Count, F
@@ -7,7 +8,7 @@ from django.db.models.signals import post_save, post_delete
 from django.dispatch import receiver
 from django.urls import reverse
 from auditlog.registry import auditlog
-import collections
+from collections import defaultdict
 import datetime
 from prometheus_client import Gauge, Summary
 from django.contrib.humanize.templatetags.humanize import ordinal
@@ -429,23 +430,47 @@ scores_players_reaching_max_regular = Gauge(
 
 REGULAR_MAX_SCORE = 500
 
+SCORE_POINTS = "score"
+SCORE_RANK = "rank"
+SCORE_BYES = "byes"
+SCORE_QUALIFIED = "qualified"
+
 
 def get_leaderboard():
     scores_by_player = compute_scores()
     players = list(Player.leaderboard_objects.all())
+    players_with_scores = []
     for p in players:
-        p.score = scores_by_player.get(p.id, 0)
-    players.sort(key=lambda l: l.score, reverse=True)
-    return players
+        score = scores_by_player.get(p.id)
+        if score:
+            p.score = score[SCORE_POINTS]
+            p.byes = range(score[SCORE_BYES])
+            p.qualified = score[SCORE_QUALIFIED]
+            p.rank = score[SCORE_RANK]
+            players_with_scores.append(p)
+    players_with_scores.sort(key=lambda l: l.score, reverse=True)
+    return players_with_scores
 
 
 @scores_computation_time_seconds.time()
 def compute_scores():
     players_reaching_max = 0
 
-    scores_by_player_category = collections.defaultdict(
-        lambda: collections.defaultdict(lambda: 0)
+    MAX_BYES = 2
+    MIN_SIZE_EXTRA_BYE = 128
+
+    def _byes_for_rank(rank: int) -> int:
+        if rank <= 1:
+            return 2
+        elif rank <= 5:
+            return 1
+        else:
+            return 0
+
+    scores_by_player_category: defaultdict[int, Any] = defaultdict(
+        lambda: defaultdict(lambda: 0)
     )
+    extra_byes_by_player: defaultdict[int, int] = defaultdict(lambda: 0)
 
     events_with_top8 = set(
         e.event_id
@@ -457,10 +482,18 @@ def compute_scores():
         size=Count("event__eventplayerresult"),
     ).all():
         has_top8 = result.event_id in events_with_top8
-        qps = qps_for_result(result, result.category, result.size, has_top8)
+        qps: int = qps_for_result(result, result.category, result.size, has_top8)
         scores_by_player_category[result.player_id][result.category] += qps
 
-    scores = dict()
+        # Winners of Premier events with more than 128 players get 2 byes
+        if (
+            result.size > MIN_SIZE_EXTRA_BYE
+            and result.category == Event.Category.PREMIER
+            and result.ranking == 1
+        ):
+            extra_byes_by_player[result.player_id] += 2
+
+    scores = {}
     for player in scores_by_player_category:
         if (
             scores_by_player_category[player][Event.Category.REGULAR]
@@ -471,7 +504,22 @@ def compute_scores():
             ] = REGULAR_MAX_SCORE
             players_reaching_max += 1
 
-        scores[player] = sum(scores_by_player_category[player].values())
+        scores[player] = {
+            SCORE_POINTS: sum(scores_by_player_category[player].values()),
+            SCORE_BYES: extra_byes_by_player.get(player, 0),
+        }
+
+    scores = dict(
+        sorted(scores.items(), key=lambda x: x[1][SCORE_POINTS], reverse=True)
+    )
+    for index, board_entry in enumerate(scores.values()):
+        rank = index + 1
+        board_entry[SCORE_RANK] = rank
+        board_entry[SCORE_BYES] += _byes_for_rank(rank)
+        board_entry[SCORE_QUALIFIED] = True if rank <= 32 else False
+
+        if board_entry[SCORE_BYES] > MAX_BYES:
+            board_entry[SCORE_BYES] = MAX_BYES
 
     scores_players_reaching_max_regular.set(players_reaching_max)
     return scores
