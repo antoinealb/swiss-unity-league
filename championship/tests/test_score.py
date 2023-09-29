@@ -31,9 +31,10 @@ class TestComputeScore(TestCase):
             )
 
         scores = compute_scores()
-        for i, want in enumerate(want_score):
-            got = scores[i + 1]
-            self.assertEqual(want, got, f"Invalid score for player {i+1}")
+        for i, want in enumerate(want_score, 1):
+            score = scores[i]
+            self.assertEqual(want, score[SCORE_POINTS], f"Invalid score for player {i}")
+            self.assertEqual(i, score[SCORE_RANK], f"Invalid rank for player {i}")
 
     def test_compute_score_points_weekly_3rounds(self):
         self._test_compute_score(
@@ -60,11 +61,13 @@ class TestComputeScore(TestCase):
         self.event.save()
         scores = compute_scores()
         for player_id, score in scores:
-            self.assertEqual(0, score, f"Unexpected points for player {player_id}")
+            self.assertEqual(
+                0, score[SCORE_POINTS], f"Unexpected points for player {player_id}"
+            )
 
     def test_max_500_points_for_regular(self):
         """The league rules stipulate that the maximum amount of points a
-        player can get from regular eents is 500. The number of points in other
+        player can get from regular events is 500. The number of points in other
         categories is not limited."""
         player = PlayerFactory()
 
@@ -88,7 +91,7 @@ class TestComputeScore(TestCase):
         )
 
         scores = compute_scores()
-        self.assertEqual(578, scores[player.id])
+        self.assertEqual(578, scores[player.id][SCORE_POINTS])
 
 
 class ExtraPointsOutsideOfTopsTestCase(TestCase):
@@ -122,7 +125,7 @@ class ExtraPointsOutsideOfTopsTestCase(TestCase):
             )
 
         scores = compute_scores()
-        return [scores[p.id] for p in players]
+        return [scores[p.id][SCORE_POINTS] for p in players]
 
     def test_extra_points_for_9th_in_large_events(self):
         """Checks that we get some extra points to the 9th player in larger events (more than 32)"""
@@ -185,8 +188,8 @@ class ExtraPointsOutsideOfTopsTestCase(TestCase):
             )
 
         scores = compute_scores()
-        scores = [scores[p.id] for p in players]
-        self.assertEqual(scores[8:], want_score)
+        points = [scores[p.id][SCORE_POINTS] for p in players]
+        self.assertEqual(points[8:], want_score)
 
 
 class ScoresWithTop8TestCase(TestCase):
