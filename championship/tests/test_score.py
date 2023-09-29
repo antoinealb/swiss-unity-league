@@ -318,3 +318,90 @@ class TestSortEventPlayerResults(TestCase):
         sorted_rankings = sorted(EventPlayerResult.objects.all())
         self.assertEqual(inverse_top_8_results, sorted_rankings[:8])
         self.assertEqual(results[8:], sorted_rankings[8:])
+
+
+def create_test_tournament(players, category=Event.Category.PREMIER, with_top8=True):
+    event = EventFactory(category=category)
+    num_players = len(players)
+    for i, player in enumerate(players):
+        rank = i + 1
+
+        if category != Event.Category.REGULAR and with_top8:
+            if rank == 1:
+                ser = EventPlayerResult.SingleEliminationResult.WINNER
+            if rank == 2:
+                ser = EventPlayerResult.SingleEliminationResult.FINALIST
+            if rank <= 4:
+                ser = EventPlayerResult.SingleEliminationResult.SEMI_FINALIST
+            if rank <= 8:
+                ser = EventPlayerResult.SingleEliminationResult.QUARTER_FINALIST
+
+        EventPlayerResultFactory(
+            player=player,
+            points=num_players - i,
+            ranking=rank,
+            single_elimination_result=ser,
+            event=event,
+        )
+
+
+class TestScoresByes(TestCase):
+    def test_top_byes(self):
+        num_players = 50
+        players = [PlayerFactory() for _ in range(num_players)]
+        create_test_tournament(players)
+        byes = [s[SCORE_BYES] for s in compute_scores().values()]
+        want_byes = [2] + [1] * 4 + [0] * (num_players - 5)
+        self.assertEqual(want_byes, byes)
+
+    def test_large_tournament_byes(self):
+        num_players = 130
+        players = [PlayerFactory() for _ in range(num_players)]
+
+        create_test_tournament(players)
+        # Make sure that a different player is points leader
+        EventPlayerResultFactory(
+            single_elimination_result=EventPlayerResult.SingleEliminationResult.FINALIST,
+            event=EventFactory(category=Event.Category.PREMIER),
+            player=players[1],
+        )
+
+        # Now the winner and the points leader should both have 2 byes
+        byes = [s[SCORE_BYES] for s in compute_scores().values()]
+        want_byes = [2] * 2 + [1] * 3 + [0] * (num_players - 5)
+        self.assertEqual(want_byes, byes)
+
+        # Change event to regional and winner shouldn't get 2 byes anymore
+        Event.objects.update(category=Event.Category.REGIONAL)
+        byes = [s[SCORE_BYES] for s in compute_scores().values()]
+        want_byes = [2] * 1 + [1] * 4 + [0] * (num_players - 5)
+        self.assertEqual(want_byes, byes)
+
+    def test_max_byes(self):
+        num_players = 130
+        players = [PlayerFactory() for _ in range(num_players)]
+        # One person wins 2 large events (hence 4 byes) but maximum byes should still be 2
+        create_test_tournament(players)
+        create_test_tournament(players)
+
+        # Make sure that a different player is points leader
+        for _ in range(4):
+            EventPlayerResultFactory(
+                single_elimination_result=EventPlayerResult.SingleEliminationResult.FINALIST,
+                event=EventFactory(category=Event.Category.PREMIER),
+                player=players[1],
+            )
+        # Now the winner and the points leader should both have 2 byes
+        byes = [s[SCORE_BYES] for s in compute_scores().values()]
+        want_byes = [2] * 2 + [1] * 3 + [0] * (num_players - 5)
+        self.assertEqual(want_byes, byes)
+
+
+class TestScoresQualified(TestCase):
+    def test_top_32_qualified(self):
+        num_players = 50
+        players = [PlayerFactory() for _ in range(num_players)]
+        create_test_tournament(players)
+        byes = [s[SCORE_QUALIFIED] for s in compute_scores().values()]
+        want_byes = [True] * 32 + [False] * (num_players - 32)
+        self.assertEqual(want_byes, byes)
