@@ -692,9 +692,12 @@ class CreateExcelResultsView(CreateFileParserResultsView):
         excel_file = self.request.FILES["standings"]
         excel_buffer = io.BytesIO(excel_file.read())
         df = pd.read_excel(excel_buffer, engine="openpyxl")
-
         try:
-            return excel_parser.parse_standings_page(df)
+            # TODO(antoinealb): Don't drop the record once we can store them
+            return [
+                (name, points)
+                for (name, points, _) in excel_parser.parse_standings_page(df)
+            ]
         except Exception as e:
             logging.exception("Could not parse Excel")
             messages.error(self.request, self.error_text)
