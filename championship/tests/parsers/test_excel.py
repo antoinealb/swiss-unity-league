@@ -25,38 +25,46 @@ class ExcelStandingParser(TestCase):
 
     @parameterized.expand(
         [
-            ([9, 9, 9, 9, 7, 7, 6, 6, 3, 3, 3], [
-            (3, 1, 0),
-            (3, 1, 0),
-            (3, 1, 0),
-            (3, 1, 0),
-            (2, 1, 1),
-            (2, 1, 1),
-            (2, 2, 0),
-            (2, 2, 0),
-            (1, 3, 0),
-            (1, 3, 0),
-            (1, 3, 0),
-        ]),
-            ([10, 9, 9, 7, 7, 7, 6, 6, 3, 3, 3], [
-            (3, 0, 1),
-            (3, 1, 0),
-            (3, 1, 0),
-            (2, 1, 1),
-            (2, 1, 1),
-            (2, 1, 1),
-            (2, 2, 0),
-            (2, 2, 0),
-            (1, 3, 0),
-            (1, 3, 0),
-            (1, 3, 0),
-        ])])
+            (
+                [9, 9, 9, 9, 7, 7, 6, 6, 3, 3, 3],
+                [
+                    (3, 1, 0),
+                    (3, 1, 0),
+                    (3, 1, 0),
+                    (3, 1, 0),
+                    (2, 1, 1),
+                    (2, 1, 1),
+                    (2, 2, 0),
+                    (2, 2, 0),
+                    (1, 3, 0),
+                    (1, 3, 0),
+                    (1, 3, 0),
+                ],
+            ),
+            (
+                [10, 9, 9, 7, 7, 7, 6, 6, 3, 3, 3],
+                [
+                    (3, 0, 1),
+                    (3, 1, 0),
+                    (3, 1, 0),
+                    (2, 1, 1),
+                    (2, 1, 1),
+                    (2, 1, 1),
+                    (2, 2, 0),
+                    (2, 2, 0),
+                    (1, 3, 0),
+                    (1, 3, 0),
+                    (1, 3, 0),
+                ],
+            ),
+        ]
+    )
     def test_can_parse_match_points(self, match_points, want):
         self._create_df(match_points)
         self.results = parse_standings_page(self.df)
-        records = [record for _,_,record in self.results]
+        records = [record for _, _, record in self.results]
         self.assertEqual(want, records)
-   
+
     def test_ranking(self):
         self.df = pd.read_excel("championship/tests/parsers/excel_ranking.xlsx")
         # Reverse the order of the dataframe
@@ -68,6 +76,7 @@ class ExcelStandingParser(TestCase):
             ("RENAUD-GOUD, Antoine", 16, (5, 1, 1)),
         ]
         self.assertEqual(want, self.results[:3])
+
 
 class ExcelStandingParserExceptions(TestCase):
     def setUp(self):

@@ -36,7 +36,7 @@ def _standings(df: pd.DataFrame):
         col for col in [PLAYER_NAME, RECORD, MATCH_POINTS] if col in df.columns
     ]
     df = df[defined_cols]
-    
+
     if PLAYER_NAME not in defined_cols:
         raise PlayerNameNotFound()
 
@@ -72,7 +72,7 @@ def _standings(df: pd.DataFrame):
 
 def parse_standings_page(df: pd.DataFrame):
     standings = list(_standings(df))
-    #Sort by match points
+    # Sort by match points
     sorted_standings = sorted(standings, key=lambda x: x[1], reverse=True)
     return sorted_standings
 
