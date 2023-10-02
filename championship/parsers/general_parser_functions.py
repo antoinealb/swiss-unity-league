@@ -48,7 +48,6 @@ def record_to_points(record: str) -> int:
     r = parse_record(record)
     return 3 * r[0] + 1 * r[2]
 
-
 def find_index_containing_substring(strings, substrings):
     """
     Takes a list of strings and finds the first index of the element that contains one of the substrings.
