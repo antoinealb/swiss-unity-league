@@ -1,26 +1,58 @@
-import re
-from bs4 import BeautifulSoup
 import pandas as pd
+from championship.parsers.general_parser_functions import parse_record
 
-RECORD_RE = re.compile(r"\s(\d+)/(\d+)/(\d+)\s")
+
+RANK = "RANK"
+PLAYER_NAME = "PLAYER_NAME"
+RECORD = "RECORD"
+MATCH_POINTS = "MATCH_POINTS"
 
 
 def _standings(df: pd.DataFrame):
-    # standings = soup.find(class_="standings")
-    # thead = standings.find("thead")
+    defined_cols = [
+        col for col in [RANK, PLAYER_NAME, RECORD, MATCH_POINTS] if col in df.columns
+    ]
+    df = df[defined_cols]
+    if RANK not in defined_cols:
+        df[RANK] = df.index + 1
+    if PLAYER_NAME not in defined_cols:
+        raise PlayerNameNotFound()
+    if RECORD not in defined_cols and MATCH_POINTS not in defined_cols:
+        raise RecordOrMatchPointsNotFound()
 
-    # def clean(elem):
-    #     return elem.text.rstrip().strip()
-
-    # for row in standings.find("tbody").find_all("tr"):
-    #     name = clean(row.find(class_="name").string)
-    #     points = int(clean(row.find(class_="points").string))
-    #     win_loss_draw = RECORD_RE.match(row.find(class_="wldb").string)
-    #     win_loss_draw = tuple(int(s) for s in win_loss_draw.groups())
-    #     yield (name, points, win_loss_draw)
-    yield ("Jeremias Wildi", 10, (3, 0, 1))
+    if RECORD in defined_cols:
+        for _, row in df.iterrows():
+            name = row[PLAYER_NAME]
+            record_string = row[RECORD]
+            try:
+                points, parsed_record = parse_record(record_string)
+            except ValueError:
+                raise InvalidRecordError(name, record_string)
+            yield (name, points, tuple(parsed_record))
 
 
 def parse_standings_page(df: pd.DataFrame):
     standings = list(_standings(df))
     return standings
+
+
+class PlayerNameNotFound(ValueError):
+    def __init__(self, message="Column PLAYER_NAME not found", *args, **kwargs):
+        super().__init__(message, *args, **kwargs)
+
+    ui_error_message = "The column PLAYER_NAME was not found in the excel file. Please make sure to specify the first and lastname of each player in the column PLAYER_NAME."
+
+
+class RecordOrMatchPointsNotFound(ValueError):
+    def __init__(
+        self, message="Column RECORD or MATCH_POINTS not found", *args, **kwargs
+    ):
+        super().__init__(message, *args, **kwargs)
+
+    ui_error_message = "The column RECORD or MATCH_POINTS was not found in the excel file. Please make sure to specify either the record or match points of each player in the column RECORD or MATCH_POINTS."
+
+
+class InvalidRecordError(ValueError):
+    def __init__(self, player_name, record, message="Invalid record", *args, **kwargs):
+        super().__init__(message, *args, **kwargs)
+        self.ui_error_message = f"The record {record} of player {player_name} is invalid. Please make sure to specify the record in the format W-L-D."
