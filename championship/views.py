@@ -596,8 +596,15 @@ class CreateLinkParserResultsView(LoginRequiredMixin, CreateResultsView):
             messages.error(self.request, "Could not fetch standings.")
 
 
-class CreateHTMLParserResultsView(LoginRequiredMixin, CreateResultsView):
-    form_class = HtmlImporterForm
+class CreateFileParserResultsView(LoginRequiredMixin, CreateResultsView):
+    form_class = FileImporterForm
+    help_text = "The file that contains the standings."
+    error_text = "Error: Could not parse the standings file. Did you upload the file in the right format?"
+
+    def get_form_kwargs(self):
+        kwargs = super().get_form_kwargs()
+        kwargs.update({"help_text": self.help_text})
+        return kwargs
 
     def extract_standings_from_page(self, text: str) -> Iterable[tuple[str, int]]:
         raise NotImplementedError("No parser yet")
@@ -609,10 +616,18 @@ class CreateHTMLParserResultsView(LoginRequiredMixin, CreateResultsView):
             return self.extract_standings_from_page(text)
         except Exception as e:
             logging.exception("Could not parse page")
-            messages.error(
-                self.request,
-                "Error: Could not parse standings file. Did you upload the HTML standings correctly?",
-            )
+            messages.error(self.request, self.error_text)
+
+
+class CreateHTMLParserResultsView(CreateFileParserResultsView):
+    help_text = (
+        "The standings file saved as a web page (.html). "
+        + "Go to the standings page of the last swiss round, then press Ctrl+S and save."
+    )
+    error_text = (
+        "Error: Could not parse standings file. Did you upload it as HTML? "
+        + "You can get a HTML file by going to the standings of the last swiss round and pressing Ctrl+S."
+    )
 
 
 class CreateAetherhubResultsView(CreateLinkParserResultsView):
@@ -659,6 +674,14 @@ class CreateEventlinkResultsView(CreateHTMLParserResultsView):
 
 
 class CreateMtgEventResultsView(CreateHTMLParserResultsView):
+    def extract_standings_from_page(self, text):
+        # TODO(antoinealb): Don't drop the record once we can store them
+        return [
+            (name, points) for (name, points, _) in mtgevent.parse_standings_page(text)
+        ]
+
+
+class CreateExcelResultsView(CreateHTMLParserResultsView):
     def extract_standings_from_page(self, text):
         # TODO(antoinealb): Don't drop the record once we can store them
         return [
