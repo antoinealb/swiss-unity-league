@@ -443,11 +443,6 @@ def get_leaderboard():
 def compute_scores():
     players_reaching_max = 0
 
-    if settings.SCORES_CACHE_ENABLED:
-        res = cache.get(settings.SCORES_CACHE_KEY)
-        if res:
-            return res
-
     scores_by_player_category = collections.defaultdict(
         lambda: collections.defaultdict(lambda: 0)
     )
@@ -478,18 +473,8 @@ def compute_scores():
 
         scores[player] = sum(scores_by_player_category[player].values())
 
-    if settings.SCORES_CACHE_ENABLED:
-        cache.set(settings.SCORES_CACHE_KEY, scores, timeout=None)
-
     scores_players_reaching_max_regular.set(players_reaching_max)
     return scores
-
-
-@receiver(post_save, sender=Event)
-@receiver(post_save, sender=EventPlayerResult)
-@receiver(post_delete, sender=EventPlayerResult)
-def invalidate_cache_on_result_changes(*args, **kwargs):
-    cache.delete(settings.SCORES_CACHE_KEY)
 
 
 auditlog.register(EventOrganizer)

@@ -215,11 +215,6 @@ except FileNotFoundError:
 
 build_info.info({"commit_sha": commit_hash})
 
-# Whether or not to fetch cached results for score computation
-# TODO: Disabled for now, as it causes coherency issues
-SCORES_CACHE_ENABLED = False
-SCORES_CACHE_KEY = "championship.scores"
-
 # Maximum age for an event to enter result in (effetively disables backfill).
 EVENT_MAX_AGE_FOR_RESULT_ENTRY = datetime.timedelta(days=31)
 
