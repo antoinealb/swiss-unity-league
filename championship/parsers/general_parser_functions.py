@@ -1,11 +1,52 @@
-def record_to_points(record):
-    points = 0
-    for index, num in enumerate(record.split("-")):
-        if index == 0:
-            points += int(num) * 3
-        if index == 2:
-            points += int(num)
-    return points
+from typing import Tuple, cast
+from parsita import ParserContext, reg, longest, lit, Failure
+from parsita.util import constant
+
+RECORD_DELIMITERS = ["-", "–", "—", "/", ",", "_"]
+
+
+def _fixed_separator(previous_state):
+    return lit(previous_state[0]) > constant(previous_state[1])
+
+
+class RecordParser(ParserContext, whitespace=r"[ \t]*"):  # type: ignore
+    integer = reg(r"[0-9]+") > int
+    separator = longest(*(lit(s) for s in RECORD_DELIMITERS))
+    record_no_draw = (integer << separator) & integer
+    record_draw = integer & (separator & integer >= _fixed_separator) & integer
+    record = record_draw | (record_no_draw > (lambda d: d + [0]))
+
+
+def parse_record(record: str) -> Tuple[int, int, int]:
+    """Takes a record as a string an extract it into (win, loss, draws).
+
+    :raises ValueError: If the string is not a correct record, with an error message.
+    :returns The parsed tuple
+
+    >>> parse_record('1-2-3')
+    (1, 2, 3)
+    >>> parse_record('2/1')
+    (2, 1, 0)
+    """
+
+    result = RecordParser.record.parse(record)
+
+    if isinstance(result, Failure):
+        raise ValueError(result.failure())
+
+    return cast(Tuple[int, int, int], tuple(result.unwrap()))
+
+
+def record_to_points(record: str) -> int:
+    """Computes how many points the given record should provide.
+
+    :raises ValueError if we could not parse the provided record.
+
+    >>> record_to_points('2-0')
+    6
+    """
+    r = parse_record(record)
+    return 3 * r[0] + 1 * r[2]
 
 
 def find_index_containing_substring(strings, substrings):

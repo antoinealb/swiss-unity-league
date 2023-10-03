@@ -25,3 +25,4 @@ django-hijack~=3.3.0
 parameterized==0.9.0
 django-tex==1.1.10
 django-tinymce~=3.6.1
+parsita~=2.1.0

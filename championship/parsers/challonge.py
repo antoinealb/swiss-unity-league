@@ -3,9 +3,6 @@ from bs4 import BeautifulSoup
 from .general_parser_functions import *
 
 
-RECORD_REGEXP = re.compile(r"(\d+) - (\d+)(?: - (\d+))?")
-
-
 def _remove_brackets(text):
     return re.sub(r"\([^()]*\)", "", text)
 
@@ -48,8 +45,7 @@ def _standings(soup):
         name = _remove_brackets(values[player_index]).strip()
         points = record_to_points(values[record_index])
 
-        m = RECORD_REGEXP.match(values[record_index])
-        record = list(int(s or "0") for s in m.groups())
+        record = list(parse_record(values[record_index]))
 
         byes = int(values[bye_index])
         points += byes * 3

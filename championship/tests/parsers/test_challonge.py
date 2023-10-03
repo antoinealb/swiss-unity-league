@@ -5,11 +5,6 @@ from .utils import load_test_html
 
 
 class ParserFunctionsTest(TestCase):
-    def test_record_to_points(self):
-        self.assertEqual(record_to_points("3-1-0"), 9)
-        self.assertEqual(record_to_points("2-2-2"), 8)
-        self.assertEqual(record_to_points("0-0-1"), 1)
-
     def test_find_index_of_substring(self):
         row = ["name", "age", "gender", "height"]
         self.assertEqual(find_index_containing_substring(row, ["age ", "Test"]), 1)
