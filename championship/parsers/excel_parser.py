@@ -1,5 +1,5 @@
 import pandas as pd
-from championship.parsers.general_parser_functions import parse_record
+from championship.parsers.general_parser_functions import parse_record, record_to_points
 
 
 RANK = "RANK"
@@ -25,7 +25,8 @@ def _standings(df: pd.DataFrame):
             name = row[PLAYER_NAME]
             record_string = row[RECORD]
             try:
-                points, parsed_record = parse_record(record_string)
+                parsed_record = parse_record(record_string)
+                points = record_to_points(record_string)
             except ValueError:
                 raise InvalidRecordError(name, record_string)
             yield (name, points, tuple(parsed_record))
