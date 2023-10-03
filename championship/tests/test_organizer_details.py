@@ -1,9 +1,12 @@
 from django.test import TestCase, Client
 from django.urls import reverse
 from django.utils import timezone
-from championship.factories import AddressFactory, EventOrganizerFactory, EventFactory
+from championship.factories import (
+    EventOrganizerFactory,
+    EventFactory,
+    EventPlayerResultFactory,
+)
 from django.contrib.auth import get_user_model
-from championship.models import Address
 
 User = get_user_model()
 
@@ -43,6 +46,16 @@ class EventOrganizerDetailViewTests(TestCase):
         self.assertEqual(
             self.response.context["all_events"][1]["list"][0], self.past_event
         )
+
+    def test_past_events_contain_num_of_participants(self):
+        EventPlayerResultFactory(event=self.past_event)
+        self.response = self.client.get(
+            reverse("organizer_details", args=[self.organizer.id])
+        )
+        response_past_event = self.response.context["all_events"][1]
+        self.assertEquals(response_past_event["has_num_players"], True)
+        first_event = response_past_event["list"][0]
+        self.assertEquals(first_event.num_players, 1)
 
     def test_organizer_detail_view_no_organizer(self):
         self.response = self.client.get(
