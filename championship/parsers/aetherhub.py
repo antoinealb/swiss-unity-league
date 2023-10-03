@@ -1,7 +1,5 @@
-import re
 from bs4 import BeautifulSoup
-
-RECORD_REGEXP = re.compile(r"(\d+) - (\d+)(?: - (\d+))?")
+from championship.parsers.general_parser_functions import parse_record
 
 
 def _standings(soup):
@@ -20,9 +18,7 @@ def _standings(soup):
         row = [s for s in row.find_all("td")]
         name = _value(row, "Name")
         points = int(_value(row, "Points"))
-
-        m = RECORD_REGEXP.match(_value(row, "Results"))
-        record = tuple(int(s or "0") for s in m.groups())
+        record = parse_record(_value(row, "Results"))
 
         yield (name, points, record)
 

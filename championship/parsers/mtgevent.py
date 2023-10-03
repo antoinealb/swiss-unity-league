@@ -1,8 +1,5 @@
-import re
 from bs4 import BeautifulSoup
-from .general_parser_functions import record_to_points, find_index_containing_substring
-
-RECORD_RE = re.compile(r"(\d+) - (\d+) - (\d+)")
+from .general_parser_functions import *
 
 
 def _standings(soup):
@@ -17,7 +14,7 @@ def _standings(soup):
         record = values[record_index]
         name = values[player_index]
         points = record_to_points(record)
-        record = tuple(int(s) for s in RECORD_RE.match(record).groups())
+        record = parse_record(record)
         yield (name, points, record)
 
 
