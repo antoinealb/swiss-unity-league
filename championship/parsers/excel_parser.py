@@ -1,34 +1,13 @@
-import math
 import pandas as pd
-from championship.parsers.general_parser_functions import parse_record, record_to_points
+from championship.parsers.general_parser_functions import (
+    parse_record,
+    record_to_points,
+    estimate_rounds,
+)
 
 PLAYER_NAME = "PLAYER_NAME"
 RECORD = "RECORD"
 MATCH_POINTS = "MATCH_POINTS"
-
-
-def _estimate_rounds(match_point_list):
-    num_players = len(match_point_list)
-
-    # The number of rounds needs to be at least the amount wins + draws of an individual player
-    min_num_rounds = max([mp // 3 + mp % 3 for mp in match_point_list])
-
-    # We add +1 because the actual rounds is likely to be 1 higher
-    byes = min_num_rounds + 1 if num_players % 2 == 1 else 0
-
-    total_wins = sum([mp // 3 for mp in match_point_list]) - byes
-    total_losses = total_wins
-    total_draws = sum([mp % 3 for mp in match_point_list])
-
-    # We can estimate the number of rounds played based on the total number of wins, losses, draws and byes
-    number_of_matches_per_player = (
-        total_wins + total_draws + total_losses + byes
-    ) / num_players
-
-    # We round it up, since some players might drop out
-    rounds_estimate = math.ceil(number_of_matches_per_player)
-
-    return max(rounds_estimate, min_num_rounds)
 
 
 def _standings(df: pd.DataFrame):
@@ -58,7 +37,7 @@ def _standings(df: pd.DataFrame):
                 match_point_list.append(match_points)
             except:
                 raise InvalidMatchPointsError(row[PLAYER_NAME], row[MATCH_POINTS])
-        num_rounds = _estimate_rounds(match_point_list)
+        num_rounds = estimate_rounds(match_point_list)
         for i, row in df.iterrows():
             name = row[PLAYER_NAME]
             points = match_point_list[i]
