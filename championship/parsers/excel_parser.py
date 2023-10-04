@@ -31,19 +31,17 @@ def _standings(df: pd.DataFrame):
                 raise InvalidRecordError(name, record_string)
             yield (name, points, tuple(parsed_record))
     elif MATCH_POINTS in defined_cols:
-        match_point_list = []
-        player_points_tuple_list = []
+        name_points_tuple_list = []
         for _, row in df.iterrows():
             try:
-                match_points = int(row[MATCH_POINTS])
-                match_point_list.append(match_points)
-                player_points_tuple_list.append((row[PLAYER_NAME]))
+                name_points_tuple_list.append(
+                    (row[PLAYER_NAME], int(row[MATCH_POINTS]))
+                )
             except:
                 raise InvalidMatchPointsError(row[PLAYER_NAME], row[MATCH_POINTS])
-        num_rounds = estimate_rounds(match_point_list)
-        for i, row in enumerate(match_point_list):
-            name = row[PLAYER_NAME]
-            points = match_point_list[i]
+        match_points_list = [points for _, points in name_points_tuple_list]
+        num_rounds = estimate_rounds(match_points_list)
+        for name, points in name_points_tuple_list:
             wins = points // 3
             draws = points % 3
             losses = num_rounds - wins - draws
