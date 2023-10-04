@@ -9,9 +9,9 @@ class ExcelStandingParser(TestCase):
         self.df = pd.read_excel("championship/tests/parsers/excel_ranking.xlsx")
         self.results = parse_standings_page(self.df)
         want = [
-            ("Jari Rentsch", 18, (6, 1, 0)),
-            ("Noé Dumez", 17, (5, 0, 2)),
-            ("RENAUD-GOUD, Antoine", 16, (5, 1, 1)),
+            ("Jari Rentsch", 9, (3, 1, 0)),
+            ("Noé Dumez", 8, (2, 0, 2)),
+            ("RENAUD-GOUD, Antoine", 7, (2, 1, 1)),
         ]
         self.assertEqual(want, self.results[:3])
 
@@ -71,9 +71,9 @@ class ExcelStandingParser(TestCase):
         self.df = self.df.iloc[::-1]
         self.results = parse_standings_page(self.df)
         want = [
-            ("Jari Rentsch", 18, (6, 1, 0)),
-            ("Noé Dumez", 17, (5, 0, 2)),
-            ("RENAUD-GOUD, Antoine", 16, (5, 1, 1)),
+            ("Jari Rentsch", 9, (3, 1, 0)),
+            ("Noé Dumez", 8, (2, 0, 2)),
+            ("RENAUD-GOUD, Antoine", 7, (2, 1, 1)),
         ]
         self.assertEqual(want, self.results[:3])
 

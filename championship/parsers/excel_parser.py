@@ -19,8 +19,7 @@ def _standings(df: pd.DataFrame):
     if PLAYER_NAME not in defined_cols:
         raise PlayerNameNotFound()
 
-    df.dropna(subset=[PLAYER_NAME], inplace=True)
-
+    df = df.dropna(subset=[PLAYER_NAME])
     if RECORD in defined_cols:
         for _, row in df.iterrows():
             name = row[PLAYER_NAME]

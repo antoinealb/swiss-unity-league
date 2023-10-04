@@ -385,6 +385,45 @@ class MtgEventUploadTest(TestCase):
         )
 
 
+class ExcelUploadTest(TestCase):
+    def setUp(self):
+        self.client = Client()
+        self.credentials = dict(username="test", password="test")
+        self.user = User.objects.create_user(**self.credentials)
+        self.organizer = EventOrganizerFactory(user=self.user)
+        self.event = EventFactory(
+            organizer=self.organizer,
+            date=datetime.date.today(),
+            category=Event.Category.REGULAR,
+        )
+
+        with open("championship/tests/parsers/excel_ranking.xlsx", "rb") as f:
+            standings = SimpleUploadedFile(
+                "standings.xlsx",
+                f.read(),
+                content_type="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+            )
+
+        self.data = {
+            "standings": standings,
+            "event": self.event.id,
+        }
+
+    def login(self):
+        self.client.login(**self.credentials)
+
+    def test_imports_result(self):
+        self.login()
+
+        response = self.client.post(reverse("results_create_excel"), self.data)
+        self.event.refresh_from_db()
+
+        results = self.event.eventplayerresult_set.order_by("ranking")
+        self.assertEqual(results.count(), 3)
+        self.assertEqual(results[0].player.name, "Jari Rentsch")
+        self.assertEqual(results[0].points, 9)
+
+
 class ManualImportTestCase(TestCase):
     def setUp(self):
         self.client = Client()
