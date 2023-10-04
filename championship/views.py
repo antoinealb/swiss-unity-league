@@ -4,6 +4,8 @@ import logging
 import os
 import requests
 import random
+import pandas as pd
+import io
 from typing import *
 
 from django.core.exceptions import ImproperlyConfigured
@@ -25,7 +27,7 @@ from rest_framework.response import Response
 from .models import *
 from .forms import *
 from django.db.models import F, Q
-from championship.parsers import aetherhub, eventlink, mtgevent, challonge
+from championship.parsers import aetherhub, eventlink, mtgevent, challonge, excel_parser
 from championship.serializers import EventSerializer
 from championship.tournament_valid import (
     validate_standings,
@@ -596,23 +598,36 @@ class CreateLinkParserResultsView(LoginRequiredMixin, CreateResultsView):
             messages.error(self.request, "Could not fetch standings.")
 
 
-class CreateHTMLParserResultsView(LoginRequiredMixin, CreateResultsView):
-    form_class = HtmlImporterForm
+class CreateFileParserResultsView(LoginRequiredMixin, CreateResultsView):
+    form_class = FileImporterForm
+    help_text = "The file that contains the standings."
+
+    def get_form_kwargs(self):
+        kwargs = super().get_form_kwargs()
+        kwargs.update({"help_text": self.help_text})
+        return kwargs
+
+
+class CreateHTMLParserResultsView(CreateFileParserResultsView):
+    help_text = (
+        "The standings file saved as a web page (.html). "
+        + "Go to the standings page of the last swiss round, then press Ctrl+S and save."
+    )
+    error_text = (
+        "Error: Could not parse standings file. Did you upload it as HTML? "
+        + "You can get a HTML file by going to the standings of the last swiss round and pressing Ctrl+S."
+    )
 
     def extract_standings_from_page(self, text: str) -> Iterable[tuple[str, int]]:
         raise NotImplementedError("No parser yet")
 
     def get_results(self, form):
-        text = "".join(s.decode() for s in self.request.FILES["standings"].chunks())
-
         try:
+            text = "".join(s.decode() for s in self.request.FILES["standings"].chunks())
             return self.extract_standings_from_page(text)
         except Exception as e:
             logging.exception("Could not parse page")
-            messages.error(
-                self.request,
-                "Error: Could not parse standings file. Did you upload the HTML standings correctly?",
-            )
+            messages.error(self.request, self.error_text)
 
 
 class CreateAetherhubResultsView(CreateLinkParserResultsView):
@@ -664,6 +679,28 @@ class CreateMtgEventResultsView(CreateHTMLParserResultsView):
         return [
             (name, points) for (name, points, _) in mtgevent.parse_standings_page(text)
         ]
+
+
+class CreateExcelResultsView(CreateFileParserResultsView):
+    help_text = (
+        "The excel file needs to have the following column names: \n"
+        + "PLAYER_NAME and either RECORD or MATCH_POINTS. Optionally, you can also specifiy the column RANK."
+    )
+    error_text = "Did you specify the columns with the right names PLAYER_NAME and RECORD or MATCH_POINTS?"
+
+    def get_results(self, form):
+        excel_file = self.request.FILES["standings"]
+        excel_buffer = io.BytesIO(excel_file.read())
+        df = pd.read_excel(excel_buffer, engine="openpyxl")
+        try:
+            # TODO(antoinealb): Don't drop the record once we can store them
+            return [
+                (name, points)
+                for (name, points, _) in excel_parser.parse_standings_page(df)
+            ]
+        except Exception as e:
+            logging.exception("Could not parse Excel")
+            messages.error(self.request, self.error_text)
 
 
 class ChooseUploaderView(LoginRequiredMixin, FormView):

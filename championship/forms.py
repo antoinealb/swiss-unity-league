@@ -118,16 +118,15 @@ class LinkImporterForm(forms.Form, SubmitButtonMixin):
         self.fields["event"].queryset = Event.objects.available_for_result_upload(user)
 
 
-class HtmlImporterForm(forms.Form, SubmitButtonMixin):
-    standings = forms.FileField(
-        help_text="The standings file saved as a web page (.html). "
-        + "Go to the standings page of the last swiss round, then press Ctrl+S and save."
-    )
+class FileImporterForm(forms.Form, SubmitButtonMixin):
+    standings = forms.FileField(help_text="The file that contains the standings.")
     event = forms.ModelChoiceField(queryset=Event.objects.all(), required=True)
 
     def __init__(self, user, *args, **kwargs):
+        help_text = kwargs.pop("help_text", None)
         super().__init__(*args, **kwargs)
-
+        if help_text:
+            self.fields["standings"].help_text = help_text
         self.fields["event"].queryset = Event.objects.available_for_result_upload(user)
 
 
