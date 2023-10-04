@@ -28,6 +28,9 @@ class TestComputeScore(TestCase):
                 event=self.event,
                 points=pi,
                 ranking=i + 1,
+                win_count=pi // 3,
+                draw_count=pi % 3,
+                loss_count=0,
             )
 
         scores = compute_scores()
@@ -74,17 +77,23 @@ class TestComputeScore(TestCase):
             EventPlayerResult.objects.create(
                 player=player,
                 event=e,
-                points=100,
                 ranking=i + 1,
+                points=100,
+                win_count=33,
+                draw_count=1,
+                loss_count=0,
             )
 
-        # Then create an additional event
+        # Then create an additional event which will NOT be limited
         e = EventFactory(category=Event.Category.PREMIER)
         EventPlayerResult.objects.create(
             player=player,
             event=e,
             points=10,
             ranking=10,
+            win_count=3,
+            draw_count=1,
+            loss_count=0,
         )
 
         scores = compute_scores()
@@ -116,9 +125,12 @@ class ExtraPointsOutsideOfTopsTestCase(TestCase):
             EventPlayerResult.objects.create(
                 player=player,
                 event=self.event,
-                points=pi,
                 ranking=i + 1,
                 single_elimination_result=ser,
+                points=pi,
+                win_count=pi // 3,
+                draw_count=pi % 3,
+                loss_count=0,
             )
 
         scores = compute_scores()
@@ -182,6 +194,9 @@ class ExtraPointsOutsideOfTopsTestCase(TestCase):
                 event=self.event,
                 points=pi,
                 ranking=i + 1,
+                draw_count=pi % 3,
+                win_count=pi // 3,
+                loss_count=0,
             )
 
         scores = compute_scores()
@@ -252,6 +267,9 @@ class TestSortEventPlayerResults(TestCase):
                 ranking=10 - i,
                 points=5,
                 event=e,
+                win_count=1,
+                draw_count=2,
+                loss_count=0,
             )
 
         sorted_rankings = [s.ranking for s in sorted(EventPlayerResult.objects.all())]
@@ -264,8 +282,11 @@ class TestSortEventPlayerResults(TestCase):
             EventPlayerResult.objects.create(
                 player=PlayerFactory(),
                 ranking=i + 1,
-                points=num_players - i,
+                points=3 * (num_players - i),
                 event=e,
+                win_count=num_players - i,
+                draw_count=0,
+                loss_count=0,
             )
             for i in range(num_players)
         ]

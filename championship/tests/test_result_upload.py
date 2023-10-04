@@ -128,6 +128,9 @@ class AetherhubImportTest(TestCase):
         # hardcoded spot checks from the tournament
         self.assertEqual(len(results), 30)
         self.assertEqual(results[0].points, 13)
+        self.assertEqual(results[0].draw_count, 1)
+        self.assertEqual(results[0].loss_count, 0)
+        self.assertEqual(results[0].win_count, 4)
         self.assertEqual(results[0].ranking, 1)
         self.assertEqual(results[10].points, 9)
         self.assertEqual(results[10].ranking, 11)
@@ -226,7 +229,13 @@ class AetherhubImportTest(TestCase):
         # Then create results for the event and makes sure we don't have the
         # event listed anymore
         EventPlayerResult.objects.create(
-            points=10, player=PlayerFactory(), event=self.event, ranking=1
+            points=10,
+            player=PlayerFactory(),
+            event=self.event,
+            ranking=1,
+            win_count=3,
+            draw_count=1,
+            loss_count=0,
         )
         response = self.client.get(reverse("results_create_aetherhub"))
         gotChoices = _choices(response)
@@ -315,9 +324,7 @@ class EventLinkImportTestCase(TestCase):
 
         # Then create results for the event and makes sure we don't have the
         # event listed anymore
-        EventPlayerResult.objects.create(
-            points=10, player=PlayerFactory(), event=self.event, ranking=1
-        )
+        EventPlayerResultFactory(event=self.event)
         response = self.client.get(reverse("results_create_eventlink"))
         gotChoices = _choices(response)
         self.assertEqual([], gotChoices)
@@ -422,6 +429,10 @@ class ExcelUploadTest(TestCase):
         self.assertEqual(results.count(), 3)
         self.assertEqual(results[0].player.name, "Jari Rentsch")
         self.assertEqual(results[0].points, 9)
+        self.assertEqual(results[0].points, 9)
+        self.assertEqual(results[0].win_count, 3)
+        self.assertEqual(results[0].draw_count, 0)
+        self.assertEqual(results[0].loss_count, 1)
 
 
 class ManualImportTestCase(TestCase):
@@ -438,7 +449,7 @@ class ManualImportTestCase(TestCase):
 
         self.data = {
             "form-0-name": "Antoine Albertelli",
-            "form-0-points": "3-0",
+            "form-0-points": "3-0-1",
             "event": self.event.id,
             "form-TOTAL_FORMS": 1,
             "form-INITIAL_FORMS": 0,
@@ -459,7 +470,10 @@ class ManualImportTestCase(TestCase):
         results = EventPlayerResult.objects.filter(event=self.event).order_by("id")[:]
         self.assertEqual(results[0].player.name, "Antoine Albertelli")
         self.assertEqual(results[0].ranking, 1)
-        self.assertEqual(results[0].points, 9)
+        self.assertEqual(results[0].points, 10)
+        self.assertEqual(results[0].win_count, 3)
+        self.assertEqual(results[0].loss_count, 0)
+        self.assertEqual(results[0].draw_count, 1)
 
     def test_import_garbage(self):
         self.data["form-0-points"] = "3@"

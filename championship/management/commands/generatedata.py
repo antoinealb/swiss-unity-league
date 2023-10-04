@@ -53,10 +53,18 @@ class Command(BaseCommand):
             for i, p in enumerate(players):
                 if i < len(players) // 2:
                     points = 9
+                    w, l = 3, 1
                 else:
                     points = 3
+                    w, l = 1, 3
                 EventPlayerResult.objects.create(
-                    points=points, player=p, event=event, ranking=i + 1
+                    points=points,
+                    player=p,
+                    event=event,
+                    ranking=i + 1,
+                    win_count=w,
+                    loss_count=l,
+                    draw_count=0,
                 )
 
         today = datetime.date.today()

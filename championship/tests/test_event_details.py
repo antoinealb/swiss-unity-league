@@ -18,14 +18,18 @@ class EventDetailTestCase(TestCase):
 
     def test_get_page(self):
         event = EventFactory(category=Event.Category.PREMIER)
-        player = PlayerFactory()
-        EventPlayerResult.objects.create(
-            points=10, player=player, event=event, ranking=1
+        ep = EventPlayerResultFactory(
+            points=10,
+            event=event,
+            ranking=1,
+            win_count=3,
+            loss_count=0,
+            draw_count=1,
         )
 
         resp = self.client.get(reverse("event_details", args=[event.id]))
         self.assertIn(event.name, resp.content.decode())
-        self.assertIn(player.name, resp.content.decode())
+        self.assertIn(ep.player.name, resp.content.decode())
 
         self.assertEqual(resp.context_data["results"][0].points, 10)
         self.assertEqual(resp.context_data["results"][0].qps, (10 + 3) * 6)
@@ -46,12 +50,14 @@ class EventDetailTestCase(TestCase):
         )
 
         for i, r in enumerate(results):
-            EventPlayerResult.objects.create(
-                points=10,
-                player=PlayerFactory(),
+            EventPlayerResultFactory(
                 event=event,
                 ranking=i + 1,
                 single_elimination_result=r,
+                points=9,
+                win_count=3,
+                loss_count=0,
+                draw_count=0,
             )
 
         resp = self.client.get(reverse("event_details", args=[event.id]))
