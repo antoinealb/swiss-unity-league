@@ -32,4 +32,4 @@ EXPOSE 8001
 EXPOSE 8002
 EXPOSE 8003
 
-CMD ["gunicorn", "--bind", ":8000", "--workers", "3", "mtg_championship_site.wsgi:application"]
+CMD ["gunicorn", "--bind", ":8000", "--timeout", "60", "--workers", "3", "mtg_championship_site.wsgi:application"]
