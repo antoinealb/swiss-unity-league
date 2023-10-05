@@ -19,6 +19,7 @@ def _standings(df: pd.DataFrame):
     if PLAYER_NAME not in defined_cols:
         raise PlayerNameNotFound()
 
+    df = df.dropna(subset=[PLAYER_NAME])
     if RECORD in defined_cols:
         for _, row in df.iterrows():
             name = row[PLAYER_NAME]
@@ -30,17 +31,17 @@ def _standings(df: pd.DataFrame):
                 raise InvalidRecordError(name, record_string)
             yield (name, points, tuple(parsed_record))
     elif MATCH_POINTS in defined_cols:
-        match_point_list = []
+        name_points_tuple_list = []
         for _, row in df.iterrows():
             try:
-                match_points = int(row[MATCH_POINTS])
-                match_point_list.append(match_points)
+                name_points_tuple_list.append(
+                    (row[PLAYER_NAME], int(row[MATCH_POINTS]))
+                )
             except:
                 raise InvalidMatchPointsError(row[PLAYER_NAME], row[MATCH_POINTS])
-        num_rounds = estimate_rounds(match_point_list)
-        for i, row in df.iterrows():
-            name = row[PLAYER_NAME]
-            points = match_point_list[i]
+        match_points_list = [points for _, points in name_points_tuple_list]
+        num_rounds = estimate_rounds(match_points_list)
+        for name, points in name_points_tuple_list:
             wins = points // 3
             draws = points % 3
             losses = num_rounds - wins - draws
@@ -60,7 +61,7 @@ class PlayerNameNotFound(ValueError):
     def __init__(self, message=f"Column {PLAYER_NAME} not found", *args, **kwargs):
         super().__init__(message, *args, **kwargs)
 
-    ui_error_message = f"The column {PLAYER_NAME} was not found in the excel file. Please make sure to specify the first and lastname of each player in the column {PLAYER_NAME}."
+    ui_error_message = f"The column {PLAYER_NAME} was not found in the excel file. Please rename the column that contains the first and lastname of the player to {PLAYER_NAME}."
 
 
 class RecordOrMatchPointsNotFound(ValueError):
@@ -69,7 +70,7 @@ class RecordOrMatchPointsNotFound(ValueError):
     ):
         super().__init__(message, *args, **kwargs)
 
-    ui_error_message = f"The column {RECORD} or {MATCH_POINTS} was not found in the excel file. Please make sure to specify either the record or match points of each player in the column {RECORD} or {MATCH_POINTS}."
+    ui_error_message = f"The column {RECORD} or {MATCH_POINTS} was not found in the excel file. Please make sure to rename the column with the record or match points accordingly."
 
 
 class InvalidRecordError(ValueError):
@@ -83,4 +84,4 @@ class InvalidMatchPointsError(ValueError):
         self, player_name, match_points, message="Invalid match points", *args, **kwargs
     ):
         super().__init__(message, *args, **kwargs)
-        self.ui_error_message = f"The match points {match_points} of player {player_name} are invalid. Please make sure to specify the match points as an integer."
+        self.ui_error_message = f"The match points {match_points} of player {player_name} are invalid. Please make sure to specify the match points as a whole number."

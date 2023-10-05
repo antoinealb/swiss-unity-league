@@ -683,16 +683,18 @@ class CreateMtgEventResultsView(CreateHTMLParserResultsView):
 
 class CreateExcelResultsView(CreateFileParserResultsView):
     help_text = (
-        "The excel file needs to have the following column names: \n"
-        + "PLAYER_NAME and either RECORD or MATCH_POINTS. Optionally, you can also specifiy the column RANK."
+        "The excel file needs to have the following column names: "
+        + "PLAYER_NAME for the name of the player. "
+        + "RECORD for the record of the player. "
+        + "You can also use the column MATCH_POINTS if you only have the match points and no record."
     )
-    error_text = "Did you specify the columns with the right names PLAYER_NAME and RECORD or MATCH_POINTS?"
+    error_text = "Error in reading the excel file. Did you upload a .xlsx file with the columns named PLAYER_NAME and RECORD (or MATCH_POINTS)?"
 
     def get_results(self, form):
-        excel_file = self.request.FILES["standings"]
-        excel_buffer = io.BytesIO(excel_file.read())
-        df = pd.read_excel(excel_buffer, engine="openpyxl")
         try:
+            excel_file = self.request.FILES["standings"]
+            excel_buffer = io.BytesIO(excel_file.read())
+            df = pd.read_excel(excel_buffer, engine="openpyxl")
             # TODO(antoinealb): Don't drop the record once we can store them
             return [
                 (name, points)
@@ -700,7 +702,12 @@ class CreateExcelResultsView(CreateFileParserResultsView):
             ]
         except Exception as e:
             logging.exception("Could not parse Excel")
-            messages.error(self.request, self.error_text)
+            error = (
+                e.ui_error_message
+                if hasattr(e, "ui_error_message")
+                else self.error_text
+            )
+            messages.error(self.request, error)
 
 
 class ChooseUploaderView(LoginRequiredMixin, FormView):
