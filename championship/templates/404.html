@@ -1,0 +1,15 @@
+{% extends "championship/base.html" %}
+
+{% block title %}Not Found{% endblock %}
+
+{% block content %}
+    <h2>Page not found</h2>
+
+    <div class="row gx-4 gx-lg-5 my-5">
+        <div class="col-lg-5 mb-2">
+            <p><img class="img-fluid" style="max-height:500px" src="/static/404.png" alt="A card with someone lost." /></p>
+            <p>We are sorry, the page you requested ({{ request_path }}) was not found on our website.</p>
+            <p><a class="btn btn-secondary" href="{% url 'index' %}">Take me back</a></p>
+        </div>
+    </div>
+{% endblock %}
