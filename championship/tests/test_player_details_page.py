@@ -32,7 +32,6 @@ class PlayerDetailsTest(TestCase):
         """
         event = EventFactory(category=Event.Category.PREMIER)
         ep = EventPlayerResultFactory(
-            points=10,
             event=event,
             win_count=3,
             draw_count=1,
@@ -86,10 +85,10 @@ class PlayerDetailsTest(TestCase):
         player = PlayerFactory()
         event = EventFactory(category=Event.Category.PREMIER, id=1234)
         EventPlayerResult.objects.create(
-            points=10,
             player=player,
             event=event,
             ranking=1,
+            points=10,
             win_count=3,
             loss_count=0,
             draw_count=1,
@@ -97,10 +96,10 @@ class PlayerDetailsTest(TestCase):
         )
         event = EventFactory(category=Event.Category.REGULAR, id=12345)
         EventPlayerResult.objects.create(
-            points=600,
             player=player,
             event=event,
             ranking=1,
+            points=600,
             win_count=200,
             loss_count=0,
             draw_count=0,
