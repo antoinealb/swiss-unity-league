@@ -309,6 +309,11 @@ class EventPlayerResult(models.Model):
     loss_count = models.PositiveIntegerField(help_text="Number of lost matches")
     draw_count = models.PositiveIntegerField(help_text="Number of drawn matches")
 
+    migrated_from_points_to_record = models.BooleanField(
+        default=False,
+        help_text="Indicates whether this result was automatically migrated from points to records. Used for diagnostics.",
+    )
+
     class Meta:
         indexes = [models.Index(fields=["event"])]
 
