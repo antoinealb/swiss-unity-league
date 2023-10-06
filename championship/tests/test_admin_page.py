@@ -1,6 +1,7 @@
 from django.test import TestCase, Client
 from django.contrib.auth.models import User
 from django.urls import reverse
+from bs4 import BeautifulSoup
 
 
 class AdminViewTestCase(TestCase):
@@ -17,9 +18,9 @@ class AdminViewTestCase(TestCase):
     def test_no_admin_page_shown(self):
         response = self.client.get("/")
 
-        self.assertNotIn(
-            reverse("admin:index"),
-            response.content.decode(),
+        soup = BeautifulSoup(response.content.decode(), features="html.parser")
+        self.assertIsNone(
+            soup.find("a", href=reverse("admin:index")),
             "Non-staff users should not see the link to the admin page.",
         )
 
@@ -27,8 +28,9 @@ class AdminViewTestCase(TestCase):
         User.objects.create_user(username="test", password="test", is_staff=True)
         self.client.login(username="test", password="test")
         response = self.client.get("/")
-        self.assertIn(
-            reverse("admin:index"),
-            response.content.decode(),
+
+        soup = BeautifulSoup(response.content.decode(), features="html.parser")
+        self.assertIsNotNone(
+            soup.find("a", href=reverse("admin:index")),
             "Staff users should see a link to the admin page",
         )
