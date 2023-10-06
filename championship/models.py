@@ -305,6 +305,9 @@ class EventPlayerResult(models.Model):
         choices=SingleEliminationResult.choices,
     )
     ranking = models.PositiveIntegerField(help_text="Standings after the Swiss rounds")
+    win_count = models.PositiveIntegerField(help_text="Number of won matches")
+    loss_count = models.PositiveIntegerField(help_text="Number of lost matches")
+    draw_count = models.PositiveIntegerField(help_text="Number of drawn matches")
 
     class Meta:
         indexes = [models.Index(fields=["event"])]

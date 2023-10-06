@@ -28,6 +28,7 @@ from .models import *
 from .forms import *
 from django.db.models import F, Q
 from championship.parsers import aetherhub, eventlink, mtgevent, challonge, excel_parser
+from championship.parsers.general_parser_functions import record_to_points, parse_record
 from championship.serializers import EventSerializer
 from championship.tournament_valid import (
     validate_standings,
@@ -332,23 +333,6 @@ class EventDeleteView(LoginRequiredMixin, DeleteView):
         return qs.filter(organizer__user=self.request.user)
 
 
-def _points_from_score(score: str) -> int:
-    """Parses the number of points from score
-
-    TODO: More robust parsing required (proper parser?)
-    >>> _points_from_score('3-0-1')
-    10
-
-    >>> _points_from_score('3-0-0')
-    9
-
-    >>> _points_from_score('3-0')
-    9
-    """
-    score_tuples = [int(s) for s in score.split("-")]
-    return sum(a * b for a, b in zip(score_tuples, (3, 0, 1)))
-
-
 def validate_standings_and_show_error(request, standings, category):
     """
     Validates the standings for a given category and sends a given error message to the UI.
@@ -413,11 +397,12 @@ class CreateManualResultsView(LoginRequiredMixin, TemplateView):
         for result in formset.cleaned_data:
             try:
                 name = result["name"]
-                points = _points_from_score(result["points"])
+                points = record_to_points(result["points"])
+                record = parse_record(result["points"])
             except KeyError:
                 continue
 
-            standings.append((re.sub(r"\s+", " ", name), points))
+            standings.append((re.sub(r"\s+", " ", name), points, record))
 
         standings.sort(key=lambda s: s[1], reverse=True)
 
@@ -429,14 +414,20 @@ class CreateManualResultsView(LoginRequiredMixin, TemplateView):
             )
             return self.render_to_response(context, status=400)
 
-        for ranking, (name, points) in enumerate(standings):
+        for ranking, (name, points, record) in enumerate(standings):
             try:
                 player = PlayerAlias.objects.get(name=name).true_player
             except PlayerAlias.DoesNotExist:
                 player, _ = Player.objects.get_or_create(name=name)
 
             EventPlayerResult.objects.create(
-                event=event, player=player, points=points, ranking=ranking + 1
+                event=event,
+                player=player,
+                points=points,
+                ranking=ranking + 1,
+                win_count=record[0],
+                loss_count=record[1],
+                draw_count=record[2],
             )
 
         return HttpResponseRedirect(event.get_absolute_url())
@@ -549,7 +540,7 @@ class CreateResultsView(FormView):
         ):
             return render_error_standings_form()
 
-        for i, (name, points) in enumerate(standings):
+        for i, (name, points, (w, l, d)) in enumerate(standings):
             name = clean_name(name)
             try:
                 player = PlayerAlias.objects.get(name=name).true_player
@@ -557,7 +548,13 @@ class CreateResultsView(FormView):
                 player, _ = Player.objects.get_or_create(name=name)
 
             EventPlayerResult.objects.create(
-                points=points, player=player, event=self.event, ranking=i + 1
+                points=points,
+                player=player,
+                event=self.event,
+                ranking=i + 1,
+                win_count=w,
+                loss_count=l,
+                draw_count=d,
             )
 
         return super().form_valid(form)
@@ -637,10 +634,7 @@ class CreateAetherhubResultsView(CreateLinkParserResultsView):
     placeholder = "https://aetherhub.com/Tourney/RoundTourney/123456"
 
     def extract_standings_from_page(self, text):
-        # TODO(antoinealb): Don't drop the record once we can store them
-        return [
-            (name, points) for (name, points, _) in aetherhub.parse_standings_page(text)
-        ]
+        return aetherhub.parse_standings_page(text)
 
     def clean_url(self, url):
         """Normalizes the given tournament url to point to the RoundTourney page."""
@@ -656,10 +650,7 @@ class CreateChallongeResultsView(CreateLinkParserResultsView):
     placeholder = "https://challonge.com/de/rk6vluaa"
 
     def extract_standings_from_page(self, text):
-        # TODO(antoinealb): Don't drop the record once we can store them
-        return [
-            (name, points) for (name, points, _) in challonge.parse_standings_page(text)
-        ]
+        return challonge.parse_standings_page(text)
 
     def clean_url(self, url):
         return challonge.clean_url(url)
@@ -667,18 +658,12 @@ class CreateChallongeResultsView(CreateLinkParserResultsView):
 
 class CreateEventlinkResultsView(CreateHTMLParserResultsView):
     def extract_standings_from_page(self, text):
-        # TODO(antoinealb): Don't drop the record once we can store them
-        return [
-            (name, points) for (name, points, _) in eventlink.parse_standings_page(text)
-        ]
+        return eventlink.parse_standings_page(text)
 
 
 class CreateMtgEventResultsView(CreateHTMLParserResultsView):
     def extract_standings_from_page(self, text):
-        # TODO(antoinealb): Don't drop the record once we can store them
-        return [
-            (name, points) for (name, points, _) in mtgevent.parse_standings_page(text)
-        ]
+        return mtgevent.parse_standings_page(text)
 
 
 class CreateExcelResultsView(CreateFileParserResultsView):
@@ -695,11 +680,7 @@ class CreateExcelResultsView(CreateFileParserResultsView):
             excel_file = self.request.FILES["standings"]
             excel_buffer = io.BytesIO(excel_file.read())
             df = pd.read_excel(excel_buffer, engine="openpyxl")
-            # TODO(antoinealb): Don't drop the record once we can store them
-            return [
-                (name, points)
-                for (name, points, _) in excel_parser.parse_standings_page(df)
-            ]
+            return excel_parser.parse_standings_page(df)
         except Exception as e:
             logging.exception("Could not parse Excel")
             error = (

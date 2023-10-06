@@ -10,7 +10,10 @@ class CheckTournamentValidTestCase(TestCase):
         Takes a list of points and generates a list of tuples that contain a placeholder player name.
         This is simulates the input that we try to validate.
         """
-        return [(f"Player {index}", result) for index, result in enumerate(points_list)]
+        return [
+            (f"Player {index}", result, (result // 3, result % 3, 0))
+            for index, result in enumerate(points_list)
+        ]
 
     @parameterized.expand(
         [
@@ -62,17 +65,22 @@ class CheckTournamentValidTestCase(TestCase):
         validate_standings(standings, event_category)
 
         # If we add 1 more point an exception should be raised
-        standings[15] = ("Player 15", 1)
+        standings[15] = ("Player 15", 1, (0, 0, 1))
         with self.assertRaises(TooManyPointsInTotalError):
             validate_standings(standings, event_category)
 
     def test_validate_standings_single_player_too_many_points(self):
         points_list = simulate_tournament_max_points(17, 5)
         standings = self.generate_sample_standings(points_list)
+
         event_category = Event.Category.PREMIER
         validate_standings(standings, event_category)  # No exception should be raised
 
-        standings[0] = ("Player 1", 6 * 3)  # Give a player too many points for 5 rounds
+        standings[0] = (
+            "Player 1",
+            6 * 3,
+            (6, 0, 0),
+        )  # Give a player too many points for 5 rounds
         with self.assertRaises(TooManyPointsForPlayerError):
             validate_standings(standings, event_category)
 

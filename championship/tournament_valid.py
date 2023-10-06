@@ -68,7 +68,7 @@ def _validate_points_per_player(standings, category):
     max_rounds = get_max_rounds(num_players, category)
     max_points_per_player = 3 * max_rounds
 
-    for name, points in standings:
+    for name, points, _ in standings:
         if points > max_points_per_player:
             raise TooManyPointsForPlayerError(name)
 
@@ -89,7 +89,9 @@ def _validate_total_points(standings, category):
     max_rounds = get_max_rounds(num_players, category)
 
     # If the points are not divisible by 3 we know the excess is draws and we add 0.5 so that draws also add up to 3 points in total
-    estimated_total_points = sum(points + (points % 3) * 0.5 for _, points in standings)
+    estimated_total_points = sum(
+        points + (points % 3) * 0.5 for _, points, _ in standings
+    )
 
     # We round up to a even number of players due to byes
     rounded_num_players = num_players + num_players % 2
@@ -109,7 +111,7 @@ def _validate_top_8_points(standings, category):
         max_points_top_8 = sum(
             simulate_tournament_max_points(num_players, max_rounds)[:8]
         )
-        total_points_top_8 = sum([points for _, points in standings[:8]])
+        total_points_top_8 = sum([points for _, points, _ in standings[:8]])
         if total_points_top_8 > max_points_top_8:
             raise TooManyPointsForTop8Error()
 

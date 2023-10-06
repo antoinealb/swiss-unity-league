@@ -30,13 +30,15 @@ class PlayerDetailsTest(TestCase):
         """
         Checks that we have a score available in the events.
         """
-        player = PlayerFactory()
         event = EventFactory(category=Event.Category.PREMIER)
-        ep = EventPlayerResult.objects.create(
-            points=10, player=player, event=event, ranking=1
+        ep = EventPlayerResultFactory(
+            event=event,
+            win_count=3,
+            draw_count=1,
+            loss_count=0,
         )
 
-        response = self.client.get(reverse("player_details", args=[player.id]))
+        response = self.client.get(reverse("player_details", args=[ep.player.id]))
         gotScore = response.context_data[LAST_RESULTS][0].qps
 
         self.assertEqual(gotScore, (10 + 3) * 6)
@@ -45,14 +47,10 @@ class PlayerDetailsTest(TestCase):
         """
         Checks that we correctly link to events.
         """
-        player = PlayerFactory()
-        event = EventFactory(category=Event.Category.PREMIER, id=1234)
-        ep = EventPlayerResult.objects.create(
-            points=10, player=player, event=event, ranking=1
-        )
+        ep = EventPlayerResultFactory()
 
-        response = self.client.get(reverse("player_details", args=[player.id]))
-        wantUrl = reverse("event_details", args=[event.id])
+        response = self.client.get(reverse("player_details", args=[ep.player.id]))
+        wantUrl = reverse("event_details", args=[ep.event.id])
 
         self.assertIn(wantUrl, response.content.decode())
 
@@ -74,31 +72,37 @@ class PlayerDetailsTest(TestCase):
         """
         Checks that the other attributes (ranking and category) are displayed.
         """
-        player = PlayerFactory()
         category = Event.Category.PREMIER
         event = EventFactory(category=category)
-        ep = EventPlayerResult.objects.create(
-            points=10, player=player, event=event, ranking=1
-        )
+        ep = EventPlayerResultFactory(event=event, ranking=1)
 
-        response = self.client.get(reverse("player_details", args=[player.id]))
+        response = self.client.get(reverse("player_details", args=[ep.player.id]))
         decoded = response.content.decode()
-        self.assertIn(category.label, decoded)
+        self.assertIn(event.category.label, decoded)
         self.assertIn("1st", decoded)
 
     def test_qp_table(self):
         player = PlayerFactory()
         event = EventFactory(category=Event.Category.PREMIER, id=1234)
         EventPlayerResult.objects.create(
-            points=10,
             player=player,
             event=event,
             ranking=1,
+            points=10,
+            win_count=3,
+            loss_count=0,
+            draw_count=1,
             single_elimination_result=EventPlayerResult.SingleEliminationResult.QUARTER_FINALIST,
         )
         event = EventFactory(category=Event.Category.REGULAR, id=12345)
         EventPlayerResult.objects.create(
-            points=600, player=player, event=event, ranking=1
+            player=player,
+            event=event,
+            ranking=1,
+            points=600,
+            win_count=200,
+            loss_count=0,
+            draw_count=0,
         )
         response = self.client.get(reverse("player_details", args=[player.id]))
         qps_premier = (10 + 3) * 6 + 150

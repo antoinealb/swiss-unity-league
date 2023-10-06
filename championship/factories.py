@@ -107,5 +107,8 @@ class EventPlayerResultFactory(DjangoModelFactory):
 
     event = factory.SubFactory(EventFactory)
     player = factory.SubFactory(PlayerFactory)
-    points = factory.Faker("random_int", min=0, max=15)
+    points = factory.LazyAttribute(lambda o: 3 * o.win_count + o.draw_count)
     ranking = factory.Faker("random_int", min=1, max=30)
+    win_count = factory.Faker("random_int", min=0, max=3)
+    loss_count = factory.Faker("random_int", min=0, max=3)
+    draw_count = factory.Faker("random_int", min=0, max=3)
