@@ -5,6 +5,11 @@
 {% block content %}
     <h1>Ranking by player</h1>
 
+    <p>Update on 07.10.2023: The number of players qualifying for the SUL Invitational has been increased to 40.
+        <br><i>Reason: Due to increased attendance in recent months, and the last-minute addition of three
+            SUL Premier events, we've concluded that a cap of 32 qualifying players is too small.</i>
+    </p>
+
     <dl>
         <dt><i class="icon-star"></i></dt>
         <dd>Qualified for the invitational</dd>
@@ -27,7 +32,7 @@
                         <td>{{ forloop.counter }} <i class="icon-star"></i> <i class="icon-shield"></i> <i class="icon-shield"></td>
                     {% elif forloop.counter <= 5 %}
                         <td>{{ forloop.counter }} <i class="icon-star"></i> <i class="icon-shield"></i></td>
-                    {% elif forloop.counter <= 32 %}
+                    {% elif forloop.counter <= 40 %}
                         <td>{{ forloop.counter }} <i class="icon-star"></i></td>
                     {% else %}
                         <td>{{ forloop.counter }}</td>
