@@ -45,6 +45,22 @@ else:
     ALLOWED_HOSTS = []
 
 
+DEBUG_TOOLBAR_CONFIG = {
+    "SHOW_TOOLBAR_CALLBACK": "mtg_championship_site.settings.should_show_toolbar",
+    "DEBUG_TOOLBAR_USERS": set(["antoinealb", "jari"]),
+}
+
+
+def should_show_toolbar(request):
+    """Whether or not to show Django's debug toolbar.
+
+    Here we check if the users are in an allowlist of users."""
+    if DEBUG:
+        return True
+
+    return request.user.username in DEBUG_TOOLBAR_CONFIG["DEBUG_TOOLBAR_USERS"]
+
+
 # Application definition
 
 INSTALLED_APPS = [
