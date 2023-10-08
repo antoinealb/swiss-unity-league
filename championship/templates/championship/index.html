@@ -54,10 +54,10 @@
                     <ol>
                         {% for player in players|slice:":10" %}
                             {% if forloop.counter <= 5 %}
-                                <li>{{ player.name }} ({{ player.score }} points)</li>
+                                <li>{{ player.name }} ({{ player.score.total_score }} points)</li>
                             {% else %}
                                 <div class="d-none d-lg-block">
-                                    <li >{{ player.name }} ({{ player.score }} points)</li>
+                                    <li >{{ player.name }} ({{ player.score.total_score }} points)</li>
                                 </div>
                             {% endif %}
                         {% endfor %}

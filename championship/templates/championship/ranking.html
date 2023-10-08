@@ -37,7 +37,7 @@
                     {% else %}
                         <td>{{ forloop.counter }}</td>
                     {% endif %}
-                    <td>{{ player.score }}</td>
+                    <td>{{ player.score.total_score }}</td>
                     <td><a href="{{ player.get_absolute_url }}">{{ player.name }}</a></td>
                 </tr>
             {% endfor %}
