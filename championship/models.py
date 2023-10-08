@@ -1,3 +1,4 @@
+from dataclasses import dataclass
 from typing import Any
 from django.db import models
 from django.conf import settings
@@ -430,26 +431,27 @@ scores_players_reaching_max_regular = Gauge(
 
 REGULAR_MAX_SCORE = 500
 
-SCORE_POINTS = "score"
-SCORE_RANK = "rank"
-SCORE_BYES = "byes"
-SCORE_QUALIFIED = "qualified"
+
+@dataclass
+class Score:
+    total_score: int
+    category_score: dict[str, int]
+    rank: int
+    byes: int
+    qualified: bool
 
 
 def get_leaderboard():
     scores_by_player = compute_scores()
     players = list(Player.leaderboard_objects.all())
-    players_with_scores = []
-    for p in players:
-        score = scores_by_player.get(p.id)
+    scores_with_player = []
+    for player in players:
+        score = scores_by_player.get(player.id)
         if score:
-            p.score = score[SCORE_POINTS]
-            p.byes = range(score[SCORE_BYES])
-            p.qualified = score[SCORE_QUALIFIED]
-            p.rank = score[SCORE_RANK]
-            players_with_scores.append(p)
-    players_with_scores.sort(key=lambda l: l.score, reverse=True)
-    return players_with_scores
+            player.score = score
+            scores_with_player.append(player)
+    scores_with_player.sort(key=lambda l: l.score.total_score, reverse=True)
+    return scores_with_player
 
 
 @scores_computation_time_seconds.time()
@@ -485,15 +487,21 @@ def compute_scores():
         qps: int = qps_for_result(result, result.category, result.size, has_top8)
         scores_by_player_category[result.player_id][result.category] += qps
 
+        if (
+            result.single_elimination_result
+            == EventPlayerResult.SingleEliminationResult.FINALIST
+        ):
+            print()
         # Winners of Premier events with more than 128 players get 2 byes
         if (
             result.size > MIN_SIZE_EXTRA_BYE
             and result.category == Event.Category.PREMIER
-            and result.ranking == 1
+            and result.single_elimination_result
+            == EventPlayerResult.SingleEliminationResult.WINNER
         ):
             extra_byes_by_player[result.player_id] += 2
 
-    scores = {}
+    total_points = {}
     for player in scores_by_player_category:
         if (
             scores_by_player_category[player][Event.Category.REGULAR]
@@ -504,22 +512,20 @@ def compute_scores():
             ] = REGULAR_MAX_SCORE
             players_reaching_max += 1
 
-        scores[player] = {
-            SCORE_POINTS: sum(scores_by_player_category[player].values()),
-            SCORE_BYES: extra_byes_by_player.get(player, 0),
-        }
+        total_points[player] = sum(scores_by_player_category[player].values())
 
-    scores = dict(
-        sorted(scores.items(), key=lambda x: x[1][SCORE_POINTS], reverse=True)
-    )
-    for index, board_entry in enumerate(scores.values()):
+    total_points = sorted(total_points.items(), key=lambda x: x[1], reverse=True)
+    scores = {}
+    for index, (player, points_of_player) in enumerate(total_points):
         rank = index + 1
-        board_entry[SCORE_RANK] = rank
-        board_entry[SCORE_BYES] += _byes_for_rank(rank)
-        board_entry[SCORE_QUALIFIED] = True if rank <= 32 else False
-
-        if board_entry[SCORE_BYES] > MAX_BYES:
-            board_entry[SCORE_BYES] = MAX_BYES
+        byes = min(_byes_for_rank(rank) + extra_byes_by_player[player], MAX_BYES)
+        scores[player] = Score(
+            total_score=points_of_player,
+            category_score=scores_by_player_category[player],
+            rank=rank,
+            byes=byes,
+            qualified=rank <= 40,
+        )
 
     scores_players_reaching_max_regular.set(players_reaching_max)
     return scores

@@ -27,7 +27,7 @@ class HomepageTestCase(TestCase):
         self.assertIn("TestEvent1000", response.content.decode())
         self.assertNotIn("RegularEvent", response.content.decode())
 
-    def test_shows_player_name(self):
+    def test_shows_player_with_points(self):
         """
         Checks that the homepage contains some player information.
         """
