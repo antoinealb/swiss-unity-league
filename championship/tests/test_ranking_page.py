@@ -33,3 +33,21 @@ class RankingTestCase(TestCase):
         EventPlayerResultFactory(player=player, points=1)
         response = self.client.get("/ranking")
         self.assertNotContains(response, player.name)
+
+    def test_score_properties_rendering(self):
+        """Checks that the score properties are rendered correctly."""
+        player = PlayerFactory()
+        EventPlayerResultFactory(player=player, points=2)
+        response = self.client.get("/ranking")
+        ranking_properties = """<td>1
+                        
+                            <i class="icon-star"></i>
+                        
+                        
+                            <i class="icon-shield"></i>
+                        
+                            <i class="icon-shield"></i>
+                        
+                    </td>"""
+        print(response.content.decode())
+        self.assertContains(response, ranking_properties)
