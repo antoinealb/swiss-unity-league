@@ -37,6 +37,7 @@ class TopPlayersEmailViewTest(TestCase):
 
     def test_hidden_from_leaderboard(self):
         player = PlayerFactory()
+        EventPlayerResultFactory(event=self.event, points=100, player=player)
         response = self.client.post(self.url, {"num_of_players": 4})
 
         # Check that first all players are returned

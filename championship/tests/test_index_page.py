@@ -27,19 +27,21 @@ class HomepageTestCase(TestCase):
         self.assertIn("TestEvent1000", response.content.decode())
         self.assertNotIn("RegularEvent", response.content.decode())
 
-    def test_shows_player_name(self):
+    def test_shows_player_with_points(self):
         """
         Checks that the homepage contains some player information.
         """
         player = PlayerFactory()
+        EventPlayerResultFactory(player=player, points=1)
         response = self.client.get("/")
-        self.assertIn(player.name, response.content.decode())
+        self.assertContains(response, player.name)
 
     def test_hides_hidden_player_name(self):
         """
         Checks that the homepage contains some player information.
         """
         player = PlayerFactory(hidden_from_leaderboard=True)
+        EventPlayerResultFactory(player=player, points=1)
         response = self.client.get("/")
         self.assertNotIn(player.name, response.content.decode())
 

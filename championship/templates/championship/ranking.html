@@ -1,5 +1,7 @@
 {% extends "championship/base.html" %}
 
+{% load custom_filters %}
+
 {% block title %}Ranking Swiss Unity League{% endblock %}
 
 {% block content %}
@@ -28,16 +30,15 @@
         <tbody>
             {% for player in players %}
                 <tr>
-                    {% if forloop.counter == 1 %}
-                        <td>{{ forloop.counter }} <i class="icon-star"></i> <i class="icon-shield"></i> <i class="icon-shield"></td>
-                    {% elif forloop.counter <= 5 %}
-                        <td>{{ forloop.counter }} <i class="icon-star"></i> <i class="icon-shield"></i></td>
-                    {% elif forloop.counter <= 40 %}
-                        <td>{{ forloop.counter }} <i class="icon-star"></i></td>
-                    {% else %}
-                        <td>{{ forloop.counter }}</td>
-                    {% endif %}
-                    <td>{{ player.score }}</td>
+                    <td>{{ player.score.rank }}
+                        {% if player.score.qualified %}
+                            <i class="icon-star"></i>
+                        {% endif %}
+                        {% for i in player.score.byes|range %}
+                            <i class="icon-shield"></i>
+                        {% endfor %}
+                    </td>
+                    <td>{{ player.score.total_score }}</td>
                     <td><a href="{{ player.get_absolute_url }}">{{ player.name }}</a></td>
                 </tr>
             {% endfor %}

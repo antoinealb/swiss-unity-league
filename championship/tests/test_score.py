@@ -34,9 +34,10 @@ class TestComputeScore(TestCase):
             )
 
         scores = compute_scores()
-        for i, want in enumerate(want_score):
-            got = scores[i + 1]
-            self.assertEqual(want, got, f"Invalid score for player {i+1}")
+        for i, want in enumerate(want_score, 1):
+            score = scores[i]
+            self.assertEqual(want, score.total_score, f"Invalid score for player {i}")
+            self.assertEqual(i, score.rank, f"Invalid rank for player {i}")
 
     def test_compute_score_points_weekly_3rounds(self):
         self._test_compute_score(
@@ -63,11 +64,13 @@ class TestComputeScore(TestCase):
         self.event.save()
         scores = compute_scores()
         for player_id, score in scores:
-            self.assertEqual(0, score, f"Unexpected points for player {player_id}")
+            self.assertEqual(
+                0, score.total_score, f"Unexpected points for player {player_id}"
+            )
 
     def test_max_500_points_for_regular(self):
         """The league rules stipulate that the maximum amount of points a
-        player can get from regular eents is 500. The number of points in other
+        player can get from regular events is 500. The number of points in other
         categories is not limited."""
         player = PlayerFactory()
 
@@ -97,7 +100,7 @@ class TestComputeScore(TestCase):
         )
 
         scores = compute_scores()
-        self.assertEqual(578, scores[player.id])
+        self.assertEqual(578, scores[player.id].total_score)
 
 
 class ExtraPointsOutsideOfTopsTestCase(TestCase):
@@ -134,7 +137,7 @@ class ExtraPointsOutsideOfTopsTestCase(TestCase):
             )
 
         scores = compute_scores()
-        return [scores[p.id] for p in players]
+        return [scores[p.id].total_score for p in players]
 
     def test_extra_points_for_9th_in_large_events(self):
         """Checks that we get some extra points to the 9th player in larger events (more than 32)"""
@@ -200,8 +203,8 @@ class ExtraPointsOutsideOfTopsTestCase(TestCase):
             )
 
         scores = compute_scores()
-        scores = [scores[p.id] for p in players]
-        self.assertEqual(scores[8:], want_score)
+        points = [scores[p.id].total_score for p in players]
+        self.assertEqual(points[8:], want_score)
 
 
 class ScoresWithTop8TestCase(TestCase):
@@ -315,3 +318,93 @@ class TestSortEventPlayerResults(TestCase):
         sorted_rankings = sorted(EventPlayerResult.objects.all())
         self.assertEqual(inverse_top_8_results, sorted_rankings[:8])
         self.assertEqual(results[8:], sorted_rankings[8:])
+
+
+def create_test_tournament(players, category=Event.Category.PREMIER, with_top8=True):
+    event = EventFactory(category=category)
+    num_players = len(players)
+    for i, player in enumerate(players):
+        rank = i + 1
+
+        if category != Event.Category.REGULAR and with_top8:
+            if rank == 1:
+                ser = EventPlayerResult.SingleEliminationResult.WINNER
+            elif rank == 2:
+                ser = EventPlayerResult.SingleEliminationResult.FINALIST
+            elif rank <= 4:
+                ser = EventPlayerResult.SingleEliminationResult.SEMI_FINALIST
+            elif rank <= 8:
+                ser = EventPlayerResult.SingleEliminationResult.QUARTER_FINALIST
+            else:
+                ser = None
+
+        EventPlayerResultFactory(
+            player=player,
+            points=num_players - i,
+            ranking=rank,
+            single_elimination_result=ser,
+            event=event,
+        )
+
+
+class TestScoresByes(TestCase):
+    def test_top_byes(self):
+        num_players = 50
+        players = [PlayerFactory() for _ in range(num_players)]
+        create_test_tournament(players)
+        byes = [s.byes for s in compute_scores().values()]
+        want_byes = [2] + [1] * 4 + [0] * (num_players - 5)
+        self.assertEqual(want_byes, byes)
+
+    def test_large_tournament_byes(self):
+        num_players = 130
+        players = [PlayerFactory() for _ in range(num_players)]
+
+        create_test_tournament(players)
+        # Make sure that a different player is points leader
+        EventPlayerResultFactory(
+            single_elimination_result=EventPlayerResult.SingleEliminationResult.FINALIST,
+            event=EventFactory(category=Event.Category.PREMIER),
+            player=players[1],
+        )
+
+        # Now the winner and the points leader should both have 2 byes
+        byes = [s.byes for s in compute_scores().values()]
+        want_byes = [2] * 2 + [1] * 3 + [0] * (num_players - 5)
+        self.assertEqual(want_byes, byes)
+
+        # Change event to regional and winner shouldn't get 2 byes anymore
+        Event.objects.update(category=Event.Category.REGIONAL)
+        byes = [s.byes for s in compute_scores().values()]
+        want_byes = [2] * 1 + [1] * 4 + [0] * (num_players - 5)
+        self.assertEqual(want_byes, byes)
+
+    def test_max_byes(self):
+        num_players = 130
+        players = [PlayerFactory() for _ in range(num_players)]
+        # One person wins 2 large events (hence 4 byes) but maximum byes should still be 2
+        create_test_tournament(players)
+        create_test_tournament(players)
+
+        # Make sure that a different player is points leader
+        for _ in range(4):
+            EventPlayerResultFactory(
+                single_elimination_result=EventPlayerResult.SingleEliminationResult.FINALIST,
+                event=EventFactory(category=Event.Category.PREMIER),
+                player=players[1],
+            )
+        # Now the winner and the points leader should both have 2 byes
+        byes = [s.byes for s in compute_scores().values()]
+        want_byes = [2] * 2 + [1] * 3 + [0] * (num_players - 5)
+        self.assertEqual(want_byes, byes)
+
+
+class TestScoresQualified(TestCase):
+    def test_top_40_qualified(self):
+        num_players = 50
+        num_qualified = 40
+        players = [PlayerFactory() for _ in range(num_players)]
+        create_test_tournament(players)
+        byes = [s.qualified for s in compute_scores().values()]
+        want_byes = [True] * num_qualified + [False] * (num_players - num_qualified)
+        self.assertEqual(want_byes, byes)

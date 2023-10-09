@@ -178,3 +178,6 @@ commit_sha.txt
 
 #VS Code
 .vscode
+
+#Pytest
+pytest.ini
