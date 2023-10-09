@@ -456,7 +456,6 @@ def get_leaderboard():
     for player in players:
         score = scores_by_player.get(player.id)
         if score:
-            score.range_byes = range(score.byes)
             player.score = score
             scores_with_player.append(player)
     scores_with_player.sort(key=lambda l: l.score.total_score, reverse=True)

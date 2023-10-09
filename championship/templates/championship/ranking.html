@@ -1,5 +1,7 @@
 {% extends "championship/base.html" %}
 
+{% load custom_filters %}
+
 {% block title %}Ranking Swiss Unity League{% endblock %}
 
 {% block content %}
@@ -32,7 +34,7 @@
                         {% if player.score.qualified %}
                             <i class="icon-star"></i>
                         {% endif %}
-                        {% for i in player.score.range_byes %}
+                        {% for i in player.score.byes|range %}
                             <i class="icon-shield"></i>
                         {% endfor %}
                     </td>
