@@ -49,5 +49,4 @@ class RankingTestCase(TestCase):
                             <i class="icon-shield"></i>
                         
                     </td>"""
-        print(response.content.decode())
         self.assertContains(response, ranking_properties)

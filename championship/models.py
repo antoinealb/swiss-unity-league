@@ -496,11 +496,6 @@ def compute_scores():
         qps: int = qps_for_result(result, result.category, result.size, has_top8)
         scores_by_player_category[result.player_id][result.category] += qps
 
-        if (
-            result.single_elimination_result
-            == EventPlayerResult.SingleEliminationResult.FINALIST
-        ):
-            print()
         # Winners of Premier events with more than 128 players get 2 byes
         if (
             result.size > MIN_SIZE_EXTRA_BYE
