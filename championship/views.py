@@ -20,13 +20,14 @@ from django.contrib import messages
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.conf import settings
+from django.db import transaction
+from django.db.models import F, Q
 
 from rest_framework import viewsets, views
 from rest_framework.response import Response
 
 from .models import *
 from .forms import *
-from django.db.models import F, Q
 from championship.parsers import aetherhub, eventlink, mtgevent, challonge, excel_parser
 from championship.parsers.general_parser_functions import record_to_points, parse_record
 from championship.serializers import EventSerializer
@@ -381,6 +382,7 @@ class CreateManualResultsView(LoginRequiredMixin, TemplateView):
             "players": players,
         }
 
+    @transaction.atomic
     def post(self, request, *args, **kwargs):
         formset = ResultsFormset(request.POST)
         metadata_form = ManualUploadMetadataForm(user=request.user, data=request.POST)
@@ -513,6 +515,7 @@ class CreateResultsView(FormView):
         """
         raise ImproperlyConfigured("No parser implemented")
 
+    @transaction.atomic
     def form_valid(self, form):
         """Processes a succesful result creation form.
 
@@ -715,6 +718,7 @@ class AddTop8ResultsView(LoginRequiredMixin, FormView):
         )
         return kwargs
 
+    @transaction.atomic
     def form_valid(self, form):
         self.event = Event.objects.get(id=self.kwargs["pk"])
 
