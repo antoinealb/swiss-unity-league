@@ -1,3 +1,4 @@
+import csv
 import datetime
 import re
 import logging
@@ -692,7 +693,10 @@ class CreateExcelCsvResultsView(CreateFileParserResultsView):
         except Exception:
             try:
                 file_buffer.seek(0)
-                df = pd.read_csv(file_buffer, delimiter=r"[,\t;|^]")
+                sniffer = csv.Sniffer()
+                delimiter = sniffer.sniff(file_buffer.read(1024).decode()).delimiter
+                file_buffer.seek(0)
+                df = pd.read_csv(file_buffer, delimiter=delimiter)
             except Exception:
                 pass
         return df
