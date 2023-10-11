@@ -108,28 +108,13 @@ class PlayerDetailsView(DetailView):
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        context[LAST_RESULTS] = (
+        results = get_results_with_qps(
             EventPlayerResult.objects.filter(player=context["player"])
-            .annotate(
-                name=F("event__name"),
-                date=F("event__date"),
-                category=F("event__category"),
-                event_size=Count("event__eventplayerresult"),
-                top8_cnt=Count(
-                    "event__eventplayerresult",
-                    filter=Q(event__eventplayerresult__single_elimination_result__gt=0),
-                ),
-            )
-            .order_by("-event__date")
         )
-        for result in context[LAST_RESULTS]:
-            has_top8 = result.top8_cnt > 0
-            result.qps = qps_for_result(
-                result,
-                result.category,
-                event_size=result.event_size,
-                has_top_8=has_top8,
-            )
+
+        context[LAST_RESULTS] = sorted(
+            results, key=lambda r: r.event.date, reverse=True
+        )
 
         qp_table = {
             THEAD: [
@@ -162,8 +147,7 @@ class PlayerDetailsView(DetailView):
                 row_title=EVENTS,
             )
 
-            has_top8 = result.top8_cnt > 0
-            if has_top8:
+            if result.has_top8:
                 # For events with top 8 only display the results if the player made top 8
                 if result.single_elimination_result:
                     add_to_table(
@@ -209,21 +193,11 @@ class EventDetailsView(DetailView):
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        results = EventPlayerResult.objects.filter(event=context["event"]).annotate(
-            player_name=F("player__name"),
-            category=F("event__category"),
-            event_size=Count("event__eventplayerresult"),
-            top8_cnt=Count(
-                "event__eventplayerresult",
-                filter=Q(event__eventplayerresult__single_elimination_result__gt=0),
-            ),
-        )
-
-        for r in results:
-            has_top8 = r.top8_cnt > 0
-            r.qps = qps_for_result(
-                r, r.category, event_size=r.event_size, has_top_8=has_top8
+        results = get_results_with_qps(
+            EventPlayerResult.objects.filter(event=context["event"]).annotate(
+                player_name=F("player__name"),
             )
+        )
 
         context["results"] = sorted(results)
 

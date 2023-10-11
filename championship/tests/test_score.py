@@ -212,7 +212,7 @@ class ScoresWithTop8TestCase(TestCase):
         self.event = EventFactory()
         self.player = PlayerFactory()
 
-    def score(self, category, points, result):
+    def score(self, points, result):
         ep = EventPlayerResult(
             points=points,
             event=self.event,
@@ -220,9 +220,11 @@ class ScoresWithTop8TestCase(TestCase):
             single_elimination_result=result,
             ranking=1,
         )
-        return qps_for_result(ep, category, event_size=32, has_top_8=True)
+        return qps_for_result(ep, event_size=32, has_top_8=True)
 
     def test_premier_event(self):
+        self.event.category = Event.Category.PREMIER
+        self.event.save()
         testCases = [
             (EventPlayerResult.SingleEliminationResult.WINNER, 500),
             (EventPlayerResult.SingleEliminationResult.FINALIST, 300),
@@ -233,10 +235,12 @@ class ScoresWithTop8TestCase(TestCase):
         for ranking, points in testCases:
             with self.subTest(f"{ranking.label}"):
                 wantScore = (10 + 3) * 6 + points
-                gotScore = self.score(Event.Category.PREMIER, 10, ranking)
+                gotScore = self.score(10, ranking)
                 self.assertEqual(wantScore, gotScore)
 
     def test_regional_event(self):
+        self.event.category = Event.Category.REGIONAL
+        self.event.save()
         testCases = [
             (EventPlayerResult.SingleEliminationResult.WINNER, 100),
             (EventPlayerResult.SingleEliminationResult.FINALIST, 60),
@@ -247,15 +251,17 @@ class ScoresWithTop8TestCase(TestCase):
         for ranking, points in testCases:
             with self.subTest(f"{ranking.label}"):
                 wantScore = (10 + 3) * 4 + points
-                gotScore = self.score(Event.Category.REGIONAL, 10, ranking)
+                gotScore = self.score(10, ranking)
                 self.assertEqual(wantScore, gotScore)
 
     def test_top8_when_only_top4_where_played(self):
         """Tests a scenario where we only played a top4."""
-        r = EventPlayerResultFactory(points=10, ranking=5)
+        self.event.category = Event.Category.PREMIER
+        self.event.save()
+        r = EventPlayerResultFactory(points=10, ranking=5, event=self.event)
 
         want = (10 + 3) * 6 + 150
-        got = qps_for_result(r, Event.Category.PREMIER, 5, has_top_8=True)
+        got = qps_for_result(r, 5, has_top_8=True)
 
         self.assertEqual(want, got)
 
