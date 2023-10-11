@@ -88,8 +88,8 @@
             <tbody>
                 {% for result in last_results %}
                     <tr>
-                        <td><a href="{% url 'event_details' result.event_id %}">{{result.name }}</a></td>
-                        <td>{{ result.date }}</td>
+                        <td><a href="{{ result.event.get_absolute_url }}">{{result.event.name }}</a></td>
+                        <td>{{ result.event.date }}</td>
                         <td>{{ result.qps }}</td>
                         <td>{{ result.get_ranking_display }}</td>
                         <td>{{ result.event.get_category_display }}</td>
