@@ -58,16 +58,6 @@ def parse_standings_page(df: pd.DataFrame):
     return sorted_standings
 
 
-def detect_delimiter_of_csv(lines, delimiters=[",", "\t", ";", "|", "^"]):
-    counts = Counter()
-
-    for line in lines:
-        for delim in delimiters:
-            counts[delim] += line.count(delim)
-
-    return max(counts, key=counts.get)
-
-
 class PlayerNameNotFound(ValueError):
     def __init__(self, message=f"Column {PLAYER_NAME} not found", *args, **kwargs):
         super().__init__(message, *args, **kwargs)

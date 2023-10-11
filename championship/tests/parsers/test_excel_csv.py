@@ -77,11 +77,6 @@ class ExcelCsvStandingParser(TestCase):
         ]
         self.assertEqual(want, self.results[:3])
 
-    def test_detect_delimiter(self):
-        lines = ["a,b,;c\n", "4,5\t,6\n", "7\t8,9\n"]
-
-        self.assertEqual(detect_delimiter_of_csv(lines), ",")
-
 
 class ExcelCsvStandingParserExceptions(TestCase):
     def setUp(self):

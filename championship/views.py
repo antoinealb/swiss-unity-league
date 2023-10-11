@@ -692,10 +692,7 @@ class CreateExcelCsvResultsView(CreateFileParserResultsView):
         except Exception:
             try:
                 file_buffer.seek(0)
-                sample_lines = [file_buffer.readline().decode() for _ in range(5)]
-                file_buffer.seek(0)
-                delimiter = excel_csv_parser.detect_delimiter_of_csv(sample_lines)
-                df = pd.read_csv(file_buffer, delimiter=delimiter)
+                df = pd.read_csv(file_buffer, delimiter=r"[,\t;|^]")
             except Exception:
                 pass
         return df
