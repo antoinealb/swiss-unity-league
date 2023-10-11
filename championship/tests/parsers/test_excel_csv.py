@@ -1,10 +1,10 @@
-from championship.parsers.excel_parser import *
+from championship.parsers.excel_csv_parser import *
 from unittest import TestCase
 import pandas as pd
 from parameterized import parameterized
 
 
-class ExcelStandingParser(TestCase):
+class ExcelCsvStandingParser(TestCase):
     def test_can_parse_record(self):
         self.df = pd.read_excel("championship/tests/parsers/excel_ranking.xlsx")
         self.results = parse_standings_page(self.df)
@@ -77,8 +77,13 @@ class ExcelStandingParser(TestCase):
         ]
         self.assertEqual(want, self.results[:3])
 
+    def test_detect_delimiter(self):
+        lines = ["a,b,;c\n", "4,5\t,6\n", "7\t8,9\n"]
 
-class ExcelStandingParserExceptions(TestCase):
+        self.assertEqual(detect_delimiter_of_csv(lines), ",")
+
+
+class ExcelCsvStandingParserExceptions(TestCase):
     def setUp(self):
         self.df = pd.read_excel("championship/tests/parsers/excel_ranking.xlsx")
 

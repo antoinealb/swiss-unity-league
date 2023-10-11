@@ -28,7 +28,13 @@ from rest_framework.response import Response
 
 from .models import *
 from .forms import *
-from championship.parsers import aetherhub, eventlink, mtgevent, challonge, excel_parser
+from championship.parsers import (
+    aetherhub,
+    eventlink,
+    excel_csv_parser,
+    mtgevent,
+    challonge,
+)
 from championship.parsers.general_parser_functions import record_to_points, parse_record
 from championship.serializers import EventSerializer
 from championship.tournament_valid import (
@@ -669,29 +675,45 @@ class CreateMtgEventResultsView(CreateHTMLParserResultsView):
         return mtgevent.parse_standings_page(text)
 
 
-class CreateExcelResultsView(CreateFileParserResultsView):
+class CreateExcelCsvResultsView(CreateFileParserResultsView):
     help_text = (
-        "The excel file needs to have the following column names: "
-        + "PLAYER_NAME for the name of the player. "
+        "Upload an Excel (.xlsx) or CSV (.csv) file. The headers of the columns need to be named in a specific way: "
+        + "PLAYER_NAME for the column with the name of the player. "
         + "RECORD for the record of the player. "
         + "You can also use the column MATCH_POINTS if you only have the match points and no record."
     )
-    error_text = "Error in reading the excel file. Did you upload a .xlsx file with the columns named PLAYER_NAME and RECORD (or MATCH_POINTS)?"
+
+    def _read_excel_csv(self):
+        df = None
+        try:
+            file = self.request.FILES["standings"]
+            file_buffer = io.BytesIO(file.read())
+            df = pd.read_excel(file_buffer, engine="openpyxl")
+        except Exception:
+            try:
+                file_buffer.seek(0)
+                sample_lines = [file_buffer.readline().decode() for _ in range(5)]
+                file_buffer.seek(0)
+                delimiter = excel_csv_parser.detect_delimiter_of_csv(sample_lines)
+                df = pd.read_csv(file_buffer, delimiter=delimiter)
+            except Exception:
+                pass
+        return df
 
     def get_results(self, form):
+        error_text = "Error in reading the file. Did you upload a .xlsx or .csv file with the headers of the columns named PLAYER_NAME and RECORD (or MATCH_POINTS)?"
+        df = self._read_excel_csv()
+        if df is None:
+            logging.exception("Could not parse file as Excel or CSV")
+            messages.error(self.request, error_text)
+            return
         try:
-            excel_file = self.request.FILES["standings"]
-            excel_buffer = io.BytesIO(excel_file.read())
-            df = pd.read_excel(excel_buffer, engine="openpyxl")
-            return excel_parser.parse_standings_page(df)
+            return excel_csv_parser.parse_standings_page(df)
         except Exception as e:
-            logging.exception("Could not parse Excel")
-            error = (
-                e.ui_error_message
-                if hasattr(e, "ui_error_message")
-                else self.error_text
-            )
-            messages.error(self.request, error)
+            if hasattr(e, "ui_error_message"):
+                error_text = e.ui_error_message
+            logging.exception("Error parsing dataframe")
+            messages.error(self.request, error_text)
 
 
 class ChooseUploaderView(LoginRequiredMixin, FormView):

@@ -1,4 +1,5 @@
 import pandas as pd
+from collections import Counter
 from championship.parsers.general_parser_functions import (
     parse_record,
     record_to_points,
@@ -55,6 +56,16 @@ def parse_standings_page(df: pd.DataFrame):
     # Sort by match points
     sorted_standings = sorted(standings, key=lambda x: x[1], reverse=True)
     return sorted_standings
+
+
+def detect_delimiter_of_csv(lines, delimiters=[",", "\t", ";", "|", "^"]):
+    counts = Counter()
+
+    for line in lines:
+        for delim in delimiters:
+            counts[delim] += line.count(delim)
+
+    return max(counts, key=counts.get)
 
 
 class PlayerNameNotFound(ValueError):
