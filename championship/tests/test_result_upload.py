@@ -464,6 +464,28 @@ class ExcelCsvUploadTest(TestCase):
         self.assertEqual(results[0].draw_count, 1)
         self.assertEqual(results[0].loss_count, 0)
 
+    def test_ui_error_message(self):
+        wrong_csv = """R,PLAYER_NAME
+        3-0-1,Player 1
+        2-2-0,Player 2
+        1-3-0,Player 3"""
+
+        self.login()
+
+        standings = SimpleUploadedFile(
+            "standings.csv",
+            wrong_csv.encode(),
+            content_type="text/csv",
+        )
+
+        self.data = {
+            "standings": standings,
+            "event": self.event.id,
+        }
+        response = self.client.post(reverse("results_create_excelcsv"), self.data)
+        response_text = response.content.decode()
+        self.assertTrue("RECORD or MATCH_POINTS was not found" in response_text)
+
 
 class ManualImportTestCase(TestCase):
     def setUp(self):
