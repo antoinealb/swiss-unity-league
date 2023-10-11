@@ -398,14 +398,13 @@ SINGLE_ELIM_TO_RANK = {
 
 def qps_for_result(
     result: EventPlayerResult,
-    category: Event.Category,
     event_size: int,
     has_top_8: bool,
 ) -> int:
     """
     Returns how many QPs a player got in a single event.
     """
-
+    category = result.event.category
     points = result.points + PARTICIPATION_POINTS
     points = points * MULT[category]
 
@@ -426,6 +425,31 @@ def qps_for_result(
             ]
 
     return points
+
+
+def get_results_with_qps(
+    event_player_results: models.QuerySet[EventPlayerResult],
+) -> list[EventPlayerResult]:
+    """
+    Pass a QuerySet of EventPlayerResult, and get it annotated with the following fields:
+    - has_top8: True if the event has a top8
+    - qps: the number of QPs the player got in this event
+    - event_size: the number of players in the event
+    - event: the event
+    """
+    results = event_player_results.select_related("event").annotate(
+        event_size=Count("event__eventplayerresult"),
+        top_count=Count("event__eventplayerresult__single_elimination_result"),
+    )
+
+    for result in results:
+        result.has_top8 = result.top_count > 0
+        result.qps = qps_for_result(
+            result,
+            event_size=result.event_size,
+            has_top_8=result.has_top8,
+        )
+    return list(results)
 
 
 scores_computation_time_seconds = Summary(
@@ -487,18 +511,13 @@ def compute_scores():
         for e in EventPlayerResult.objects.filter(single_elimination_result__gt=0)
     )
 
-    for result in EventPlayerResult.objects.annotate(
-        category=F("event__category"),
-        size=Count("event__eventplayerresult"),
-    ).all():
-        has_top8 = result.event_id in events_with_top8
-        qps: int = qps_for_result(result, result.category, result.size, has_top8)
-        scores_by_player_category[result.player_id][result.category] += qps
+    for result in get_results_with_qps(EventPlayerResult.objects):
+        scores_by_player_category[result.player_id][result.event.category] += result.qps
 
         # Winners of Premier events with more than 128 players get 2 byes
         if (
-            result.size > MIN_SIZE_EXTRA_BYE
-            and result.category == Event.Category.PREMIER
+            result.event_size > MIN_SIZE_EXTRA_BYE
+            and result.event.category == Event.Category.PREMIER
             and result.single_elimination_result
             == EventPlayerResult.SingleEliminationResult.WINNER
         ):
