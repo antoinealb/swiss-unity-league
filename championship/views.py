@@ -3,12 +3,12 @@ import datetime
 import re
 import logging
 import os
+from zipfile import BadZipFile
 import requests
 import random
 import pandas as pd
 import io
 from typing import *
-
 from django.core.exceptions import ImproperlyConfigured
 from django.shortcuts import render, get_object_or_404, redirect
 from django.views.generic.base import TemplateView
@@ -23,10 +23,8 @@ from django.contrib.auth.mixins import LoginRequiredMixin
 from django.conf import settings
 from django.db import transaction
 from django.db.models import F, Q
-
 from rest_framework import viewsets, views
 from rest_framework.response import Response
-
 from .models import *
 from .forms import *
 from championship.parsers import (
@@ -685,20 +683,19 @@ class CreateExcelCsvResultsView(CreateFileParserResultsView):
     )
 
     def _read_excel_csv(self):
-        df = None
         try:
             file = self.request.FILES["standings"]
             file_buffer = io.BytesIO(file.read())
             df = pd.read_excel(file_buffer, engine="openpyxl")
-        except Exception:
+        except BadZipFile:
             try:
                 file_buffer.seek(0)
                 sniffer = csv.Sniffer()
                 delimiter = sniffer.sniff(file_buffer.read(1024).decode()).delimiter
                 file_buffer.seek(0)
                 df = pd.read_csv(file_buffer, delimiter=delimiter)
-            except Exception:
-                pass
+            except (csv.Error, UnicodeDecodeError, pd.errors.ParserError):
+                df = None
         return df
 
     def get_results(self, form):
@@ -713,8 +710,10 @@ class CreateExcelCsvResultsView(CreateFileParserResultsView):
         except Exception as e:
             if hasattr(e, "ui_error_message"):
                 error_text = e.ui_error_message
-            logging.exception("Error parsing dataframe")
-            messages.error(self.request, error_text)
+            else:
+                raise e
+        logging.exception("Error parsing dataframe")
+        messages.error(self.request, error_text)
 
 
 class ChooseUploaderView(LoginRequiredMixin, FormView):
