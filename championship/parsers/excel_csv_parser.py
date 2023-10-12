@@ -1,4 +1,5 @@
 import pandas as pd
+from collections import Counter
 from championship.parsers.general_parser_functions import (
     parse_record,
     record_to_points,

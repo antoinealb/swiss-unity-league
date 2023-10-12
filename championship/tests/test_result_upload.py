@@ -392,7 +392,7 @@ class MtgEventUploadTest(TestCase):
         )
 
 
-class ExcelUploadTest(TestCase):
+class ExcelCsvUploadTest(TestCase):
     def setUp(self):
         self.client = Client()
         self.credentials = dict(username="test", password="test")
@@ -403,6 +403,12 @@ class ExcelUploadTest(TestCase):
             date=datetime.date.today(),
             category=Event.Category.REGULAR,
         )
+
+    def login(self):
+        self.client.login(**self.credentials)
+
+    def test_upload_excel_results(self):
+        self.login()
 
         with open("championship/tests/parsers/excel_ranking.xlsx", "rb") as f:
             standings = SimpleUploadedFile(
@@ -416,23 +422,69 @@ class ExcelUploadTest(TestCase):
             "event": self.event.id,
         }
 
-    def login(self):
-        self.client.login(**self.credentials)
-
-    def test_imports_result(self):
-        self.login()
-
-        response = self.client.post(reverse("results_create_excel"), self.data)
+        response = self.client.post(reverse("results_create_excelcsv"), self.data)
         self.event.refresh_from_db()
 
         results = self.event.eventplayerresult_set.order_by("ranking")
         self.assertEqual(results.count(), 3)
         self.assertEqual(results[0].player.name, "Jari Rentsch")
-        self.assertEqual(results[0].points, 9)
+        self.assertEqual(results[0].ranking, 1)
         self.assertEqual(results[0].points, 9)
         self.assertEqual(results[0].win_count, 3)
         self.assertEqual(results[0].draw_count, 0)
         self.assertEqual(results[0].loss_count, 1)
+
+    def test_upload_csv_results(self):
+        test_csv = """RECORD,PLAYER_NAME
+        3-0-1,Player 1
+        2-2-0,Player 2
+        1-3-0,Player 3"""
+
+        self.login()
+
+        standings = SimpleUploadedFile(
+            "standings.csv",
+            test_csv.encode(),
+            content_type="text/csv",
+        )
+
+        self.data = {
+            "standings": standings,
+            "event": self.event.id,
+        }
+        response = self.client.post(reverse("results_create_excelcsv"), self.data)
+        self.event.refresh_from_db()
+
+        results = self.event.eventplayerresult_set.order_by("ranking")
+        self.assertEqual(results.count(), 3)
+        self.assertEqual(results[0].player.name, "Player 1")
+        self.assertEqual(results[0].ranking, 1)
+        self.assertEqual(results[0].points, 10)
+        self.assertEqual(results[0].win_count, 3)
+        self.assertEqual(results[0].draw_count, 1)
+        self.assertEqual(results[0].loss_count, 0)
+
+    def test_ui_error_message(self):
+        wrong_csv = """R,PLAYER_NAME
+        3-0-1,Player 1
+        2-2-0,Player 2
+        1-3-0,Player 3"""
+
+        self.login()
+
+        standings = SimpleUploadedFile(
+            "standings.csv",
+            wrong_csv.encode(),
+            content_type="text/csv",
+        )
+
+        self.data = {
+            "standings": standings,
+            "event": self.event.id,
+        }
+        response = self.client.post(reverse("results_create_excelcsv"), self.data)
+        response_text = response.content.decode()
+        self.assertTrue("RECORD or MATCH_POINTS was not found" in response_text)
 
 
 class ManualImportTestCase(TestCase):
