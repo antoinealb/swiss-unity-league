@@ -92,3 +92,14 @@ class CheckTournamentValidTestCase(TestCase):
         event_category = Event.Category.PREMIER
         with self.assertRaises(TooManyPointsForTop8Error):
             validate_standings(standings, event_category)
+
+    def test_get_max_round_error_message(self):
+        points_list = [5 * 3] * 8 + [
+            0
+        ] * 16  # 15 points is possible in 5 rounds, but not for 8 players
+        standings = self.generate_sample_standings(points_list)
+        event_category = Event.Category.PREMIER
+
+        got = get_max_round_error_message(event_category, standings)
+        want = " A SUL Premier event with 24 players should have 5 rounds."
+        self.assertEqual(got, want)
