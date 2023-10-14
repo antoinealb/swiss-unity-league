@@ -146,8 +146,7 @@ def get_max_round_error_message(category, standings):
         standings (list): A list of tuples containing player names and their respective points.
         category (Event.Category): The category of the event.
     """
-    if category != Event.Category.PREMIER:
-        at_maximum_text = " at maximum"
+    at_maximum_text = " at maximum" if category != Event.Category.PREMIER else ""
     num_players = len(standings)
     max_rounds = get_max_rounds(num_players, category)
     event_category_label = Event.Category(category).label
