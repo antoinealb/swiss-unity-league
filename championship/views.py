@@ -15,7 +15,7 @@ from django.views.generic.base import TemplateView
 from django.views.generic.list import ListView
 from django.views.generic.edit import DeleteView, FormView, UpdateView, CreateView
 from django.views.generic import DetailView
-from django.http import HttpResponseRedirect, HttpResponseForbidden
+from django.http import HttpResponse, HttpResponseRedirect, HttpResponseForbidden
 from django.urls import reverse, reverse_lazy
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
@@ -44,6 +44,7 @@ from championship.tournament_valid import (
     TooManyPointsForTop8Error,
     TooFewPlayersForPremierError,
 )
+from django.template.exceptions import TemplateDoesNotExist
 
 EVENTS_ON_PAGE = 10
 PLAYERS_TOP = 10
@@ -224,12 +225,22 @@ class CompleteRankingView(TemplateView):
         return context
 
 
-class InformationForPlayerView(TemplateView):
-    template_name = "championship/info.html"
+class PerSeasonInformationView(TemplateView):
+    def get_template_names(self):
+        default_id = settings.INFO_TEXT_DEFAULT_SEASON_ID
+        season_id = self.kwargs.get("season_id", default_id)
+
+        # We return two templates so that in case the season-specific one is
+        # not found, the default one gets returned.
+        return [self.template_path.format(id=i) for i in (season_id, default_id)]
 
 
-class InformationForOrganizerView(TemplateView):
-    template_name = "championship/info_organizer.html"
+class InformationForPlayerView(PerSeasonInformationView):
+    template_path = "championship/info/{id}/info_player.html"
+
+
+class InformationForOrganizerView(PerSeasonInformationView):
+    template_path = "championship/info/{id}/info_organizer.html"
 
 
 class CreateEventView(LoginRequiredMixin, FormView):

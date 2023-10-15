@@ -6,4 +6,28 @@
     <h1>Upload results</h1>
     {% crispy form %}
 
+    <p>Here are some things to keep in mind when uploading results.</p>
+    <ol>
+        <li>Make sure to always upload the <strong>standings of the last swiss round</strong> (without points for top 8).</li>
+        <li>
+            Ensure players' names are entered as <strong>first name followed by last name</strong> separated by a space. Example: <em>John Doe</em>.
+            <ul>
+                <li>When using pairing tools like <em>Aetherhub</em> where the <strong>players can enter their names themselves</strong>,
+                    please remind players to input their real names accordingly.</li>
+            </ul>
+        </li>
+        <li>
+            When using <em>Eventlink</em> make sure to submit tournament results <strong>right after the tournament</strong>. On the following day player names can be replaced with <strong>[[Redacted]]</strong>.
+        </li>
+        <li>
+            For events with Playoffs:
+            <ol>
+                <li>First, upload the standings of the last Swiss round as usual and click submit.</li>
+                <li>Next, you will be redirected to the view of the event where you see the uploaded results.</li>
+                <li>Click on the button called 'Add/Edit Playoff Results'.</li>
+                <li>Enter the results of the top 4 or top 8.</li>
+            </ol>
+        </li>
+    </ol>
+
 {% endblock %}

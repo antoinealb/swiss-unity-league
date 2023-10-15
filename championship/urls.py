@@ -19,9 +19,19 @@ urlpatterns = [
     path("player/<int:pk>/", views.PlayerDetailsView.as_view(), name="player_details"),
     path("info", views.InformationForPlayerView.as_view(), name="info"),
     path(
+        "info/<int:season_id>/",
+        views.InformationForPlayerView.as_view(),
+        name="info_for_season",
+    ),
+    path(
         "info/organizer",
         views.InformationForOrganizerView.as_view(),
         name="info_organizer",
+    ),
+    path(
+        "info/organizer/<int:season_id>",
+        views.InformationForOrganizerView.as_view(),
+        name="info_organizer_for_season",
     ),
     path("events", views.FutureEventView.as_view(), name="events"),
     path("events/create", views.CreateEventView.as_view(), name="events_create"),
