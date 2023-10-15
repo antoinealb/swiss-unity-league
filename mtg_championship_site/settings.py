@@ -135,7 +135,7 @@ WSGI_APPLICATION = "mtg_championship_site.wsgi.application"
 
 db_path = os.getenv("DB_PATH")
 if not db_path:
-    db_path = BASE_DIR / "db.sqlite3"
+    db_path = os.path.join(BASE_DIR, "db.sqlite3")
 
 DATABASES = {
     "default": {
