@@ -44,7 +44,6 @@ from championship.tournament_valid import (
     TooManyPointsForTop8Error,
     TooFewPlayersForPremierError,
 )
-from django.template.loader import select_template
 from django.template.exceptions import TemplateDoesNotExist
 
 EVENTS_ON_PAGE = 10
@@ -226,25 +225,21 @@ class CompleteRankingView(TemplateView):
         return context
 
 
-class InfoSeasonView(TemplateView):
-    template_path = ""
-
-    def get(self, request, *args, **kwargs):
+class PerSeasonInformationView(TemplateView):
+    def get_template_names(self):
         default_id = settings.INFO_TEXT_DEFAULT_SEASON_ID
-        parsed_id = kwargs.get("id", default_id)
-        try:
-            tmpl = select_template([self.template_path.format(id=parsed_id)])
-        except TemplateDoesNotExist:
-            tmpl = select_template([self.template_path.format(id=default_id)])
-        context = self.get_context_data()
-        return HttpResponse(tmpl.render(context))
+        season_id = self.kwargs.get("id", default_id)
+
+        # We return two templates so that in case the season-specific one is
+        # not found, the default one gets returned.
+        return [self.template_path.format(id=i) for i in (season_id, default_id)]
 
 
-class InformationForPlayerView(InfoSeasonView):
+class InformationForPlayerView(PerSeasonInformationView):
     template_path = "championship/info/{id}/info_player.html"
 
 
-class InformationForOrganizerView(InfoSeasonView):
+class InformationForOrganizerView(PerSeasonInformationView):
     template_path = "championship/info/{id}/info_organizer.html"
 
 
