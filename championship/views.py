@@ -230,13 +230,12 @@ class InfoSeasonView(TemplateView):
     template_path = ""
 
     def get(self, request, *args, **kwargs):
-        parsed_id = kwargs.get("id", 1)
+        default_id = settings.INFO_TEXT_DEFAULT_SEASON_ID
+        parsed_id = kwargs.get("id", default_id)
         try:
             tmpl = select_template([self.template_path.format(id=parsed_id)])
         except TemplateDoesNotExist:
-            tmpl = select_template(
-                [self.template_path.format(id=settings.DEFAULT_SEASON_ID)]
-            )
+            tmpl = select_template([self.template_path.format(id=default_id)])
         context = self.get_context_data()
         return HttpResponse(tmpl.render(context))
 
