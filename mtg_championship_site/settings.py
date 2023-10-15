@@ -263,6 +263,10 @@ class Season:
     name: str
     start_date: datetime.date
     end_date: datetime.date
+    result_deadline: datetime.timedelta = datetime.timedelta(days=7)
+
+    def can_enter_results(self):
+        return datetime.date.today() <= self.end_date + self.result_deadline
 
 
 SEASON = {
