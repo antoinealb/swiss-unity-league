@@ -228,7 +228,7 @@ class CompleteRankingView(TemplateView):
 class PerSeasonInformationView(TemplateView):
     def get_template_names(self):
         default_id = settings.INFO_TEXT_DEFAULT_SEASON_ID
-        season_id = self.kwargs.get("id", default_id)
+        season_id = self.kwargs.get("season_id", default_id)
 
         # We return two templates so that in case the season-specific one is
         # not found, the default one gets returned.
