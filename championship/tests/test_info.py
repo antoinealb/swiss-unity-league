@@ -2,11 +2,13 @@ from django.test import TestCase
 from django.urls import reverse
 from parameterized import parameterized
 
-SEASONS_WITH_INFO = [1, 2]
+from mtg_championship_site import settings
+
+SEASON_IDS_WITH_INFO = [s.id for s in settings.SEASONS_WITH_INFO]
 
 
 class InfoPlayerViewTest(TestCase):
-    @parameterized.expand(SEASONS_WITH_INFO)
+    @parameterized.expand(SEASON_IDS_WITH_INFO)
     def test_seasons_exist(self, season_id):
         url = reverse("info_for_season", kwargs={"season_id": season_id})
         response = self.client.get(url)
@@ -25,7 +27,7 @@ class InfoPlayerViewTest(TestCase):
 
 
 class InfoOrganizerViewTest(TestCase):
-    @parameterized.expand(SEASONS_WITH_INFO)
+    @parameterized.expand(SEASON_IDS_WITH_INFO)
     def test_seasons_exist(self, season_id):
         url = reverse("info_organizer_for_season", kwargs={"season_id": season_id})
         response = self.client.get(url)

@@ -226,21 +226,33 @@ class CompleteRankingView(TemplateView):
 
 
 class PerSeasonInformationView(TemplateView):
+    default_id = settings.INFO_TEXT_DEFAULT_SEASON_ID
+
     def get_template_names(self):
-        default_id = settings.INFO_TEXT_DEFAULT_SEASON_ID
-        season_id = self.kwargs.get("season_id", default_id)
+        season_id = self.kwargs.get("season_id", self.default_id)
 
         # We return two templates so that in case the season-specific one is
         # not found, the default one gets returned.
-        return [self.template_path.format(id=i) for i in (season_id, default_id)]
+        return [self.template_path.format(id=i) for i in (season_id, self.default_id)]
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context["seasons"] = settings.SEASONS_WITH_INFO
+        context["current_season"] = settings.SEASON_MAP.get(
+            self.kwargs.get("season_id", self.default_id)
+        )
+        context["view_name"] = self.season_view_name
+        return context
 
 
 class InformationForPlayerView(PerSeasonInformationView):
     template_path = "championship/info/{id}/info_player.html"
+    season_view_name = "info_for_season"
 
 
 class InformationForOrganizerView(PerSeasonInformationView):
     template_path = "championship/info/{id}/info_organizer.html"
+    season_view_name = "info_organizer_for_season"
 
 
 class CreateEventView(LoginRequiredMixin, FormView):
