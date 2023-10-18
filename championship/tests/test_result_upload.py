@@ -242,6 +242,58 @@ class AetherhubImportTest(TestCase):
         self.assertEqual([], gotChoices)
 
 
+class ChallongeImportTest(TestCase):
+    def setUp(self):
+        self.client = Client()
+        self.credentials = dict(username="test", password="test")
+        self.user = User.objects.create_user(**self.credentials)
+        self.organizer = EventOrganizerFactory(user=self.user)
+        self.event = EventFactory(
+            organizer=self.organizer,
+            date=datetime.date.today(),
+            category=Event.Category.REGULAR,
+        )
+
+        self.data = {
+            "url": "https://challonge.com/de/sdisxw8g",
+            "event": self.event.id,
+        }
+
+    def login(self):
+        self.client.login(**self.credentials)
+
+    def mock_response(self, requests_get):
+        resp = MagicMock()
+        resp.content = load_test_html("challonge_with_drops.html").encode()
+        requests_get.return_value = resp
+
+    @patch("requests.get")
+    def test_imports_result_for_correct_tourney(self, requests_get):
+        self.login()
+        self.mock_response(requests_get)
+
+        response = self.client.post(reverse("results_create_challonge"), self.data)
+
+        results = EventPlayerResult.objects.filter(event=self.event).order_by("id")[:]
+
+        # hardcoded spot checks from the tournament
+        self.assertEqual(len(results), 50)
+        # Player that dropped after 2-1
+        player_id = 36
+        self.assertEqual(results[player_id].points, 6)
+        self.assertEqual(results[player_id].draw_count, 0)
+        self.assertEqual(results[player_id].loss_count, 1)
+        self.assertEqual(results[player_id].win_count, 2)
+        self.assertEqual(results[player_id].ranking, 37)
+        # Player that dropped after 2-2-1
+        player_id = 30
+        self.assertEqual(results[player_id].points, 7)
+        self.assertEqual(results[player_id].draw_count, 1)
+        self.assertEqual(results[player_id].loss_count, 2)
+        self.assertEqual(results[player_id].win_count, 2)
+        self.assertEqual(results[player_id].ranking, 31)
+
+
 class EventLinkImportTestCase(TestCase):
     def setUp(self):
         self.client = Client()

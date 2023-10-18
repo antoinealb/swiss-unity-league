@@ -528,6 +528,9 @@ class CreateResultsView(FormView):
         if not standings:
             return render_error_standings_form()
 
+        # Sometimes the webpages or users don't sort the standings correctly. Hence we should sort as a precaution.
+        standings.sort(key=lambda s: s[1], reverse=True)
+
         if self.event.results_validation_enabled and validate_standings_and_show_error(
             self.request, standings, self.event.category
         ):

@@ -41,17 +41,20 @@ def _standings(soup):
     table = soup.find("table", class_="striped-table -light limited_width standings")
     player_index, record_index, bye_index = _get_indices(table)
     for line in table.find("tbody").find_all("tr"):
-        values = [tag.text.strip() for tag in line.find_all(["th", "td"])]
+        cells = line.find_all(["th", "td"])
+        values = [tag.text.strip() for tag in cells]
         name = _remove_brackets(values[player_index]).strip()
         points = record_to_points(values[record_index])
-
         record = list(parse_record(values[record_index]))
 
-        byes = int(values[bye_index])
-        points += byes * 3
-
-        # Store the byes as wins
-        record[0] += byes
+        # If a player drops (class=removed), challonge gives them a bye for each round they missed.
+        # Hence the player gets too many points. So we should only count byes if the player has not dropped.
+        player_dropped = "removed" in cells[player_index].get("class", [])
+        if not player_dropped:
+            byes = int(values[bye_index])
+            points += byes * 3
+            # Store the byes as wins
+            record[0] += byes
         yield (name, points, tuple(record))
 
 
