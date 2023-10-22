@@ -236,8 +236,9 @@ class Event(models.Model):
         -The event is not older than a month.
         -The end of season deadline hasn't passed.
         """
+        today = datetime.date.today()
         event_not_too_old = self.date >= (
-            datetime.date.today() - settings.EVENT_MAX_AGE_FOR_RESULT_ENTRY
+            today - settings.EVENT_MAX_AGE_FOR_RESULT_ENTRY
         )
         season = find_current_season(self.date)
         can_enter_results_for_season = season.can_enter_results() if season else False

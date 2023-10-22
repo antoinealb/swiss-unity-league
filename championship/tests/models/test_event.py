@@ -1,8 +1,12 @@
+from unittest.mock import patch
 from parameterized import parameterized
 from championship.models import Event
 from championship.factories import EventFactory
 from django.test import TestCase
 import datetime
+from datetime import date
+
+from mtg_championship_site import settings
 
 
 class EventCanChangeResults(TestCase):
@@ -11,3 +15,30 @@ class EventCanChangeResults(TestCase):
         d = datetime.date.today() - datetime.timedelta(days=age_days)
         e = EventFactory(date=d)
         self.assertEqual(e.can_be_edited(), want_can_change)
+
+    @parameterized.expand(
+        [
+            # Season 1
+            (date(2023, 10, 31), date(2023, 11, 8), False),
+            (date(2023, 10, 31), date(2023, 10, 31), True),
+            (date(2023, 10, 31), date(2023, 11, 7), True),
+            (date(2023, 10, 6), date(2023, 11, 7), False),
+            # Season 2
+            (date(2023, 11, 1), date(2023, 11, 8), True),
+            (date(2023, 11, 1), date(2024, 11, 7), False),
+        ]
+    )
+    def test_can_change_based_on_season_deadline(
+        self, event_date, today, want_can_change
+    ):
+        with patch("championship.models.datetime") as mock_datetime_models, patch(
+            "mtg_championship_site.settings.datetime"
+        ) as mock_datetime_settings:
+            mock_datetime_models.date.today.return_value = today
+            mock_datetime_settings.date.today.return_value = today
+
+            e = EventFactory(date=event_date)
+            self.assertEqual(
+                e.can_be_edited(),
+                want_can_change,
+            )
