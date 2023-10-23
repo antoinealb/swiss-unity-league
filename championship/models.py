@@ -198,6 +198,9 @@ class Event(models.Model):
         PIONEER = "PIONEER", "Pioneer"
         STANDARD = "STANDARD", "Standard"
         DUEL_COMMANDER = "DC", "Duel Commander"
+        PAUPER = "PAUPER", "Pauper"
+        OLD_SCHOOL = "OS", "Old School"
+        PRE_MODERN = "PM", "Premodern"
 
     format = models.CharField(
         max_length=10,
