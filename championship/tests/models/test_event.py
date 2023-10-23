@@ -26,6 +26,8 @@ class EventCanChangeResults(TestCase):
             # Season 2
             (date(2023, 11, 1), date(2023, 11, 8), True),
             (date(2023, 11, 1), date(2024, 11, 7), False),
+            # Completely out of season
+            (date(2019, 11, 1), date(2019, 11, 2), False),
         ]
     )
     @patch("championship.models.datetime")

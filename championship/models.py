@@ -232,18 +232,22 @@ class Event(models.Model):
         return self.category != Event.Category.REGULAR
 
     def can_be_edited(self) -> bool:
-        """To prevent the results from being altered we need to disallow the TO to edit the event after some time.
+        """Returns whether changing scores for this Event is allowed.
+
         A TO can edit the event when all of the following conditions are met:
-        -The event is not older than a month.
+        -The event is not older than settings.EVENT_MAX_AGE_FOR_RESULT_ENTRY
         -The end of season deadline hasn't passed.
         """
         today = datetime.date.today()
-        event_not_too_old = self.date >= (
-            today - settings.EVENT_MAX_AGE_FOR_RESULT_ENTRY
-        )
+        oldest_allowed = today - settings.EVENT_MAX_AGE_FOR_RESULT_ENTRY
+        if self.date < oldest_allowed:
+            return False
+
         season = find_current_season(self.date)
-        can_enter_results_for_season = season.can_enter_results() if season else False
-        return event_not_too_old and can_enter_results_for_season
+        if not season:
+            return False
+
+        return season.can_enter_results()
 
     objects = EventManager()
 
@@ -569,7 +573,6 @@ def find_current_season(date: datetime.date):
     for id, season in settings.SEASON.items():
         if season.start_date <= date <= season.end_date:
             return season
-    return None
 
 
 auditlog.register(EventOrganizer)
