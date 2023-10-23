@@ -265,8 +265,9 @@ class Season:
     end_date: datetime.date
     result_deadline: datetime.timedelta = datetime.timedelta(days=7)
 
-    def can_enter_results(self):
-        return datetime.date.today() <= self.end_date + self.result_deadline
+    def can_enter_results(self, on_date: datetime.date) -> bool:
+        """Checks if results can still be added to this season on a given date."""
+        return on_date <= self.end_date + self.result_deadline
 
 
 SEASON = {

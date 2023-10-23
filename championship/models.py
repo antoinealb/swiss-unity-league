@@ -247,7 +247,7 @@ class Event(models.Model):
         if not season:
             return False
 
-        return season.can_enter_results()
+        return season.can_enter_results(today)
 
     objects = EventManager()
 

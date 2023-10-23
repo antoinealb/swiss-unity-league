@@ -31,17 +31,14 @@ class EventCanChangeResults(TestCase):
         ]
     )
     @patch("championship.models.datetime")
-    @patch("mtg_championship_site.settings.datetime")
     def test_can_change_based_on_season_deadline(
         self,
         event_date,
         today,
         want_can_change,
-        mock_datetime_settings,
         mock_datetime_models,
     ):
         mock_datetime_models.date.today.return_value = today
-        mock_datetime_settings.date.today.return_value = today
 
         e = EventFactory(date=event_date)
         self.assertEqual(
