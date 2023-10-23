@@ -211,7 +211,7 @@ class EventDetailsView(DetailView):
         # Only do so when the event is finished longer than 4 days ago and results can still be uploaded.
         context["notify_missing_results"] = (
             context["event"].date < datetime.date.today() - datetime.timedelta(days=4)
-            and context["event"].can_change_results()
+            and context["event"].can_be_edited()
         )
         return context
 
@@ -784,7 +784,7 @@ class ClearEventResultsView(LoginRequiredMixin, FormView):
         # No processing to do here, just delete results
         event = self.get_event()
 
-        if event.can_change_results():
+        if event.can_be_edited():
             event.eventplayerresult_set.all().delete()
         else:
             messages.error(self.request, "Event too old to delete results.")

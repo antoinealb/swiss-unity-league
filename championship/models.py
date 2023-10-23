@@ -143,13 +143,17 @@ class EventOrganizer(models.Model):
 
 class EventManager(models.Manager):
     def available_for_result_upload(self, user):
-        start_date = datetime.date.today() - settings.EVENT_MAX_AGE_FOR_RESULT_ENTRY
-        end_date = datetime.date.today()
-        return (
+        today = datetime.date.today()
+        start_date = today - settings.EVENT_MAX_AGE_FOR_RESULT_ENTRY
+        end_date = today
+        initial_qs = (
             self.filter(organizer__user=user, date__gte=start_date, date__lte=end_date)
             .annotate(result_cnt=Count("eventplayerresult"))
             .filter(result_cnt=0)
         )
+
+        valid_event_ids = [event.id for event in initial_qs if event.can_be_edited()]
+        return initial_qs.filter(id__in=valid_event_ids)
 
 
 class Event(models.Model):
@@ -227,11 +231,23 @@ class Event(models.Model):
     def can_have_top8(self) -> bool:
         return self.category != Event.Category.REGULAR
 
-    def can_change_results(self) -> bool:
-        """Returns True if changing results for this event is still allowed
-        based on league rules."""
-        d = datetime.date.today() - settings.EVENT_MAX_AGE_FOR_RESULT_ENTRY
-        return self.date >= d
+    def can_be_edited(self) -> bool:
+        """Returns whether changing scores for this Event is allowed.
+
+        A TO can edit the event when all of the following conditions are met:
+        -The event is not older than settings.EVENT_MAX_AGE_FOR_RESULT_ENTRY
+        -The end of season deadline hasn't passed.
+        """
+        today = datetime.date.today()
+        oldest_allowed = today - settings.EVENT_MAX_AGE_FOR_RESULT_ENTRY
+        if self.date < oldest_allowed:
+            return False
+
+        season = find_current_season(self.date)
+        if not season:
+            return False
+
+        return season.can_enter_results(today)
 
     objects = EventManager()
 
@@ -551,6 +567,12 @@ def compute_scores():
 
     scores_players_reaching_max_regular.set(players_reaching_max)
     return scores
+
+
+def find_current_season(date: datetime.date):
+    for id, season in settings.SEASON.items():
+        if season.start_date <= date <= season.end_date:
+            return season
 
 
 auditlog.register(EventOrganizer)

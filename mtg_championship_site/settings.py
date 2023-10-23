@@ -135,7 +135,7 @@ WSGI_APPLICATION = "mtg_championship_site.wsgi.application"
 
 db_path = os.getenv("DB_PATH")
 if not db_path:
-    db_path = BASE_DIR / "db.sqlite3"
+    db_path = os.path.join(BASE_DIR, "db.sqlite3")
 
 DATABASES = {
     "default": {
@@ -263,6 +263,11 @@ class Season:
     name: str
     start_date: datetime.date
     end_date: datetime.date
+    result_deadline: datetime.timedelta = datetime.timedelta(days=7)
+
+    def can_enter_results(self, on_date: datetime.date) -> bool:
+        """Checks if results can still be added to this season on a given date."""
+        return on_date <= self.end_date + self.result_deadline
 
 
 SEASON = {
