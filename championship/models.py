@@ -8,6 +8,9 @@ from django.core.cache import cache
 from django.db.models.signals import post_save, post_delete
 from django.dispatch import receiver
 from django.urls import reverse
+from django.db.models.signals import pre_save
+from django.dispatch import receiver
+from championship.cache_function import cache_function
 from auditlog.registry import auditlog
 from collections import defaultdict
 import datetime
@@ -502,6 +505,7 @@ def get_leaderboard():
     return scores_with_player
 
 
+@cache_function(cache_key="compute_scores")
 @scores_computation_time_seconds.time()
 def compute_scores():
     players_reaching_max = 0
@@ -559,7 +563,7 @@ def compute_scores():
         byes = min(_byes_for_rank(rank) + extra_byes_by_player[player], MAX_BYES)
         scores[player] = Score(
             total_score=points_of_player,
-            category_score=scores_by_player_category[player],
+            category_score=dict(scores_by_player_category[player]),
             rank=rank,
             byes=byes,
             qualified=rank <= 40,
@@ -567,6 +571,11 @@ def compute_scores():
 
     scores_players_reaching_max_regular.set(players_reaching_max)
     return scores
+
+
+@receiver(pre_save, sender=EventPlayerResult)
+def invalidate_score_cache(sender, **kwargs):
+    cache.delete("compute_scores")
 
 
 def find_current_season(date: datetime.date):
