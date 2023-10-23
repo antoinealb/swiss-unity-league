@@ -142,7 +142,8 @@ class EventOrganizer(models.Model):
 
 
 class EventManager(models.Manager):
-    def available_for_result_upload(self, user, today=datetime.date.today()):
+    def available_for_result_upload(self, user):
+        today = datetime.date.today()
         start_date = today - settings.EVENT_MAX_AGE_FOR_RESULT_ENTRY
         end_date = today
         initial_qs = (
