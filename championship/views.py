@@ -322,13 +322,21 @@ def update_event(request, pk):
     )
 
 
-class EventDeleteView(LoginRequiredMixin, DeleteView):
-    model = Event
-    success_url = reverse_lazy("events")
+@login_required
+def event_delete(request, pk):
+    event = get_object_or_404(Event, id=pk)
+    if (
+        request.method == "POST"
+        and event.organizer.user == request.user
+        and event.can_be_deleted()
+    ):
+        event.delete()
+        messages.success(request, "Succesfully deleted address!")
+        return HttpResponseRedirect(
+            reverse("organizer_details", args=[event.organizer.id])
+        )
 
-    def get_queryset(self):
-        qs = super(EventDeleteView, self).get_queryset()
-        return qs.filter(organizer__user=self.request.user)
+    return HttpResponseForbidden("You are not authorized to delete this event!")
 
 
 def validate_standings_and_show_error(request, standings, category):

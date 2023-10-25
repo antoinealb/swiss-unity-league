@@ -3,7 +3,12 @@ from django.test import TestCase, Client
 from django.contrib.auth.models import User
 from django.urls import reverse
 from championship.models import Event, EventOrganizer, Address
-from championship.factories import AddressFactory, EventOrganizerFactory, EventFactory
+from championship.factories import (
+    AddressFactory,
+    EventOrganizerFactory,
+    EventFactory,
+    EventPlayerResultFactory,
+)
 from parameterized import parameterized
 
 
@@ -196,11 +201,28 @@ class EventCreationTestCase(TestCase):
 
     def test_delete_event(self):
         to = EventOrganizerFactory(user=self.user)
-        event = EventFactory(organizer=to)
+        event = EventFactory(organizer=to, date=datetime.date.today())
 
         self.login()
         self.client.post(reverse("event_delete", args=[event.id]))
 
+        self.assertEqual(Event.objects.count(), 0)
+
+    def test_delete_old_event(self):
+        to = EventOrganizerFactory(user=self.user)
+        event = EventFactory(
+            organizer=to, date=datetime.date.today() - datetime.timedelta(days=32)
+        )
+
+        # Old event with results cannot be deleted
+        epr = EventPlayerResultFactory(event=event)
+        self.login()
+        self.client.post(reverse("event_delete", args=[event.id]))
+        self.assertEqual(Event.objects.count(), 1)
+
+        # Old event without results can be deleted
+        epr.delete()
+        self.client.post(reverse("event_delete", args=[event.id]))
         self.assertEqual(Event.objects.count(), 0)
 
     def test_delete_event_for_another_to(self):
@@ -209,7 +231,7 @@ class EventCreationTestCase(TestCase):
 
         self.login()
         resp = self.client.post(reverse("event_delete", args=[event.id]))
-        self.assertEqual(404, resp.status_code)
+        self.assertEqual(403, resp.status_code)
 
     def test_default_address_is_initial(self):
         self.login()

@@ -1,6 +1,10 @@
 {% if object %}
     <button type="button" class="btn btn-danger" data-bs-toggle="modal" data-bs-target="#deleteModal{{ object.id }}">
-        Delete    </button>
+        Delete
+        {% if long_name %}
+            {{ object.display_name|lower }}
+        {% endif %}
+    </button>
 
     <div class="modal fade" id="deleteModal{{ object.id }}">
         <div class="modal-dialog">
@@ -10,7 +14,7 @@
                     <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                 </div>
                 <div class="modal-body">
-                    <h6>Are you sure you want to delete this {{ object.name|lower }}?</h6>
+                    <h6>Are you sure you want to delete this {{ object.display_name|lower }}?</h6>
                     <p>{{ object }}</p>
                 </div>
                 <div class="modal-footer">

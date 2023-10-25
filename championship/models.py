@@ -230,6 +230,12 @@ class Event(models.Model):
     def __str__(self):
         return f"{self.name} - {self.date} ({self.get_category_display()})"
 
+    # Used for naming this object in the deletion popup
+    display_name = "Event"
+
+    def get_delete_url(self):
+        return reverse("event_delete", args=[self.pk])
+
     def get_absolute_url(self):
         return reverse("event_details", args=[self.id])
 
@@ -253,6 +259,10 @@ class Event(models.Model):
             return False
 
         return season.can_enter_results(today)
+
+    def can_be_deleted(self) -> bool:
+        """Events can be deleted if they can still be edited or have no results."""
+        return self.can_be_edited() or not self.eventplayerresult_set.exists()
 
     objects = EventManager()
 
