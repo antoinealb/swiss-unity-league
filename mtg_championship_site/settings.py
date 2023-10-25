@@ -281,3 +281,17 @@ SEASON = {
 
 DEFAULT_SEASON_ID = 1
 INFO_TEXT_DEFAULT_SEASON_ID = DEFAULT_SEASON_ID
+
+CACHES = {
+    "default": {
+        "BACKEND": "django.core.cache.backends.dummy.DummyCache",
+    }
+}
+
+if cache_location := os.getenv("CACHE_LOCATION"):
+    CACHES = {
+        "default": {
+            "BACKEND": "django.core.cache.backends.filebased.FileBasedCache",
+            "LOCATION": cache_location,
+        }
+    }
