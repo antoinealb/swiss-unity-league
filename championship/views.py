@@ -298,15 +298,19 @@ def copy_event(request, pk):
 def update_event(request, pk):
     event = get_object_or_404(Event, pk=pk)
 
-    if event.organizer.user != request.user:
+    if event.organizer.user != request.user or not event.can_be_edited():
         return HttpResponseForbidden()
 
     if request.method == "POST":
         form = EventCreateForm(request.POST, instance=event)
         if form.is_valid():
-            form.save()
-            messages.success(request, "Succesfully saved event")
-            return HttpResponseRedirect(reverse("event_details", args=[event.id]))
+            event = form.save(commit=False)
+            if event.can_be_edited():
+                event.save()
+                messages.success(request, "Succesfully saved event")
+                return HttpResponseRedirect(reverse("event_details", args=[event.id]))
+            else:
+                messages.error(request, "Event date is too old.")
     else:
         form = EventCreateForm(instance=event, organizer=event.organizer)
 

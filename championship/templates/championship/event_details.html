@@ -41,8 +41,10 @@
                 {% if event.can_have_top8 %}
                     <p><a href="{% url 'results_top8_add' event.id %}" class="btn btn-secondary">Add/Edit Playoffs Results</a></p>
                 {% endif %}
-                <p><a href="{% url 'event_update' event.id %}" class="btn btn-secondary">Edit event</a></p>
                 <p><a href="{% url 'event_copy' event.id %}" class="btn btn-secondary-light">Copy event</a></p>
+                {% if event.can_be_edited %}
+                    <p><a href="{% url 'event_update' event.id %}" class="btn btn-secondary">Edit event</a></p>
+                {% endif %}
                 <p><a href="{% url 'event_delete' event.id %}" class="btn btn-danger">Delete event</a></p>
                 {% if event.eventplayerresult_set.count > 0 and event.can_be_edited %}
                     <p><a href="{% url 'event_clear_results' event.id %}" class="btn btn-danger">Delete results</a></p>
