@@ -5,10 +5,9 @@ from django.conf import settings
 from django.db.models import Count, F
 from django_bleach.models import BleachField
 from django.core.cache import cache
-from django.db.models.signals import post_save, post_delete
+from django.db.models.signals import pre_save, post_delete
 from django.dispatch import receiver
 from django.urls import reverse
-from django.db.models.signals import pre_save
 from django.dispatch import receiver
 from championship.cache_function import cache_function
 from auditlog.registry import auditlog
@@ -580,6 +579,7 @@ def compute_scores():
     return scores
 
 
+@receiver(post_delete, sender=EventPlayerResult)
 @receiver(pre_save, sender=EventPlayerResult)
 def invalidate_score_cache(sender, **kwargs):
     cache.delete("compute_scores")
