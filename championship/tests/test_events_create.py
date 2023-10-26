@@ -96,7 +96,7 @@ class EventCreationTestCase(TestCase):
         data = {
             "name": "Test Event",
             "url": "https://test.example",
-            "date": "11/26/2022",
+            "date": datetime.date.today().strftime("%m/%d/%Y"),
             "format": "LEGACY",
             "category": "PREMIER",
         }
@@ -120,7 +120,7 @@ class EventCreationTestCase(TestCase):
 
     def test_update_event_from_someone_else(self):
         other_to = EventOrganizerFactory()
-        event = EventFactory(organizer=other_to)
+        event = EventFactory(organizer=other_to, date=datetime.date.today())
 
         # Try to change an event ran by the other TO
         to = EventOrganizerFactory(user=self.user)
@@ -128,7 +128,7 @@ class EventCreationTestCase(TestCase):
         data = {
             "name": "Test Event",
             "url": "https://test.example",
-            "date": "11/26/2022",
+            "date": datetime.date.today().strftime("%m/%d/%Y"),
             "format": "LEGACY",
             "category": "PREMIER",
         }
@@ -139,7 +139,7 @@ class EventCreationTestCase(TestCase):
 
     def test_update_link_shown_to_organizer(self):
         to = EventOrganizerFactory(user=self.user)
-        event = EventFactory(organizer=to)
+        event = EventFactory(organizer=to, date=datetime.date.today())
 
         resp = self.client.get(reverse("event_details", args=[event.id]))
         self.assertNotIn(
@@ -153,11 +153,39 @@ class EventCreationTestCase(TestCase):
 
     def test_get_update_page(self):
         to = EventOrganizerFactory(user=self.user)
-        event = EventFactory(organizer=to)
+        event = EventFactory(organizer=to, date=datetime.date.today())
 
         self.login()
         resp = self.client.get(reverse("event_update", args=[event.id]))
         self.assertEqual(200, resp.status_code)
+
+    def test_update_old_events_is_forbidden(self):
+        to = EventOrganizerFactory(user=self.user)
+        old_date = datetime.date.today() - datetime.timedelta(days=32)
+        event = EventFactory(organizer=to, date=old_date)
+
+        self.login()
+        resp = self.client.get(reverse("event_update", args=[event.id]))
+        self.assertEqual(403, resp.status_code)
+
+    def test_update_making_event_old_is_forbidden(self):
+        to = EventOrganizerFactory(user=self.user)
+        event = EventFactory(organizer=to, date=datetime.date.today())
+
+        self.login()
+        old_date = datetime.date.today() - datetime.timedelta(days=32)
+        data = {
+            "name": "Test Event",
+            "url": "https://test.example",
+            "date": old_date.strftime("%m/%d/%Y"),
+            "format": "LEGACY",
+            "category": "PREMIER",
+        }
+
+        resp = self.client.post(reverse("event_update", args=[event.id]), data=data)
+        self.assertEqual(200, resp.status_code)
+        event = Event.objects.get(pk=event.id)
+        self.assertEqual(datetime.date.today(), event.date)
 
     def test_get_delete_page(self):
         to = EventOrganizerFactory(user=self.user)
@@ -199,7 +227,9 @@ class EventCreationTestCase(TestCase):
     def test_initial_address_not_overwritten_by_default_address(self):
         to = EventOrganizerFactory(user=self.user)
         not_default_address = to.addresses.all()[1]
-        event = EventFactory(address=not_default_address, organizer=to)
+        event = EventFactory(
+            address=not_default_address, organizer=to, date=datetime.date.today()
+        )
         self.login()
         response = self.client.get(reverse("event_update", args=[event.id]))
         self.assertEqual(200, response.status_code)
@@ -219,7 +249,7 @@ class EventCreationTestCase(TestCase):
         # Create another TO with addresses and check that both have 3 addresses
         for current_to in [to, EventOrganizerFactory()]:
             self.assertEquals(3, current_to.addresses.count())
-        event = EventFactory(organizer=to)
+        event = EventFactory(organizer=to, date=datetime.date.today())
         self.login()
         response = self.client.get(
             reverse(view_name, args=[event.id]) if has_id else reverse(view_name)
