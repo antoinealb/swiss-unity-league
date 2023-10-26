@@ -19,6 +19,9 @@ import urllib.parse
 
 
 class Address(models.Model):
+    class Meta:
+        verbose_name = "Address"
+
     class Region(models.TextChoices):
         AARGAU = "AG", "Aargau"  # German
         APPENZELL_AUSSERRHODEN = "AR", "Appenzell Ausserrhoden"  # German
@@ -72,9 +75,6 @@ class Address(models.Model):
     organizer = models.ForeignKey(
         "EventOrganizer", on_delete=models.CASCADE, related_name="addresses"
     )
-
-    # Used for naming this object in the deletion popup
-    display_name = "Address"
 
     def get_delete_url(self):
         return reverse("address_delete", args=[self.pk])
@@ -169,6 +169,9 @@ class Event(models.Model):
     number of rounds, or ranking based, typically with a cut to top8.
     """
 
+    class Meta:
+        verbose_name = "Event"
+
     name = models.CharField(
         max_length=200, help_text="The name of this event, e.g. 'Christmas Modern 1k'"
     )
@@ -229,9 +232,6 @@ class Event(models.Model):
 
     def __str__(self):
         return f"{self.name} - {self.date} ({self.get_category_display()})"
-
-    # Used for naming this object in the deletion popup
-    display_name = "Event"
 
     def get_delete_url(self):
         return reverse("event_delete", args=[self.pk])
