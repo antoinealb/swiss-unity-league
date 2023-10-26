@@ -102,17 +102,39 @@ class EventDetailTestCase(TestCase):
 
     def test_shows_link_for_top8(self):
         organizer = EventOrganizerFactory(user=self.user)
-        event = EventFactory(category=Event.Category.REGIONAL, organizer=organizer)
+        event = EventFactory(
+            category=Event.Category.REGIONAL,
+            organizer=organizer,
+            date=datetime.date.today(),
+        )
 
         resp = self.client.get(reverse("event_details", args=[event.id]))
-        self.assertIn(
+        self.assertContains(
+            resp,
             reverse("results_top8_add", args=[event.id]),
-            resp.content.decode(),
+        )
+
+    def test_shows_no_link_for_top8_old_events(self):
+        organizer = EventOrganizerFactory(user=self.user)
+        event = EventFactory(
+            category=Event.Category.REGIONAL,
+            organizer=organizer,
+            date=datetime.date.today() - datetime.timedelta(32),
+        )
+
+        resp = self.client.get(reverse("event_details", args=[event.id]))
+        self.assertNotContains(
+            resp,
+            reverse("results_top8_add", args=[event.id]),
         )
 
     def test_shows_no_link_top8_regular(self):
         organizer = EventOrganizerFactory(user=self.user)
-        event = EventFactory(category=Event.Category.REGULAR, organizer=organizer)
+        event = EventFactory(
+            category=Event.Category.REGULAR,
+            organizer=organizer,
+            date=datetime.date.today(),
+        )
         resp = self.client.get(reverse("event_details", args=[event.id]))
         self.assertNotIn(
             reverse("results_top8_add", args=[event.id]),
