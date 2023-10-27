@@ -46,6 +46,29 @@ from championship.tournament_valid import (
 )
 from django.template.exceptions import TemplateDoesNotExist
 
+
+class CustomDeleteView(LoginRequiredMixin, DeleteView):
+    success_message = "Successfully deleted {verbose_name}!"
+    error_message = "You are not allowed to delete this {verbose_name}!"
+
+    def allowed_to_delete(self, object, request):
+        return True
+
+    def form_valid(self, form):
+        request = self.request
+        verbose_name = self.object._meta.verbose_name.lower()
+        if self.allowed_to_delete(self.object, request):
+            messages.success(
+                request, self.success_message.format(verbose_name=verbose_name)
+            )
+            self.delete(self.request)
+        else:
+            messages.error(
+                request, self.error_message.format(verbose_name=verbose_name)
+            )
+        return HttpResponseRedirect(self.get_success_url())
+
+
 EVENTS_ON_PAGE = 10
 PLAYERS_TOP = 10
 
@@ -322,21 +345,14 @@ def update_event(request, pk):
     )
 
 
-@login_required
-def event_delete(request, pk):
-    event = get_object_or_404(Event, id=pk)
-    if (
-        request.method == "POST"
-        and event.organizer.user == request.user
-        and event.can_be_deleted()
-    ):
-        event.delete()
-        messages.success(request, "Succesfully deleted address!")
-        return HttpResponseRedirect(
-            reverse("organizer_details", args=[event.organizer.id])
-        )
+class EventDeleteView(CustomDeleteView):
+    model = Event
 
-    return HttpResponseForbidden("You are not authorized to delete this event!")
+    def get_success_url(self):
+        return reverse("organizer_details", args=[self.object.organizer.id])
+
+    def allowed_to_delete(self, event, request):
+        return event.can_be_deleted() and event.organizer.user == request.user
 
 
 def validate_standings_and_show_error(request, standings, category):
@@ -953,15 +969,9 @@ class AddressUpdateView(LoginRequiredMixin, AddressViewMixin, UpdateView):
         return self.request.user.eventorganizer.get_addresses()
 
 
-@login_required
-def address_delete(request, pk):
-    address = get_object_or_404(Address, id=pk)
-    if (
-        request.method == "POST"
-        and address in request.user.eventorganizer.get_addresses()
-    ):
-        address.delete()
-        messages.success(request, "Succesfully deleted address!")
-        return HttpResponseRedirect(reverse("address_list"))
-    else:
-        return HttpResponseForbidden("You are not authorized to delete this address!")
+class AddressDeleteView(CustomDeleteView):
+    model = Address
+    success_url = reverse_lazy("address_list")
+
+    def allowed_to_delete(self, address, request):
+        return address.organizer.user == request.user

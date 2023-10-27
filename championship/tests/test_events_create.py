@@ -231,7 +231,8 @@ class EventCreationTestCase(TestCase):
 
         self.login()
         resp = self.client.post(reverse("event_delete", args=[event.id]))
-        self.assertEqual(403, resp.status_code)
+        self.assertEqual(302, resp.status_code)
+        self.assertEqual(Event.objects.count(), 1)
 
     def test_default_address_is_initial(self):
         self.login()

@@ -36,7 +36,9 @@ urlpatterns = [
     path("events", views.FutureEventView.as_view(), name="events"),
     path("events/create", views.CreateEventView.as_view(), name="events_create"),
     path("events/<int:pk>/update", views.update_event, name="event_update"),
-    path("events/<int:pk>/delete", views.event_delete, name="event_delete"),
+    path(
+        "events/<int:pk>/delete", views.EventDeleteView.as_view(), name="event_delete"
+    ),
     path("events/<int:pk>/copy", views.copy_event, name="event_copy"),
     path("events/<int:pk>/", views.EventDetailsView.as_view(), name="event_details"),
     path("results/create", views.ChooseUploaderView.as_view(), name="results_create"),
@@ -66,7 +68,9 @@ urlpatterns = [
     path(
         "address/<int:pk>/edit/", views.AddressUpdateView.as_view(), name="address_edit"
     ),
-    path("address/<int:pk>/delete/", views.address_delete, name="address_delete"),
+    path(
+        "address/<pk>/delete/", views.AddressDeleteView.as_view(), name="address_delete"
+    ),
     path("api/", include(api_router.urls)),
     path("api/formats/", views.ListFormats.as_view(), name="formats-list"),
 ]
