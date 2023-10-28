@@ -586,7 +586,7 @@ def invalidate_score_cache(sender, **kwargs):
 
 
 def find_current_season(date: datetime.date):
-    for id, season in settings.SEASON.items():
+    for id, season in settings.SEASON_MAP.items():
         if season.start_date <= date <= season.end_date:
             return season
 

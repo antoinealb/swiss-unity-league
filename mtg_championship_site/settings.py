@@ -260,6 +260,7 @@ BLEACH_ALLOWED_TAGS = [
 
 @dataclass
 class Season:
+    id: int
     name: str
     start_date: datetime.date
     end_date: datetime.date
@@ -270,17 +271,27 @@ class Season:
         return on_date <= self.end_date + self.result_deadline
 
 
-SEASON = {
-    1: Season(
-        start_date=date(2023, 1, 1), end_date=date(2023, 10, 31), name="2023 Season"
+_SEASON_LIST = [
+    Season(
+        id=1,
+        start_date=date(2023, 1, 1),
+        end_date=date(2023, 10, 31),
+        name="2023 Season",
     ),
-    2: Season(
-        start_date=date(2023, 11, 1), end_date=date(2024, 10, 31), name="2024 Season"
+    Season(
+        id=2,
+        start_date=date(2023, 11, 1),
+        end_date=date(2024, 10, 31),
+        name="2024 Season",
     ),
-}
+]
+
+SEASON_MAP = {s.id: s for s in _SEASON_LIST}
+
+SEASONS_WITH_INFO = _SEASON_LIST
 
 DEFAULT_SEASON_ID = 1
-INFO_TEXT_DEFAULT_SEASON_ID = DEFAULT_SEASON_ID
+INFO_TEXT_DEFAULT_SEASON_ID = 2
 
 CACHES = {
     "default": {
