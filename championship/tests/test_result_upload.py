@@ -962,3 +962,31 @@ class AddTop8Results(TestCase):
             ).exists(),
             "Should not have a winner.",
         )
+
+    def test_duplicate_players(self):
+        self.data["winner"] = self.data["finalist"]
+        resp = self.client.post(
+            reverse("results_top8_add", args=(self.event.id,)),
+            data=self.data,
+        )
+        self.assertEqual(200, resp.status_code)
+        self.assertFalse(
+            self.event.eventplayerresult_set.filter(
+                single_elimination_result=EventPlayerResult.SingleEliminationResult.WINNER
+            ).exists(),
+            "Should not have a winner.",
+        )
+
+    def test_odd_number_of_results(self):
+        del self.data["quarter3"]
+        resp = self.client.post(
+            reverse("results_top8_add", args=(self.event.id,)),
+            data=self.data,
+        )
+        self.assertEqual(200, resp.status_code)
+        self.assertFalse(
+            self.event.eventplayerresult_set.filter(
+                single_elimination_result=EventPlayerResult.SingleEliminationResult.WINNER
+            ).exists(),
+            "Should not have a winner.",
+        )
