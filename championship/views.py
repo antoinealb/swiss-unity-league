@@ -773,7 +773,7 @@ class AddTop8ResultsView(LoginRequiredMixin, FormView):
         ]
 
         if len(playoff_results_filled) not in [4, 8]:
-            messages.error(self.request, "You need to fill in 4 or 8 results.")
+            messages.error(self.request, "You need to fill in 4 or 8 playoff results.")
             return super().form_invalid(form)
 
         counter = Counter([epr for epr, _ in playoff_results_filled])
@@ -781,7 +781,7 @@ class AddTop8ResultsView(LoginRequiredMixin, FormView):
         if duplicates:
             messages.error(
                 self.request,
-                f"Player {duplicates[0].player.name} has more than 1 results.",
+                f"Player '{duplicates[0].player.name}'has more than 1 result.",
             )
             return super().form_invalid(form)
 
