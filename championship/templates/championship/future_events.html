@@ -7,7 +7,9 @@
 
 {% block content %}
     <h1>League events</h1>
-
+    <p>
+        <a href="{% url 'organizer_view' %}" class="btn btn-secondary">View all organizers</a>
+    </p>
     <div x-data="events()" x-init="loadEvents()">
         {% for cnt in "12"|make_list %}
             <div class="{% cycle 'btn-group d-none d-md-flex' 'btn-group-vertical d-block d-md-none' %}" role="group" aria-label="Filtering the events">
