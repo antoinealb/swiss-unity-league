@@ -83,16 +83,35 @@ class Address(models.Model):
         return reverse("address_edit", args=[self.pk])
 
     def __str__(self):
-        address_parts = [
-            self.location_name,
-            self.street_address,
-            self.postal_code,
-            self.city,
-        ]
-        # If the city is the same as the region, we don't need it twice
-        if self.get_region_display() != self.city:
-            address_parts.append(self.get_region_display())
-        address_parts.append(self.get_country_display())
+        address_parts = (
+            [
+                self.location_name,
+                self.street_address,
+                self.postal_code,
+                self.city,
+            ]
+            + self._get_region_as_list()
+            + self._get_country_as_list()
+        )
+        return ", ".join(address_parts)
+
+    def _get_region_as_list(self):
+        """Gets the region if it's different from the city.
+        We return it in a list, because it's easier to process it further."""
+        region = self.get_region_display()
+        return [region] if self.city != region else []
+
+    def _get_country_as_list(self):
+        """Gets the country if it's different from Switzerland.
+        We return it in a list, because it's easier to process it further."""
+        country = self.get_country_display()
+        return [country] if self.country != Address.Country.SWITZERLAND else []
+
+    def short_string(self):
+        """A short string of the address only containing city, region and country."""
+        address_parts = (
+            [self.city] + self._get_region_as_list() + self._get_country_as_list()
+        )
         return ", ".join(address_parts)
 
     def sort_key(self):

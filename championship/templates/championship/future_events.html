@@ -46,28 +46,32 @@
         {% endfor %}
 
         <div class="table-responsive">
-            <table class="table table-striped">
+            <table class="table">
                 <thead>
                     <tr>
                         <th scope="col">Date</th>
                         <th scope="col">Event</th>
-                        <template x-for="filter in filterList">
-                            <td x-text="filter.title"></td>
-                        </template>
+                        <th scope="col"></th>
                     </tr>
                 </thead>
                 <tbody>
                     <template x-for="event in events">
                         <tr x-show="shouldShow(event)">
-                            <td x-text="event.date"></td>
                             <td>
-                                <a x-text="event.name" :href="event.details_url"></a>
+                                <div x-text="event.date"></div>
                             </td>
-                            <template x-for="filter in filterList">
-                                <td>
-                                    <a x-bind:href="filter.extractLink ? filter.extractLink(event) : null" x-text="filter.extractProperty(event)"></a>
-                                </td>
-                            </template>
+                            <td>
+                                <div>
+                                    <a class="fw-bold" x-text="event.name" :href="event.details_url"></a>
+                                </div>
+                                <small>
+                                    <a x-text="event.organizer" :href="event.organizer_url"></a><span x-text="event.address"></span>
+                                </small>
+                            </td>
+                            <td>
+                                <div x-text="event.format"></div>
+                                <small class="text-nowrap" x-text="event.category"></small>
+                            </td>
                         </tr>
                     </template>
                 </tbody>
