@@ -257,9 +257,10 @@ BLEACH_ALLOWED_TAGS = [
     "ul",
 ]
 
-DATE_FORMAT = 'D, d.m.Y'  
+DATE_FORMAT = "D, d.m.Y"
 # Localization overrides date format, so we need to disable it.
 USE_L10N = False
+
 
 @dataclass
 class Season:
