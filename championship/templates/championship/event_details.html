@@ -10,7 +10,7 @@
 
     <dl class="row">
         <dt class="col-sm-3">Organizer</dt>
-        <dd class="col-sm-9">{{ event.organizer.name }}</dd>
+        <dd class="col-sm-9"> <a href="{{ event.organizer.get_absolute_url }}">{{ event.organizer.name }} </a></dd>
         <dt class="col-sm-3">Date</dt>
         <dd class="col-sm-9">{{ event.date }}</dd>
         {% if event.address %}
