@@ -179,6 +179,8 @@ class Event(models.Model):
     date = models.DateField(
         help_text="The date of the event. For multi-days event, pick the first day."
     )
+    start_time = models.TimeField(null=True, blank=True)
+    end_time = models.TimeField(null=True, blank=True)
     url = models.URLField(
         "Website",
         help_text="A website for information, ticket sale, etc.",
@@ -232,6 +234,20 @@ class Event(models.Model):
 
     def __str__(self):
         return f"{self.name} - {self.date} ({self.get_category_display()})"
+
+    def get_time_range(self) -> str:
+        def format_time_24h(t: datetime.time) -> str:
+            return t.strftime("%H:%M") if t else ""
+
+        start_time_str = format_time_24h(self.start_time)
+        end_time_str = format_time_24h(self.end_time)
+
+        if start_time_str and end_time_str:
+            return f"{start_time_str} - {end_time_str}"
+        elif start_time_str:
+            return f"{start_time_str}"
+        else:
+            return ""
 
     def get_delete_url(self):
         return reverse("event_delete", args=[self.pk])
