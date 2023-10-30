@@ -82,6 +82,10 @@ class ChallongeCleanUrlTest(TestCase):
                 "https://test.challonge.com/rk6vluak/test",
                 "https://test.challonge.com/rk6vluak/standings",
             ),
+            (
+                "https://challonge.com/zh_CN/32qwqta",
+                "https://test.challonge.com/32qwqta/standings",
+            ),
         ]
 
         for input, want in tests:
@@ -94,6 +98,6 @@ class ChallongeCleanUrlTest(TestCase):
 
     def test_wrong_tourney_id(self):
         with self.assertRaises(ValueError):
-            challonge.clean_url("https://challonge.com/fr/rk6vlak")
+            challonge.clean_url("https://challonge.com/zh_CN/32qwqt")
         with self.assertRaises(ValueError):
-            challonge.clean_url("https://challonge.com/fr/rk6vlakasdd")
+            challonge.clean_url("https://challonge.com/fr/rk6vlakasa")
