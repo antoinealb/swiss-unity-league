@@ -5,8 +5,7 @@
 {% endblock %}
 
 {% block content %}
-    <br>
-    <h1>Swiss Unity League {{ current_season.name }}: Guide for Organizers</h1>
+    <h1>Organizer Guide: Swiss Unity League {{ current_season.name }}</h1>
     {% include 'championship/components/season_dropdown.html' %}
     <br>
     <div class="alert alert-success" role="alert">
@@ -17,13 +16,20 @@
         between various Magic tournament organizers in and around Switzerland
         with an end-of-year 2-day invitational tournament with 3k+ prizes.</p>
     <p>Any organizer can register their tournament for the league to make it
-        award SUL Points. Players need to collect these SUL Points in
+        award SUL Points. Players need to collect these points in
         order to qualify for the invitational tournament.</p>
     <p>In the following, we only explain the parts that are specifically
         relevant for tournament organizers. If you wish to understand how
         Qualification Points are awarded to players, and to see more information
         about the end-of-year invitational tournament, please also read the
         <a href="{% url 'info' %}"><u>Guide for Players</u></a>.</p>
+
+    <h2>How the league works</h2>
+    <p>The 2024 season of the SUL will run from the 1st of November 2023 to the 31th of
+        October 2024. During that time, all participating tournaments will award SUL Points.
+        The best performing players with the most SUL Points will be invited to the
+        end-of-year invitational tournament.</p>
+    </p>
     <h2>Tournament Types</h2>
     <p>You can register all of your tournaments for the league to make them award
         SUL Points to the participants. There are 3 types of tournaments

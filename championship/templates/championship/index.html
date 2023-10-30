@@ -2,13 +2,17 @@
 {% load static %}
 
 {% block content %}
-    <div class="row gx-4 gx-lg-5 my-5">
+    <div class="row gx-4 gx-lg-5 mb-5 mt-4">
         <div class="col-lg-5 mb-2">
             <div class="text-center mb-4">
                 <img class="img-fluid" style="max-height:300px" src="{% static 'sul_logo.png' %}" alt="SUL Logo" />
             </div>
-            <p>The Swiss Unity League (SUL) is a collaborative league in 2023 between various Magic tournament organizers in Switzerland with an end of year 2-day invitational tournament with 3.5k+ Prizes.</p>
-            <p>Any organizer can register their tournament for the league to make it award Qualification Points (QPs). Players need to collect these QPs in order to qualify for the invitational tournament.</p>
+            <p>The Swiss Unity League (SUL) is a collaborative league
+                between various Magic tournament organizers in and around Switzerland
+                with an end-of-year 2-day invitational tournament with 3k+ prizes.</p>
+            <p>Any organizer can register their tournament for the league to make it
+                award SUL Points. Players need to collect these points in
+                order to qualify for the invitational tournament.</p>
             <a class="btn btn-secondary" href="{% url 'info' %}">More info</a>
         </div>
         <div class="col-lg-7"><img class="img-fluid rounded my-4 mb-lg-0" src="{% static 'tournament.jpg' %}" alt="A Magic: The Gathering tournament" /></div>
@@ -27,7 +31,7 @@
                         {% endfor %}
                     </dl>
                 </div>
-                <div class="card-footer"><a class="btn btn-secondary btn-sm" href="{% url 'events' %}">View all upcoming events</a></div>
+                <div class="card-footer"><a class="btn btn-secondary btn-sm" href="{% url 'events' %}">All upcoming events</a></div>
             </div>
         </div>
         <div class="col-lg-4 mb-5">
@@ -35,22 +39,23 @@
                 <div class="card-body">
                     <h2 class="card-title">How to participate?</h2>
                     <p class="card-text">
-                        As an organizer you can register all of your events for the league to make them award points to your players.
-                        More information and a registration form can be found in this <a href="{% url 'info_organizer' %}"> guide</a>.
+                        If you're an organizer, register your events with the league to reward your players with SUL Points.
+                        <br>For more details and registration, see our <a href="{% url 'info_organizer' %}">Organizer Guide</a>.
                     </p>
                     <p class="card-text">
-                        If you're a player, please tell your local tournament organizers about the league and show them the this page.
+                        If you're a player, please tell your local tournament organizers about the opportunity to join the league.
+                        <br>To stay updated, <a href="https://chat.whatsapp.com/Dk7CDHycts61K99t5xpIgq">join our community on WhatsApp</a>.
                     </p>
                 </div>
                 <div class="card-footer">
-                    <a class="btn btn-secondary btn-sm" href="{% url 'info_organizer' %}">Guide for Organizers</a>
+                    <a class="btn btn-secondary btn-sm" href="{% url 'info_organizer' %}">Organizer Guide</a>
                 </div>
             </div>
         </div>
         <div class="col-lg-4 mb-5">
             <div class="card h-100">
                 <div class="card-body">
-                    <h2 class="card-title">Top Players</h2>
+                    <h2 class="card-title">Top players</h2>
                     <ol>
                         {% for player in players|slice:":10" %}
                             {% if forloop.counter <= 5 %}
@@ -64,7 +69,7 @@
                     </ol>
                 </div>
                 <div class="card-footer">
-                    <a class="btn btn-secondary btn-sm" href="{% url 'ranking' %}">Full Ranking</a>
+                    <a class="btn btn-secondary btn-sm" href="{% url 'ranking' %}">Full ranking</a>
                 </div>
             </div>
         </div>
@@ -81,7 +86,7 @@
                         {% endfor %}
                     </div>
                 </div>
-                <a href="{% url 'organizer_view' %}" class="btn btn-secondary">View all organizers</a>
+                <a href="{% url 'organizer_view' %}" class="btn btn-secondary">All organizers</a>
             </div>
         </div>
 {% endblock %}

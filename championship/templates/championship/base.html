@@ -35,8 +35,8 @@
                             <li class="nav-item dropdown">
                                 <a class="nav-link dropdown-toggle" href="#" id="navbarDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">Infos</a>
                                 <ul class="dropdown-menu" aria-labelledby="navbarDropdown">
-                                    <li><a class="dropdown-item" href="{% url 'info' %}">Guide for Players</a></li>
-                                    <li><a class="dropdown-item" href="{% url 'info_organizer' %}">Guide for Organizers</a></li>
+                                    <li><a class="dropdown-item" href="{% url 'info' %}">Player Guide</a></li>
+                                    <li><a class="dropdown-item" href="{% url 'info_organizer' %}">Organizer Guide</a></li>
                                 </ul>
                             </li>
 
@@ -63,7 +63,7 @@
                     </div>
                 </div>
             </nav>
-            <div class="container px-4 px-lg-5">
+            <div class="container px-4 px-lg-5 py-3">
                 {% if messages %}
                     <br>
                     {% for message in messages %}
