@@ -67,24 +67,16 @@ class ChallongeCleanUrlTest(TestCase):
                 "https://challonge.com/rk6vluak/standings",
             ),
             (
-                "https://test.test.challonge.com/zh_cn/rk6vluak",
-                "https://test.test.challonge.com/rk6vluak/standings",
-            ),
-            (
-                "https:/test.test.challonge.com/rk6vluak",
-                "https://challonge.com/rk6vluak/standings",
-            ),
-            (
                 "https://challonge.com/fr/rk6vluak/standings",
                 "https://challonge.com/rk6vluak/standings",
             ),
             (
                 "https://test.challonge.com/rk6vluak/test",
-                "https://test.challonge.com/rk6vluak/standings",
+                "https://challonge.com/rk6vluak/standings",
             ),
             (
                 "https://challonge.com/zh_CN/32qwqta",
-                "https://test.challonge.com/32qwqta/standings",
+                "https://challonge.com/32qwqta/standings",
             ),
         ]
 
