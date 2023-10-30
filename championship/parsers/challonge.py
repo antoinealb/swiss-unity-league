@@ -71,9 +71,7 @@ def clean_url(url):
         url_start, path = url.split(challonge)
     except:
         raise ValueError("No challonge.com URL")
-    if not url_start.startswith(https):
-        url_start = https
     for tourney_id in path.split("/"):
-        if len(tourney_id) == 8:
-            return url_start + challonge + tourney_id + "/standings"
+        if 7 <= len(tourney_id) <= 9:
+            return https + challonge + tourney_id + "/standings"
     raise ValueError("No tournament id found")

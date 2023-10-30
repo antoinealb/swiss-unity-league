@@ -67,20 +67,16 @@ class ChallongeCleanUrlTest(TestCase):
                 "https://challonge.com/rk6vluak/standings",
             ),
             (
-                "https://test.test.challonge.com/zh_cn/rk6vluak",
-                "https://test.test.challonge.com/rk6vluak/standings",
-            ),
-            (
-                "https:/test.test.challonge.com/rk6vluak",
-                "https://challonge.com/rk6vluak/standings",
-            ),
-            (
                 "https://challonge.com/fr/rk6vluak/standings",
                 "https://challonge.com/rk6vluak/standings",
             ),
             (
                 "https://test.challonge.com/rk6vluak/test",
-                "https://test.challonge.com/rk6vluak/standings",
+                "https://challonge.com/rk6vluak/standings",
+            ),
+            (
+                "https://challonge.com/zh_CN/32qwqta",
+                "https://challonge.com/32qwqta/standings",
             ),
         ]
 
@@ -94,6 +90,6 @@ class ChallongeCleanUrlTest(TestCase):
 
     def test_wrong_tourney_id(self):
         with self.assertRaises(ValueError):
-            challonge.clean_url("https://challonge.com/fr/rk6vlak")
+            challonge.clean_url("https://challonge.com/zh_CN/32qwqt")
         with self.assertRaises(ValueError):
-            challonge.clean_url("https://challonge.com/fr/rk6vlakasdd")
+            challonge.clean_url("https://challonge.com/fr/rk6vlakasa")
