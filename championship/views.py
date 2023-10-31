@@ -779,6 +779,12 @@ class AddTop8ResultsView(LoginRequiredMixin, FormView):
             messages.error(self.request, "Top 8 are not allowed at SUL Regular.")
             return super().form_valid(form)
 
+        if not self.event.can_be_edited():
+            messages.error(
+                self.request, "Event too old to add or change the playoffs results."
+            )
+            return super().form_valid(form)
+
         FIELDS_TO_RESULTS = {
             "winner": EventPlayerResult.SingleEliminationResult.WINNER,
             "finalist": EventPlayerResult.SingleEliminationResult.FINALIST,

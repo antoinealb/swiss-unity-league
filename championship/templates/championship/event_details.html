@@ -38,11 +38,11 @@
         {% if event.organizer.user == user %}
             <dt class="col-sm-3">TO actions (only shown to you)</dt>
             <dd class="col-sm-9">
-                {% if event.can_have_top8 %}
-                    <p><a href="{% url 'results_top8_add' event.id %}" class="btn btn-secondary">Add/Edit Playoffs Results</a></p>
-                {% endif %}
                 <p><a href="{% url 'event_copy' event.id %}" class="btn btn-secondary-light">Copy event</a></p>
                 {% if event.can_be_edited %}
+                    {% if event.can_have_top8 %}
+                        <p><a href="{% url 'results_top8_add' event.id %}" class="btn btn-secondary">Add/Edit Playoffs Results</a></p>
+                    {% endif %}
                     <p><a href="{% url 'event_update' event.id %}" class="btn btn-secondary">Edit event</a></p>
                 {% endif %}
                 {% if event.can_be_deleted %}
