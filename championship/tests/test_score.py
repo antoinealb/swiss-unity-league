@@ -3,6 +3,7 @@ import datetime
 from django.core.exceptions import ValidationError
 from django.test import TestCase
 from django.contrib.auth.models import User
+from django.conf import settings
 from django.db.models import Count, F
 from faker import Faker
 
@@ -67,6 +68,16 @@ class TestComputeScore(TestCase):
             self.assertEqual(
                 0, score.total_score, f"Unexpected points for player {player_id}"
             )
+
+    def test_ignore_events_outside_of_the_season_date(self):
+        """Checks that events past the end of seasons don't contribute score."""
+        self.event.date = settings.SEASON_MAP[settings.DEFAULT_SEASON_ID].end_date
+        self.event.date += datetime.timedelta(days=1)
+        self.event.save()
+        for _ in range(10):
+            EventPlayerResultFactory(event=self.event)
+        scores = compute_scores()
+        self.assertFalse(any(score.total_score > 0 for score in scores.values()))
 
     def test_max_500_points_for_regular(self):
         """The league rules stipulate that the maximum amount of points a

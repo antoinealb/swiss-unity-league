@@ -547,7 +547,11 @@ def compute_scores():
         for e in EventPlayerResult.objects.filter(single_elimination_result__gt=0)
     )
 
-    for result in get_results_with_qps(EventPlayerResult.objects):
+    for result in get_results_with_qps(
+        EventPlayerResult.objects.filter(
+            event__date__lte=settings.SEASON_MAP[settings.DEFAULT_SEASON_ID].end_date
+        )
+    ):
         scores_by_player_category[result.player_id][result.event.category] += result.qps
 
         # Winners of Premier events with more than 128 players get 2 byes
