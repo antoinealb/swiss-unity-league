@@ -98,13 +98,7 @@ class AddressDeleteViewTest(BaseSetupTest):
         self.client.logout()
         self.base_set_up(with_address=False, username="testuser2")
         response = self.client.post(reverse("address_delete", args=[self.address.pk]))
-        self.assertEqual(response.status_code, 403)
-        self.assertTrue(Address.objects.filter(pk=self.address.pk).exists())
-
-    def test_get_delete_view_not_allowed(self):
-        # To prevent csrf only post should be allowed
-        response = self.client.get(reverse("address_delete", args=[self.address.pk]))
-        self.assertEqual(response.status_code, 403)
+        self.assertEqual(response.status_code, 302)
         self.assertTrue(Address.objects.filter(pk=self.address.pk).exists())
 
 

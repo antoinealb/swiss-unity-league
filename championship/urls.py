@@ -68,7 +68,9 @@ urlpatterns = [
     path(
         "address/<int:pk>/edit/", views.AddressUpdateView.as_view(), name="address_edit"
     ),
-    path("address/<int:pk>/delete/", views.address_delete, name="address_delete"),
+    path(
+        "address/<pk>/delete/", views.AddressDeleteView.as_view(), name="address_delete"
+    ),
     path("api/", include(api_router.urls)),
     path("api/formats/", views.ListFormats.as_view(), name="formats-list"),
 ]
