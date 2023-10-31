@@ -507,7 +507,7 @@ def get_leaderboard():
         if score:
             player.score = score
             scores_with_player.append(player)
-    scores_with_player.sort(key=lambda l: l.score.total_score, reverse=True)
+    scores_with_player.sort(key=lambda l: l.score.rank)
     return scores_with_player
 
 
