@@ -15,9 +15,6 @@ class SubmitButtonMixin:
     helper.form_method = "POST"
 
 
-time_widget = forms.TimeInput(attrs={"type": "time"}, format="%H:%M")
-
-
 class EventCreateForm(forms.ModelForm):
     class Meta:
         model = Event
@@ -35,8 +32,8 @@ class EventCreateForm(forms.ModelForm):
         ]
         widgets = {
             "date": forms.DateInput(attrs={"type": "date"}),
-            "start_time": time_widget,
-            "end_time": time_widget,
+            "start_time": forms.TimeInput(attrs={"type": "time"}, format="%H:%M"),
+            "end_time": forms.TimeInput(attrs={"type": "time"}, format="%H:%M"),
             "description": TinyMCE(
                 mce_attrs={
                     "toolbar": "undo redo | bold italic | link unlink | bullist numlist",

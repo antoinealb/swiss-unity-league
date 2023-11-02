@@ -235,7 +235,7 @@ class Event(models.Model):
     def __str__(self):
         return f"{self.name} - {self.date} ({self.get_category_display()})"
 
-    def get_time_range(self) -> str:
+    def get_time_range_display(self) -> str:
         def format_time_24h(t: datetime.time) -> str:
             return t.strftime("%H:%M") if t else ""
 
