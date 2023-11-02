@@ -155,6 +155,17 @@ class EventDetailTestCase(TestCase):
             resp.content.decode(),
         )
 
+    def test_shows_record(self):
+        event = EventFactory()
+        EventPlayerResultFactory(
+            event=event,
+            win_count=3,
+            loss_count=1,
+            draw_count=1,
+        )
+        resp = self.client.get(reverse("event_details", args=[event.id]))
+        self.assertContains(resp, "3 - 1 - 1")
+
     @parameterized.expand(
         [
             (datetime.timedelta(32), False),

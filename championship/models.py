@@ -374,6 +374,9 @@ class EventPlayerResult(models.Model):
         else:
             return ordinal(self.ranking)
 
+    def get_record_display(self):
+        return f"{self.win_count} - {self.loss_count} - {self.draw_count}"
+
 
 MULT = {
     Event.Category.REGULAR: 1,
