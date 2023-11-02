@@ -172,3 +172,16 @@ class EventDetailTestCase(TestCase):
         self.assertEquals(
             missing_results_info_expected, resp.context_data["notify_missing_results"]
         )
+
+    def test_shows_time_with_title(self):
+        event = EventFactory()
+        resp = self.client.get(reverse("event_details", args=[event.id]))
+        self.assertContains(resp, "Date")
+        self.assertNotContains(resp, "Date & Time")
+
+        event.start_time = datetime.time(10, 0)
+        event.end_time = datetime.time(19, 0)
+        event.save()
+        resp = self.client.get(reverse("event_details", args=[event.id]))
+        self.assertContains(resp, "10:00 - 19:00")
+        self.assertContains(resp, "Date & Time")

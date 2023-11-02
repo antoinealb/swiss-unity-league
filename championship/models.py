@@ -179,8 +179,14 @@ class Event(models.Model):
     date = models.DateField(
         help_text="The date of the event. For multi-days event, pick the first day."
     )
-    start_time = models.TimeField(null=True, blank=True, help_text="Time when the event begins (optional)")
-    end_time = models.TimeField(null=True, blank=True, help_text="Approximate time when the event ends (optional)")
+    start_time = models.TimeField(
+        null=True, blank=True, help_text="Time when the event begins (optional)"
+    )
+    end_time = models.TimeField(
+        null=True,
+        blank=True,
+        help_text="Approximate time when the event ends (optional)",
+    )
     url = models.URLField(
         "Website",
         help_text="A website for information, ticket sale, etc.",
