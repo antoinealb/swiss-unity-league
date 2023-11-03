@@ -3,6 +3,7 @@ import datetime
 import re
 import logging
 import os
+from typing import Any
 from zipfile import BadZipFile
 import requests
 import random
@@ -25,6 +26,8 @@ from django.db import transaction
 from django.db.models import F, Q
 from rest_framework import viewsets, views
 from rest_framework.response import Response
+
+from championship.models import Any
 from .models import *
 from .forms import *
 from championship.parsers import (
@@ -397,77 +400,6 @@ def validate_standings_and_show_error(request, standings, category):
     return False
 
 
-class CreateManualResultsView(LoginRequiredMixin, TemplateView):
-    template_name = "championship/create_results_manual.html"
-
-    def get_context_data(self, formset=None, metadata_form=None):
-        if not formset:
-            formset = ResultsFormset()
-
-        if not metadata_form:
-            metadata_form = ManualUploadMetadataForm(user=self.request.user)
-
-        players = Player.leaderboard_objects.all()
-
-        return {
-            "metadata_form": metadata_form,
-            "formset": formset,
-            "players": players,
-        }
-
-    @transaction.atomic
-    def post(self, request, *args, **kwargs):
-        formset = ResultsFormset(request.POST)
-        metadata_form = ManualUploadMetadataForm(user=request.user, data=request.POST)
-
-        if not formset.is_valid() or not metadata_form.is_valid():
-            context = self.get_context_data(
-                formset=formset, metadata_form=metadata_form
-            )
-            return self.render_to_response(context)
-
-        event = metadata_form.cleaned_data["event"]
-
-        standings = []
-        for result in formset.cleaned_data:
-            try:
-                name = result["name"]
-                points = record_to_points(result["points"])
-                record = parse_record(result["points"])
-            except KeyError:
-                continue
-
-            standings.append((re.sub(r"\s+", " ", name), points, record))
-
-        standings.sort(key=lambda s: s[1], reverse=True)
-
-        if event.results_validation_enabled and validate_standings_and_show_error(
-            request, standings, event.category
-        ):
-            context = self.get_context_data(
-                formset=formset, metadata_form=metadata_form
-            )
-            return self.render_to_response(context, status=400)
-
-        for ranking, (name, points, record) in enumerate(standings):
-            try:
-                player = PlayerAlias.objects.get(name=name).true_player
-            except PlayerAlias.DoesNotExist:
-                player, _ = Player.objects.get_or_create(name=name)
-
-            EventPlayerResult.objects.create(
-                event=event,
-                player=player,
-                points=points,
-                ranking=ranking + 1,
-                win_count=record[0],
-                loss_count=record[1],
-                draw_count=record[2],
-            )
-
-        return HttpResponseRedirect(event.get_absolute_url())
-
-
 def clean_name(name: str) -> str:
     """Normalizes the given name based on observations from results uploaded.
 
@@ -560,16 +492,8 @@ class CreateResultsView(FormView):
         self.event = form.cleaned_data["event"]
         standings = self.get_results(form)
 
-        def render_error_standings_form():
-            return render(
-                self.request,
-                self.template_name,
-                {"form": form},
-                status=400,
-            )
-
         if not standings:
-            return render_error_standings_form()
+            return self.form_invalid(form)
 
         # Sometimes the webpages or users don't sort the standings correctly. Hence we should sort as a precaution.
         standings.sort(key=lambda s: s[1], reverse=True)
@@ -577,7 +501,7 @@ class CreateResultsView(FormView):
         if self.event.results_validation_enabled and validate_standings_and_show_error(
             self.request, standings, self.event.category
         ):
-            return render_error_standings_form()
+            return self.form_invalid(form)
 
         for i, (name, points, (w, l, d)) in enumerate(standings):
             name = clean_name(name)
@@ -602,6 +526,46 @@ class CreateResultsView(FormView):
         return self.event.get_absolute_url()
 
 
+class CreateManualResultsView(LoginRequiredMixin, CreateResultsView):
+    template_name = "championship/create_results_manual.html"
+
+    def get_context_data(self, formset=None, metadata_form=None):
+        if not formset:
+            formset = ResultsFormset()
+
+        if not metadata_form:
+            metadata_form = ManualUploadMetadataForm(user=self.request.user)
+
+        players = Player.leaderboard_objects.all()
+
+        return {
+            "metadata_form": metadata_form,
+            "formset": formset,
+            "players": players,
+        }
+
+    def form_invalid(self, form):
+        context = self.get_context_data(metadata_form=form, formset=self.formset)
+        return self.render_to_response(context)
+
+    def post(self, request, *args, **kwargs):
+        self.formset = ResultsFormset(request.POST)
+        metadata_form = ManualUploadMetadataForm(user=request.user, data=request.POST)
+
+        if not self.formset.is_valid() or not metadata_form.is_valid():
+            return self.form_invalid(metadata_form)
+        return self.form_valid(metadata_form)
+
+    def get_results(self, form):
+        standings = []
+        for result in self.formset.cleaned_data:
+            name = result.get("name")
+            record = result.get("points")
+            if name and record:
+                standings.append((name, record_to_points(record), parse_record(record)))
+        return standings
+
+
 class CreateLinkParserResultsView(LoginRequiredMixin, CreateResultsView):
     form_class = LinkImporterForm
     help_text: str
@@ -621,7 +585,9 @@ class CreateLinkParserResultsView(LoginRequiredMixin, CreateResultsView):
     def get_results(self, form):
         url = form.cleaned_data["url"]
         url = self.clean_url(url)
-
+        if not url:
+            messages.error(self.request, "Wrong url format.")
+            return
         try:
             headers = {
                 "User-Agent": "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/112.0.0.0 Safari/537.36",
@@ -678,8 +644,9 @@ class CreateAetherhubResultsView(CreateLinkParserResultsView):
     def clean_url(self, url):
         """Normalizes the given tournament url to point to the RoundTourney page."""
         url_re = r"https://aetherhub.com/Tourney/[a-zA-Z]+/(\d+)"
-        tourney = re.match(url_re, url).group(1)
-        return f"https://aetherhub.com/Tourney/RoundTourney/{tourney}"
+        tourney = re.match(url_re, url)
+        if tourney:
+            return f"https://aetherhub.com/Tourney/RoundTourney/{tourney.group(1)}"
 
 
 class CreateChallongeResultsView(CreateLinkParserResultsView):
@@ -692,7 +659,10 @@ class CreateChallongeResultsView(CreateLinkParserResultsView):
         return challonge.parse_standings_page(text)
 
     def clean_url(self, url):
-        return challonge.clean_url(url)
+        try:
+            return challonge.clean_url(url)
+        except ValueError:
+            pass
 
 
 class CreateEventlinkResultsView(CreateHTMLParserResultsView):

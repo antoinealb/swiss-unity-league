@@ -161,7 +161,7 @@ class SingleResultForm(forms.Form):
         validators=[
             RegexValidator(
                 "^\d+-\d+(-\d+)?$",
-                message="Score should be in the win-losss-draws format.",
+                message="Score should be in the win-loss-draw format.",
             )
         ],
     )
