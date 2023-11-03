@@ -796,15 +796,29 @@ class AddTop8ResultsView(LoginRequiredMixin, FormView):
             "quarter3": EventPlayerResult.SingleEliminationResult.QUARTER_FINALIST,
         }
 
+        playoff_results_filled = [
+            (form.cleaned_data[key], single_elim_result)
+            for key, single_elim_result in FIELDS_TO_RESULTS.items()
+            if form.cleaned_data[key] is not None
+        ]
+
+        if len(playoff_results_filled) not in [4, 8]:
+            messages.error(self.request, "You need to fill in 4 or 8 playoff results.")
+            return super().form_invalid(form)
+
+        counter = Counter([epr for epr, _ in playoff_results_filled])
+        duplicates = [result for result, count in counter.items() if count > 1]
+        if duplicates:
+            messages.error(
+                self.request,
+                f"Player '{duplicates[0].player.name}'has more than 1 result.",
+            )
+            return super().form_invalid(form)
+
         self.event.eventplayerresult_set.update(single_elimination_result=None)
-        for key, result in FIELDS_TO_RESULTS.items():
-            w = form.cleaned_data[key]
-
-            if w is None:
-                continue
-
-            w.single_elimination_result = result
-            w.save()
+        for event_player_result, single_elim_result in playoff_results_filled:
+            event_player_result.single_elimination_result = single_elim_result
+            event_player_result.save()
 
         return super().form_valid(form)
 
