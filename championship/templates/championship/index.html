@@ -5,33 +5,37 @@
     <div class="row gx-4 gx-lg-5 mb-5 mt-4">
         <div class="col-lg-5 mb-2">
             <div class="text-center mb-4">
-                <img class="img-fluid" style="max-height:300px" src="{% static 'sul_logo.png' %}" alt="SUL Logo" />
+                <img class="img-fluid" style="max-height:300px" src="{% static 'sul_logo.png' %}" alt="Swiss Unity League Logo" />
             </div>
-            <p>The Swiss Unity League (SUL) is a collaborative league
-                between various Magic tournament organizers in and around Switzerland
-                with an end-of-year 2-day invitational tournament with 3k+ prizes.</p>
-            <p>Any organizer can register their tournament for the league to make it
-                award SUL Points. Players need to collect these points in
-                order to qualify for the invitational tournament.</p>
-            <a class="btn btn-secondary" href="{% url 'info' %}">More info</a>
+            <h1>Switzerland's Premier Magic Tournament Series</h1>
+            {% include 'championship/components/abstract.html' %}
+            <a class="btn btn-secondary" href="{% url 'info' %}" title="A Guide for Players about the League">More info</a>
         </div>
-        <div class="col-lg-7"><img class="img-fluid rounded my-4 mb-lg-0" src="{% static 'tournament.jpg' %}" alt="A Magic: The Gathering tournament" /></div>
+        <div class="col-lg-7"><img class="img-fluid rounded my-4 mb-lg-0" src="{% static 'tournament.jpg' %}" alt="A Magic: The Gathering event with an ongoing tournament." /></div>
     </div>
-
 
     <div class="row gx-4 gx-lg-5">
         <div class="col-lg-4 mb-5">
             <div class="card h-100">
                 <div class="card-body">
-                    <h2 class="card-title">Upcoming major events</h2>
+                    <h2 class="card-title">Upcoming Magic events</h2>
                     <dl>
                         {% for event in future_events|slice:":5" %}
-                            <dt>{{ event.date }} by {{ event.organizer}}</dt>
-                            <dd> <a href="{{ event.get_absolute_url}}">{{ event.name }} </a> </dd>
+                            <div itemscope itemtype="http://schema.org/Event">
+                                <dt>
+                                    <time itemprop="startDate" datetime="{{ event.date|date:'Y-m-d' }}">{{ event.date|date:"D, d.m.Y" }}</time>
+                                    by <span itemprop="organizer">{{ event.organizer }}</span>
+                                </dt>
+                                <dd>
+                                    <a href="{{ event.get_absolute_url }}" itemprop="url" title="{{ event.name }}">
+                                        <span itemprop="name">{{ event.name }}</span>
+                                    </a>
+                                </dd>
+                            </div>
                         {% endfor %}
                     </dl>
                 </div>
-                <div class="card-footer"><a class="btn btn-secondary btn-sm" href="{% url 'events' %}">All upcoming events</a></div>
+                <div class="card-footer"><a class="btn btn-secondary btn-sm" href="{% url 'events' %}" title="View upcoming Magic: the Gathering events in Switzerland">All upcoming events</a></div>
             </div>
         </div>
         <div class="col-lg-4 mb-5">
@@ -39,8 +43,8 @@
                 <div class="card-body">
                     <h2 class="card-title">How to participate?</h2>
                     <p class="card-text">
-                        If you're an organizer, register your events with the league to reward your players with SUL Points.
-                        <br>For more details and registration, see our <a href="{% url 'info_organizer' %}">Organizer Guide</a>.
+                        If you're an organizer, register your Magic: the Gathering events with the league to reward your players with SUL Points.
+                        <br>For more details and registration, see our <a href="{% url 'info_organizer' %}" title="Information for Organizers about the League">Organizer Guide</a>.
                     </p>
                     <p class="card-text">
                         If you're a player, please tell your local tournament organizers about the opportunity to join the league.
@@ -48,7 +52,7 @@
                     </p>
                 </div>
                 <div class="card-footer">
-                    <a class="btn btn-secondary btn-sm" href="{% url 'info_organizer' %}">Organizer Guide</a>
+                    <a class="btn btn-secondary btn-sm" href="{% url 'info_organizer' %}" title="Information for Organizers about the League">Organizer Guide</a>
                 </div>
             </div>
         </div>
@@ -58,13 +62,12 @@
                     <h2 class="card-title">Top players</h2>
                     <ol>
                         {% for player in players|slice:":10" %}
-                            {% if forloop.counter <= 5 %}
-                                <li>{{ player.name }} ({{ player.score.total_score }} points)</li>
-                            {% else %}
-                                <div class="d-none d-lg-block">
-                                    <li >{{ player.name }} ({{ player.score.total_score }} points)</li>
+                            <div class="{% if forloop.counter <= 5 %}d-none d-lg-block{% endif %}">
+                                <li itemprop="itemListElement" itemscope itemtype="http://schema.org/Person">
+                                    <span itemprop="name">{{ player.name }}</span>
+                                    (<span itemprop="description">{{ player.score.total_score }} points</span>)
+                                </li>
                                 </div>
-                            {% endif %}
                         {% endfor %}
                     </ol>
                 </div>
@@ -74,7 +77,7 @@
             </div>
         </div>
 
-        <h2>Our partners</h3>
+        <h2>Our partners</h2>
         <div class="row text-center">
             <div class="col-lg-6 align-items-center mx-auto my-2">
                 <div id="carouselPartnersIndicators" class="carousel slide" data-bs-ride="carousel" data-bs-interval="{% if debug %}500{% else %}3000{% endif %}">
