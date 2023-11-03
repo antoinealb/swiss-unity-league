@@ -10,7 +10,7 @@ class EventSerializer(serializers.ModelSerializer):
             "date",
             "organizer",
             "format",
-            "region",
+            "address",
             "category",
             "details_url",
             "organizer_url",
@@ -19,21 +19,20 @@ class EventSerializer(serializers.ModelSerializer):
     date = serializers.DateField(format="%a, %d.%m.%Y")
     organizer = serializers.CharField(source="organizer.name")
     format = serializers.CharField(source="get_format_display")
-    region = serializers.SerializerMethodField()
+    address = serializers.SerializerMethodField()
     category = serializers.CharField(source="get_category_display")
     details_url = serializers.HyperlinkedIdentityField(view_name="event_details")
     organizer_url = serializers.HyperlinkedRelatedField(
         source="organizer", view_name="organizer_details", read_only=True
     )
 
-    def get_region(self, event):
-        # Try getting the region from the event's address
+    def get_address(self, event):
         if event.address:
-            region = event.address.get_region_display()
-        # If there is no address, try getting the region from the organizer's default address
+            address = event.address
+        # If there is no event address, try getting the organizer's default address
         elif event.organizer and event.organizer.default_address:
-            region = event.organizer.default_address.get_region_display()
+            address = event.organizer.default_address
         else:
-            region = ""
+            return ""
 
-        return region
+        return f", {address.short_string()}"

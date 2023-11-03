@@ -14,7 +14,6 @@ function events() {
             title: 'Organizer',
             titleAll: 'All Organizers',
             extractProperty: (x) => x.organizer,
-            extractLink: (x) => x.organizer_url,
         },
         {
             title: 'Region',

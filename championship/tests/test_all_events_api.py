@@ -8,7 +8,16 @@ TEST_SERVER = "http://testserver"
 
 class EventApiTestCase(TestCase):
     def test_get_all_future_events(self):
-        eo = EventOrganizerFactory(name="Test TO")
+        eo = EventOrganizerFactory(name="Test TO", addresses=[])
+        eo.default_address = AddressFactory(
+            region=Address.Region.BERN,
+            country=Address.Country.SWITZERLAND,
+            organizer=eo,
+        )
+        eo.save()
+        event_address = AddressFactory(
+            region=Address.Region.AARGAU, country=Address.Country.GERMANY, organizer=eo
+        )
         tomorrow = datetime.date.today() + datetime.timedelta(days=1)
         in_2_days = datetime.date.today() + datetime.timedelta(days=2)
         a = EventFactory(
@@ -16,7 +25,7 @@ class EventApiTestCase(TestCase):
             date=tomorrow,
             format=Event.Format.LEGACY,
             category=Event.Category.PREMIER,
-            address=AddressFactory(organizer=eo),
+            address=event_address,
         )
         b = EventFactory(
             organizer=eo,
@@ -31,7 +40,7 @@ class EventApiTestCase(TestCase):
                 "date": tomorrow.strftime("%a, %d.%m.%Y"),
                 "organizer": eo.name,
                 "format": "Legacy",
-                "region": a.address.get_region_display(),
+                "address": f", {event_address.city}, {event_address.get_region_display()}, {event_address.get_country_display()}",
                 "category": "SUL Premier",
                 "details_url": TEST_SERVER + reverse("event_details", args=[a.id]),
                 "organizer_url": TEST_SERVER
@@ -42,7 +51,7 @@ class EventApiTestCase(TestCase):
                 "date": in_2_days.strftime("%a, %d.%m.%Y"),
                 "organizer": eo.name,
                 "format": "Modern",
-                "region": eo.default_address.get_region_display(),
+                "address": f", {eo.default_address.city}, {eo.default_address.get_region_display()}",
                 "category": "SUL Regional",
                 "details_url": TEST_SERVER + reverse("event_details", args=[b.id]),
                 "organizer_url": TEST_SERVER
@@ -67,7 +76,7 @@ class EventApiTestCase(TestCase):
                 "date": yesterday.strftime("%a, %d.%m.%Y"),
                 "organizer": eo.name,
                 "format": "Legacy",
-                "region": "",
+                "address": "",
                 "category": "SUL Premier",
                 "details_url": TEST_SERVER + reverse("event_details", args=[a.id]),
                 "organizer_url": TEST_SERVER
