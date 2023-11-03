@@ -11,8 +11,13 @@
     <dl class="row">
         <dt class="col-sm-3">Organizer</dt>
         <dd class="col-sm-9"> <a href="{{ event.organizer.get_absolute_url }}">{{ event.organizer.name }} </a></dd>
-        <dt class="col-sm-3">Date</dt>
-        <dd class="col-sm-9">{{ event.date }}</dd>
+        {% if event.start_time %}
+            <dt class="col-sm-3">Date & Time</dt>
+            <dd class="col-sm-9">{{ event.date }}, {{ event.get_time_range_display }}</dd>
+        {% else %}
+            <dt class="col-sm-3">Date</dt>
+            <dd class="col-sm-9">{{ event.date }}</dd>
+        {% endif %}
         {% if event.address %}
             <dt class="col-sm-3">Location</dt>
             <dd class="col-sm-9">{{ event.address }} (<a href="{{ event.address.get_google_maps_url }}" target="_blank">View on Google Maps</a>)</dd>

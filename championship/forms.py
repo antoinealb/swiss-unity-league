@@ -21,6 +21,8 @@ class EventCreateForm(forms.ModelForm):
         fields = [
             "name",
             "date",
+            "start_time",
+            "end_time",
             "format",
             "category",
             "address",
@@ -30,6 +32,8 @@ class EventCreateForm(forms.ModelForm):
         ]
         widgets = {
             "date": forms.DateInput(attrs={"type": "date"}),
+            "start_time": forms.TimeInput(attrs={"type": "time"}, format="%H:%M"),
+            "end_time": forms.TimeInput(attrs={"type": "time"}, format="%H:%M"),
             "description": TinyMCE(
                 mce_attrs={
                     "toolbar": "undo redo | bold italic | link unlink | bullist numlist",
