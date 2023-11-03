@@ -9,14 +9,6 @@ class Migration(migrations.Migration):
     ]
 
     operations = [
-        migrations.AlterModelOptions(
-            name="address",
-            options={"verbose_name": "Address"},
-        ),
-        migrations.AlterModelOptions(
-            name="event",
-            options={"verbose_name": "Event"},
-        ),
         migrations.AddField(
             model_name="event",
             name="end_time",
