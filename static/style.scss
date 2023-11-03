@@ -41,6 +41,17 @@ $theme-colors: (
 $link-color: map-get($theme-colors, 'link-color');
 $link-hover-decoration: underline;
 
+.carousel-height {
+    height: 150px;
+}
+
+// 992px is the lg breakpoint for bootstrap 5
+@media (min-width: 992px) {
+    .carousel-height {
+        height: 300px;
+    }
+}
+
 @import 'bootstrap/scss/bootstrap'; /*Needs to be last otherwise it doesn't override the variables*/
 
 a {

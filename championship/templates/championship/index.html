@@ -67,7 +67,7 @@
                                     <span itemprop="name">{{ player.name }}</span>
                                     (<span itemprop="description">{{ player.score.total_score }} points</span>)
                                 </li>
-                                </div>
+                            </div>
                         {% endfor %}
                     </ol>
                 </div>
@@ -81,7 +81,7 @@
         <div class="row text-center">
             <div class="col-lg-6 align-items-center mx-auto my-2">
                 <div id="carouselPartnersIndicators" class="carousel slide" data-bs-ride="carousel" data-bs-interval="{% if debug %}500{% else %}3000{% endif %}">
-                    <div class="carousel-inner" style="height: 300px;">
+                    <div class="carousel-inner carousel-height">
                         {% for logo in partner_logos %}
                             <div class="carousel-item {% if forloop.counter0 == 0 %}active{% endif %}">
                                 <img class="d-block w-100" src="{% static logo %}" alt="Partner logo ({{ logo }})">
