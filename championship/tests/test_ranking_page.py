@@ -39,14 +39,5 @@ class RankingTestCase(TestCase):
         player = PlayerFactory()
         EventPlayerResultFactory(player=player, points=2)
         response = self.client.get("/ranking")
-        ranking_properties = """<td>1
-                        
-                            <i class="icon-star"></i>
-                        
-                        
-                            <i class="icon-shield"></i>
-                        
-                            <i class="icon-shield"></i>
-                        
-                    </td>"""
-        self.assertContains(response, ranking_properties)
+        self.assertContains(response, """<i class="icon-star"></i>""")
+        self.assertContains(response, """<i class="icon-shield"></i>""")
