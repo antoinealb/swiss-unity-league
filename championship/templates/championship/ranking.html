@@ -2,48 +2,45 @@
 
 {% load custom_tags %}
 
-{% block title %}Ranking Swiss Unity League{% endblock %}
+{% block title %}Leaderboard Swiss Unity League - Best Magic: The Gathering Players in Switzerland{% endblock %}
+{% block meta_description %}Discover the elite players leading the Swiss Unity League in Magic: The Gathering. Explore the current standings, SUL points, and see who's going to qualify for the Invitational tournament.{% endblock %}
 
 {% block content %}
-    <h1>Ranking by player</h1>
-    <p>If you are within the top 48 players, please check your email to confirm whether you are able to participate.
-        Please <a href="mailto:leoninleague@gmail.com">contact us</a> if you didn't receive anything.
-        <br><i>Why we ask the top 48 players: in case a player can't attend the next player qualifies. Hence players
-            close to the top 40 still have a chance to qualify.</i>
+    <h1>Leaderboard</h1>
+    <p>
+        Every year, participating Magic: The Gathering tournaments in Switzerland award SUL Points to players.
+        At the end of the season (31.10.2023), the top 40 players with the most SUL Points are qualified for the
+        two-day SUL Invitational tournament. The best players will also receive byes, allowing them free wins in
+        the initial rounds of the SUL Invitational.
     </p>
-    <p>Update on 07.10.2023: The number of players qualifying for the SUL Invitational has been increased to 40.
-        <br><i>Reason: Due to increased attendance in recent months, and the last-minute addition of three
-            SUL Premier events, we've concluded that a cap of 32 qualifying players is too small.</i>
-    </p>
-
     <dl>
         <dt><i class="icon-star"></i></dt>
         <dd>Qualified for the invitational</dd>
         <dt><i class="icon-shield"></i></dt>
         <dd>Bye for the invitational</dd>
     </dl>
-
-    <table class="table table-striped">
+    <table class="table table-striped" aria-label="Leaderboard 2023 Swiss Unity League">
         <thead>
             <tr>
                 <th scope="col">Rank</th>
                 <th scope="col">SUL Points</th>
-                <th scope="col">Name</th>
+                <th scope="col">Player Name</th>
             </tr>
         </thead>
         <tbody>
             {% for player in players %}
                 <tr>
-                    <td>{{ player.score.rank }}
+                    <td aria-label="Rank">
+                        {{ player.score.rank }}
                         {% if player.score.qualified %}
-                            <i class="icon-star"></i>
+                            <i class="icon-star" title="Qualified for the Invitational tournament"></i>
                         {% endif %}
                         {% for i in player.score.byes|range %}
-                            <i class="icon-shield"></i>
+                            <i class="icon-shield" title="1 Bye for the Invitational tournament"></i>
                         {% endfor %}
                     </td>
-                    <td>{{ player.score.total_score }}</td>
-                    <td><a href="{{ player.get_absolute_url }}">{{ player.name }}</a></td>
+                    <td aria-label="SUL Points">{{ player.score.total_score }}</td>
+                    <td aria-label="Player Name"><a href="{{ player.get_absolute_url }}" title="View tournament statistics of {{ player.name }}">{{ player.name }}</a></td>
                 </tr>
             {% endfor %}
         </tbody>
