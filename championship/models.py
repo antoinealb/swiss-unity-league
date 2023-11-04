@@ -484,6 +484,23 @@ def qps_for_result(
     return points
 
 
+def byes_for_result(
+    result: EventPlayerResult,
+    event_size: int,
+    has_top_8: bool,
+) -> int:
+    """Returns how many byes a given result gives."""
+    MIN_SIZE_EXTRA_BYE = 128
+    if (
+        result.event_size > MIN_SIZE_EXTRA_BYE
+        and result.event.category == Event.Category.PREMIER
+        and result.single_elimination_result
+        == EventPlayerResult.SingleEliminationResult.WINNER
+    ):
+        return 2
+    return 0
+
+
 def get_results_with_qps(
     event_player_results: models.QuerySet[EventPlayerResult],
 ) -> Iterable[EventPlayerResult]:
@@ -493,6 +510,7 @@ def get_results_with_qps(
     - qps: the number of QPs the player got in this event
     - event_size: the number of players in the event
     - event: the event
+    - byes: Number of byes awarded for this result.
     """
     results = event_player_results.select_related("event").annotate(
         event_size=Count("event__eventplayerresult"),
@@ -505,6 +523,9 @@ def get_results_with_qps(
             result,
             event_size=result.event_size,
             has_top_8=result.has_top8,
+        )
+        result.byes = byes_for_result(
+            result, event_size=result.event_size, has_top_8=result.has_top8
         )
         yield result
 
@@ -549,7 +570,6 @@ def compute_scores():
     players_reaching_max = 0
 
     MAX_BYES = 2
-    MIN_SIZE_EXTRA_BYE = 128
 
     def _byes_for_rank(rank: int) -> int:
         if rank <= 1:
@@ -569,21 +589,14 @@ def compute_scores():
         for e in EventPlayerResult.objects.filter(single_elimination_result__gt=0)
     )
 
+    # TODO(antoinealb): Here the end of season should be parametric
     for result in get_results_with_qps(
         EventPlayerResult.objects.filter(
             event__date__lte=settings.SEASON_MAP[settings.DEFAULT_SEASON_ID].end_date
         )
     ):
         scores_by_player_category[result.player_id][result.event.category] += result.qps
-
-        # Winners of Premier events with more than 128 players get 2 byes
-        if (
-            result.event_size > MIN_SIZE_EXTRA_BYE
-            and result.event.category == Event.Category.PREMIER
-            and result.single_elimination_result
-            == EventPlayerResult.SingleEliminationResult.WINNER
-        ):
-            extra_byes_by_player[result.player_id] += 2
+        extra_byes_by_player[result.player_id] += result.byes
 
     total_points = {}
     for player in scores_by_player_category:
