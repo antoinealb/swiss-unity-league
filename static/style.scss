@@ -37,4 +37,14 @@ $theme-colors: (
     height: 100%;
 }
 
+$link-hover-decoration: underline;
+
 @import 'bootstrap/scss/bootstrap'; /*Needs to be last otherwise it doesn't override the variables*/
+
+a {
+    text-decoration: none;
+
+    &:hover {
+        text-decoration: $link-hover-decoration;
+    }
+}
