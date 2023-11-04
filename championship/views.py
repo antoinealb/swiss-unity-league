@@ -498,6 +498,16 @@ class CreateResultsView(FormView):
         # Sometimes the webpages or users don't sort the standings correctly. Hence we should sort as a precaution.
         standings.sort(key=lambda s: s[1], reverse=True)
 
+        # Check that the records amount to the same amount of match points
+        for name, points, (w, l, d) in standings:
+            if points != w * 3 + d:
+                messages.error(
+                    self.request,
+                    f"""The record of {name} does not add up to the match points. Please send us 
+                    the results link or file via email to leoninleague@gmail.com""",
+                )
+                return self.form_invalid(form)
+
         if self.event.results_validation_enabled and validate_standings_and_show_error(
             self.request, standings, self.event.category
         ):

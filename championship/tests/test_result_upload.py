@@ -397,6 +397,20 @@ class EventLinkImportTestCase(TestCase):
         gotChoices = _choices(response)
         self.assertEqual([], gotChoices)
 
+    def test_record_not_reflecting_match_points(self):
+        self.data["standings"] = SimpleUploadedFile(
+            "standings",
+            load_test_html("eventlink_ranking_wrong_record.html").encode(),
+            content_type="text/html",
+        )
+
+        self.login()
+        resp = self.client.post(reverse("results_create_eventlink"), self.data)
+        self.assertEqual(200, resp.status_code)
+        self.assertContains(
+            resp, "The record of Jeremias Wildi does not add up to the match points."
+        )
+
 
 class MtgEventUploadTest(TestCase):
     def setUp(self):
