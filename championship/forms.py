@@ -1,7 +1,14 @@
 from django.db.models import TextChoices, Count
 from django.core.validators import RegexValidator
 from django import forms
-from .models import Address, Event, EventPlayerResult, EventOrganizer
+from .models import (
+    Address,
+    Event,
+    EventPlayerResult,
+    EventOrganizer,
+    Player,
+    PlayerAlias,
+)
 from crispy_forms.helper import FormHelper
 from crispy_forms.layout import Submit, Layout, Div, Field
 from tinymce.widgets import TinyMCE
@@ -54,6 +61,43 @@ You can copy/paste the description from a website like swissmtg.ch, and the form
         super(EventCreateForm, self).__init__(*args, **kwargs)
         if organizer is not None:
             self.fields["address"].queryset = organizer.get_addresses()
+
+
+class EventPlayerResultForm(forms.ModelForm):
+    player_name = forms.CharField(max_length=100)
+
+    class Meta:
+        model = EventPlayerResult
+        fields = ["win_count", "loss_count", "draw_count"]
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.fields["player_name"].initial = (
+            self.instance.player.name if self.instance and self.instance.player else ""
+        )
+
+    def clean(self):
+        cleaned_data = super().clean()
+        new_name = cleaned_data.get("player_name")
+
+        if new_name:
+            old_player = self.instance.player if self.instance else None
+
+            if old_player and new_name != old_player.name:
+                player = Player.objects.filter(name=new_name).first()
+                if not player:
+                    player_alias = PlayerAlias.objects.filter(name=new_name).first()
+                    if player_alias:
+                        player = player_alias.true_player
+                    else:
+                        player = Player.objects.create(name=new_name)
+                self.instance.player = player
+
+            self.instance.points = self.cleaned_data.get(
+                "win_count", 0
+            ) * 3 + self.cleaned_data.get("draw_count", 0)
+
+        return cleaned_data
 
 
 class AddressForm(forms.ModelForm):

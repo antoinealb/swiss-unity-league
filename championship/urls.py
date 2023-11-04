@@ -41,6 +41,12 @@ urlpatterns = [
     ),
     path("events/<int:pk>/copy", views.copy_event, name="event_copy"),
     path("events/<int:pk>/", views.EventDetailsView.as_view(), name="event_details"),
+    path(
+        "epr/edit/<int:pk>/",
+        views.ResultUpdateView.as_view(),
+        name="epr_edit",
+    ),
+    path("player-autocomplete/", views.player_autocomplete, name="player_autocomplete"),
     path("results/create", views.ChooseUploaderView.as_view(), name="results_create"),
     path(
         "results/<int:pk>/top8",
