@@ -1,5 +1,5 @@
 from dataclasses import dataclass
-from typing import Any
+from typing import Any, Iterable
 from django.db import models
 from django.conf import settings
 from django.db.models import Count, F
@@ -486,7 +486,7 @@ def qps_for_result(
 
 def get_results_with_qps(
     event_player_results: models.QuerySet[EventPlayerResult],
-) -> list[EventPlayerResult]:
+) -> Iterable[EventPlayerResult]:
     """
     Pass a QuerySet of EventPlayerResult, and get it annotated with the following fields:
     - has_top8: True if the event has a top8
@@ -506,7 +506,7 @@ def get_results_with_qps(
             event_size=result.event_size,
             has_top_8=result.has_top8,
         )
-    return list(results)
+        yield result
 
 
 scores_computation_time_seconds = Summary(
