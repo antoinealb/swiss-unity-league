@@ -203,12 +203,19 @@ class AetherhubImportTest(TestCase):
         self.login()
         requests_get.side_effects = HTTPError()
 
-        # Try to import
         resp = self.client.post(reverse("results_create_aetherhub"), self.data)
 
-        # Makes sure we return with an error
-        self.assertEqual(resp.status_code, 400)
+        self.assertEqual(resp.status_code, 200)
         self.assertIn("Could not fetch standings", resp.content.decode())
+
+    def test_correctly_handles_wrong_url(self):
+        self.login()
+        self.data["url"] = "https://challonge.com/de/32qwqta"
+
+        resp = self.client.post(reverse("results_create_aetherhub"), self.data)
+
+        self.assertEqual(resp.status_code, 200)
+        self.assertIn("Wrong url format.", resp.content.decode())
 
     def test_only_allows_selection_of_events_with_no_results(self):
         """Checks that the user is only offered to upload results to
@@ -293,6 +300,15 @@ class ChallongeImportTest(TestCase):
         self.assertEqual(results[player_id].win_count, 2)
         self.assertEqual(results[player_id].ranking, 31)
 
+    def test_correctly_handles_wrong_url(self):
+        self.login()
+        self.data["url"] = "https://aetherhub.com/Tourney/RoundTourney/13923"
+
+        resp = self.client.post(reverse("results_create_challonge"), self.data)
+
+        self.assertEqual(resp.status_code, 200)
+        self.assertIn("Wrong url format.", resp.content.decode())
+
 
 class EventLinkImportTestCase(TestCase):
     def setUp(self):
@@ -355,7 +371,7 @@ class EventLinkImportTestCase(TestCase):
 
         self.login()
         resp = self.client.post(reverse("results_create_eventlink"), self.data)
-        self.assertEqual(400, resp.status_code)
+        self.assertEqual(200, resp.status_code)
         self.assertIn("Could not parse standings", resp.content.decode())
 
     def test_only_allows_selection_of_events_with_no_results(self):
@@ -380,6 +396,20 @@ class EventLinkImportTestCase(TestCase):
         response = self.client.get(reverse("results_create_eventlink"))
         gotChoices = _choices(response)
         self.assertEqual([], gotChoices)
+
+    def test_record_not_reflecting_match_points(self):
+        self.data["standings"] = SimpleUploadedFile(
+            "standings",
+            load_test_html("eventlink_ranking_wrong_record.html").encode(),
+            content_type="text/html",
+        )
+
+        self.login()
+        resp = self.client.post(reverse("results_create_eventlink"), self.data)
+        self.assertEqual(200, resp.status_code)
+        self.assertContains(
+            resp, "The record of Jeremias Wildi does not add up to the match points."
+        )
 
 
 class MtgEventUploadTest(TestCase):
@@ -424,7 +454,7 @@ class MtgEventUploadTest(TestCase):
         self.event.category = Event.Category.PREMIER
         self.event.save()
         resp = self.client.post(reverse("results_create_mtgevent"), self.data)
-        self.assertEqual(400, resp.status_code)
+        self.assertEqual(200, resp.status_code)
         self.assertIn(
             "SUL Premier events require at least 17 players.", resp.content.decode()
         )
@@ -582,7 +612,7 @@ class ManualImportTestCase(TestCase):
     def test_import_garbage(self):
         self.data["form-0-points"] = "3@"
         resp = self.client.post(reverse("results_create_manual"), self.data)
-        self.assertIn("Score should be in the win-loss", resp.content.decode())
+        self.assertContains(resp, "Score should be in the win-loss")
         self.assertFalse(self.event.eventplayerresult_set.exists())
 
     def test_redirects_to_event_page(self):
@@ -669,11 +699,10 @@ class ManualImportTestCase(TestCase):
         self.event.save()
         self.data["form-0-points"] = "5-0-1"
         resp = self.client.post(reverse("results_create_manual"), self.data)
-        self.assertEqual(400, resp.status_code)
-        content = resp.content.decode()
-        self.assertIn(
+        self.assertEqual(200, resp.status_code)
+        self.assertContains(
+            resp,
             "A SUL Regional event with 1 players should have at maximum 5 rounds.",
-            content,
         )
         self.assertFalse(self.event.eventplayerresult_set.exists())
 
