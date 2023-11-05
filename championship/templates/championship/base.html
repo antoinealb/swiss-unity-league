@@ -5,10 +5,10 @@
     <head>
         <meta charset="utf-8" />
         <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no" />
-        <meta name="description" content="" />
-        <meta name="author" content="" />
-        <title>{% block title %}Swiss Unity League{% endblock %}</title>
-
+        <title>{% block title %}Swiss Unity League - Magic: the Gathering Tournament Series Switzerland{% endblock %}</title>
+        <meta name="description" content="{% block meta_description %}Compete in Switzerland's premier Magic: The Gathering tournament series 'Swiss Unity League'. Gather points at events to win big prizes!{% endblock meta_description %}">
+        <meta property="og:image" content="{% static 'flag.png' %}"/>
+        <meta name="keywords" content="Swiss Unity League, Magic: the Gathering, Switzerland, Events, Tournaments"/>
         <link rel="stylesheet" href="{% sass_src 'style.scss' %}" type="text/css">
         <link href="//netdna.bootstrapcdn.com/font-awesome/3.2.1/css/font-awesome.css" rel="stylesheet">
         {% block extrahead %}
@@ -18,25 +18,27 @@
         <main class="flex-shrink-0 pb-2">
             <nav class="navbar navbar-expand-lg bg-primary d-print-none">
                 <div class="container px-5">
-                    <a class="navbar-brand" href="{% url 'index' %}">
-                        <img src="{% static 'flag.png' %}" width="30" height="30" class="d-inline-block align-top" alt="">
+                    <a class="navbar-brand" href="{% url 'index' %}" title="Return to the homepage of Swiss Unity League - Premier MTG Tournament Series">
+                        <img src="{% static 'flag.png' %}" width="30" height="30" class="d-inline-block align-top" alt="Swiss Unity League Logo">
                         Swiss Unity League
                         {% if debug %}
                             (DEBUG MODE)
                         {% endif %}
                     </a>
-
-
                     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation"><span class="navbar-toggler-icon"></span></button>
                     <div class="collapse navbar-collapse" id="navbarSupportedContent">
                         <ul class="navbar-nav ms-auto mb-2 mb-lg-0">
-                            <li class="nav-item"><a class="nav-link" href="{% url 'ranking' %}">Leaderboard</a></li>
-                            <li class="nav-item"><a class="nav-link" href="{% url 'events' %}">Upcoming events</a></li>
+                            <li class="nav-item">
+                                <a class="nav-link" href="{% url 'ranking' %}" title="View the complete ranking of Swiss Unity League">Leaderboard</a>
+                            </li>
+                            <li class="nav-item">
+                                <a class="nav-link" href="{% url 'events' %}" title="View upcoming Magic: the Gathering events in Switzerland">Upcoming events</a>
+                            </li>
                             <li class="nav-item dropdown">
-                                <a class="nav-link dropdown-toggle" href="#" id="navbarDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">Infos</a>
+                                <a class="nav-link dropdown-toggle" href="#" id="navbarDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false" aria-label="Information Dropdown Menu">Infos</a>
                                 <ul class="dropdown-menu" aria-labelledby="navbarDropdown">
-                                    <li><a class="dropdown-item" href="{% url 'info' %}">Player Guide</a></li>
-                                    <li><a class="dropdown-item" href="{% url 'info_organizer' %}">Organizer Guide</a></li>
+                                    <li><a class="dropdown-item" href="{% url 'info' %}" title="Information for Players about the League">Player Guide</a></li>
+                                    <li><a class="dropdown-item" href="{% url 'info_organizer' %}" aria-label="Information for Organizers about the League">Organizer Guide</a></li>
                                 </ul>
                             </li>
 
@@ -81,7 +83,7 @@
             <div class="container p-3">
                 <div class="row">
                     <div class="col-8">
-                        &copy;Leonin League 2022. Not approved or endorsed by Wizards of the Coast. Portions of the
+                        &copy;Leonin League 2023. Not approved or endorsed by Wizards of the Coast. Portions of the
                         materials used are &copy;Wizards of the Coast LLC.
                     </div>
                     <div class="col-4">
