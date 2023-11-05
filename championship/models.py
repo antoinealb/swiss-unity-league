@@ -534,18 +534,12 @@ scores_computation_time_seconds = Summary(
     "scores_computation_time_seconds", "Time spent to compute scores of all players"
 )
 
-scores_players_reaching_max_regular = Gauge(
-    "scores_players_reaching_max_regular",
-    "Number of players hitting the cap of points at Regular",
-)
-
 REGULAR_MAX_SCORE = 500
 
 
 @dataclass
 class Score:
     total_score: int
-    category_score: dict[str, int]
     rank: int
     byes: int
     qualified: bool
@@ -579,15 +573,8 @@ def compute_scores():
         else:
             return 0
 
-    scores_by_player_category: defaultdict[int, Any] = defaultdict(
-        lambda: defaultdict(lambda: 0)
-    )
+    scores_by_player: defaultdict[int, Any] = defaultdict(lambda: 0)
     extra_byes_by_player: defaultdict[int, int] = defaultdict(lambda: 0)
-
-    events_with_top8 = set(
-        e.event_id
-        for e in EventPlayerResult.objects.filter(single_elimination_result__gt=0)
-    )
 
     # TODO(antoinealb): Here the end of season should be parametric
     for result in get_results_with_qps(
@@ -595,36 +582,21 @@ def compute_scores():
             event__date__lte=settings.SEASON_MAP[settings.DEFAULT_SEASON_ID].end_date
         )
     ):
-        scores_by_player_category[result.player_id][result.event.category] += result.qps
+        scores_by_player[result.player_id] += result.qps
         extra_byes_by_player[result.player_id] += result.byes
 
-    total_points = {}
-    for player in scores_by_player_category:
-        if (
-            scores_by_player_category[player][Event.Category.REGULAR]
-            > REGULAR_MAX_SCORE
-        ):
-            scores_by_player_category[player][
-                Event.Category.REGULAR
-            ] = REGULAR_MAX_SCORE
-            players_reaching_max += 1
-
-        total_points[player] = sum(scores_by_player_category[player].values())
-
-    total_points = sorted(total_points.items(), key=lambda x: x[1], reverse=True)
+    total_points = sorted(scores_by_player.items(), key=lambda x: x[1], reverse=True)
     scores = {}
     for index, (player, points_of_player) in enumerate(total_points):
         rank = index + 1
         byes = min(_byes_for_rank(rank) + extra_byes_by_player[player], MAX_BYES)
         scores[player] = Score(
             total_score=points_of_player,
-            category_score=dict(scores_by_player_category[player]),
             rank=rank,
             byes=byes,
             qualified=rank <= 40,
         )
 
-    scores_players_reaching_max_regular.set(players_reaching_max)
     return scores
 
 
