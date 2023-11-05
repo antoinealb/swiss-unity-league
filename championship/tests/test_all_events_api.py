@@ -23,6 +23,8 @@ class EventApiTestCase(TestCase):
         a = EventFactory(
             organizer=eo,
             date=tomorrow,
+            start_time=datetime.time(10, 0),
+            end_time=datetime.time(19, 0),
             format=Event.Format.LEGACY,
             category=Event.Category.PREMIER,
             address=event_address,
@@ -30,6 +32,8 @@ class EventApiTestCase(TestCase):
         b = EventFactory(
             organizer=eo,
             date=in_2_days,
+            start_time=datetime.time(12, 0),
+            end_time=datetime.time(14, 0),
             format=Event.Format.MODERN,
             category=Event.Category.REGIONAL,
         )
@@ -38,6 +42,7 @@ class EventApiTestCase(TestCase):
             {
                 "name": a.name,
                 "date": tomorrow.strftime("%a, %d.%m.%Y"),
+                "time": "10:00 - 19:00",
                 "organizer": eo.name,
                 "format": "Legacy",
                 "address": f", {event_address.city}, {event_address.get_region_display()}, {event_address.get_country_display()}",
@@ -49,6 +54,7 @@ class EventApiTestCase(TestCase):
             {
                 "name": b.name,
                 "date": in_2_days.strftime("%a, %d.%m.%Y"),
+                "time": "12:00 - 14:00",
                 "organizer": eo.name,
                 "format": "Modern",
                 "address": f", {eo.default_address.city}, {eo.default_address.get_region_display()}",
@@ -74,6 +80,7 @@ class EventApiTestCase(TestCase):
             {
                 "name": a.name,
                 "date": yesterday.strftime("%a, %d.%m.%Y"),
+                "time": "",
                 "organizer": eo.name,
                 "format": "Legacy",
                 "address": "",

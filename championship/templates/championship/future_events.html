@@ -7,9 +7,7 @@
 
 {% block content %}
     <h1>League events</h1>
-    <p>
-        <a href="{% url 'organizer_view' %}" class="btn btn-secondary">View all organizers</a>
-    </p>
+    <a href="{% url 'organizer_view' %}" class="btn btn-secondary mb-2">View events by organizer</a>
     <div x-data="events()" x-init="loadEvents()">
         {% for cnt in "12"|make_list %}
             <div class="{% cycle 'btn-group d-none d-md-flex' 'btn-group-vertical d-block d-md-none' %}" role="group" aria-label="Filtering the events">
@@ -46,14 +44,13 @@
 
             </div>
         {% endfor %}
-
-        <div class="table-responsive">
+        <div class="table-responsive pt-1">
             <table class="table">
                 <thead>
                     <tr>
-                        <th scope="col">Date</th>
+                        <th scope="col">Date/Time</th>
                         <th scope="col">Event</th>
-                        <th scope="col"></th>
+                        <th scope="col">Type</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -61,6 +58,7 @@
                         <tr x-show="shouldShow(event)">
                             <td>
                                 <div x-text="event.date"></div>
+                                <small class="text-nowrap" x-text="event.time"></small>
                             </td>
                             <td>
                                 <div>

@@ -8,6 +8,7 @@ class EventSerializer(serializers.ModelSerializer):
         fields = [
             "name",
             "date",
+            "time",
             "organizer",
             "format",
             "address",
@@ -20,6 +21,7 @@ class EventSerializer(serializers.ModelSerializer):
     organizer = serializers.CharField(source="organizer.name")
     format = serializers.CharField(source="get_format_display")
     address = serializers.SerializerMethodField()
+    time = serializers.CharField(source="get_time_range_display")
     category = serializers.CharField(source="get_category_display")
     details_url = serializers.HyperlinkedIdentityField(view_name="event_details")
     organizer_url = serializers.HyperlinkedRelatedField(
