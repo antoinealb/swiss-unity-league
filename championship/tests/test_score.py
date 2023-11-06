@@ -206,7 +206,7 @@ class ScoresWithTop8TestCase(TestCase):
             single_elimination_result=result,
             ranking=1,
         )
-        return qps_for_result(ep, event_size=32, has_top_8=True)
+        return ScoreMethod2023.qps_for_result(ep, event_size=32, has_top_8=True)
 
     def test_premier_event(self):
         self.event.category = Event.Category.PREMIER
@@ -247,7 +247,7 @@ class ScoresWithTop8TestCase(TestCase):
         r = EventPlayerResultFactory(points=10, ranking=5, event=self.event)
 
         want = (10 + 3) * 6 + 150
-        got = qps_for_result(r, 5, has_top_8=True)
+        got = ScoreMethod2023.qps_for_result(r, 5, has_top_8=True)
 
         self.assertEqual(want, got)
 
