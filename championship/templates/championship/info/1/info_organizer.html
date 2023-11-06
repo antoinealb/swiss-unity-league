@@ -1,28 +1,6 @@
-{% extends "championship/base.html" %}
+{% extends "championship/info/base_info_organizer.html" %}
 
-{% block title %}
-    Guide for organizers
-{% endblock %}
-
-{% block content %}
-    <h1>Organizer Guide: Swiss Unity League {{ current_season.name }}</h1>
-    {% include 'championship/components/season_dropdown.html' %}
-    <br>
-    <div class="alert alert-success" role="alert">
-        Interested in becoming an organizer? <a href="https://forms.gle/FHRCmbX8Uz6E5s1b8">Register here</a>
-    </div>
-
-    <p>The Swiss Unity League (SUL) is a collaborative league in 2023
-        between various Magic tournament organizers in Switzerland with an end
-        of year 2-day invitational tournament with 3.5k+ Prizes.</p>
-    <p>Any organizer can register their tournament for the league to make it
-        award Qualification Points (QPs). Players need to collect these QPs in
-        order to qualify for the invitational tournament.</p>
-    <p>In the following we only explain the parts that are specifically
-        relevant for tournament organizers. If you wish to understand how
-        Qualification Points are awarded to players and to see more information
-        about the end of year invitational tournament, please also read the <a href="{% url 'info' %}"><u>Guide for Players</u></a>.</p>
-
+{% block info %}
     <h4>Changelog</h4>
     <ul>
         <li>11 April:

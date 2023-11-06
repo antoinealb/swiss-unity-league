@@ -1,29 +1,17 @@
-{% extends "championship/base.html" %}
+{% extends "championship/info/base_info_organizer.html" %}
 
-{% block title %}
-    Guide for organizers
-{% endblock %}
-
-{% block content %}
-    <h1>Organizer Guide: Swiss Unity League {{ current_season.name }}</h1>
-    {% include 'championship/components/season_dropdown.html' %}
-    <br>
-    <div class="alert alert-success" role="alert">
-        Interested in becoming an organizer? <a href="https://forms.gle/FHRCmbX8Uz6E5s1b8">Register here</a>
-    </div>
-    <h2>Abstract</h2>
-    {% include 'championship/components/abstract.html' %}
-    <p>In the following, we only explain the parts that are specifically
-        relevant for tournament organizers. If you wish to understand how
-        Qualification Points are awarded to players, and to see more information
-        about the end-of-year invitational tournament, please also read the
-        <a href="{% url 'info' %}">Guide for Players</a>.</p>
-    <h2>Season</h2>
+{% block info %}
+    <h2>Eligible Tournaments</h2>
     <p>The 2024 season runs from 01.11.2023 until 31.10.2024 and qualifies for the
-        Invitational tournament in November 2024.
-        During that time, you can register all of your Magic: the Gathering tournaments for
-        the league to make them award SUL Points to the participants so that they can qualify
-        for the Invitational.</p>
+        Invitational tournament in November 2024. During that time, you can register
+        all of your Magic: the Gathering events for the league to make them
+        award SUL Points to the participants.</p>
+    <p>Eligible are all Magic: the Gathering tournaments that are:</p>
+    <ul>
+        <li>Held in or around Switzerland</li>
+        <li>Held in real life (no digital events)</li>
+        <li>Held in a single-player format (no 2HG, Commander, etc.)</li>
+    </ul>
     <h2>Tournament Types</h2>
     <p>There are 3 types of tournaments (SUL Regular, Regional, and Premier).
         To each of your tournaments, you can assign one of these types,
@@ -109,8 +97,7 @@
             MTGEvent. Alternatively, you can manually upload the results or use an Excel or CSV file.</li>
         <li>The fees will be calculated automatically, and you will receive an invoice every 3 months.</li>
     </ul>
-    <h4>Examples</h4>
-    <p><em>Ajani wants to turn his Saturday Modern event with top 8 into an SUL Regional Event. He
+    <p><em>Example: Ajani wants to turn his Saturday Modern event with top 8 into an SUL Regional Event. He
         creates the event on the website, which is then advertised on the SUL calendar. Ajani's
         event runs well and attracts 22 players. During the event, he manages the pairings and
         results as usual with the Eventlink app. Once the event is over, Ajani downloads the results
@@ -126,7 +113,7 @@
         <li>Additional prizes at your weekly events in the form of SUL Points, at no cost to you.</li>
     </ul>
 
-    <h2>League Rules</h2>
+    <h2>SUL Rules</h2>
     <p>Tournaments participating in the Swiss Unity League must be “Magic: the Gathering” events
         in a single-player format and held in real life. Digital SUL events on MTG Arena, MTG Online,
         or similar platforms are not allowed.</p>
@@ -198,8 +185,7 @@
     <ul>
         <li>Mention that the event is part of the Swiss Unity League and awards SUL Points.</li>
         <li>Specify the type of the event (SUL Regular/Regional/Premier).</li>
-        <li>Provide a link to the <a href="{% url 'info' %}">Guide for Players</a>
-            for more information.</li>
+        <li>Provide a link to <a href="{% url 'index' %}">unityleague.ch</a> for more information.</li>
     </ul>
 
     <h2>Finances, Liability, and Sponsoring</h2>

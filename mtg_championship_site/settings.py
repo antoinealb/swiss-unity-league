@@ -280,13 +280,13 @@ _SEASON_LIST = [
         id=1,
         start_date=date(2023, 1, 1),
         end_date=date(2023, 10, 31),
-        name="2023 Season",
+        name="Season 2023",
     ),
     Season(
         id=2,
         start_date=date(2023, 11, 1),
         end_date=date(2024, 10, 31),
-        name="2024 Season",
+        name="Season 2024",
     ),
 ]
 
