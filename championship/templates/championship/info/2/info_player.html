@@ -1,20 +1,6 @@
-{% extends "championship/base.html" %}
+{% extends "championship/info/base_info_player.html" %}
 
-{% block title %}
-    Guide for Players
-{% endblock %}
-
-{% block content %}
-    <h1>Player Guide: Swiss Unity League {{ current_season.name }}</h1>
-    {% include 'championship/components/season_dropdown.html' %}
-    <br>
-    <p>The Swiss Unity League (SUL) is a collaborative league
-        between various Magic tournament organizers in and around Switzerland
-        with an end-of-year 2-day invitational tournament with 3k+ prizes.</p>
-    <p>Any organizer can register their tournament for the league to make it
-        award SUL Points. Players need to collect these points in
-        order to qualify for the invitational tournament.</p>
-
+{% block info %}
     <h2>SUL Invitational November 2024</h2>
     <h3>Prize Pool</h3>
     <ul>
@@ -22,15 +8,15 @@
     </ul>
     <h3>How to Qualify</h3>
     <p>The 2024 season of the SUL will run from the 1st of November 2023 to the 31th of
-        October 2024. During that time, all participating tournaments will award SUL Points.</p>
+        October 2024. During that time, all participating Magic: the Gathering tournaments in and around Switzerland will award SUL Points.</p>
     <p>In total, <strong>32* players will qualify</strong> for the SUL Invitational. Players can qualify in the following ways:</p>
     <ul>
         <li>The <strong>winner** of each SUL Premier event with 40 or more participants</strong> receives a direct invite for the Invitational.</li>
         <li>Other options to earn direct invites will be announced at a later time.</li>
         <li>At the end of the season, the <strong>remaining invites will be awarded to the top-performing players</strong> on the leaderboard.</li>
     </ul>
-    <i><p>*The exact number of qualified players will be announced no later than 31st of June 2024.<br>
-        **If a player already has a direct invite from a previous tournament it will be passed on to the next player in the standings of the tournament.</p>
+    <i><p>*The exact number of qualified players will be announced no later than June 2024.<br>
+        **If a player already has a direct invite from a previous tournament, it will be passed on to the next player in the standings of the tournament.</p>
         <p>Example: Let's say there are 9 SUL Premier events with 40 or more participants during the 2024 season, then the 9 winners of these events will already be qualified irrespective of how many SUL Points they earn. The remaining invites will be awarded to the 23 players with the most SUL Points that don't have a direct invite.</p></i>
     <h3>Tournament Structure</h3>
     <ul>
@@ -38,7 +24,7 @@
         <li>More info follows after the Invitational 2023</li>
     </ul>
     <h2>How to Participate</h2>
-    <p>Tell your local tournament organizer (TO) about our league and show them the <a href="{% url 'info_organizer' %}">Guide for Organizers</a> page! Your TO will then register their local events for the league so you can start collecting SUL Points at those events.</p>
+    <p>Tell your local tournament organizer (TO) about our league and show them the <a href="{% url 'info_organizer' %}">Guide for Organizers</a> page! Your TO will then register their local events for the league, so you can start collecting SUL Points at those events.</p>
     <h2>SUL Points</h2>
     <p>Players can earn SUL Points at all tournaments
         participating in the league. Points are awarded in the following three
@@ -62,12 +48,12 @@
         association are SUL Regular events.</p>
     <h4>SUL Regional</h4>
     <p>SUL Regional events are medium-sized events for which people travel
-        all around your canton to attend them.<br>For each format your local
+        all around your canton to attend them.<br>For each format, your local
         tournament organizers can organize one of these events per month.
-        Additionally for weekly leagues your organizer can turn one of these events
+        Additionally, for weekly tournaments your organizer can turn one of these events
         per month into SUL Regional.</p>
     <h4>SUL Premier</h4>
-    <p>SUL Premier events are meant to be huge tournaments for which people
+    <p>SUL Premier events are meant to be huge tournaments, for which people
         travel all around Switzerland. To make those events feel special and
         exciting, your local tournament organizer can only host 1-2 of these
         events per year. Premier events require at least 24 participants,
@@ -176,40 +162,6 @@
         Additionally, she receives 60 points for reaching a greater match point rate than 70% (13/18 = 72%).
         With this event, she earns a grand total of 156 SUL Points.
     </i></p>
-
-    <p>Here are some examples of which records are needed to reach the desired match point rate:</p>
-    <div class="row py-3">
-        <div class="col-md-6 align-items-center mx-auto table-responsive">
-            <table class="table table-striped border border-2">
-                <thead>
-                    <tr class="header">
-                        <th>Rounds</th>
-                        <th>Record for 65% match point rate</th>
-                        <th>Record for 70% match point rate</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    <tr>
-                        <td>6</td>
-                        <td>4-2</td>
-                        <td>4-1-1</td>
-                    </tr>
-                    <tr>
-                        <td>7</td>
-                        <td>4-1-2</td>
-                        <td>5-2</td>
-                    </tr>
-                    <tr>
-                        <td>8</td>
-                        <td>5-2-1</td>
-                        <td>6-2</td>
-                    </tr>
-                </tbody>
-            </table>
-        </div>
-    </div>
-    <p><i>In a 6 round event you need to go 4-2 to reach a match point rate of 65%. So if you achieve a record of 4-2 in a Premier event, you will get 30 additional SUL Points. </i></p>
-    </i></p>
     <h2>Byes</h2>
     <p>The best-performing players in the league are awarded byes (free wins
         in the first rounds) for the invitational tournament at the end of the
@@ -218,9 +170,9 @@
         <li>To be defined later</li>
     </ul>
     <h2>Responsibility of Players</h2>
-    <p>Players are responsible to verify that their results where uploaded correctly. If
-        you notice that your SUL Points are not correct, please contact your
-        local tournament organizer or the <a href="mailto:leoninleague@gmail.com"><u>SUL admins</u></a>.
+    <p>Players are responsible to verify that their results were uploaded correctly. If
+        you notice that your SUL Points are incorrect, please contact your
+        local tournament organizer or the <a href="mailto:leoninleague@gmail.com">SUL admins</a>.
     </p>
     <h2>How do we finance this?</h2>
     <p>In addition to sponsorships, tournament organizers will pay a small
