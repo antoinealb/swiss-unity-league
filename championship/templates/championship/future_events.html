@@ -24,13 +24,14 @@
         <li><strong>SUL Regional</strong>: Monthly gatherings in your region featuring players of all skill levels.</li>
         <li><strong>SUL Premier</strong>: Top-tier competitive Magic tournaments, attracting players from all around Switzerland.</li>
     </ol>
-    <a href="{% url 'organizer_view' %}" class="btn btn-secondary mb-2">View events by organizer</a>
+    <a href="{% url 'organizer_view' %}" class="btn btn-secondary mb-2" title="View the events and detailed info of each MTG organizer">View events by organizer</a>
     <div x-data="events()" x-init="loadEvents()">
         {% for i in 2|range %}
             <div class="{% cycle 'btn-group d-none d-md-flex' 'btn-group-vertical d-block d-md-none' %}" role="group" aria-label="Filtering the events">
 
                 <nav class="btn-group">
-                    <button class="btn btn-secondary dropdown-toggle" id="futureEventsMenuButton" type="button" data-bs-toggle="dropdown" x-text="currentEventType" aria-haspopup="true" aria-expanded="false"></button>
+                    <button class="btn btn-secondary dropdown-toggle" id="futureEventsMenuButton" type="button" data-bs-toggle="dropdown" x-text="currentEventType"
+                        aria-haspopup="true" aria-expanded="false" title="View only future or past events"></button>
                     <div class="dropdown-menu" aria-labelledby="futureEventsMenuButton">
                         <template x-for="type in Object.keys(eventTypes)">
                             <div class="dropdown-item" x-text="type" x-on:click="loadEvents(type); currentEventType = type"></div>
@@ -40,7 +41,8 @@
 
                 <template x-for="(filter, index) in filterList" :key="index">
                     <nav class="btn-group">
-                        <button x-text="filter.title" class="btn btn-secondary dropdown-toggle" type="button"  data-bs-toggle="dropdown" data-bs-auto-close="outside" :id="'dropdownMenuButton-' + index"></button>
+                        <button x-text="filter.title" class="btn btn-secondary dropdown-toggle" type="button"  data-bs-toggle="dropdown" data-bs-auto-close="outside"
+                            :id="'dropdownMenuButton-' + index" x-bind:title="'Filter by the '+filter.title+' of the event'"></button>
                         <div class="dropdown-menu" :aria-labelledby="'dropdownMenuButton-' + index">
                             <div class="dropdown-item" x-on:click="toggleAll(index)">
                                 <div class="form-check">
@@ -74,8 +76,8 @@
                     <template x-for="event in events">
                         <tr x-show="shouldShow(event)" itemprop="subEvent" itemscope itemtype="http://schema.org/Event">
                             <td>
-                                <meta itemprop="startDate" content="event.startDateTime">
-                                <meta itemprop="endDate" content="event.endDateTime">
+                                <meta itemprop="startDate" x-bind:content="event.startDateTime">
+                                <meta itemprop="endDate" x-bind:content="event.endDateTime">
                                 <div x-text="event.date"></div>
                                 <small class="text-nowrap" x-text="event.time"></small>
                             </td>
