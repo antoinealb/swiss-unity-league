@@ -61,6 +61,15 @@ class TestComputeScore(TestCase):
             want_score=[52, 52, 48, 32],
         )
 
+    def test_ignores_players_hidden_from_leaderboard(self):
+        p = PlayerFactory(hidden_from_leaderboard=True)
+        EventPlayerResultFactory(player=p)
+        self.assertEqual(
+            len(compute_scores()),
+            0,
+            "Players hidden from leaderboard should not have a score.",
+        )
+
     def test_ignores_events_with_no_results(self):
         self.event.save()
         scores = compute_scores()

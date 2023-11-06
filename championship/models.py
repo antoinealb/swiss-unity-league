@@ -602,7 +602,7 @@ def compute_scores():
     for result in get_results_with_qps(
         EventPlayerResult.objects.filter(
             event__date__lte=settings.SEASON_MAP[settings.DEFAULT_SEASON_ID].end_date
-        )
+        ).filter(player__in=Player.leaderboard_objects.all())
     ):
         scores_by_player[result.player_id] += result.qps
         extra_byes_by_player[result.player_id] += result.byes
