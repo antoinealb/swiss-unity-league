@@ -112,8 +112,8 @@ class PlayerDetailsTest(TestCase):
                 QPS,
                 qps_premier,
                 0,
-                REGULAR_MAX_STRING.format(qps_regular),
-                REGULAR_MAX_SCORE + qps_premier,
+                qps_regular,
+                qps_premier + qps_regular,
             ],
             [EVENTS, 1, 0, 1, 2],
         ]
