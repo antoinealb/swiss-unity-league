@@ -410,6 +410,12 @@ class EventPlayerResult(models.Model):
         return self.ranking < other.ranking
 
     def get_ranking_display(self):
+        SINGLE_ELIM_TO_RANK = {
+            EventPlayerResult.SingleEliminationResult.WINNER: "1st",
+            EventPlayerResult.SingleEliminationResult.FINALIST: "2nd",
+            EventPlayerResult.SingleEliminationResult.SEMI_FINALIST: "3rd-4th",
+            EventPlayerResult.SingleEliminationResult.QUARTER_FINALIST: "5th-8th",
+        }
         if self.single_elimination_result:
             return SINGLE_ELIM_TO_RANK[self.single_elimination_result]
         else:
@@ -465,13 +471,6 @@ POINTS_TOP_13_16 = {
     Event.Category.PREMIER: 50,
     Event.Category.REGIONAL: 10,
     Event.Category.REGULAR: 0,
-}
-
-SINGLE_ELIM_TO_RANK = {
-    EventPlayerResult.SingleEliminationResult.WINNER: "1st",
-    EventPlayerResult.SingleEliminationResult.FINALIST: "2nd",
-    EventPlayerResult.SingleEliminationResult.SEMI_FINALIST: "3rd-4th",
-    EventPlayerResult.SingleEliminationResult.QUARTER_FINALIST: "5th-8th",
 }
 
 
@@ -555,8 +554,6 @@ def get_results_with_qps(
 scores_computation_time_seconds = Summary(
     "scores_computation_time_seconds", "Time spent to compute scores of all players"
 )
-
-REGULAR_MAX_SCORE = 500
 
 
 @dataclass

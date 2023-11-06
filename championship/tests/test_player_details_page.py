@@ -151,8 +151,8 @@ class PlayerDetailsTest(TestCase):
                     Event.Category.REGIONAL.label,
                 ],
                 TBODY: [
-                    [SINGLE_ELIM_TO_RANK[ser_winner], 0, 1],
-                    [SINGLE_ELIM_TO_RANK[ser_quarter], 1, 0],
+                    ["1st", 0, 1],
+                    ["5th-8th", 1, 0],
                 ],
             },
             {
