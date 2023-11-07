@@ -76,6 +76,12 @@ class EventPlayerResultForm(forms.ModelForm):
             self.instance.player.name if self.instance and self.instance.player else ""
         )
 
+    def clean_player_name(self):
+        player_name = self.cleaned_data.get("player_name")
+        if not player_name:
+            raise forms.ValidationError("Player name cannot be empty.")
+        return player_name
+
     def clean(self):
         cleaned_data = super().clean()
 
