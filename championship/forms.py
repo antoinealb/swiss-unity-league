@@ -78,24 +78,20 @@ class EventPlayerResultForm(forms.ModelForm):
 
     def clean(self):
         cleaned_data = super().clean()
-        new_name = cleaned_data.get("player_name")
 
-        if new_name:
-            old_player = self.instance.player if self.instance else None
+        new_name = cleaned_data["player_name"]
+        old_name = self.instance.player.name
 
-            if old_player and new_name != old_player.name:
-                player = Player.objects.filter(name=new_name).first()
-                if not player:
-                    player_alias = PlayerAlias.objects.filter(name=new_name).first()
-                    if player_alias:
-                        player = player_alias.true_player
-                    else:
-                        player = Player.objects.create(name=new_name)
-                self.instance.player = player
+        if new_name != old_name:
+            try:
+                player = PlayerAlias.objects.get(name=new_name).true_player
+            except PlayerAlias.DoesNotExist:
+                player, _ = Player.objects.get_or_create(name=new_name)
+            self.instance.player = player
 
-            self.instance.points = self.cleaned_data.get(
-                "win_count", 0
-            ) * 3 + self.cleaned_data.get("draw_count", 0)
+        self.instance.points = (
+            self.cleaned_data["win_count"] * 3 + self.cleaned_data["draw_count"]
+        )
 
         return cleaned_data
 
