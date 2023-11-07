@@ -87,12 +87,20 @@ class Address(models.Model):
             [
                 self.location_name,
                 self.street_address,
-                self.postal_code,
-                self.city,
+                f"{self.postal_code} {self.city}",
             ]
             + self._get_region_as_list()
             + self._get_country_as_list()
         )
+        return ", ".join(address_parts)
+
+    def get_seo_address(self):
+        address_parts = [
+            self.street_address,
+            self.city,
+            self.postal_code,
+            self.get_country_display(),
+        ]
         return ", ".join(address_parts)
 
     def _get_region_as_list(self):

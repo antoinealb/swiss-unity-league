@@ -24,12 +24,19 @@
                             <div itemscope itemtype="http://schema.org/Event">
                                 <dt>
                                     <time itemprop="startDate" datetime="{{ event.date|date:'Y-m-d' }}">{{ event.date|date:"D, d.m.Y" }}</time>
-                                    by <span itemprop="organizer">{{ event.organizer }}</span>
+                                    by <span itemprop="organizer" itemscope itemtype="http://schema.org/Organization">
+                                        <meta itemprop="url" content="{{ event.organizer.get_absolute_url }}"/>
+                                        <span itemprop="name">{{ event.organizer }}</span>
+                                    </span>
                                 </dt>
                                 <dd>
                                     <a href="{{ event.get_absolute_url }}" itemprop="url" title="{{ event.name }}">
                                         <span itemprop="name">{{ event.name }}</span>
                                     </a>
+                                    <div itemprop="location" itemscope itemtype="http://schema.org/Place">
+                                        <meta itemprop="name" content="{{ event.address.location_name }}" />
+                                        <meta itemprop="address" content="{{ event.address.get_seo_address }}" />
+                                    </div>                                    
                                 </dd>
                             </div>
                         {% endfor %}
