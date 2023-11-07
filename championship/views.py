@@ -872,7 +872,7 @@ def update_ranking_order(event):
 class ResultUpdateView(UpdateView):
     model = EventPlayerResult
     form_class = EventPlayerResultForm
-    template_name = "championship/event_player_result_form.html"
+    template_name = "championship/update_result.html"
 
     def dispatch(self, request, *args, **kwargs):
         event = self.get_object().event
