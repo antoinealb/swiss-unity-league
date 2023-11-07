@@ -42,7 +42,7 @@
                         {% endfor %}
                     </dl>
                 </div>
-                <div class="card-footer"><a class="btn btn-secondary btn-sm" href="{% url 'events' %}" title="View upcoming Magic: the Gathering events in Switzerland">All upcoming events</a></div>
+                <div class="card-footer"><a class="btn btn-secondary btn-sm" href="{% url 'events' %}" title="Upcoming Magic: the Gathering events in Switzerland">All upcoming events</a></div>
             </div>
         </div>
         <div class="col-lg-4 mb-5">
@@ -84,7 +84,7 @@
                     </div>
                 </div>
                 <div class="card-footer">
-                    <a class="btn btn-secondary btn-sm" href="{% url 'ranking' %}">Full ranking</a>
+                    <a class="btn btn-secondary btn-sm" href="{% url 'ranking' %}" title="Leaderboard of all SUL participants">SUL Leaderboard</a>
                 </div>
             </div>
         </div>
@@ -101,7 +101,7 @@
                         {% endfor %}
                     </div>
                 </div>
-                <a href="{% url 'organizer_view' %}" class="btn btn-secondary">All organizers</a>
+                <a href="{% url 'organizer_view' %}" class="btn btn-secondary" title="List of all MTG organizers participating at SUL">All organizers</a>
             </div>
         </div>
 {% endblock %}
