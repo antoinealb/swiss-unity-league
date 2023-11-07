@@ -1,7 +1,9 @@
 import datetime
 from django.test import TestCase, Client
+from django.contrib.auth.models import User
 from championship.models import Event, EventOrganizer
 from championship.factories import *
+from invoicing.factories import InvoiceFactory
 
 
 class HomepageTestCase(TestCase):
@@ -54,3 +56,33 @@ class HomepageTestCase(TestCase):
         self.assertIn(
             "partner_logos/leonin_league.png", response.context["partner_logos"]
         )
+
+    def test_no_open_invoice(self):
+        """Checks that by default we don't have an open invoice."""
+        response = self.client.get("/")
+        self.assertFalse(response.context["has_open_invoices"])
+
+    def test_open_invoice(self):
+        """Checks that when an organizer has open unpaid invoices, we display a
+        reminder."""
+        credentials = dict(username="test", password="test")
+        user = User.objects.create_user(**credentials)
+        organizer = EventOrganizerFactory(user=user)
+        invoice = InvoiceFactory(event_organizer=organizer)
+
+        self.client.login(**credentials)
+        response = self.client.get("/")
+        self.assertTrue(response.context["has_open_invoices"])
+
+    def test_closed_invoice(self):
+        """Checks that if an invoice is paid, we don't display the banner."""
+        credentials = dict(username="test", password="test")
+        user = User.objects.create_user(**credentials)
+        organizer = EventOrganizerFactory(user=user)
+        invoice = InvoiceFactory(event_organizer=organizer)
+        invoice.payment_received_date = datetime.date.today()
+        invoice.save()
+
+        self.client.login(**credentials)
+        response = self.client.get("/")
+        self.assertFalse(response.context["has_open_invoices"])
