@@ -36,7 +36,7 @@
                                     <div itemprop="location" itemscope itemtype="http://schema.org/Place">
                                         <meta itemprop="name" content="{{ event.address.location_name }}" />
                                         <meta itemprop="address" content="{{ event.address.get_seo_address }}" />
-                                    </div>                                    
+                                    </div>
                                 </dd>
                             </div>
                         {% endfor %}
@@ -67,16 +67,21 @@
             <div class="card h-100">
                 <div class="card-body">
                     <h2 class="card-title">Top players</h2>
-                    <ol>
-                        {% for player in players|slice:":10" %}
-                            <div class="{% if forloop.counter <= 5 %}d-none d-lg-block{% endif %}">
-                                <li itemprop="itemListElement" itemscope itemtype="http://schema.org/Person">
-                                    <span itemprop="name">{{ player.name }}</span>
-                                    (<span itemprop="description">{{ player.score.total_score }} points</span>)
-                                </li>
-                            </div>
-                        {% endfor %}
-                    </ol>
+                    <div itemscope itemtype="http://schema.org/ItemList">
+                        <ol>
+                            {% for player in players|slice:":10" %}
+                                <div class="{% if forloop.counter > 5 %}d-none d-lg-block{% endif %}">
+                                    <li itemprop="itemListElement" itemscope itemtype="http://schema.org/ListItem">
+                                        <meta itemprop="position" content="{{ forloop.counter }}" />
+                                        <span itemprop="item" itemscope itemtype="http://schema.org/Person">
+                                            <span itemprop="name">{{ player.name }}</span>
+                                            (<span itemprop="description">{{ player.score.total_score }} points</span>)
+                                        </span>
+                                    </li>
+                                </div>
+                            {% endfor %}
+                        </ol>
+                    </div>
                 </div>
                 <div class="card-footer">
                     <a class="btn btn-secondary btn-sm" href="{% url 'ranking' %}">Full ranking</a>
