@@ -11,24 +11,26 @@
 
     <form method="post">
         {% csrf_token %}
-        {# Manually render form fields #}
+        <div id="div_id_player_name" class="mb-3">
+            <label for="id_player_name" class="form-label requiredField">
+                Player name<span class="asteriskField">*</span>
+            </label>
+            <div class="input-group">
+                <input type="text" name="player_name" value="{{ form.player_name.value }}" data-autocomplete-url="{% url 'player_autocomplete' %}" autocomplete="off" class="textinput textInput form-control" required="" id="id_player_name">
+                <div id="autocomplete-dropdown" class="dropdown-menu" style="position: absolute; top: 100%; left: 0; z-index: 1000;"></div>
+            </div>
+        </div>
+
         {% for field in form %}
             {% if field.name != 'player_name' %}
                 {{ field|as_crispy_field }}
-            {% else %}
-                <div class="input-group" style="position: relative;">
-                    <input type="text" id="player_name" name="player_name" value="{{ form.player_name.value|default_if_none:'' }}" class="form-control" data-autocomplete-url="{% url 'player_autocomplete' %}" autocomplete="off">
-                    <div id="autocomplete-dropdown" class="dropdown-menu" style="position: absolute; top: 100%; left: 0; z-index: 1000;">
-                    </div>
-                </div>
             {% endif %}
         {% endfor %}
-        <br>
         <button class="btn btn-secondary" type="submit">Save</button>
     </form>
-    <br>
-    <div class="d-flex">
-        <a class="btn btn-secondary-light ms-3" href="{% url 'event_details' object.event.id %}">Back to Event Details</a>
+
+    <div class="d-flex pt-5">
+        <a class="btn btn-secondary-light" href="{% url 'event_details' object.event.id %}">Back to Event Details</a>
     </div>
 {% endblock %}
 

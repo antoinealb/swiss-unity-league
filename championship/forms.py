@@ -64,7 +64,7 @@ You can copy/paste the description from a website like swissmtg.ch, and the form
 
 
 class EventPlayerResultForm(forms.ModelForm):
-    player_name = forms.CharField(max_length=100)
+    player_name = forms.CharField()
 
     class Meta:
         model = EventPlayerResult

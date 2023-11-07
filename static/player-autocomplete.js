@@ -9,7 +9,7 @@ function debounce(func, wait) {
 }
 
 document.addEventListener('DOMContentLoaded', function () {
-    const input = document.getElementById('player_name');
+    const input = document.getElementById('id_player_name');
     const dropdown = document.getElementById('autocomplete-dropdown');
     const url = input.getAttribute('data-autocomplete-url');
 
