@@ -217,6 +217,49 @@ class EventManager(models.Manager):
         return initial_qs.filter(id__in=valid_event_ids)
 
 
+class RecurringEvent(models.Model):
+    # Make sure this can be max 1 year in the future
+    end_date = models.DateField(
+        help_text="The last date on which this event will be held.",
+    )
+
+
+class RecurrenceRule(models.Model):
+    class WeekDay(models.TextChoices):
+        MONDAY = "MO", "Monday"
+        TUESDAY = "TU", "Tuesday"
+        WEDNESDAY = "WE", "Wednesday"
+        THURSDAY = "TH", "Thursday"
+        FRIDAY = "FR", "Friday"
+        SATURDAY = "SA", "Saturday"
+        SUNDAY = "SU", "Sunday"
+
+    class WeekOfMonth(models.TextChoices):
+        FIRST = "F_1", "First"
+        SECOND = "F_2", "Second"
+        SECOND_LAST = "L_2", "Second last"
+        LAST = "L_1", "Last"
+        EVERY = "EV", "Every week"
+
+    recurring_event = models.ForeignKey(RecurringEvent, on_delete=models.CASCADE)
+    exception = models.BooleanField(
+        help_text="Whether this rule is an exception where the event doesn't take place.",
+        default=False,
+    )
+    day_of_week = models.CharField(
+        max_length=2,
+        choices=WeekDay.choices,
+        default=WeekDay.FRIDAY,
+        help_text="The weekday your event will take place.",
+    )
+    week_of_month = models.CharField(
+        max_length=3,
+        choices=WeekOfMonth.choices,
+        default=WeekOfMonth.FIRST,
+        help_text="Which week of the month your event will take place.",
+    )
+
+
 def event_image_validator(image):
     if image.size > 1.5 * 1024 * 1024:
         raise ValidationError("Image file too large ( > 1.5MB )")
@@ -240,6 +283,9 @@ class Event(models.Model):
         max_length=200, help_text="The name of this event, e.g. 'Christmas Modern 1k'"
     )
     organizer = models.ForeignKey(EventOrganizer, on_delete=models.PROTECT)
+    recurring_event = models.ForeignKey(
+        RecurringEvent, on_delete=models.SET_NULL, null=True, default=None
+    )
     date = models.DateField(
         help_text="The date of the event. For multi-days event, pick the first day."
     )
