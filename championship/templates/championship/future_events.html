@@ -1,30 +1,49 @@
 {% extends "championship/base.html" %}
 {% load static %}
+{% load custom_tags %}
 
 {% block title %}
-    Future events
+    Upcoming Magic: the Gathering Events in Switzerland | Swiss Unity League
+{% endblock %}
+
+{% block meta_description %}
+    Discover the schedule for upcoming SUL Magic: the Gathering events across Switzerland. Find tournaments for beginners and experts alike.
 {% endblock %}
 
 {% block content %}
-    <h1>League events</h1>
-    <a href="{% url 'organizer_view' %}" class="btn btn-secondary mb-2">View events by organizer</a>
+    <h1>Upcoming Magic Tournaments</h1>
+    <p>
+        Discover the schedule for upcoming Magic: the Gathering events in and around Switzerland taking part in the Swiss Unity League (SUL).
+        For more details on SUL, visit  our <a href="{% url 'info' %}">Player Guide</a>.
+    </p>
+    <p>
+        At SUL, there are 3 types of events:
+    </p>
+    <ol>
+        <li><strong>SUL Regular</strong>: Beginner friendly events like Friday Night Magic and Prereleases.</li>
+        <li><strong>SUL Regional</strong>: Monthly gatherings in your region featuring players of all skill levels.</li>
+        <li><strong>SUL Premier</strong>: Top-tier competitive Magic tournaments, attracting players from all around Switzerland.</li>
+    </ol>
+    <a href="{% url 'organizer_view' %}" class="btn btn-secondary mb-2" title="View the events and detailed info of each MTG organizer">View events by organizer</a>
     <div x-data="events()" x-init="loadEvents()">
-        {% for cnt in "12"|make_list %}
+        {% for i in 2|range %}
             <div class="{% cycle 'btn-group d-none d-md-flex' 'btn-group-vertical d-block d-md-none' %}" role="group" aria-label="Filtering the events">
 
-                <div class="btn-group">
-                    <button class="btn btn-secondary dropdown-toggle" type="button"  data-bs-toggle="dropdown" x-text="currentEventType"></button>
-                    <div class="dropdown-menu">
+                <nav class="btn-group">
+                    <button class="btn btn-secondary dropdown-toggle" id="futureEventsMenuButton" type="button" data-bs-toggle="dropdown" x-text="currentEventType"
+                        aria-haspopup="true" aria-expanded="false" title="View only future or past events"></button>
+                    <div class="dropdown-menu" aria-labelledby="futureEventsMenuButton">
                         <template x-for="type in Object.keys(eventTypes)">
                             <div class="dropdown-item" x-text="type" x-on:click="loadEvents(type); currentEventType = type"></div>
                         </template>
                     </div>
-                </div>
+                </nav>
 
                 <template x-for="(filter, index) in filterList" :key="index">
-                    <div class="btn-group">
-                        <button x-text="filter.title" class="btn btn-secondary dropdown-toggle" type="button"  data-bs-toggle="dropdown" data-bs-auto-close="outside"></button>
-                        <div class="dropdown-menu">
+                    <nav class="btn-group">
+                        <button x-text="filter.title" class="btn btn-secondary dropdown-toggle" type="button"  data-bs-toggle="dropdown" data-bs-auto-close="outside"
+                            :id="'dropdownMenuButton-' + index" x-bind:title="'Filter by the '+filter.title+' of the event'"></button>
+                        <div class="dropdown-menu" :aria-labelledby="'dropdownMenuButton-' + index">
                             <div class="dropdown-item" x-on:click="toggleAll(index)">
                                 <div class="form-check">
                                     <label x-text="filter.titleAll" class="form-check-label"></label>
@@ -39,13 +58,13 @@
                                 </div>
                             </template>
                         </div>
-                    </div>
+                    </nav>
                 </template>
 
             </div>
         {% endfor %}
         <div class="table-responsive pt-1">
-            <table class="table">
+            <table class="table" itemscope itemtype="http://schema.org/Event">
                 <thead>
                     <tr>
                         <th scope="col">Date/Time</th>
@@ -55,20 +74,30 @@
                 </thead>
                 <tbody>
                     <template x-for="event in events">
-                        <tr x-show="shouldShow(event)">
+                        <tr x-show="shouldShow(event)" itemprop="subEvent" itemscope itemtype="http://schema.org/Event">
                             <td>
+                                <meta itemprop="startDate" x-bind:content="event.startDateTime">
+                                <meta itemprop="endDate" x-bind:content="event.endDateTime">
                                 <div x-text="event.date"></div>
                                 <small class="text-nowrap" x-text="event.time"></small>
                             </td>
                             <td>
                                 <div>
-                                    <a class="fw-bold" x-text="event.name" :href="event.details_url"></a>
+                                    <a class="fw-bold" itemprop="name" x-text="event.name" :href="event.details_url"></a>
+                                    <meta itemprop="url" x-text="event.details_url"></meta>
                                 </div>
                                 <small>
+                                    <div itemprop="organizer" itemscope itemtype="http://schema.org/Organization">
+                                        <meta itemprop="name" x-bind:content="event.organizer">
+                                        <meta itemprop="url" x-bind:content="event.organizer_url">
+                                    </div>
+                                    <div itemprop="location" itemscope itemtype="http://schema.org/Place">
+                                        <meta itemprop="address" x-bind:content="event.fullAddress">
+                                    </div>
                                     <a x-text="event.organizer" :href="event.organizer_url"></a><span x-text="event.address"></span>
                                 </small>
                             </td>
-                            <td>
+                            <td itemprop="description">
                                 <div x-text="event.format"></div>
                                 <small class="text-nowrap" x-text="event.category"></small>
                             </td>

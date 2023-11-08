@@ -7,7 +7,7 @@ TEST_SERVER = "http://testserver"
 
 
 class EventApiTestCase(TestCase):
-    def test_get_all_future_events(self):
+    def test_get_all_past_events(self):
         eo = EventOrganizerFactory(name="Test TO", addresses=[])
         eo.default_address = AddressFactory(
             region=Address.Region.BERN,
@@ -18,11 +18,12 @@ class EventApiTestCase(TestCase):
         event_address = AddressFactory(
             region=Address.Region.AARGAU, country=Address.Country.GERMANY, organizer=eo
         )
-        tomorrow = datetime.date.today() + datetime.timedelta(days=1)
-        in_2_days = datetime.date.today() + datetime.timedelta(days=2)
+        base_date = datetime.date(2020, 1, 1)
+        older_date = base_date + datetime.timedelta(days=2)
+        younger_date = base_date + datetime.timedelta(days=1)
         a = EventFactory(
             organizer=eo,
-            date=tomorrow,
+            date=older_date,
             start_time=datetime.time(10, 0),
             end_time=datetime.time(19, 0),
             format=Event.Format.LEGACY,
@@ -31,21 +32,25 @@ class EventApiTestCase(TestCase):
         )
         b = EventFactory(
             organizer=eo,
-            date=in_2_days,
+            date=younger_date,
             start_time=datetime.time(12, 0),
             end_time=datetime.time(14, 0),
             format=Event.Format.MODERN,
             category=Event.Category.REGIONAL,
         )
-        resp = Client().get(reverse("future-events-list"))
+        resp = Client().get(reverse("past-events-list"))
         want = [
             {
                 "name": a.name,
-                "date": tomorrow.strftime("%a, %d.%m.%Y"),
+                "date": older_date.strftime("%a, %d.%m.%Y"),
                 "time": "10:00 - 19:00",
+                "startDateTime": "2020-01-03T10:00:00",
+                "endDateTime": "2020-01-03T19:00:00",
                 "organizer": eo.name,
                 "format": "Legacy",
-                "address": f", {event_address.city}, {event_address.get_region_display()}, {event_address.get_country_display()}",
+                "address": str(event_address),
+                "shortAddress": f", {event_address.city}, {event_address.get_region_display()}, {event_address.get_country_display()}",
+                "region": "Aargau",
                 "category": "SUL Premier",
                 "details_url": TEST_SERVER + reverse("event_details", args=[a.id]),
                 "organizer_url": TEST_SERVER
@@ -53,11 +58,15 @@ class EventApiTestCase(TestCase):
             },
             {
                 "name": b.name,
-                "date": in_2_days.strftime("%a, %d.%m.%Y"),
+                "date": younger_date.strftime("%a, %d.%m.%Y"),
                 "time": "12:00 - 14:00",
+                "startDateTime": "2020-01-02T12:00:00",
+                "endDateTime": "2020-01-02T14:00:00",
                 "organizer": eo.name,
                 "format": "Modern",
-                "address": f", {eo.default_address.city}, {eo.default_address.get_region_display()}",
+                "address": str(eo.default_address),
+                "shortAddress": f", {eo.default_address.city}, {eo.default_address.get_region_display()}",
+                "region": "Bern",
                 "category": "SUL Regional",
                 "details_url": TEST_SERVER + reverse("event_details", args=[b.id]),
                 "organizer_url": TEST_SERVER
@@ -66,24 +75,28 @@ class EventApiTestCase(TestCase):
         ]
         self.assertEqual(want, resp.json())
 
-    def test_get_all_past_events(self):
+    def test_get_all_future_events(self):
         eo = EventOrganizerFactory(name="Test TO", addresses=[])
-        yesterday = datetime.date.today() - datetime.timedelta(days=1)
+        tomorrow = datetime.date.today() + datetime.timedelta(days=1)
         a = EventFactory(
             organizer=eo,
-            date=yesterday,
+            date=tomorrow,
             format=Event.Format.LEGACY,
             category=Event.Category.PREMIER,
         )
-        resp = Client().get(reverse("past-events-list"))
+        resp = Client().get(reverse("future-events-list"))
         want = [
             {
                 "name": a.name,
-                "date": yesterday.strftime("%a, %d.%m.%Y"),
+                "date": tomorrow.strftime("%a, %d.%m.%Y"),
                 "time": "",
+                "startDateTime": tomorrow.isoformat(),
+                "endDateTime": "",
                 "organizer": eo.name,
                 "format": "Legacy",
                 "address": "",
+                "shortAddress": "",
+                "region": "",
                 "category": "SUL Premier",
                 "details_url": TEST_SERVER + reverse("event_details", args=[a.id]),
                 "organizer_url": TEST_SERVER

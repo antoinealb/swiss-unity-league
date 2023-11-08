@@ -1,8 +1,8 @@
 function events() {
     let filterList = [
         {
-            title: 'Category',
-            titleAll: 'All Categories',
+            title: 'Type',
+            titleAll: 'All Types',
             extractProperty: (x) => x.category,
         },
         {
