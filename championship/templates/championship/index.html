@@ -24,18 +24,25 @@
                             <div itemscope itemtype="http://schema.org/Event">
                                 <dt>
                                     <time itemprop="startDate" datetime="{{ event.date|date:'Y-m-d' }}">{{ event.date|date:"D, d.m.Y" }}</time>
-                                    by <span itemprop="organizer">{{ event.organizer }}</span>
+                                    by <span itemprop="organizer" itemscope itemtype="http://schema.org/Organization">
+                                        <meta itemprop="url" content="{{ event.organizer.get_absolute_url }}"/>
+                                        <span itemprop="name">{{ event.organizer }}</span>
+                                    </span>
                                 </dt>
                                 <dd>
                                     <a href="{{ event.get_absolute_url }}" itemprop="url" title="{{ event.name }}">
                                         <span itemprop="name">{{ event.name }}</span>
                                     </a>
+                                    <div itemprop="location" itemscope itemtype="http://schema.org/Place">
+                                        <meta itemprop="name" content="{{ event.address.location_name }}" />
+                                        <meta itemprop="address" content="{{ event.address.get_seo_address }}" />
+                                    </div>
                                 </dd>
                             </div>
                         {% endfor %}
                     </dl>
                 </div>
-                <div class="card-footer"><a class="btn btn-secondary btn-sm" href="{% url 'events' %}" title="View upcoming Magic: the Gathering events in Switzerland">All upcoming events</a></div>
+                <div class="card-footer"><a class="btn btn-secondary btn-sm" href="{% url 'events' %}" title="Upcoming Magic: the Gathering events in Switzerland">All upcoming events</a></div>
             </div>
         </div>
         <div class="col-lg-4 mb-5">
@@ -60,19 +67,24 @@
             <div class="card h-100">
                 <div class="card-body">
                     <h2 class="card-title">Top players</h2>
-                    <ol>
-                        {% for player in players|slice:":10" %}
-                            <div class="{% if forloop.counter <= 5 %}d-none d-lg-block{% endif %}">
-                                <li itemprop="itemListElement" itemscope itemtype="http://schema.org/Person">
-                                    <span itemprop="name">{{ player.name }}</span>
-                                    (<span itemprop="description">{{ player.score.total_score }} points</span>)
-                                </li>
-                            </div>
-                        {% endfor %}
-                    </ol>
+                    <div itemscope itemtype="http://schema.org/ItemList">
+                        <ol>
+                            {% for player in players|slice:":10" %}
+                                <div class="{% if forloop.counter > 5 %}d-none d-lg-block{% endif %}">
+                                    <li itemprop="itemListElement" itemscope itemtype="http://schema.org/ListItem">
+                                        <meta itemprop="position" content="{{ forloop.counter }}" />
+                                        <span itemprop="item" itemscope itemtype="http://schema.org/Person">
+                                            <span itemprop="name">{{ player.name }}</span>
+                                            (<span itemprop="description">{{ player.score.total_score }} points</span>)
+                                        </span>
+                                    </li>
+                                </div>
+                            {% endfor %}
+                        </ol>
+                    </div>
                 </div>
                 <div class="card-footer">
-                    <a class="btn btn-secondary btn-sm" href="{% url 'ranking' %}">Full ranking</a>
+                    <a class="btn btn-secondary btn-sm" href="{% url 'ranking' %}" title="Leaderboard of all SUL participants">SUL Leaderboard</a>
                 </div>
             </div>
         </div>
@@ -89,7 +101,7 @@
                         {% endfor %}
                     </div>
                 </div>
-                <a href="{% url 'organizer_view' %}" class="btn btn-secondary">All organizers</a>
+                <a href="{% url 'organizer_view' %}" class="btn btn-secondary" title="List of all MTG organizers participating at SUL">All organizers</a>
             </div>
         </div>
 {% endblock %}
