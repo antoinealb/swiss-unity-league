@@ -114,7 +114,6 @@ TBODY = "tbody"
 TABLE = "table"
 QPS = "QPs"
 EVENTS = "Events"
-REGULAR_MAX_STRING = "{}" + f" (Max {REGULAR_MAX_SCORE})"
 
 
 def add_to_table(table, column_title, row_title, value=1):
@@ -200,14 +199,6 @@ class PlayerDetailsView(DetailView):
             # Compute the total and add it in the last column
             for row in qp_table[TBODY]:
                 row[-1] = sum(row[1:])
-
-            regular_qps = qp_table[TBODY][0][3]
-            if regular_qps > REGULAR_MAX_SCORE:
-                difference = regular_qps - REGULAR_MAX_SCORE
-                # Reduce total qps by difference
-                qp_table[TBODY][0][4] -= difference
-                # Mention the maximum for regular events
-                qp_table[TBODY][0][3] = REGULAR_MAX_STRING.format(regular_qps)
 
             context[QP_TABLE] = qp_table
 

@@ -418,6 +418,12 @@ class EventPlayerResult(models.Model):
         return self.ranking < other.ranking
 
     def get_ranking_display(self):
+        SINGLE_ELIM_TO_RANK = {
+            EventPlayerResult.SingleEliminationResult.WINNER: "1st",
+            EventPlayerResult.SingleEliminationResult.FINALIST: "2nd",
+            EventPlayerResult.SingleEliminationResult.SEMI_FINALIST: "3rd-4th",
+            EventPlayerResult.SingleEliminationResult.QUARTER_FINALIST: "5th-8th",
+        }
         if self.single_elimination_result:
             return SINGLE_ELIM_TO_RANK[self.single_elimination_result]
         else:
@@ -427,108 +433,137 @@ class EventPlayerResult(models.Model):
         return f"{self.win_count} - {self.loss_count} - {self.draw_count}"
 
 
-MULT = {
-    Event.Category.REGULAR: 1,
-    Event.Category.REGIONAL: 4,
-    Event.Category.PREMIER: 6,
-}
-PARTICIPATION_POINTS = 3
-POINTS_FOR_TOP = {
-    (Event.Category.PREMIER, EventPlayerResult.SingleEliminationResult.WINNER): 500,
-    (
-        Event.Category.PREMIER,
-        EventPlayerResult.SingleEliminationResult.FINALIST,
-    ): 300,
-    (
-        Event.Category.PREMIER,
-        EventPlayerResult.SingleEliminationResult.SEMI_FINALIST,
-    ): 200,
-    (
-        Event.Category.PREMIER,
-        EventPlayerResult.SingleEliminationResult.QUARTER_FINALIST,
-    ): 150,
-    (
-        Event.Category.REGIONAL,
-        EventPlayerResult.SingleEliminationResult.WINNER,
-    ): 100,
-    (
-        Event.Category.REGIONAL,
-        EventPlayerResult.SingleEliminationResult.FINALIST,
-    ): 60,
-    (
-        Event.Category.REGIONAL,
-        EventPlayerResult.SingleEliminationResult.SEMI_FINALIST,
-    ): 40,
-    (
-        Event.Category.REGIONAL,
-        EventPlayerResult.SingleEliminationResult.QUARTER_FINALIST,
-    ): 30,
-}
-POINTS_TOP_9_12 = {
-    Event.Category.PREMIER: 75,
-    Event.Category.REGIONAL: 15,
-    Event.Category.REGULAR: 0,
-}
-POINTS_TOP_13_16 = {
-    Event.Category.PREMIER: 50,
-    Event.Category.REGIONAL: 10,
-    Event.Category.REGULAR: 0,
-}
-
-SINGLE_ELIM_TO_RANK = {
-    EventPlayerResult.SingleEliminationResult.WINNER: "1st",
-    EventPlayerResult.SingleEliminationResult.FINALIST: "2nd",
-    EventPlayerResult.SingleEliminationResult.SEMI_FINALIST: "3rd-4th",
-    EventPlayerResult.SingleEliminationResult.QUARTER_FINALIST: "5th-8th",
-}
+@dataclass
+class Score:
+    total_score: int
+    rank: int
+    byes: int
+    qualified: bool
 
 
-def qps_for_result(
-    result: EventPlayerResult,
-    event_size: int,
-    has_top_8: bool,
-) -> int:
-    """
-    Returns how many QPs a player got in a single event.
-    """
-    category = result.event.category
-    points = result.points + PARTICIPATION_POINTS
-    points = points * MULT[category]
+class ScoreMethod2023:
+    MULT = {
+        Event.Category.REGULAR: 1,
+        Event.Category.REGIONAL: 4,
+        Event.Category.PREMIER: 6,
+    }
+    PARTICIPATION_POINTS = 3
+    POINTS_FOR_TOP = {
+        Event.Category.PREMIER: {
+            EventPlayerResult.SingleEliminationResult.WINNER: 500,
+            EventPlayerResult.SingleEliminationResult.FINALIST: 300,
+            EventPlayerResult.SingleEliminationResult.SEMI_FINALIST: 200,
+            EventPlayerResult.SingleEliminationResult.QUARTER_FINALIST: 150,
+        },
+        Event.Category.REGIONAL: {
+            EventPlayerResult.SingleEliminationResult.WINNER: 100,
+            EventPlayerResult.SingleEliminationResult.FINALIST: 60,
+            EventPlayerResult.SingleEliminationResult.SEMI_FINALIST: 40,
+            EventPlayerResult.SingleEliminationResult.QUARTER_FINALIST: 30,
+        },
+    }
+    POINTS_TOP_9_12 = {
+        Event.Category.PREMIER: 75,
+        Event.Category.REGIONAL: 15,
+        Event.Category.REGULAR: 0,
+    }
+    POINTS_TOP_13_16 = {
+        Event.Category.PREMIER: 50,
+        Event.Category.REGIONAL: 10,
+        Event.Category.REGULAR: 0,
+    }
 
-    if result.single_elimination_result:
-        points += POINTS_FOR_TOP[category, result.single_elimination_result]
-    elif has_top_8:
-        # For large tournaments, we award points for placing, even outside of
-        # top8. See the rules for explanation
-        if event_size > 32 and 9 <= result.ranking <= 12:
-            points += POINTS_TOP_9_12[category]
-        elif event_size > 48 and 13 <= result.ranking <= 16:
-            points += POINTS_TOP_13_16[category]
-        elif result.ranking <= 8:
-            # If we are in this case, it means the event did not play a top8,
-            # only a top4, and we still need to award points for 5th-8th.
-            points += POINTS_FOR_TOP[
-                category, EventPlayerResult.SingleEliminationResult.QUARTER_FINALIST
-            ]
+    @classmethod
+    def qps_for_result(
+        cls,
+        result: EventPlayerResult,
+        event_size: int,
+        has_top_8: bool,
+    ) -> int:
+        """
+        Returns how many QPs a player got in a single event.
+        """
+        category = result.event.category
+        points = result.points + cls.PARTICIPATION_POINTS
+        points = points * cls.MULT[category]
 
-    return points
+        if result.single_elimination_result:
+            points += cls.POINTS_FOR_TOP[category][result.single_elimination_result]
+        elif has_top_8:
+            # For large tournaments, we award points for placing, even outside of
+            # top8. See the rules for explanation
+            if event_size > 32 and 9 <= result.ranking <= 12:
+                points += cls.POINTS_TOP_9_12[category]
+            elif event_size > 48 and 13 <= result.ranking <= 16:
+                points += cls.POINTS_TOP_13_16[category]
+            elif result.ranking <= 8:
+                # If we are in this case, it means the event did not play a top8,
+                # only a top4, and we still need to award points for 5th-8th.
+                points += cls.POINTS_FOR_TOP[category][
+                    EventPlayerResult.SingleEliminationResult.QUARTER_FINALIST
+                ]
 
+        return points
 
-def byes_for_result(
-    result: EventPlayerResult,
-    event_size: int,
-    has_top_8: bool,
-) -> int:
-    """Returns how many byes a given result gives."""
-    MIN_SIZE_EXTRA_BYE = 128
-    if (
-        result.event_size > MIN_SIZE_EXTRA_BYE
-        and result.event.category == Event.Category.PREMIER
-        and result.single_elimination_result
-        == EventPlayerResult.SingleEliminationResult.WINNER
-    ):
-        return 2
-    return 0
+    @classmethod
+    def byes_for_result(
+        cls,
+        result: EventPlayerResult,
+        event_size: int,
+        has_top_8: bool,
+    ) -> int:
+        """Returns how many byes a given result gives."""
+        MIN_SIZE_EXTRA_BYE = 128
+        if (
+            result.event_size > MIN_SIZE_EXTRA_BYE
+            and result.event.category == Event.Category.PREMIER
+            and result.single_elimination_result
+            == EventPlayerResult.SingleEliminationResult.WINNER
+        ):
+            return 2
+        return 0
+
+    @classmethod
+    def _byes_for_rank(cls, rank: int) -> int:
+        if rank <= 1:
+            return 2
+        elif rank <= 5:
+            return 1
+        else:
+            return 0
+
+    MAX_BYES = 2
+
+    @classmethod
+    def finalize_scores(
+        cls, scores_by_player: dict[int, int], byes_per_player: dict[int, int]
+    ) -> dict[int, Score]:
+        """Implements the last step of score processing.
+
+        This function takes a list of (player_id, score) tuples and turns it
+        into a sequence of Score objects, checking the maximum number of byes
+        and deciding who is qualified and not.
+
+        Returns a dict of (player_id: Score)
+
+        """
+        sorted_scores = sorted(
+            scores_by_player.items(), key=lambda x: x[1], reverse=True
+        )
+        scores = {}
+        for i, (player, points) in enumerate(sorted_scores):
+            rank = i + 1
+            byes = cls._byes_for_rank(rank) + byes_per_player[player]
+            byes = min(byes, cls.MAX_BYES)
+
+            scores[player] = Score(
+                total_score=points,
+                rank=rank,
+                byes=byes,
+                qualified=rank <= 40,
+            )
+
+        return scores
 
 
 def get_results_with_qps(
@@ -549,12 +584,12 @@ def get_results_with_qps(
 
     for result in results:
         result.has_top8 = result.top_count > 0
-        result.qps = qps_for_result(
+        result.qps = ScoreMethod2023.qps_for_result(
             result,
             event_size=result.event_size,
             has_top_8=result.has_top8,
         )
-        result.byes = byes_for_result(
+        result.byes = ScoreMethod2023.byes_for_result(
             result, event_size=result.event_size, has_top_8=result.has_top8
         )
         yield result
@@ -563,16 +598,6 @@ def get_results_with_qps(
 scores_computation_time_seconds = Summary(
     "scores_computation_time_seconds", "Time spent to compute scores of all players"
 )
-
-REGULAR_MAX_SCORE = 500
-
-
-@dataclass
-class Score:
-    total_score: int
-    rank: int
-    byes: int
-    qualified: bool
 
 
 def get_leaderboard():
@@ -593,20 +618,9 @@ def get_leaderboard():
 def compute_scores():
     players_reaching_max = 0
 
-    MAX_BYES = 2
-
-    def _byes_for_rank(rank: int) -> int:
-        if rank <= 1:
-            return 2
-        elif rank <= 5:
-            return 1
-        else:
-            return 0
-
     scores_by_player: defaultdict[int, Any] = defaultdict(lambda: 0)
     extra_byes_by_player: defaultdict[int, int] = defaultdict(lambda: 0)
 
-    # TODO(antoinealb): Here the end of season should be parametric
     for result in get_results_with_qps(
         EventPlayerResult.objects.filter(
             event__date__lte=settings.SEASON_MAP[settings.DEFAULT_SEASON_ID].end_date
@@ -615,19 +629,7 @@ def compute_scores():
         scores_by_player[result.player_id] += result.qps
         extra_byes_by_player[result.player_id] += result.byes
 
-    total_points = sorted(scores_by_player.items(), key=lambda x: x[1], reverse=True)
-    scores = {}
-    for index, (player, points_of_player) in enumerate(total_points):
-        rank = index + 1
-        byes = min(_byes_for_rank(rank) + extra_byes_by_player[player], MAX_BYES)
-        scores[player] = Score(
-            total_score=points_of_player,
-            rank=rank,
-            byes=byes,
-            qualified=rank <= 40,
-        )
-
-    return scores
+    return ScoreMethod2023.finalize_scores(scores_by_player, extra_byes_by_player)
 
 
 @receiver(post_delete, sender=EventPlayerResult)
