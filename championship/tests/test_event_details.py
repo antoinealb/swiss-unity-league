@@ -3,6 +3,7 @@ from django.urls import reverse
 from championship.factories import *
 from championship.models import *
 from parameterized import parameterized
+from freezegun import freeze_time
 
 
 class EventDetailTestCase(TestCase):
@@ -175,6 +176,7 @@ class EventDetailTestCase(TestCase):
             (datetime.timedelta(0), False),
         ]
     )
+    @freeze_time("2023-10-30")
     def test_missing_results_info(self, minus_delta, missing_results_info_expected):
         event = EventFactory(
             category=Event.Category.REGULAR, date=datetime.date.today() - minus_delta
