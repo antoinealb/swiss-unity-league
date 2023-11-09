@@ -1,4 +1,4 @@
-from championship.models import Event
+from championship.models import Address, Event
 from rest_framework import serializers
 import datetime
 
@@ -14,7 +14,8 @@ class EventSerializer(serializers.ModelSerializer):
             "endDateTime",
             "organizer",
             "format",
-            "address",
+            "locationName",
+            "seoAddress",
             "shortAddress",
             "region",
             "category",
@@ -28,7 +29,8 @@ class EventSerializer(serializers.ModelSerializer):
     time = serializers.CharField(source="get_time_range_display")
     organizer = serializers.CharField(source="organizer.name")
     format = serializers.CharField(source="get_format_display")
-    address = serializers.SerializerMethodField()
+    locationName = serializers.SerializerMethodField()
+    seoAddress = serializers.SerializerMethodField()
     shortAddress = serializers.SerializerMethodField()
     region = serializers.SerializerMethodField()
     category = serializers.CharField(source="get_category_display")
@@ -37,24 +39,30 @@ class EventSerializer(serializers.ModelSerializer):
         source="organizer", view_name="organizer_details", read_only=True
     )
 
-    def get_address_helper(self, event):
+    def get_address_helper(self, event) -> Address | None:
         if event.address:
             return event.address
         # If there is no event address, try getting the organizer's default address
         elif event.organizer and event.organizer.default_address:
             return event.organizer.default_address
+        else:
+            return None
 
     def get_region(self, event):
         address = self.get_address_helper(event)
         return address.get_region_display() if address else ""
 
-    def get_address(self, event):
+    def get_seoAddress(self, event):
         address = self.get_address_helper(event)
-        return str(address) if address else ""
+        return address.get_seo_address() if address else ""
 
     def get_shortAddress(self, event):
         address = self.get_address_helper(event)
         return f", {address.short_string()}" if address else ""
+
+    def get_locationName(self, event):
+        address = self.get_address_helper(event)
+        return address.location_name if address else ""
 
     def get_startDateTime(self, event):
         if event.start_time:

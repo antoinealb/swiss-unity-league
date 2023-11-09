@@ -17,13 +17,13 @@
         For more details on SUL, visit  our <a href="{% url 'info' %}">Player Guide</a>.
     </p>
     <p>
-        At SUL, there are 3 types of events:
+        At SUL, there are 3 types of MTG events:
     </p>
-    <ol>
+    <ul>
         <li><strong>SUL Regular</strong>: Beginner friendly events like Friday Night Magic and Prereleases.</li>
         <li><strong>SUL Regional</strong>: Monthly gatherings in your region featuring players of all skill levels.</li>
         <li><strong>SUL Premier</strong>: Top-tier competitive Magic tournaments, attracting players from all around Switzerland.</li>
-    </ol>
+    </ul>
     <a href="{% url 'organizer_view' %}" class="btn btn-secondary mb-2" title="View the events and detailed info of each MTG organizer">View events by organizer</a>
     <div x-data="events()" x-init="loadEvents()">
         {% for i in 2|range %}
@@ -76,26 +76,24 @@
                     <template x-for="event in events">
                         <tr x-show="shouldShow(event)" itemprop="subEvent" itemscope itemtype="http://schema.org/Event">
                             <td>
-                                <meta itemprop="startDate" x-bind:content="event.startDateTime">
-                                <meta itemprop="endDate" x-bind:content="event.endDateTime">
+                                <meta itemprop="startDate" x-bind:content="event.startDateTime"/>
+                                <meta itemprop="endDate" x-bind:content="event.endDateTime"/>
                                 <div x-text="event.date"></div>
                                 <small class="text-nowrap" x-text="event.time"></small>
                             </td>
                             <td>
                                 <div>
-                                    <a class="fw-bold" itemprop="name" x-text="event.name" :href="event.details_url"></a>
-                                    <meta itemprop="url" x-text="event.details_url"></meta>
+                                    <a itemprop="url" :href="event.details_url" x-bind:title="'More info about the event: ' + event.name">
+                                        <span class="fw-bold"  itemprop="name" x-text="event.name"></span>
+                                    </a>
                                 </div>
                                 <small>
-                                    <div itemprop="organizer" itemscope itemtype="http://schema.org/Organization">
-                                        <meta itemprop="name" x-bind:content="event.organizer">
-                                        <meta itemprop="url" x-bind:content="event.organizer_url">
-                                    </div>
-                                    <div itemprop="location" itemscope itemtype="http://schema.org/Place">
-                                        <meta itemprop="address" x-bind:content="event.fullAddress">
-                                    </div>
-                                    <a x-text="event.organizer" :href="event.organizer_url"></a><span x-text="event.address"></span>
+                                    <a :href="event.organizer_url" itemprop="organizer" itemscope itemtype="http://schema.org/Organization" x-bind:title="'View all events of the organizer: ' + event.organizer"><span itemprop="name" x-text="event.organizer" ></span></a><span x-text="event.shortAddress"></span>
                                 </small>
+                                <div itemprop="location" itemscope itemtype="http://schema.org/Place">
+                                    <meta itemprop="name" x-bind:content="event.locationName" />
+                                    <meta itemprop="address" x-bind:content="event.seoAddress" />
+                                </div>
                             </td>
                             <td itemprop="description">
                                 <div x-text="event.format"></div>
