@@ -9,12 +9,12 @@ from faker import Faker
 
 from championship.factories import *
 from championship.models import *
+from championship.score import compute_scores
+from championship.score.season_2023 import ScoreMethod2023
 
 
-class TestComputeScore(TestCase):
+class TestComputeScoreFor2023(TestCase):
     def setUp(self):
-        fake = Faker()
-
         self.event = EventFactory()
 
     def _test_compute_score(self, category, points, want_score):

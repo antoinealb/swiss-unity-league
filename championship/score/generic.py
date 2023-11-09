@@ -1,0 +1,96 @@
+"""Season-independent logic for computing score.
+
+The code in this file is mostly season-independent.
+"""
+
+from collections import defaultdict
+from typing import Iterable
+
+from django.conf import settings
+from django.core.cache import cache
+from django.db import models
+from django.db.models import Count
+from django.db.models.signals import post_delete, pre_save
+from django.dispatch import receiver
+from prometheus_client import Summary
+
+from championship.cache_function import cache_function
+from championship.models import EventPlayerResult, Player
+
+from championship.score import Score
+from championship.score.season_2023 import ScoreMethod2023
+
+scores_computation_time_seconds = Summary(
+    "scores_computation_time_seconds", "Time spent to compute scores of all players"
+)
+
+
+def get_results_with_qps(
+    event_player_results: models.QuerySet[EventPlayerResult],
+) -> Iterable[EventPlayerResult]:
+    """
+    Pass a QuerySet of EventPlayerResult, and get it annotated with the following fields:
+    - has_top8: True if the event has a top8
+    - qps: the number of QPs the player got in this event
+    - event_size: the number of players in the event
+    - event: the event
+    - byes: Number of byes awarded for this result.
+    """
+    results = event_player_results.select_related("event").annotate(
+        event_size=Count("event__eventplayerresult"),
+        top_count=Count("event__eventplayerresult__single_elimination_result"),
+    )
+
+    for result in results:
+        result.has_top8 = result.top_count > 0
+        result.qps = ScoreMethod2023.qps_for_result(
+            result,
+            event_size=result.event_size,
+            has_top_8=result.has_top8,
+        )
+        result.byes = ScoreMethod2023.byes_for_result(
+            result, event_size=result.event_size, has_top_8=result.has_top8
+        )
+        yield result
+
+
+@cache_function(cache_key="compute_scores")
+@scores_computation_time_seconds.time()
+def compute_scores() -> dict[int, Score]:
+    players_reaching_max = 0
+
+    scores_by_player: defaultdict[int, int] = defaultdict(lambda: 0)
+    extra_byes_by_player: defaultdict[int, int] = defaultdict(lambda: 0)
+
+    for result in get_results_with_qps(
+        EventPlayerResult.objects.filter(
+            event__date__lte=settings.SEASON_MAP[settings.DEFAULT_SEASON_ID].end_date
+        ).filter(player__in=Player.leaderboard_objects.all())
+    ):
+        scores_by_player[result.player_id] += result.qps
+        extra_byes_by_player[result.player_id] += result.byes
+
+    return ScoreMethod2023.finalize_scores(scores_by_player, extra_byes_by_player)
+
+
+@receiver(post_delete, sender=EventPlayerResult)
+@receiver(pre_save, sender=EventPlayerResult)
+def invalidate_score_cache(sender, **kwargs):
+    cache.delete("compute_scores")
+
+
+def get_leaderboard() -> list[Player]:
+    """Returns a list of Player with their score.
+
+    This function returns a list of Players with an additional score property
+    (of type Score), containing all informations required to render a
+    leaderboard.
+    """
+    scores_by_player = compute_scores()
+    players_with_score = []
+    for player in Player.leaderboard_objects.all():
+        if score := scores_by_player.get(player.id):
+            player.score = score
+            players_with_score.append(player)
+    players_with_score.sort(key=lambda l: l.score.rank)
+    return players_with_score

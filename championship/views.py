@@ -26,9 +26,10 @@ from django.db import transaction
 from django.db.models import F, Q
 from rest_framework import viewsets, views
 from rest_framework.response import Response
+from championship.score import get_results_with_qps, compute_scores, get_leaderboard
 
-from championship.models import Any
 from championship.parsers.parse_result import ParseResult
+
 from .models import *
 from invoicing.models import Invoice
 from .forms import *

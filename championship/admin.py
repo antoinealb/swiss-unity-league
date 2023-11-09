@@ -8,6 +8,7 @@ from django.contrib import messages
 
 from championship.forms import TopPlayersEmailForm
 from .models import *
+from championship.score import get_leaderboard
 from invoicing.models import Invoice
 from django.urls import path
 
