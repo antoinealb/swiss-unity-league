@@ -12,7 +12,7 @@ from django.db import models
 from django.db.models import Count
 from django.db.models.signals import post_delete, pre_save
 from django.dispatch import receiver
-from prometheus_client import Summary
+from prometheus_client import Summary, Gauge
 
 from championship.cache_function import cache_function
 from championship.models import EventPlayerResult, Player
@@ -22,6 +22,11 @@ from championship.score.season_2023 import ScoreMethod2023
 
 scores_computation_time_seconds = Summary(
     "scores_computation_time_seconds", "Time spent to compute scores of all players"
+)
+scores_computation_results_count = Gauge(
+    "scores_computation_results_count",
+    "Number of EventPlayerResultUsed for computing the leaderboard.",
+    ["season_id", "season_name"],
 )
 
 
@@ -57,18 +62,23 @@ def get_results_with_qps(
 @cache_function(cache_key="compute_scores")
 @scores_computation_time_seconds.time()
 def compute_scores() -> dict[int, Score]:
+    season = settings.SEASON_MAP[settings.DEFAULT_SEASON_ID]
     players_reaching_max = 0
 
     scores_by_player: defaultdict[int, int] = defaultdict(lambda: 0)
     extra_byes_by_player: defaultdict[int, int] = defaultdict(lambda: 0)
 
+    count = 0
     for result in get_results_with_qps(
-        EventPlayerResult.objects.filter(
-            event__date__lte=settings.SEASON_MAP[settings.DEFAULT_SEASON_ID].end_date
-        ).filter(player__in=Player.leaderboard_objects.all())
+        EventPlayerResult.objects.filter(event__date__lte=season.end_date).filter(
+            player__in=Player.leaderboard_objects.all()
+        )
     ):
         scores_by_player[result.player_id] += result.qps
         extra_byes_by_player[result.player_id] += result.byes
+        count += 1
+
+    scores_computation_results_count.labels(season.id, season.name).set(count)
 
     return ScoreMethod2023.finalize_scores(scores_by_player, extra_byes_by_player)
 
