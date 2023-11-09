@@ -310,3 +310,6 @@ if cache_location := os.getenv("CACHE_LOCATION"):
             "LOCATION": cache_location,
         }
     }
+
+if test_runner := os.getenv("TEST_RUNNER"):
+    TEST_RUNNER = test_runner

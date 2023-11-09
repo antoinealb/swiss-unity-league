@@ -181,3 +181,6 @@ commit_sha.txt
 
 #Pytest
 pytest.ini
+
+# jUnit reports
+TEST-*.xml

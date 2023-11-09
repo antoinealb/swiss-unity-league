@@ -9,7 +9,12 @@ tests:
   before_script:
     - pip install -r requirements.txt
   script:
-    - ./manage.py test
+    - TEST_RUNNER="xmlrunner.extra.djangotestrunner.XMLTestRunner" ./manage.py test
+ artifacts:
+    when: always
+    reports:
+      junit: TEST-*.xml
+
 
 python-typing:
   stage: test
