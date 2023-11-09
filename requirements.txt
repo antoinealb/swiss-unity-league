@@ -29,3 +29,4 @@ parsita~=2.1.0
 pandas~=2.1.0
 openpyxl~=3.1.2
 freezegun~=1.2.2
+unittest-xml-reporting~=3.2.0
