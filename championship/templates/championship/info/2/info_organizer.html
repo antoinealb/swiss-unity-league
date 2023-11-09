@@ -1,5 +1,7 @@
 {% extends "championship/info/base_info_organizer.html" %}
 
+{% load static %}
+
 {% block info %}
     <h2>Eligible Tournaments</h2>
     <p>The 2024 season runs from 01.11.2023 until 31.10.2024 and qualifies for the
@@ -19,37 +21,51 @@
     <p>To finance the prize pool of the invitational, organizers pay a fee
         to run SUL Premier and SUL Regional tournaments. The higher the fee that you pay, the more
         points your event will award to players. SUL Regular tournaments are free to organize.</p>
-    <h3>SUL Regular</h3>
-    <p>All your normal events (weekly, FNM, Prerelease) will be SUL Regular
-        events. These events don't have a fee and allow you to award
-        extra prizes in the form of SUL Points to your players for free.
-        Therefore, if your budget is limited, it is still possible to participate
-        in the league by running all of your events as SUL Regular and not paying any fees.</p>
-    <h3>SUL Regional</h3>
-    <p>If you wish to make your local events more attractive for people in your canton,
-        you can turn them into SUL Regional events.</p>
-    <p>Each month, you can organize the following SUL Regional events:</p>
-    <ul>
-        <li>For each format, you can run 1 SUL Regional event. (e.g., 1 Modern, 1 Legacy, 1 Pioneer, etc.)</li>
-        <li>For each weekly recurring event, 1 event of this series can be SUL Regional.</li>
-    </ul>
-    <p><i>Example: If you have a weekly modern event on Wednesday and a weekly legacy event on Friday,
-        you can have among these events 1 Legacy and 1 Modern event be SUL Regional per month. Additionally,
-        you could organize a Modern event on a Saturday and a Legacy event on a Sunday, both with top 8.</i></p>
-    <p>Running an SUL Regional event comes with a fee of CHF 2 per participant. Playoffs (top 8 or top 4)
-        are optional for regional events. If your Regional event has playoffs
-        then a further fee of CHF 15 needs to be paid.</p>
 
-    <h3>SUL Premier</h3>
-    <p>SUL Premier events are the most competitive events of the year. Since there is a very
-        limited amount of SUL Premier events, people travel all around Switzerland to attend them.</p>
-    <p>Every organizer gets the chance to organize 1 SUL Premier event per year. If you
-        have already organized Premier events in the previous season, you can run 2 Premier
-        events instead.</p>
-    <p>Running an SUL Premier event comes with a fee of CHF 3 per participant. Running
-        a top 8 is mandatory and comes with an additional fee of CHF 75.</p>
-
-    <h3>Tournament Type Overview</h3>
+    <div>
+        <img src="{% static 'logos/regular.png' %}" class="float-end float-md-start  ms-3 ms-md-0 me-md-3 sul-type-logo-size">
+        <h3>SUL Regular</h3>
+        <p>All your normal events (weekly, FNM, Prerelease) will be SUL Regular
+            events. These events don't have a fee and allow you to award
+            extra prizes in the form of SUL Points to your players for free.
+            Therefore, if your budget is limited, it is still possible to participate
+            in the league by running all of your events as SUL Regular and not paying any fees.</p>
+    </div>
+    <div class="clearfix"></div>
+    <div class="pt-3">
+        <img src="{% static 'logos/regional.png' %}" class="float-end float-md-start  ms-3 ms-md-0 me-md-3 sul-type-logo-size">
+        <h3>SUL Regional</h3>
+        <p>If you wish to make your local events more attractive for people in your canton,
+            you can turn them into SUL Regional events.</p>
+        <p>Each month, you can organize the following SUL Regional events:</p>
+        <div>
+            <ul style="overflow: auto;">
+                <li>For each format, you can run 1 SUL Regional event. (e.g., 1 Modern, 1 Legacy, 1 Pioneer, etc.)</li>
+                <li>For each weekly recurring event, 1 event of this series can be SUL Regional.</li>
+            </ul>
+        </div>
+        <p><i>Example: If you have a weekly modern event on Wednesday and a weekly legacy event on Friday,
+            you can have among these events 1 Legacy and 1 Modern event be SUL Regional per month. Additionally,
+            you could organize a Modern event on a Saturday and a Legacy event on a Sunday, both with top 8.</i></p>
+        <p>Running an SUL Regional event comes with a fee of CHF 2 per participant. Playoffs (top 8 or top 4)
+            are optional for regional events. If your Regional event has playoffs
+            then a further fee of CHF 15 needs to be paid.</p>
+    </div>
+    <div class="clearfix"></div>
+    <div class="pt-3">
+        <img src="{% static 'logos/premier.png' %}" class="float-end float-md-start  ms-3 ms-md-0 me-md-3 sul-type-logo-size">
+        <h3>SUL Premier</h3>
+        <p>SUL Premier events are the most competitive events of the year. Since there is a very
+            limited amount of SUL Premier events, people travel all around Switzerland to attend them.</p>
+        <p>Every organizer gets the chance to organize 1 SUL Premier event per year. If you
+            have already organized Premier events in the previous season, you can run 2 Premier
+            events instead.</p>
+        <p>Running an SUL Premier event comes with a fee of CHF 3 per participant. Running
+            a top 8 is mandatory and comes with an additional fee of CHF 75.</p>
+    </div>
+    <div class="clearfix"></div>
+    <em><p>You may use <a href="https://drive.google.com/drive/u/1/folders/1uei55wTZZ76oxHrfoiYFOw4aZAi7baKo">these logos</a> to label your events on your flyers or website</p></em>
+    <h3 class="pt-3">Tournament Type Overview</h3>
     <div class="row py-3">
         <div class="col-md-9 align-items-center mx-auto table-responsive">
             <table class="table table-striped border border-2">
@@ -187,7 +203,7 @@
         <li>Specify the type of the event (SUL Regular/Regional/Premier).</li>
         <li>Provide a link to <a href="{% url 'index' %}">unityleague.ch</a> for more information.</li>
     </ul>
-
+    <p>Additionally, you may use <a href="https://drive.google.com/drive/u/1/folders/1uei55wTZZ76oxHrfoiYFOw4aZAi7baKo">these logos</a> to label your events on your flyers or website</p>
     <h2>Finances, Liability, and Sponsoring</h2>
     <p>The Swiss Unity League is financed through sponsorships and fees from organizers of SUL
         Regional and Premier events. The main organizer, the Leonin League association, assumes
