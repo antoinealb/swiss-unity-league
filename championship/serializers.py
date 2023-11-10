@@ -82,4 +82,4 @@ class EventSerializer(serializers.ModelSerializer):
             return ""
 
     def get_icon_url(self, event):
-        return static(event.get_icon_url())
+        return static(event.get_category_icon_url())

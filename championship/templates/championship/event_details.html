@@ -25,7 +25,7 @@
         {% endif %}
         <dt class="col-sm-3">Category</dt>
         <dd class="col-sm-9">
-            <img src="{% static event.get_icon_url %}" class="sul-type-icon me-2"
+            <img src="{% static event.get_category_icon_url %}" class="sul-type-icon me-2"
                 title="{{ event.get_category_display }}" alt="Icon {{ event.get_category_display }}">
             <span>{{ event.get_category_display }}</span>
         </dd>
