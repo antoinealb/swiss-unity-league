@@ -98,7 +98,7 @@ class IndexView(TemplateView):
             Event.objects.filter(date__gte=datetime.date.today())
             .exclude(category=Event.Category.REGULAR)
             .order_by("date")[:EVENTS_ON_PAGE]
-            .select_related("organizer")
+            .select_related("organizer", "address")
         )
         return future_events
 
