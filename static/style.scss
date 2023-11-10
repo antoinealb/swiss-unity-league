@@ -57,6 +57,11 @@ $link-hover-decoration: underline;
     height: auto;
 }
 
+.sul-type-icon {
+    width: 40px;
+    height: 40px;
+}
+
 @import 'bootstrap/scss/bootstrap'; /*Needs to be last otherwise it doesn't override the variables*/
 
 a {

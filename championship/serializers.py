@@ -1,6 +1,7 @@
 from championship.models import Address, Event
 from rest_framework import serializers
 import datetime
+from django.templatetags.static import static
 
 
 class EventSerializer(serializers.ModelSerializer):
@@ -21,6 +22,7 @@ class EventSerializer(serializers.ModelSerializer):
             "category",
             "details_url",
             "organizer_url",
+            "icon_url",
         ]
 
     date = serializers.DateField(format="%a, %d.%m.%Y")
@@ -38,6 +40,7 @@ class EventSerializer(serializers.ModelSerializer):
     organizer_url = serializers.HyperlinkedRelatedField(
         source="organizer", view_name="organizer_details", read_only=True
     )
+    icon_url = serializers.SerializerMethodField()
 
     def get_address_helper(self, event) -> Address | None:
         if event.address:
@@ -77,3 +80,6 @@ class EventSerializer(serializers.ModelSerializer):
             return end_datetime.isoformat()
         else:
             return ""
+
+    def get_icon_url(self, event):
+        return static(event.get_category_icon_url())

@@ -288,6 +288,9 @@ class Event(models.Model):
     def get_absolute_url(self):
         return reverse("event_details", args=[self.id])
 
+    def get_category_icon_url(self):
+        return f"types/icons/{self.category.lower()}.png"
+
     def can_have_top8(self) -> bool:
         return self.category != Event.Category.REGULAR
 
