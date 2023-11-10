@@ -4,7 +4,8 @@ from championship.parsers.general_parser_functions import parse_record
 
 def _standings(soup):
     standings = soup.find(class_="standings")
-    thead = standings.find("thead")
+    if not standings:
+        raise ValueError("No standings found")
 
     def clean(elem):
         return elem.text.rstrip().strip()
