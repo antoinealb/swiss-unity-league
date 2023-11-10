@@ -27,6 +27,7 @@ from django.db.models import F, Q
 from rest_framework import viewsets, views
 from rest_framework.response import Response
 from championship.score import get_results_with_qps, get_leaderboard
+from championship.season import SEASON_MAP, SEASONS_WITH_INFO
 
 from championship.parsers.parse_result import ParseResult
 
@@ -266,7 +267,7 @@ class CompleteRankingView(TemplateView):
 
 
 class PerSeasonInformationView(TemplateView):
-    default_id = settings.INFO_TEXT_DEFAULT_SEASON_ID
+    default_id = settings.INFO_TEXT_DEFAULT_SEASON.id
 
     def get_template_names(self):
         season_id = self.kwargs.get("season_id", self.default_id)
@@ -277,8 +278,8 @@ class PerSeasonInformationView(TemplateView):
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        context["seasons"] = settings.SEASONS_WITH_INFO
-        context["current_season"] = settings.SEASON_MAP.get(
+        context["seasons"] = SEASONS_WITH_INFO
+        context["current_season"] = SEASON_MAP.get(
             self.kwargs.get("season_id", self.default_id)
         )
         context["view_name"] = self.season_view_name

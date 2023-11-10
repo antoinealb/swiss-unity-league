@@ -4,6 +4,7 @@ from django.db.models import Count
 from django_bleach.models import BleachField
 from django.urls import reverse
 from auditlog.registry import auditlog
+from championship.season import find_current_season
 import datetime
 from django.contrib.humanize.templatetags.humanize import ordinal
 import urllib.parse
@@ -439,12 +440,6 @@ class EventPlayerResult(models.Model):
 
     def get_record_display(self):
         return f"{self.win_count} - {self.loss_count} - {self.draw_count}"
-
-
-def find_current_season(date: datetime.date):
-    for id, season in settings.SEASON_MAP.items():
-        if season.start_date <= date <= season.end_date:
-            return season
 
 
 auditlog.register(EventOrganizer)

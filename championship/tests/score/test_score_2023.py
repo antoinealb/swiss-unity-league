@@ -11,6 +11,7 @@ from championship.factories import *
 from championship.models import *
 from championship.score import compute_scores
 from championship.score.season_2023 import ScoreMethod2023
+from championship.season import SEASON_2023
 
 
 class TestComputeScoreFor2023(TestCase):
@@ -18,7 +19,7 @@ class TestComputeScoreFor2023(TestCase):
         self.event = EventFactory()
 
     def compute_scores(self):
-        return compute_scores(settings.SEASON_MAP[1])
+        return compute_scores(SEASON_2023)
 
     def _test_compute_score(self, category, points, want_score):
         player_count = len(points)
@@ -83,7 +84,7 @@ class TestComputeScoreFor2023(TestCase):
 
     def test_ignore_events_outside_of_the_season_date(self):
         """Checks that events past the end of seasons don't contribute score."""
-        self.event.date = settings.SEASON_MAP[settings.DEFAULT_SEASON_ID].end_date
+        self.event.date = SEASON_2023.end_date
         self.event.date += datetime.timedelta(days=1)
         self.event.save()
         for _ in range(10):
@@ -94,7 +95,7 @@ class TestComputeScoreFor2023(TestCase):
 
 class ExtraPointsOutsideOfTopsTestCase(TestCase):
     def compute_scores(self):
-        return compute_scores(settings.SEASON_MAP[1])
+        return compute_scores(SEASON_2023)
 
     def _test_compute_score(self, category, points):
         player_count = len(points)
@@ -342,7 +343,7 @@ def create_test_tournament(players, category=Event.Category.PREMIER, with_top8=T
 
 class TestScoresByes(TestCase):
     def compute_scores(self):
-        return compute_scores(settings.SEASON_MAP[1])
+        return compute_scores(SEASON_2023)
 
     def test_top_byes(self):
         num_players = 50
@@ -397,7 +398,7 @@ class TestScoresByes(TestCase):
 
 class TestScoresQualified(TestCase):
     def compute_scores(self):
-        return compute_scores(settings.SEASON_MAP[1])
+        return compute_scores(SEASON_2023)
 
     def test_top_40_qualified(self):
         num_players = 50

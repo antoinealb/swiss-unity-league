@@ -16,6 +16,7 @@ from prometheus_client import Summary, Gauge
 
 from championship.cache_function import cache_function
 from championship.models import EventPlayerResult, Player
+from championship.season import Season
 
 from championship.score import Score
 from championship.score.season_2023 import ScoreMethod2023
@@ -61,8 +62,7 @@ def get_results_with_qps(
 
 # @cache_function(cache_key="compute_scores")
 @scores_computation_time_seconds.time()
-def compute_scores() -> dict[int, Score]:
-    season = settings.SEASON_MAP[settings.DEFAULT_SEASON_ID]
+def compute_scores(season: Season) -> dict[int, Score]:
     players_reaching_max = 0
 
     scores_by_player: defaultdict[int, int] = defaultdict(lambda: 0)

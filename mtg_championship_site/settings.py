@@ -10,7 +10,6 @@ For the full list of settings and their values, see
 https://docs.djangoproject.com/en/4.1/ref/settings/
 """
 
-from dataclasses import dataclass
 from pathlib import Path
 import os
 import datetime
@@ -18,6 +17,7 @@ from datetime import date
 import logging
 from prometheus_client import Info
 from django.contrib.messages import constants as messages
+from championship.season import SEASON_2024, SEASON_2023
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -262,41 +262,8 @@ DATE_FORMAT = "D, d.m.Y"
 USE_L10N = False
 
 
-@dataclass
-class Season:
-    id: int
-    name: str
-    start_date: datetime.date
-    end_date: datetime.date
-    result_deadline: datetime.timedelta = datetime.timedelta(days=7)
-
-    def can_enter_results(self, on_date: datetime.date) -> bool:
-        """Checks if results can still be added to this season on a given date."""
-        return on_date <= self.end_date + self.result_deadline
-
-
-_SEASON_LIST = [
-    Season(
-        id=1,
-        start_date=date(2023, 1, 1),
-        end_date=date(2023, 10, 31),
-        name="Season 2023",
-    ),
-    Season(
-        id=2,
-        start_date=date(2023, 11, 1),
-        end_date=date(2024, 10, 31),
-        name="Season 2024",
-    ),
-]
-
-SEASON_MAP = {s.id: s for s in _SEASON_LIST}
-
-SEASONS_WITH_INFO = _SEASON_LIST
-
-DEFAULT_SEASON_ID = 1
-INFO_TEXT_DEFAULT_SEASON_ID = 2
-DEFAULT_SEASON = SEASON_MAP[DEFAULT_SEASON_ID]
+INFO_TEXT_DEFAULT_SEASON = SEASON_2024
+DEFAULT_SEASON = SEASON_2023
 
 CACHES = {
     "default": {
