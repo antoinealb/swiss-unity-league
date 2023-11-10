@@ -64,7 +64,7 @@
             </div>
         {% endfor %}
         <div class="table-responsive pt-1">
-            <table class="table" itemscope itemtype="http://schema.org/Event">
+            <table class="table" >
                 <thead>
                     <tr>
                         <th scope="col">Date/Time</th>
@@ -74,7 +74,7 @@
                 </thead>
                 <tbody>
                     <template x-for="event in events">
-                        <tr x-show="shouldShow(event)" itemprop="subEvent" itemscope itemtype="http://schema.org/Event">
+                        <tr x-show="shouldShow(event)" itemscope itemtype="http://schema.org/Event">
                             <td>
                                 <meta itemprop="startDate" x-bind:content="event.startDateTime"/>
                                 <meta itemprop="endDate" x-bind:content="event.endDateTime"/>
@@ -83,21 +83,28 @@
                             </td>
                             <td>
                                 <div>
-                                    <a itemprop="url" :href="event.details_url" x-bind:title="'More info about the event: ' + event.name">
+                                    <a itemprop="url" :href="event.details_url" :title="'More info about the event: ' + event.name">
                                         <span class="fw-bold"  itemprop="name" x-text="event.name"></span>
                                     </a>
                                 </div>
                                 <small>
-                                    <a :href="event.organizer_url" itemprop="organizer" itemscope itemtype="http://schema.org/Organization" x-bind:title="'View all events of the organizer: ' + event.organizer"><span itemprop="name" x-text="event.organizer" ></span></a><span x-text="event.shortAddress"></span>
+                                    <a :href="event.organizer_url" itemprop="organizer" itemscope itemtype="http://schema.org/Organization" x-bind:title="'View all events of the organizer ' + event.organizer"><span itemprop="name" x-text="event.organizer" ></span></a><span x-text="event.shortAddress"></span>
                                 </small>
                                 <div itemprop="location" itemscope itemtype="http://schema.org/Place">
-                                    <meta itemprop="name" x-bind:content="event.locationName" />
-                                    <meta itemprop="address" x-bind:content="event.seoAddress" />
+                                    <meta itemprop="name" :content="event.locationName" />
+                                    <meta itemprop="address" :content="event.seoAddress" />
                                 </div>
                             </td>
                             <td itemprop="description">
-                                <div x-text="event.format"></div>
-                                <small class="text-nowrap" x-text="event.category"></small>
+                                <div class="row align-items-center flex-lg-row flex-column-reverse">
+                                    <div class="col-lg-auto order-lg-1">
+                                        <img :src="event.icon_url" :alt="'Icon ' + event.category" :title="event.category" class="sul-type-icon">
+                                    </div>
+                                    <div class="col order-lg-2">
+                                        <div x-text="event.format"></div>
+                                        <small class="text-nowrap" x-text="event.category"></small>
+                                    </div>
+                                </div>
                             </td>
                         </tr>
                     </template>
