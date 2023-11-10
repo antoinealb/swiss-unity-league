@@ -16,7 +16,7 @@ from prometheus_client import Summary, Gauge
 
 from championship.cache_function import cache_function
 from championship.models import EventPlayerResult, Player
-from championship.season import Season
+from championship.season import Season, SEASON_MAP
 
 from championship.score import Score
 from championship.score.season_2023 import ScoreMethod2023
@@ -60,7 +60,11 @@ def get_results_with_qps(
         yield result
 
 
-# @cache_function(cache_key="compute_scores")
+def _score_cache_key(season):
+    return f"compute_scoresS{season.id}"
+
+
+@cache_function(cache_key=_score_cache_key)
 @scores_computation_time_seconds.time()
 def compute_scores(season: Season) -> dict[int, Score]:
     players_reaching_max = 0
@@ -86,7 +90,8 @@ def compute_scores(season: Season) -> dict[int, Score]:
 @receiver(post_delete, sender=EventPlayerResult)
 @receiver(pre_save, sender=EventPlayerResult)
 def invalidate_score_cache(sender, **kwargs):
-    cache.delete("compute_scores")
+    for s in SEASON_MAP.values():
+        cache.delete(_score_cache_key(s))
 
 
 def get_leaderboard(season) -> list[Player]:
