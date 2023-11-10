@@ -59,7 +59,7 @@ def get_results_with_qps(
         yield result
 
 
-@cache_function(cache_key="compute_scores")
+# @cache_function(cache_key="compute_scores")
 @scores_computation_time_seconds.time()
 def compute_scores() -> dict[int, Score]:
     season = settings.SEASON_MAP[settings.DEFAULT_SEASON_ID]
@@ -89,14 +89,14 @@ def invalidate_score_cache(sender, **kwargs):
     cache.delete("compute_scores")
 
 
-def get_leaderboard() -> list[Player]:
+def get_leaderboard(season) -> list[Player]:
     """Returns a list of Player with their score.
 
     This function returns a list of Players with an additional score property
     (of type Score), containing all informations required to render a
     leaderboard.
     """
-    scores_by_player = compute_scores()
+    scores_by_player = compute_scores(season)
     players_with_score = []
     for player in Player.leaderboard_objects.all():
         if score := scores_by_player.get(player.id):

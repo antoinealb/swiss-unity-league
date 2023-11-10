@@ -78,7 +78,8 @@ class PlayerAdmin(admin.ModelAdmin):
         context = {"form": form}
         if request.method == "POST" and form.is_valid():
             num_of_players = form.cleaned_data["num_of_players"]
-            top_players = get_leaderboard()[:num_of_players]
+            # TODO: Expose other seasons here
+            top_players = get_leaderboard(settings.DEFAULT_SEASON)[:num_of_players]
             entries = [
                 {
                     "rank": i + 1,

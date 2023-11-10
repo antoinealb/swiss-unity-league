@@ -26,7 +26,7 @@ from django.db import transaction
 from django.db.models import F, Q
 from rest_framework import viewsets, views
 from rest_framework.response import Response
-from championship.score import get_results_with_qps, compute_scores, get_leaderboard
+from championship.score import get_results_with_qps, get_leaderboard
 
 from championship.parsers.parse_result import ParseResult
 
@@ -86,7 +86,7 @@ class IndexView(TemplateView):
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        context["players"] = get_leaderboard()[:PLAYERS_TOP]
+        context["players"] = get_leaderboard(settings.DEFAULT_SEASON)[:PLAYERS_TOP]
         context["future_events"] = self._future_events()
         context["partner_logos"] = self._partner_logos()
         context["has_open_invoices"] = self._has_open_invoices()
@@ -260,7 +260,8 @@ class CompleteRankingView(TemplateView):
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        context["players"] = get_leaderboard()
+        # TODO: Provide switch between seasons
+        context["players"] = get_leaderboard(settings.DEFAULT_SEASON)
         return context
 
 

@@ -85,8 +85,8 @@ class EventFactory(DjangoModelFactory):
     organizer = factory.SubFactory(EventOrganizerFactory)
     date = factory.Faker(
         "date_between",
-        start_date=datetime.date(2022, 1, 1),
-        end_date=datetime.date(2022, 9, 10),
+        start_date=datetime.date(2023, 1, 1),
+        end_date=datetime.date(2023, 10, 31),
     )
     url = factory.Faker("uri")
 
