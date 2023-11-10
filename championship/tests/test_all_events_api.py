@@ -27,7 +27,7 @@ class EventApiTestCase(TestCase):
             start_time=datetime.time(10, 0),
             end_time=datetime.time(19, 0),
             format=Event.Format.LEGACY,
-            category=Event.Category.PREMIER,
+            category=Event.Category.REGULAR,
             address=event_address,
         )
         b = EventFactory(
@@ -52,10 +52,11 @@ class EventApiTestCase(TestCase):
                 "seoAddress": event_address.get_seo_address(),
                 "shortAddress": f", {event_address.city}, {event_address.get_region_display()}, {event_address.get_country_display()}",
                 "region": "Aargau",
-                "category": "SUL Premier",
+                "category": "SUL Regular",
                 "details_url": TEST_SERVER + reverse("event_details", args=[a.id]),
                 "organizer_url": TEST_SERVER
                 + reverse("organizer_details", args=[eo.id]),
+                "icon_url": "/static/types/icons/regular.png",
             },
             {
                 "name": b.name,
@@ -73,6 +74,7 @@ class EventApiTestCase(TestCase):
                 "details_url": TEST_SERVER + reverse("event_details", args=[b.id]),
                 "organizer_url": TEST_SERVER
                 + reverse("organizer_details", args=[eo.id]),
+                "icon_url": "/static/types/icons/regional.png",
             },
         ]
         self.assertEqual(want, resp.json())
@@ -104,8 +106,10 @@ class EventApiTestCase(TestCase):
                 "details_url": TEST_SERVER + reverse("event_details", args=[a.id]),
                 "organizer_url": TEST_SERVER
                 + reverse("organizer_details", args=[a.id]),
+                "icon_url": "/static/types/icons/premier.png",
             }
         ]
+        self.assertEqual(resp.status_code, 200)
         self.assertEqual(want, resp.json())
 
 
