@@ -1,5 +1,6 @@
 {% extends "championship/base.html" %}
 {% load humanize %}
+{% load static %}
 
 {% block title %}
     {{ event.name }}
@@ -23,7 +24,11 @@
             <dd class="col-sm-9">{{ event.address }} (<a href="{{ event.address.get_google_maps_url }}" target="_blank">View on Google Maps</a>)</dd>
         {% endif %}
         <dt class="col-sm-3">Category</dt>
-        <dd class="col-sm-9">{{ event.get_category_display }}</dd>
+        <dd class="col-sm-9">
+            <img src="{% static event.get_icon_url %}" class="sul-type-icon me-2"
+                title="{{ event.get_category_display }}" alt="Icon {{ event.get_category_display }}">
+            <span>{{ event.get_category_display }}</span>
+        </dd>
         <dt class="col-sm-3">Format</dt>
         <dd class="col-sm-9">{{ event.get_format_display }}</dd>
         {% if event.url %}
