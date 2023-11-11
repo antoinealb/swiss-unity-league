@@ -247,7 +247,6 @@ AUDITLOG_CID_GETTER = cid.locals.get_cid
 BLEACH_ALLOWED_TAGS = [
     "a",
     "b",
-    "blockquote",
     "em",
     "i",
     "li",
@@ -255,6 +254,7 @@ BLEACH_ALLOWED_TAGS = [
     "p",
     "strong",
     "ul",
+    "br",
 ]
 
 DATE_FORMAT = "D, d.m.Y"
