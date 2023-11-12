@@ -92,6 +92,16 @@ class TestComputeScoreFor2023(TestCase):
         scores = self.compute_scores()
         self.assertFalse(any(score.total_score > 0 for score in scores.values()))
 
+    def test_ignore_events_before_the_season_date(self):
+        """Checks that events past the end of seasons don't contribute score."""
+        self.event.date = SEASON_2023.start_date
+        self.event.date -= datetime.timedelta(days=1)
+        self.event.save()
+        for _ in range(10):
+            EventPlayerResultFactory(event=self.event)
+        scores = self.compute_scores()
+        self.assertFalse(any(score.total_score > 0 for score in scores.values()))
+
 
 class ExtraPointsOutsideOfTopsTestCase(TestCase):
     def compute_scores(self):

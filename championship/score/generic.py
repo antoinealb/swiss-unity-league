@@ -75,6 +75,7 @@ def compute_scores(season: Season) -> dict[int, Score]:
     count = 0
     for result in get_results_with_qps(
         EventPlayerResult.objects.filter(
+            event__date__gte=season.start_date,
             event__date__lte=season.end_date,
             player__in=Player.leaderboard_objects.all(),
         )
