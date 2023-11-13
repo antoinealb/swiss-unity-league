@@ -394,6 +394,19 @@ class EventPlayerResult(models.Model):
     loss_count = models.PositiveIntegerField(help_text="Number of lost matches")
     draw_count = models.PositiveIntegerField(help_text="Number of drawn matches")
 
+    deck_name = models.CharField(
+        max_length=200,
+        blank=True,
+        help_text="Name of the player's deck, e.g. 'UW Control'",
+    )
+
+    decklist_url = models.URLField(
+        "Decklist Link",
+        help_text="Link to a page where the decklist of the player can be viewed.",
+        blank=True,
+        null=True,
+    )
+
     migrated_from_points_to_record = models.BooleanField(
         default=False,
         help_text="Indicates whether this result was automatically migrated from points to records. Used for diagnostics.",
