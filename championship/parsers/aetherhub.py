@@ -12,9 +12,11 @@ def _standings(soup):
         return row[col_idxs[name]].text.rstrip().strip()
 
     def _get_decklist_url(row):
-        deck_field = row[col_idxs.get("Deck", None)]
-        if deck_field:
-            return deck_field.a.get("href")
+        try:
+            deck_url = row[col_idxs.get("Deck", None)].a.get("href")
+            return AH_URL + deck_url
+        except AttributeError:
+            return None
 
     thead = soup.find(id="tab_results").find("thead")
 
@@ -27,8 +29,7 @@ def _standings(soup):
         name = _value(row, "Name")
         points = int(_value(row, "Points"))
         record = parse_record(_value(row, "Results"))
-        decklist_url = AH_URL + _get_decklist_url(row)
-
+        decklist_url = _get_decklist_url(row)
         yield ParseResult(
             name=name,
             points=points,

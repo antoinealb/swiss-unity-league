@@ -15,7 +15,7 @@ class AetherhubStandingsParser(TestCase):
                 "Dominik Horber",
                 13,
                 (4, 0, 1),
-                "https://aetherhub.com/Deck/Public/796678",
+                None,
             ),
             (
                 "Christopher Weber",
