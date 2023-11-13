@@ -5,6 +5,7 @@ from championship.parsers.general_parser_functions import (
     record_to_points,
     estimate_rounds,
 )
+from championship.parsers.parse_result import ParseResult
 
 PLAYER_NAME = "PLAYER_NAME"
 RECORD = "RECORD"
@@ -30,7 +31,7 @@ def _standings(df: pd.DataFrame):
                 points = record_to_points(record_string)
             except ValueError:
                 raise InvalidRecordError(name, record_string)
-            yield (name, points, tuple(parsed_record))
+            yield ParseResult(name=name, points=points, record=parsed_record)
     elif MATCH_POINTS in defined_cols:
         name_points_tuple_list = []
         for _, row in df.iterrows():
@@ -46,16 +47,13 @@ def _standings(df: pd.DataFrame):
             wins = points // 3
             draws = points % 3
             losses = num_rounds - wins - draws
-            yield (name, points, (wins, losses, draws))
+            yield ParseResult(name=name, points=points, record=(wins, losses, draws))
     else:
         raise RecordOrMatchPointsNotFound()
 
 
 def parse_standings_page(df: pd.DataFrame):
-    standings = list(_standings(df))
-    # Sort by match points
-    sorted_standings = sorted(standings, key=lambda x: x[1], reverse=True)
-    return sorted_standings
+    return list(_standings(df))
 
 
 class PlayerNameNotFound(ValueError):

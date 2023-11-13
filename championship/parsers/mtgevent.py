@@ -1,4 +1,6 @@
 from bs4 import BeautifulSoup
+
+from championship.parsers.parse_result import ParseResult
 from .general_parser_functions import *
 
 
@@ -15,7 +17,12 @@ def _standings(soup):
         name = values[player_index]
         points = record_to_points(record)
         record = parse_record(record)
-        yield (name, points, record)
+
+        yield ParseResult(
+            name=name,
+            points=points,
+            record=record,
+        )
 
 
 def parse_standings_page(text):

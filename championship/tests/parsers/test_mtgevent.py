@@ -16,4 +16,5 @@ class MtgEventStandingsParser(TestCase):
             ("Luca Riedmann", 9, (3, 1, 0)),
             ("Remus Kosmalla", 6, (2, 2, 0)),
         ]
-        self.assertEqual(want, self.results[:5])
+        got = [(pr.name, pr.points, pr.record) for pr in self.results[:5]]
+        self.assertEqual(want, got)

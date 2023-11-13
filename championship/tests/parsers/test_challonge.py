@@ -45,7 +45,8 @@ class ChallongeStandingsParser(TestCase):
             ("Aleks Col", 10, (3, 0, 1)),
             ("Antoine Alb", 9, (3, 1, 0)),
         ]
-        self.assertEqual(want_standings, self.results[:3])
+        got_standings = [(pr.name, pr.points, pr.record) for pr in self.results[:3]]
+        self.assertEqual(want_standings, got_standings)
 
     def test_can_parse_de(self):
         self.text = load_test_html("challonge_de_ranking.html")
@@ -56,7 +57,8 @@ class ChallongeStandingsParser(TestCase):
             ("Derek Kwan", 9, (3, 1, 0)),
             ("Mikko Tuhkannen", 9, (3, 1, 0)),
         ]
-        self.assertEqual(want_standings, self.results[:4])
+        got_standings = [(pr.name, pr.points, pr.record) for pr in self.results[:4]]
+        self.assertEqual(want_standings, got_standings)
 
 
 class ChallongeCleanUrlTest(TestCase):

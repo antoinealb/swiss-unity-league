@@ -14,4 +14,5 @@ class EventlinkStandingParser(TestCase):
             ("Silvan Aeschbach", 9, (3, 1, 0)),
             ("Janosh Georg", 7, (2, 1, 1)),
         ]
-        self.assertEqual(want, self.results[:3])
+        got = [(pr.name, pr.points, pr.record) for pr in self.results[:3]]
+        self.assertEqual(want, got)

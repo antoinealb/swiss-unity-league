@@ -1,5 +1,6 @@
 from bs4 import BeautifulSoup
 from championship.parsers.general_parser_functions import parse_record
+from championship.parsers.parse_result import ParseResult
 
 
 def _standings(soup):
@@ -14,7 +15,11 @@ def _standings(soup):
         name = clean(row.find(class_="name").string)
         points = int(clean(row.find(class_="points").string))
         win_loss_draw = parse_record(row.find(class_="wldb").string)
-        yield (name, points, win_loss_draw)
+        yield ParseResult(
+            name=name,
+            points=points,
+            record=win_loss_draw,
+        )
 
 
 def parse_standings_page(text):

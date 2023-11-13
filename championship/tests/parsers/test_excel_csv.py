@@ -13,7 +13,8 @@ class ExcelCsvStandingParser(TestCase):
             ("Noé Dumez", 8, (2, 0, 2)),
             ("RENAUD-GOUD, Antoine", 7, (2, 1, 1)),
         ]
-        self.assertEqual(want, self.results[:3])
+        got = [(pr.name, pr.points, pr.record) for pr in self.results[:3]]
+        self.assertEqual(want, got)
 
     def _create_df(self, match_points):
         self.df = pd.DataFrame(
@@ -62,20 +63,8 @@ class ExcelCsvStandingParser(TestCase):
     def test_can_parse_match_points(self, match_points, want):
         self._create_df(match_points)
         self.results = parse_standings_page(self.df)
-        records = [record for _, _, record in self.results]
+        records = [pr.record for pr in self.results]
         self.assertEqual(want, records)
-
-    def test_ranking(self):
-        self.df = pd.read_excel("championship/tests/parsers/excel_ranking.xlsx")
-        # Reverse the order of the dataframe
-        self.df = self.df.iloc[::-1]
-        self.results = parse_standings_page(self.df)
-        want = [
-            ("Jari Rentsch", 9, (3, 1, 0)),
-            ("Noé Dumez", 8, (2, 0, 2)),
-            ("RENAUD-GOUD, Antoine", 7, (2, 1, 1)),
-        ]
-        self.assertEqual(want, self.results[:3])
 
 
 class ExcelCsvStandingParserExceptions(TestCase):
