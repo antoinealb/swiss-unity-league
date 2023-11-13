@@ -10,8 +10,21 @@ class AetherhubStandingsParser(TestCase):
 
     def test_parse_standings(self):
         want_standings = [
-            ("DarioMazzola", 13, (4, 0, 1)),
-            ("Dominik Horber", 13, (4, 0, 1)),
-            ("Christopher Weber", 12, (4, 1, 0)),
+            ("DarioMazzola", 13, (4, 0, 1), "https://aetherhub.com/Deck/Public/795680"),
+            (
+                "Dominik Horber",
+                13,
+                (4, 0, 1),
+                "https://aetherhub.com/Deck/Public/796678",
+            ),
+            (
+                "Christopher Weber",
+                12,
+                (4, 1, 0),
+                "https://aetherhub.com/Deck/Public/796591",
+            ),
         ]
-        self.assertEqual(want_standings, self.results[:3])
+        got_result = [
+            (pr.name, pr.points, pr.record, pr.decklist_url) for pr in self.results[:3]
+        ]
+        self.assertEqual(want_standings, got_result)
