@@ -13,9 +13,9 @@ def _standings(soup):
 
     def _get_decklist_url(row):
         try:
-            deck_url = row[col_idxs.get("Deck", None)].a.get("href")
+            deck_url = row[col_idxs["Deck"]].a.get("href")
             return AH_URL + deck_url
-        except AttributeError:
+        except (AttributeError, KeyError):
             return None
 
     thead = soup.find(id="tab_results").find("thead")
