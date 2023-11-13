@@ -167,6 +167,19 @@ class EventDetailTestCase(TestCase):
         resp = self.client.get(reverse("event_details", args=[event.id]))
         self.assertContains(resp, "3 - 1 - 1")
 
+    def test_shows_decklists(self):
+        event = EventFactory()
+        epr = EventPlayerResultFactory(
+            event=event,
+        )
+        resp = self.client.get(reverse("event_details", args=[event.id]))
+        self.assertNotContains(resp, "Decklist")
+        epr.decklist_url = "https://aetherhub.com/Deck/Public/795680"
+        epr.save()
+        resp = self.client.get(reverse("event_details", args=[event.id]))
+        self.assertContains(resp, "Decklist")
+        self.assertContains(resp, "795680")
+
     @parameterized.expand(
         [
             (datetime.timedelta(32), False),

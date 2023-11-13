@@ -224,6 +224,9 @@ class EventDetailsView(DetailView):
         )
 
         context["results"] = sorted(results)
+        context["has_decklists"] = any(
+            result.decklist_url for result in context["results"]
+        )
 
         # Prompt the players to notify the organizer that they forgot to upload results
         # Only do so when the event is finished longer than 4 days ago and results can still be uploaded.

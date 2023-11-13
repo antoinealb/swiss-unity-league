@@ -91,6 +91,9 @@
                         <th scope="col">Match Points</th>
                         <th scope="col">Record</th>
                         <th scope="col">SUL Points</th>
+                        {% if has_decklists %}
+                            <th scope="col">Decklist</th>
+                        {% endif %}
                     </tr>
                 </thead>
                 <tbody>
@@ -101,6 +104,19 @@
                             <td>{{ r.points }}</td>
                             <td>{{ r.get_record_display }}</td>
                             <td>{{ r.qps }}</td>
+                            {% if has_decklists %}
+                                <td>
+                                    {% if r.decklist_url %}
+                                        <a href="{{ r.decklist_url }}" target="_blank" title="View the decklist of {{ r.player_name }}">
+                                            {% if r.deck_name %}
+                                                {{ r.deck_name }}
+                                            {% else %}
+                                                View Decklist
+                                            {% endif %}
+                                        </a>
+                                    {% endif %}
+                                </td>
+                            {% endif %}
                         </tr>
                     {% endfor %}
                 </tbody>
