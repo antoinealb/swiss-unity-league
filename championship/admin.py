@@ -150,8 +150,6 @@ class PlayerAdmin(admin.ModelAdmin):
             },
         )
 
-    merge_players.allowed_permissions = ('change',)
-
 
 class PlayerAliasAdmin(admin.ModelAdmin):
     list_display = (
