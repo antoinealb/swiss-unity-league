@@ -1,5 +1,7 @@
 import re
 from bs4 import BeautifulSoup
+
+from championship.parsers.parse_result import ParseResult
 from .general_parser_functions import *
 
 
@@ -55,7 +57,12 @@ def _standings(soup):
             points += byes * 3
             # Store the byes as wins
             record[0] += byes
-        yield (name, points, tuple(record))
+
+        yield ParseResult(
+            name=name,
+            points=points,
+            record=tuple(record),
+        )
 
 
 def parse_standings_page(text):

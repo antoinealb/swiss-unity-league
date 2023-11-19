@@ -28,6 +28,7 @@ from rest_framework import viewsets, views
 from rest_framework.response import Response
 
 from championship.models import Any
+from championship.parsers.parse_result import ParseResult
 from .models import *
 from .forms import *
 from championship.parsers import (
@@ -487,38 +488,45 @@ class CreateResultsView(FormView):
             return self.form_invalid(form)
 
         # Sometimes the webpages or users don't sort the standings correctly. Hence we should sort as a precaution.
-        standings.sort(key=lambda s: s[1], reverse=True)
+        standings.sort(key=lambda pr: pr.points, reverse=True)
 
         # Check that the records amount to the same amount of match points
-        for name, points, (w, l, d) in standings:
+        for parse_result in standings:
+            (w, l, d) = parse_result.record
+            points = parse_result.points
             if points != w * 3 + d:
                 messages.error(
                     self.request,
-                    f"""The record of {name} does not add up to the match points. Please send us 
+                    f"""The record of {parse_result.name} does not add up to the match points. Please send us 
                     the results link or file via email to leoninleague@gmail.com""",
                 )
                 return self.form_invalid(form)
 
         if self.event.results_validation_enabled and validate_standings_and_show_error(
-            self.request, standings, self.event.category
+            self.request,
+            [(pr.name, pr.points, pr.record) for pr in standings],
+            self.event.category,
         ):
             return self.form_invalid(form)
 
-        for i, (name, points, (w, l, d)) in enumerate(standings):
-            name = clean_name(name)
+        for i, parse_result in enumerate(standings):
+            (w, l, d) = parse_result.record
+            name = clean_name(parse_result.name)
             try:
                 player = PlayerAlias.objects.get(name=name).true_player
             except PlayerAlias.DoesNotExist:
                 player, _ = Player.objects.get_or_create(name=name)
 
             EventPlayerResult.objects.create(
-                points=points,
+                points=parse_result.points,
                 player=player,
                 event=self.event,
                 ranking=i + 1,
                 win_count=w,
                 loss_count=l,
                 draw_count=d,
+                decklist_url=parse_result.decklist_url,
+                deck_name=parse_result.deck_name if parse_result.deck_name else "",
             )
 
         return super().form_valid(form)
@@ -563,7 +571,12 @@ class CreateManualResultsView(LoginRequiredMixin, CreateResultsView):
             name = result.get("name")
             record = result.get("points")
             if name and record:
-                standings.append((name, record_to_points(record), parse_record(record)))
+                pr = ParseResult(
+                    name=name,
+                    points=record_to_points(record),
+                    record=parse_record(record),
+                )
+                standings.append(pr)
         return standings
 
 
