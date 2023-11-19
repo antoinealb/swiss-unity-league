@@ -37,6 +37,7 @@ from championship.parsers import (
     excel_csv_parser,
     mtgevent,
     challonge,
+    melee,
 )
 from championship.parsers.general_parser_functions import record_to_points, parse_record
 from championship.serializers import EventSerializer
@@ -723,12 +724,20 @@ class CreateExcelCsvResultsView(CreateFileParserResultsView):
         try:
             return excel_csv_parser.parse_standings_page(df)
         except Exception as e:
+            logging.exception("Error parsing dataframe")
             if hasattr(e, "ui_error_message"):
                 error_text = e.ui_error_message
             else:
                 raise e
-        logging.exception("Error parsing dataframe")
         messages.error(self.request, error_text)
+
+
+class CreateMeleeResultsView(CreateFileParserResultsView):
+    help_text = "Upload the standings exported by clicking on 'Export All Standings' in Melee's Tournament Controller's Standings page (.csv file)."
+
+    def get_results(self, form):
+        text = "".join(s.decode() for s in self.request.FILES["standings"].chunks())
+        return melee.parse_standings(text)
 
 
 class ChooseUploaderView(LoginRequiredMixin, FormView):

@@ -412,6 +412,49 @@ class EventLinkImportTestCase(TestCase):
         )
 
 
+class MeleeUploadTest(TestCase):
+    def setUp(self):
+        self.client = Client()
+        self.credentials = dict(username="test", password="test")
+        self.user = User.objects.create_user(**self.credentials)
+        self.organizer = EventOrganizerFactory(user=self.user)
+        self.event = EventFactory(
+            organizer=self.organizer,
+            date=datetime.date.today(),
+            category=Event.Category.PREMIER,
+            results_validation_enabled=False,
+        )
+
+        text = load_test_html("melee_standings.csv")
+
+        standings = SimpleUploadedFile(
+            "standings", text.encode(), content_type="text/csv"
+        )
+
+        self.data = {
+            "standings": standings,
+            "event": self.event.id,
+        }
+
+    def login(self):
+        self.client.login(**self.credentials)
+
+    def test_imports_result_for_correct_tourney(self):
+        self.login()
+
+        self.client.post(reverse("results_create_melee"), self.data)
+        results = EventPlayerResult.objects.filter(event=self.event).order_by("id")[:]
+
+        self.assertEqual(len(results), 39)
+        self.assertEqual(results[0].points, 29)
+        self.assertEqual(results[0].ranking, 1)
+        self.assertEqual(results[0].player.name, "Antoine Renaud-Goud")
+
+        self.assertEqual(results[2].points, 28)
+        self.assertEqual(results[2].ranking, 3)
+        self.assertEqual(results[2].player.name, "Christian Rothen")
+
+
 class MtgEventUploadTest(TestCase):
     def setUp(self):
         self.client = Client()
