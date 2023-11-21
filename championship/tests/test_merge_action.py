@@ -1,5 +1,5 @@
 from django.test import TestCase, Client
-from django.contrib.auth.models import User
+from django.contrib.auth.models import User, Permission
 from django.urls import reverse
 from championship.factories import *
 from championship.models import *
@@ -7,11 +7,12 @@ from championship.models import *
 
 class PlayerMergeActionTest(TestCase):
     def setUp(self):
-        User.objects.create_user(
-            username="test", password="test", is_staff=True, is_superuser=True
-        )
+        u = User.objects.create_user(username="test", password="test", is_staff=True)
         self.client = Client()
         self.client.login(username="test", password="test")
+        u.user_permissions.add(Permission.objects.get(codename="delete_player"))
+        u.user_permissions.add(Permission.objects.get(codename="change_player"))
+        u.save()
 
     def test_merge_players_displays_confirmation(self):
         players = [PlayerFactory() for _ in range(10)]
