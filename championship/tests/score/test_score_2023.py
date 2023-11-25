@@ -10,7 +10,7 @@ from faker import Faker
 from championship.factories import *
 from championship.models import *
 from championship.score import compute_scores
-from championship.score.season_2023 import ScoreMethod2023
+from championship.score.season_2023 import ScoreMethod2023, Score2023
 from championship.season import SEASON_2023
 
 
@@ -218,7 +218,7 @@ class ScoresWithTop8TestCase(TestCase):
             single_elimination_result=result,
             ranking=1,
         )
-        return ScoreMethod2023.qps_for_result(ep, event_size=32, has_top_8=True)
+        return ScoreMethod2023._qps_for_result(ep, event_size=32, has_top_8=True)
 
     def test_premier_event(self):
         self.event.category = Event.Category.PREMIER
@@ -259,7 +259,7 @@ class ScoresWithTop8TestCase(TestCase):
         r = EventPlayerResultFactory(points=10, ranking=5, event=self.event)
 
         want = (10 + 3) * 6 + 150
-        got = ScoreMethod2023.qps_for_result(r, 5, has_top_8=True)
+        got = ScoreMethod2023._qps_for_result(r, 5, has_top_8=True)
 
         self.assertEqual(want, got)
 
@@ -418,3 +418,11 @@ class TestScoresQualified(TestCase):
         byes = [s.qualified for s in self.compute_scores().values()]
         want_byes = [True] * num_qualified + [False] * (num_players - num_qualified)
         self.assertEqual(want_byes, byes)
+
+
+class TestScore2023(TestCase):
+    def test_add(self):
+        s1 = Score2023(qps=1, byes=1)
+        s2 = Score2023(qps=2, byes=1)
+        r = s1 + s2
+        self.assertEqual(Score2023(qps=3, byes=2), r)

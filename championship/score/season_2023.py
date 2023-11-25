@@ -1,5 +1,15 @@
+from dataclasses import dataclass
 from championship.models import Event, EventPlayerResult
 from championship.score.types import Score
+
+
+@dataclass
+class Score2023:
+    qps: int
+    byes: int
+
+    def __add__(self, o: "Score2023") -> "Score2023":
+        return Score2023(qps=self.qps + o.qps, byes=self.byes + o.byes)
 
 
 class ScoreMethod2023:
@@ -35,7 +45,7 @@ class ScoreMethod2023:
     }
 
     @classmethod
-    def qps_for_result(
+    def _qps_for_result(
         cls,
         result: EventPlayerResult,
         event_size: int,
@@ -67,7 +77,7 @@ class ScoreMethod2023:
         return points
 
     @classmethod
-    def byes_for_result(
+    def _byes_for_result(
         cls,
         result: EventPlayerResult,
         event_size: int,
@@ -97,7 +107,7 @@ class ScoreMethod2023:
 
     @classmethod
     def finalize_scores(
-        cls, scores_by_player: dict[int, int], byes_per_player: dict[int, int]
+        cls, scores_by_player: dict[int, Score2023]
     ) -> dict[int, Score]:
         """Implements the last step of score processing.
 
@@ -109,19 +119,25 @@ class ScoreMethod2023:
 
         """
         sorted_scores = sorted(
-            scores_by_player.items(), key=lambda x: x[1], reverse=True
+            scores_by_player.items(), key=lambda x: x[1].qps, reverse=True
         )
         scores = {}
-        for i, (player, points) in enumerate(sorted_scores):
+        for i, (player, score) in enumerate(sorted_scores):
             rank = i + 1
-            byes = cls._byes_for_rank(rank) + byes_per_player[player]
+            byes = cls._byes_for_rank(rank) + score.byes
             byes = min(byes, cls.MAX_BYES)
 
             scores[player] = Score(
-                total_score=points,
+                total_score=score.qps,
                 rank=rank,
                 byes=byes,
                 qualified=rank <= 40,
             )
 
         return scores
+
+    @classmethod
+    def score_for_result(cls, result, event_size, has_top8) -> Score2023:
+        qps = cls._qps_for_result(result, event_size, has_top8)
+        byes = cls._byes_for_result(result, event_size, has_top8)
+        return Score2023(qps=qps, byes=byes)

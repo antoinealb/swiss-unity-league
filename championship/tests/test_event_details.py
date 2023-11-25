@@ -32,8 +32,11 @@ class EventDetailTestCase(TestCase):
         self.assertIn(event.name, resp.content.decode())
         self.assertIn(ep.player.name, resp.content.decode())
 
-        self.assertEqual(resp.context_data["results"][0].points, 10)
-        self.assertEqual(resp.context_data["results"][0].qps, (10 + 3) * 6)
+        scores = [s for _, s in resp.context_data["results"]]
+        results = [r for r, _ in resp.context_data["results"]]
+
+        self.assertEqual(results[0].points, 10)
+        self.assertEqual(scores[0].qps, (10 + 3) * 6)
 
     def test_get_result_with_top_8(self):
         category = Event.Category.PREMIER
@@ -62,7 +65,7 @@ class EventDetailTestCase(TestCase):
             )
 
         resp = self.client.get(reverse("event_details", args=[event.id]))
-        results = resp.context_data["results"]
+        results = [r for r, _ in resp.context_data["results"]]
         self.assertEqual(results[8].ranking, 9)
         self.assertEqual(
             results[0].single_elimination_result,

@@ -159,7 +159,7 @@ class PlayerDetailsView(DetailView):
         )
 
         context[LAST_RESULTS] = sorted(
-            results, key=lambda r: r.event.date, reverse=True
+            results, key=lambda r: r[0].event.date, reverse=True
         )
 
         qp_table = {
@@ -180,12 +180,12 @@ class PlayerDetailsView(DetailView):
             THEAD: ["", Event.Category.REGIONAL.label, Event.Category.REGULAR.label],
             TBODY: [],
         }
-        for result in sorted(context[LAST_RESULTS]):
+        for result, score in sorted(context[LAST_RESULTS]):
             add_to_table(
                 qp_table,
                 column_title=result.event.get_category_display(),
                 row_title=QPS,
-                value=result.qps,
+                value=score.qps,
             )
             add_to_table(
                 qp_table,
@@ -244,7 +244,7 @@ class EventDetailsView(DetailView):
 
         context["results"] = sorted(results)
         context["has_decklists"] = any(
-            result.decklist_url for result in context["results"]
+            result.decklist_url for result, _ in context["results"]
         )
 
         # Prompt the players to notify the organizer that they forgot to upload results

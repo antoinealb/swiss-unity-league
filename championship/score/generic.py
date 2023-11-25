@@ -19,7 +19,7 @@ from championship.models import EventPlayerResult, Player
 from championship.season import Season, SEASON_MAP
 
 from championship.score import Score
-from championship.score.season_2023 import ScoreMethod2023
+from championship.score.season_2023 import ScoreMethod2023, Score2023
 
 scores_computation_time_seconds = Summary(
     "scores_computation_time_seconds", "Time spent to compute scores of all players"
@@ -33,7 +33,7 @@ scores_computation_results_count = Gauge(
 
 def get_results_with_qps(
     event_player_results: models.QuerySet[EventPlayerResult],
-) -> Iterable[EventPlayerResult]:
+) -> Iterable[tuple[EventPlayerResult, Score2023]]:
     """
     Pass a QuerySet of EventPlayerResult, and get it annotated with the following fields:
     - has_top8: True if the event has a top8
@@ -49,15 +49,10 @@ def get_results_with_qps(
 
     for result in results:
         result.has_top8 = result.top_count > 0
-        result.qps = ScoreMethod2023.qps_for_result(
-            result,
-            event_size=result.event_size,
-            has_top_8=result.has_top8,
+        score = ScoreMethod2023.score_for_result(
+            result, event_size=result.event_size, has_top8=result.has_top8
         )
-        result.byes = ScoreMethod2023.byes_for_result(
-            result, event_size=result.event_size, has_top_8=result.has_top8
-        )
-        yield result
+        yield result, score
 
 
 def _score_cache_key(season):
@@ -69,24 +64,26 @@ def _score_cache_key(season):
 def compute_scores(season: Season) -> dict[int, Score]:
     players_reaching_max = 0
 
-    scores_by_player: defaultdict[int, int] = defaultdict(lambda: 0)
-    extra_byes_by_player: defaultdict[int, int] = defaultdict(lambda: 0)
+    scores_by_player: dict[int, Score2023] = {}
 
     count = 0
-    for result in get_results_with_qps(
+    for result, score in get_results_with_qps(
         EventPlayerResult.objects.filter(
             event__date__gte=season.start_date,
             event__date__lte=season.end_date,
             player__in=Player.leaderboard_objects.all(),
         )
     ):
-        scores_by_player[result.player_id] += result.qps
-        extra_byes_by_player[result.player_id] += result.byes
         count += 1
+
+        try:
+            scores_by_player[result.player_id] += score
+        except KeyError:
+            scores_by_player[result.player_id] = score
 
     scores_computation_results_count.labels(season.id, season.name).set(count)
 
-    return ScoreMethod2023.finalize_scores(scores_by_player, extra_byes_by_player)
+    return ScoreMethod2023.finalize_scores(scores_by_player)
 
 
 @receiver(post_delete, sender=EventPlayerResult)
