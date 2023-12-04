@@ -228,7 +228,7 @@ class EventDetailsView(DetailView):
 
         context["can_edit_results"] = (
             event.can_be_edited() and event.organizer.user == self.request.user
-        ) or self.request.user.is_staff
+        ) or self.request.user.is_superuser
 
         context["results"] = sorted(results)
         context["has_decklists"] = any(
@@ -879,7 +879,7 @@ class ResultUpdateView(UpdateView):
         organizer_allowed_to_edit = (
             request.user == event.organizer.user and event.can_be_edited()
         )
-        if request.user.is_staff or organizer_allowed_to_edit:
+        if request.user.is_superuser or organizer_allowed_to_edit:
             return super().dispatch(request, *args, **kwargs)
         else:
             return HttpResponseForbidden()
