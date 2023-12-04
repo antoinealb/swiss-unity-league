@@ -82,24 +82,26 @@ class EventPlayerResultForm(forms.ModelForm):
             raise forms.ValidationError("Player name cannot be empty.")
         return player_name
 
-    def clean(self):
-        cleaned_data = super().clean()
+    def save(self, commit=True):
+        instance = super().save(commit=False)
 
-        new_name = cleaned_data["player_name"]
-        old_name = self.instance.player.name
+        new_name = self.cleaned_data["player_name"]
+        old_name = instance.player.name
 
         if new_name != old_name:
             try:
                 player = PlayerAlias.objects.get(name=new_name).true_player
             except PlayerAlias.DoesNotExist:
                 player, _ = Player.objects.get_or_create(name=new_name)
-            self.instance.player = player
+            instance.player = player
 
-        self.instance.points = (
+        instance.points = (
             self.cleaned_data["win_count"] * 3 + self.cleaned_data["draw_count"]
         )
 
-        return cleaned_data
+        if commit:
+            instance.save()
+        return instance
 
 
 class AddressForm(forms.ModelForm):
