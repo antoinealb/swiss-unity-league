@@ -141,7 +141,7 @@ class PlayerAutocompleteTest(TestCase):
         self.client = Client()
         PlayerFactory(name="John")
         PlayerFactory(name="Mike")
-        self.url = reverse("player_autocomplete")
+        self.url = reverse("player-autocomplete-list")
 
     def test_autocomplete(self):
         response = self.client.get(self.url, {"search_name": "Jo"})

@@ -16,7 +16,7 @@
                 Player name<span class="asteriskField">*</span>
             </label>
             <div class="input-group">
-                <input type="text" name="player_name" value="{{ form.player_name.value }}" data-autocomplete-url="{% url 'player_autocomplete' %}" autocomplete="off" class="textinput textInput form-control" required="" id="id_player_name">
+                <input type="text" name="player_name" value="{{ form.player_name.value }}" data-autocomplete-url="{% url 'player-autocomplete-list' %}" autocomplete="off" class="textinput textInput form-control" required="" id="id_player_name">
                 <div id="autocomplete-dropdown" class="dropdown-menu" style="position: absolute; top: 100%; left: 0; z-index: 1000;"></div>
             </div>
         </div>

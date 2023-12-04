@@ -40,7 +40,7 @@ from championship.parsers import (
     melee,
 )
 from championship.parsers.general_parser_functions import record_to_points, parse_record
-from championship.serializers import EventSerializer
+from championship.serializers import EventSerializer, PlayerAutocompleteSerializer
 from championship.tournament_valid import (
     validate_standings,
     get_max_round_error_message,
@@ -898,13 +898,6 @@ class ResultUpdateView(UpdateView):
         return reverse("event_details", args=[self.object.event.id])
 
 
-def player_autocomplete(request):
-    search_name = request.GET.get("search_name")
-    players = Player.objects.filter(name__icontains=search_name).order_by("name")[:10]
-    player_list = list(players.values("name"))
-    return JsonResponse(player_list, safe=False)
-
-
 class FutureEventViewSet(viewsets.ReadOnlyModelViewSet):
     """
     API endpoint that allows events to be viewed or edited.
@@ -937,6 +930,21 @@ class PastEventViewSet(viewsets.ReadOnlyModelViewSet):
         qs = Event.objects.filter(date__lt=datetime.date.today())
         qs = qs.select_related("organizer", "address", "organizer__default_address")
         return qs.order_by("-date")
+
+
+class AutoCompletePlayerViewSet(viewsets.ReadOnlyModelViewSet):
+    """
+    API endpoint that yields a list of players matching the search_name.
+    """
+
+    serializer_class = PlayerAutocompleteSerializer
+
+    def get_queryset(self):
+        search_name = self.request.query_params.get("search_name")
+        players = Player.objects.filter(name__icontains=search_name).order_by("name")[
+            :10
+        ]
+        return players
 
 
 class ListFormats(views.APIView):
