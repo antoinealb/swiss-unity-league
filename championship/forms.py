@@ -1,7 +1,14 @@
 from django.db.models import TextChoices, Count
 from django.core.validators import RegexValidator
 from django import forms
-from .models import Address, Event, EventPlayerResult, EventOrganizer
+from .models import (
+    Address,
+    Event,
+    EventPlayerResult,
+    EventOrganizer,
+    Player,
+    PlayerAlias,
+)
 from crispy_forms.helper import FormHelper
 from crispy_forms.layout import Submit, Layout, Div, Field
 from tinymce.widgets import TinyMCE
@@ -54,6 +61,47 @@ You can copy/paste the description from a website like swissmtg.ch, and the form
         super(EventCreateForm, self).__init__(*args, **kwargs)
         if organizer is not None:
             self.fields["address"].queryset = organizer.get_addresses()
+
+
+class EventPlayerResultForm(forms.ModelForm):
+    player_name = forms.CharField()
+
+    class Meta:
+        model = EventPlayerResult
+        fields = ["win_count", "loss_count", "draw_count"]
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.fields["player_name"].initial = (
+            self.instance.player.name if self.instance and self.instance.player else ""
+        )
+
+    def clean_player_name(self):
+        player_name = self.cleaned_data.get("player_name")
+        if not player_name:
+            raise forms.ValidationError("Player name cannot be empty.")
+        return player_name
+
+    def save(self, commit=True):
+        instance = super().save(commit=False)
+
+        new_name = self.cleaned_data["player_name"]
+        old_name = instance.player.name
+
+        if new_name != old_name:
+            try:
+                player = PlayerAlias.objects.get(name=new_name).true_player
+            except PlayerAlias.DoesNotExist:
+                player, _ = Player.objects.get_or_create(name=new_name)
+            instance.player = player
+
+        instance.points = (
+            self.cleaned_data["win_count"] * 3 + self.cleaned_data["draw_count"]
+        )
+
+        if commit:
+            instance.save()
+        return instance
 
 
 class AddressForm(forms.ModelForm):

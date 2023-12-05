@@ -91,9 +91,8 @@
                         <th scope="col">Match Points</th>
                         <th scope="col">Record</th>
                         <th scope="col">SUL Points</th>
-                        {% if has_decklists %}
-                            <th scope="col">Decklist</th>
-                        {% endif %}
+                        {% if has_decklists %} <th scope="col">Decklist</th> {% endif %}
+                        {% if can_edit_results %} <th scope="col"></th> {% endif %}
                     </tr>
                 </thead>
                 <tbody>
@@ -116,6 +115,9 @@
                                         </a>
                                     {% endif %}
                                 </td>
+                            {% endif %}
+                            {% if can_edit_results %}
+                                <td><a class="btn btn-secondary" href="{% url 'epr_edit' r.id %}">Edit</a></td>
                             {% endif %}
                         </tr>
                     {% endfor %}

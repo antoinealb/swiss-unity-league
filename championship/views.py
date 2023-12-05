@@ -40,7 +40,7 @@ from championship.parsers import (
     melee,
 )
 from championship.parsers.general_parser_functions import record_to_points, parse_record
-from championship.serializers import EventSerializer
+from championship.serializers import EventSerializer, PlayerAutocompleteSerializer
 from championship.tournament_valid import (
     validate_standings,
     get_max_round_error_message,
@@ -49,7 +49,8 @@ from championship.tournament_valid import (
     TooManyPointsForTop8Error,
     TooFewPlayersForPremierError,
 )
-from django.template.exceptions import TemplateDoesNotExist
+from django.http import JsonResponse
+from django.shortcuts import render
 
 
 class CustomDeleteView(LoginRequiredMixin, DeleteView):
@@ -217,12 +218,17 @@ class EventDetailsView(DetailView):
     context_object_name = "event"
 
     def get_context_data(self, **kwargs):
+        event = self.get_object()
         context = super().get_context_data(**kwargs)
         results = get_results_with_qps(
-            EventPlayerResult.objects.filter(event=context["event"]).annotate(
+            EventPlayerResult.objects.filter(event=event).annotate(
                 player_name=F("player__name"),
             )
         )
+
+        context["can_edit_results"] = (
+            event.can_be_edited() and event.organizer.user == self.request.user
+        ) or self.request.user.is_superuser
 
         context["results"] = sorted(results)
         context["has_decklists"] = any(
@@ -851,6 +857,47 @@ class ClearEventResultsView(LoginRequiredMixin, FormView):
         return super().form_valid(form)
 
 
+@transaction.atomic
+def update_ranking_order(event):
+    """Updates the order of the ranking after a result has been updated."""
+    results = EventPlayerResult.objects.filter(event=event)
+    results = sorted(
+        results, key=lambda r: (r.win_count, r.draw_count, -r.ranking), reverse=True
+    )
+    for i, result in enumerate(results):
+        result.ranking = i + 1
+        result.save()
+
+
+class ResultUpdateView(UpdateView):
+    model = EventPlayerResult
+    form_class = EventPlayerResultForm
+    template_name = "championship/update_result.html"
+
+    def dispatch(self, request, *args, **kwargs):
+        event = self.get_object().event
+        organizer_allowed_to_edit = (
+            request.user == event.organizer.user and event.can_be_edited()
+        )
+        if request.user.is_superuser or organizer_allowed_to_edit:
+            return super().dispatch(request, *args, **kwargs)
+        else:
+            return HttpResponseForbidden()
+
+    def form_valid(self, form):
+        old_player = self.get_object().player
+        form.save()
+        # Delete the old player if they have no results anymore
+        results_old_player = EventPlayerResult.objects.filter(player=old_player)
+        if not results_old_player:
+            old_player.delete()
+        update_ranking_order(form.instance.event)
+        return HttpResponseRedirect(self.get_success_url())
+
+    def get_success_url(self):
+        return reverse("event_details", args=[self.object.event.id])
+
+
 class FutureEventViewSet(viewsets.ReadOnlyModelViewSet):
     """
     API endpoint that allows events to be viewed or edited.
@@ -883,6 +930,21 @@ class PastEventViewSet(viewsets.ReadOnlyModelViewSet):
         qs = Event.objects.filter(date__lt=datetime.date.today())
         qs = qs.select_related("organizer", "address", "organizer__default_address")
         return qs.order_by("-date")
+
+
+class AutoCompletePlayerViewSet(viewsets.ReadOnlyModelViewSet):
+    """
+    API endpoint that yields a list of players matching the search_name.
+    """
+
+    serializer_class = PlayerAutocompleteSerializer
+
+    def get_queryset(self):
+        search_name = self.request.query_params.get("search_name")
+        players = Player.objects.filter(name__icontains=search_name).order_by("name")[
+            :10
+        ]
+        return players
 
 
 class ListFormats(views.APIView):

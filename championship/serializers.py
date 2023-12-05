@@ -1,4 +1,4 @@
-from championship.models import Address, Event
+from championship.models import Address, Event, Player
 from rest_framework import serializers
 import datetime
 from django.templatetags.static import static
@@ -83,3 +83,11 @@ class EventSerializer(serializers.ModelSerializer):
 
     def get_icon_url(self, event):
         return static(event.get_category_icon_url())
+
+
+class PlayerAutocompleteSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Player
+        fields = [
+            "name",
+        ]
