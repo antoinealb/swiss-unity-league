@@ -2,6 +2,12 @@
 {% load static %}
 
 {% block content %}
+    {% if has_open_invoices %}
+        <div class="alert alert-warning" role="alert">
+            <p>You have unpaid invoices remaining. Please take a look at them when you can, you can find them under <a href="{% url 'invoice_list' %}">My Invoices</a>.</p>
+            <p>If you already paid them and we haven't marked them as received yet, please ignore this message!</p>
+        </div>
+    {% endif %}
     <div class="row gx-4 gx-lg-5 mb-5 mt-4">
         <div class="col-lg-5 mb-2">
             <div class="text-center mb-4">

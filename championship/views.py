@@ -30,6 +30,7 @@ from rest_framework.response import Response
 from championship.models import Any
 from championship.parsers.parse_result import ParseResult
 from .models import *
+from invoicing.models import Invoice
 from .forms import *
 from championship.parsers import (
     aetherhub,
@@ -87,6 +88,7 @@ class IndexView(TemplateView):
         context["players"] = get_leaderboard()[:PLAYERS_TOP]
         context["future_events"] = self._future_events()
         context["partner_logos"] = self._partner_logos()
+        context["has_open_invoices"] = self._has_open_invoices()
         return context
 
     def _future_events(self):
@@ -107,6 +109,14 @@ class IndexView(TemplateView):
         # to be fair to everyone
         random.shuffle(images)
         return images
+
+    def _has_open_invoices(self) -> bool:
+        if self.request.user.is_anonymous:
+            return False
+
+        return Invoice.objects.filter(
+            event_organizer__user=self.request.user, payment_received_date__isnull=True
+        ).exists()
 
 
 LAST_RESULTS = "last_results"
