@@ -11,7 +11,11 @@ import zipfile
 
 class InvoiceAdmin(admin.ModelAdmin):
     search_fields = ["event_organizer__name"]
-    list_filter = ["event_organizer", "sent_date"]
+    list_filter = [
+        "event_organizer",
+        "sent_date",
+        "payment_received_date",
+    ]
     date_hierarchy = "end_date"
     list_display = (
         "event_organizer_name",
