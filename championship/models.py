@@ -241,6 +241,7 @@ class Event(models.Model):
         PAUPER = "PAUPER", "Pauper"
         OLD_SCHOOL = "OS", "Old School"
         PRE_MODERN = "PM", "Premodern"
+        VINTAGE = "VINTAGE", "Vintage"
 
     format = models.CharField(
         max_length=10,
