@@ -32,7 +32,7 @@ class CreateInvoiceForOrganizerTestCase(TestCase):
         event = EventFactory(
             organizer=organizer,
             category=Event.Category.REGIONAL,
-            date=datetime.date(2023, 1, 1),
+            date=date,
         )
 
         for _ in range(10):

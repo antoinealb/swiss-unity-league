@@ -206,8 +206,8 @@ class EventOrganizerAdmin(admin.ModelAdmin):
             if last_invoice:
                 start_date = last_invoice.end_date + datetime.timedelta(days=1)
             else:
-                # Start at first day of the year
-                start_date = datetime.date(datetime.date.today().year, 1, 1)
+                # Start at first day of the SUL start
+                start_date = datetime.date(2023, 1, 1)
 
             # Take the last day of previous month where its not allowed to
             # upload results anymore.
