@@ -26,9 +26,11 @@ from django.db import transaction
 from django.db.models import F, Q
 from rest_framework import viewsets, views
 from rest_framework.response import Response
+from championship.score import get_results_with_qps, get_leaderboard
+from championship.season import SEASON_MAP, SEASONS_WITH_INFO
 
-from championship.models import Any
 from championship.parsers.parse_result import ParseResult
+
 from .models import *
 from invoicing.models import Invoice
 from .forms import *
@@ -85,7 +87,7 @@ class IndexView(TemplateView):
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        context["players"] = get_leaderboard()[:PLAYERS_TOP]
+        context["players"] = get_leaderboard(settings.DEFAULT_SEASON)[:PLAYERS_TOP]
         context["future_events"] = self._future_events()
         context["partner_logos"] = self._partner_logos()
         context["has_open_invoices"] = self._has_open_invoices()
@@ -96,7 +98,7 @@ class IndexView(TemplateView):
             Event.objects.filter(date__gte=datetime.date.today())
             .exclude(category=Event.Category.REGULAR)
             .order_by("date")[:EVENTS_ON_PAGE]
-            .select_related("organizer")
+            .select_related("organizer", "address")
         )
         return future_events
 
@@ -157,7 +159,7 @@ class PlayerDetailsView(DetailView):
         )
 
         context[LAST_RESULTS] = sorted(
-            results, key=lambda r: r.event.date, reverse=True
+            results, key=lambda r: r[0].event.date, reverse=True
         )
 
         qp_table = {
@@ -178,12 +180,12 @@ class PlayerDetailsView(DetailView):
             THEAD: ["", Event.Category.REGIONAL.label, Event.Category.REGULAR.label],
             TBODY: [],
         }
-        for result in sorted(context[LAST_RESULTS]):
+        for result, score in sorted(context[LAST_RESULTS]):
             add_to_table(
                 qp_table,
                 column_title=result.event.get_category_display(),
                 row_title=QPS,
-                value=result.qps,
+                value=score.qps,
             )
             add_to_table(
                 qp_table,
@@ -242,7 +244,7 @@ class EventDetailsView(DetailView):
 
         context["results"] = sorted(results)
         context["has_decklists"] = any(
-            result.decklist_url for result in context["results"]
+            result.decklist_url for result, _ in context["results"]
         )
 
         # Prompt the players to notify the organizer that they forgot to upload results
@@ -259,12 +261,13 @@ class CompleteRankingView(TemplateView):
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        context["players"] = get_leaderboard()
+        # TODO: Provide switch between seasons
+        context["players"] = get_leaderboard(settings.DEFAULT_SEASON)
         return context
 
 
 class PerSeasonInformationView(TemplateView):
-    default_id = settings.INFO_TEXT_DEFAULT_SEASON_ID
+    default_id = settings.INFO_TEXT_DEFAULT_SEASON.id
 
     def get_template_names(self):
         season_id = self.kwargs.get("season_id", self.default_id)
@@ -275,8 +278,8 @@ class PerSeasonInformationView(TemplateView):
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        context["seasons"] = settings.SEASONS_WITH_INFO
-        context["current_season"] = settings.SEASON_MAP.get(
+        context["seasons"] = SEASONS_WITH_INFO
+        context["current_season"] = SEASON_MAP.get(
             self.kwargs.get("season_id", self.default_id)
         )
         context["view_name"] = self.season_view_name

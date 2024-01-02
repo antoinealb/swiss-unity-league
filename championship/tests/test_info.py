@@ -1,10 +1,10 @@
 from django.test import TestCase
 from django.urls import reverse
 from parameterized import parameterized
+from championship.season import SEASONS_WITH_INFO
 
-from mtg_championship_site import settings
 
-SEASON_IDS_WITH_INFO = [s.id for s in settings.SEASONS_WITH_INFO]
+SEASON_IDS_WITH_INFO = [s.id for s in SEASONS_WITH_INFO]
 
 
 class InfoPlayerViewTest(TestCase):

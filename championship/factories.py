@@ -4,6 +4,7 @@ from faker.providers import BaseProvider
 from django.contrib.auth.models import User
 from django.contrib.auth.hashers import make_password
 from .models import *
+from .season import SEASON_2023
 import datetime
 import random
 
@@ -85,8 +86,8 @@ class EventFactory(DjangoModelFactory):
     organizer = factory.SubFactory(EventOrganizerFactory)
     date = factory.Faker(
         "date_between",
-        start_date=datetime.date(2022, 1, 1),
-        end_date=datetime.date(2022, 9, 10),
+        start_date=SEASON_2023.start_date,
+        end_date=SEASON_2023.end_date,
     )
     url = factory.Faker("uri")
 

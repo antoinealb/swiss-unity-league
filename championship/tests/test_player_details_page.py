@@ -39,7 +39,7 @@ class PlayerDetailsTest(TestCase):
         )
 
         response = self.client.get(reverse("player_details", args=[ep.player.id]))
-        gotScore = response.context_data[LAST_RESULTS][0].qps
+        gotScore = response.context_data[LAST_RESULTS][0][1].qps
 
         self.assertEqual(gotScore, (10 + 3) * 6)
 

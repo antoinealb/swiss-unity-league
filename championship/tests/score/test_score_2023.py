@@ -9,13 +9,17 @@ from faker import Faker
 
 from championship.factories import *
 from championship.models import *
+from championship.score import compute_scores
+from championship.score.season_2023 import ScoreMethod2023, Score2023
+from championship.season import SEASON_2023
 
 
-class TestComputeScore(TestCase):
+class TestComputeScoreFor2023(TestCase):
     def setUp(self):
-        fake = Faker()
-
         self.event = EventFactory()
+
+    def compute_scores(self):
+        return compute_scores(SEASON_2023)
 
     def _test_compute_score(self, category, points, want_score):
         player_count = len(points)
@@ -34,7 +38,7 @@ class TestComputeScore(TestCase):
                 loss_count=0,
             )
 
-        scores = compute_scores()
+        scores = self.compute_scores()
         for i, want in enumerate(want_score, 1):
             score = scores[i]
             self.assertEqual(want, score.total_score, f"Invalid score for player {i}")
@@ -65,14 +69,14 @@ class TestComputeScore(TestCase):
         p = PlayerFactory(hidden_from_leaderboard=True)
         EventPlayerResultFactory(player=p)
         self.assertEqual(
-            len(compute_scores()),
+            len(self.compute_scores()),
             0,
             "Players hidden from leaderboard should not have a score.",
         )
 
     def test_ignores_events_with_no_results(self):
         self.event.save()
-        scores = compute_scores()
+        scores = self.compute_scores()
         for player_id, score in scores:
             self.assertEqual(
                 0, score.total_score, f"Unexpected points for player {player_id}"
@@ -80,23 +84,32 @@ class TestComputeScore(TestCase):
 
     def test_ignore_events_outside_of_the_season_date(self):
         """Checks that events past the end of seasons don't contribute score."""
-        self.event.date = settings.SEASON_MAP[settings.DEFAULT_SEASON_ID].end_date
+        self.event.date = SEASON_2023.end_date
         self.event.date += datetime.timedelta(days=1)
         self.event.save()
         for _ in range(10):
             EventPlayerResultFactory(event=self.event)
-        scores = compute_scores()
+        scores = self.compute_scores()
+        self.assertFalse(any(score.total_score > 0 for score in scores.values()))
+
+    def test_ignore_events_before_the_season_date(self):
+        """Checks that events past the end of seasons don't contribute score."""
+        self.event.date = SEASON_2023.start_date
+        self.event.date -= datetime.timedelta(days=1)
+        self.event.save()
+        for _ in range(10):
+            EventPlayerResultFactory(event=self.event)
+        scores = self.compute_scores()
         self.assertFalse(any(score.total_score > 0 for score in scores.values()))
 
 
 class ExtraPointsOutsideOfTopsTestCase(TestCase):
-    def setUp(self):
-        self.event = EventFactory()
+    def compute_scores(self):
+        return compute_scores(SEASON_2023)
 
     def _test_compute_score(self, category, points):
         player_count = len(points)
-        self.event.category = category
-        self.event.save()
+        self.event = EventFactory(category=category)
 
         players = [PlayerFactory() for _ in range(player_count)]
         for i, (player, pi) in enumerate(zip(players, points)):
@@ -122,7 +135,7 @@ class ExtraPointsOutsideOfTopsTestCase(TestCase):
                 loss_count=0,
             )
 
-        scores = compute_scores()
+        scores = self.compute_scores()
         return [scores[p.id].total_score for p in players]
 
     def test_extra_points_for_9th_in_large_events(self):
@@ -172,8 +185,7 @@ class ExtraPointsOutsideOfTopsTestCase(TestCase):
         want_score = [48] * 4 + [12] * 4 + [12] * 33
 
         player_count = len(points)
-        self.event.category = Event.Category.REGIONAL
-        self.event.save()
+        self.event = EventFactory(category=Event.Category.REGIONAL)
 
         players = [PlayerFactory() for _ in range(player_count)]
         # No top 8 results
@@ -188,7 +200,7 @@ class ExtraPointsOutsideOfTopsTestCase(TestCase):
                 loss_count=0,
             )
 
-        scores = compute_scores()
+        scores = self.compute_scores()
         points = [scores[p.id].total_score for p in players]
         self.assertEqual(points[8:], want_score)
 
@@ -206,7 +218,7 @@ class ScoresWithTop8TestCase(TestCase):
             single_elimination_result=result,
             ranking=1,
         )
-        return ScoreMethod2023.qps_for_result(ep, event_size=32, has_top_8=True)
+        return ScoreMethod2023._qps_for_result(ep, event_size=32, has_top_8=True)
 
     def test_premier_event(self):
         self.event.category = Event.Category.PREMIER
@@ -247,7 +259,7 @@ class ScoresWithTop8TestCase(TestCase):
         r = EventPlayerResultFactory(points=10, ranking=5, event=self.event)
 
         want = (10 + 3) * 6 + 150
-        got = ScoreMethod2023.qps_for_result(r, 5, has_top_8=True)
+        got = ScoreMethod2023._qps_for_result(r, 5, has_top_8=True)
 
         self.assertEqual(want, got)
 
@@ -340,11 +352,14 @@ def create_test_tournament(players, category=Event.Category.PREMIER, with_top8=T
 
 
 class TestScoresByes(TestCase):
+    def compute_scores(self):
+        return compute_scores(SEASON_2023)
+
     def test_top_byes(self):
         num_players = 50
         players = [PlayerFactory() for _ in range(num_players)]
         create_test_tournament(players)
-        byes = [s.byes for s in compute_scores().values()]
+        byes = [s.byes for s in self.compute_scores().values()]
         want_byes = [2] + [1] * 4 + [0] * (num_players - 5)
         self.assertEqual(want_byes, byes)
 
@@ -361,13 +376,13 @@ class TestScoresByes(TestCase):
         )
 
         # Now the winner and the points leader should both have 2 byes
-        byes = [s.byes for s in compute_scores().values()]
+        byes = [s.byes for s in self.compute_scores().values()]
         want_byes = [2] * 2 + [1] * 3 + [0] * (num_players - 5)
         self.assertEqual(want_byes, byes)
 
         # Change event to regional and winner shouldn't get 2 byes anymore
         Event.objects.update(category=Event.Category.REGIONAL)
-        byes = [s.byes for s in compute_scores().values()]
+        byes = [s.byes for s in self.compute_scores().values()]
         want_byes = [2] * 1 + [1] * 4 + [0] * (num_players - 5)
         self.assertEqual(want_byes, byes)
 
@@ -386,17 +401,28 @@ class TestScoresByes(TestCase):
                 player=players[1],
             )
         # Now the winner and the points leader should both have 2 byes
-        byes = [s.byes for s in compute_scores().values()]
+        byes = [s.byes for s in self.compute_scores().values()]
         want_byes = [2] * 2 + [1] * 3 + [0] * (num_players - 5)
         self.assertEqual(want_byes, byes)
 
 
 class TestScoresQualified(TestCase):
+    def compute_scores(self):
+        return compute_scores(SEASON_2023)
+
     def test_top_40_qualified(self):
         num_players = 50
         num_qualified = 40
         players = [PlayerFactory() for _ in range(num_players)]
         create_test_tournament(players)
-        byes = [s.qualified for s in compute_scores().values()]
+        byes = [s.qualified for s in self.compute_scores().values()]
         want_byes = [True] * num_qualified + [False] * (num_players - num_qualified)
         self.assertEqual(want_byes, byes)
+
+
+class TestScore2023(TestCase):
+    def test_add(self):
+        s1 = Score2023(qps=1, byes=1)
+        s2 = Score2023(qps=2, byes=1)
+        r = s1 + s2
+        self.assertEqual(Score2023(qps=3, byes=2), r)

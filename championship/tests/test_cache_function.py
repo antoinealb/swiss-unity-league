@@ -15,6 +15,15 @@ def expensive_too():
     return 42
 
 
+def cache_key(*args, **kwargs):
+    return "myvarkey" + str(args[0])
+
+
+@cache_function(cache_key=cache_key)
+def expensive_but_with_args(x):
+    return x**10
+
+
 class FunctionCacheTestCase(TestCase):
     def test_can_call_function(self):
         self.assertEqual(expensive(), 42)
@@ -33,3 +42,13 @@ class FunctionCacheTestCase(TestCase):
     def test_get_from_cache(self, cache_get):
         cache_get.return_value = "val"
         self.assertEqual("val", expensive_too())
+
+    @patch("championship.cache_function.cache.set")
+    def test_set_cache_custom_lookup_key(self, cache_set):
+        expensive_but_with_args(10)
+        cache_set.assert_called_with("myvarkey10", ANY, ANY)
+
+    @patch("championship.cache_function.cache.get")
+    def test_get_cache_custom_lookup_key(self, cache_get):
+        cache_get.return_value = 42
+        self.assertEqual(42, expensive_but_with_args(10))
