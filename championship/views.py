@@ -953,7 +953,7 @@ class AutoCompletePlayerViewSet(viewsets.ReadOnlyModelViewSet):
     serializer_class = PlayerAutocompleteSerializer
 
     def get_queryset(self):
-        search_name = self.request.query_params.get("search_name")
+        search_name = self.request.query_params.get("search_name", "")
         players = Player.objects.filter(name__icontains=search_name).order_by("name")[
             :10
         ]
