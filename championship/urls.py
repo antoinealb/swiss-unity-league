@@ -22,10 +22,15 @@ urlpatterns = [
 ] + [
     path("", views.IndexView.as_view(), name="index"),
     path("ranking", views.CompleteRankingView.as_view(), name="ranking"),
+    path(
+        "ranking/<slug:slug>",
+        views.CompleteRankingView.as_view(),
+        name="ranking-by-season",
+    ),
     path("player/<int:pk>/", views.PlayerDetailsView.as_view(), name="player_details"),
     path("info", views.InformationForPlayerView.as_view(), name="info"),
     path(
-        "info/<int:season_id>/",
+        "info/<slug:slug>/",
         views.InformationForPlayerView.as_view(),
         name="info_for_season",
     ),
@@ -35,7 +40,7 @@ urlpatterns = [
         name="info_organizer",
     ),
     path(
-        "info/organizer/<int:season_id>",
+        "info/organizer/<slug:slug>",
         views.InformationForOrganizerView.as_view(),
         name="info_organizer_for_season",
     ),
