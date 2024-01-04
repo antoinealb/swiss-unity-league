@@ -8,6 +8,7 @@ api_router = routers.DefaultRouter()
 api_router.register(
     r"future-events", views.FutureEventViewSet, basename="future-events"
 )
+api_router.register(r"formats", views.ListFormats, basename="formats")
 api_router.register(r"past-events", views.PastEventViewSet, basename="past-events")
 api_router.register(
     r"player-autocomplete",
@@ -82,5 +83,4 @@ urlpatterns = [
         "address/<pk>/delete/", views.AddressDeleteView.as_view(), name="address_delete"
     ),
     path("api/", include(api_router.urls)),
-    path("api/formats/", views.ListFormats.as_view(), name="formats-list"),
 ]

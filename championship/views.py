@@ -960,10 +960,10 @@ class AutoCompletePlayerViewSet(viewsets.ReadOnlyModelViewSet):
         return players
 
 
-class ListFormats(views.APIView):
-    """View to list all Magic formats we play for the league."""
+class ListFormats(viewsets.ViewSet):
+    """API Endpoint returning all the formats we play in the league."""
 
-    def get(self, request, format=None):
+    def list(self, request, format=None):
         return Response(sorted(Event.Format.labels))
 
 
