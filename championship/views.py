@@ -870,7 +870,6 @@ class ClearEventResultsView(LoginRequiredMixin, FormView):
         return super().form_valid(form)
 
 
-@transaction.atomic
 def update_ranking_order(event):
     """Updates the order of the ranking after a result has been updated."""
     results = EventPlayerResult.objects.filter(event=event)
@@ -897,6 +896,7 @@ class ResultUpdateView(UpdateView):
         else:
             return HttpResponseForbidden()
 
+    @transaction.atomic
     def form_valid(self, form):
         old_player = self.get_object().player
         form.save()

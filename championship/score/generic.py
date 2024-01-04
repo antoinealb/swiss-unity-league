@@ -62,8 +62,6 @@ def _score_cache_key(season):
 @cache_function(cache_key=_score_cache_key)
 @scores_computation_time_seconds.time()
 def compute_scores(season: Season) -> dict[int, Score]:
-    players_reaching_max = 0
-
     scores_by_player: dict[int, Score2023] = {}
 
     count = 0
