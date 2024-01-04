@@ -6,6 +6,7 @@ from dataclasses import dataclass
 class Season:
     id: int
     name: str
+    slug: str
     start_date: datetime.date
     end_date: datetime.date
     result_deadline: datetime.timedelta = datetime.timedelta(days=7)
@@ -20,6 +21,7 @@ SEASON_2023 = Season(
     start_date=datetime.date(2023, 1, 1),
     end_date=datetime.date(2023, 10, 31),
     name="Season 2023",
+    slug="2023",
 )
 
 SEASON_2024 = Season(
@@ -27,11 +29,19 @@ SEASON_2024 = Season(
     start_date=datetime.date(2023, 11, 1),
     end_date=datetime.date(2024, 10, 31),
     name="Season 2024",
+    slug="2024",
 )
 
 _SEASON_LIST = [SEASON_2023, SEASON_2024]
 SEASON_MAP = {s.id: s for s in _SEASON_LIST}
 SEASONS_WITH_INFO = _SEASON_LIST
+
+
+def find_season_by_slug(slug: str):
+    for s in _SEASON_LIST:
+        if s.slug == slug:
+            return s
+    raise KeyError(f"Unknown season slug '{slug}'")
 
 
 def find_current_season(date: datetime.date):
