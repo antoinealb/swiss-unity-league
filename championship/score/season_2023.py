@@ -1,18 +1,17 @@
 from dataclasses import dataclass
 from championship.models import Event, EventPlayerResult
-from championship.score.types import Score
-
-
-@dataclass
-class Score2023:
-    qps: int
-    byes: int
-
-    def __add__(self, o: "Score2023") -> "Score2023":
-        return Score2023(qps=self.qps + o.qps, byes=self.byes + o.byes)
+from championship.score.types import LeaderboardScore
 
 
 class ScoreMethod2023:
+    @dataclass
+    class Score:
+        qps: int
+        byes: int
+
+        def __add__(self, o: "ScoreMethod2023.Score") -> "ScoreMethod2023.Score":
+            return ScoreMethod2023.Score(qps=self.qps + o.qps, byes=self.byes + o.byes)
+
     MULT = {
         Event.Category.REGULAR: 1,
         Event.Category.REGIONAL: 4,
@@ -107,8 +106,8 @@ class ScoreMethod2023:
 
     @classmethod
     def finalize_scores(
-        cls, scores_by_player: dict[int, Score2023]
-    ) -> dict[int, Score]:
+        cls, scores_by_player: dict[int, Score]
+    ) -> dict[int, LeaderboardScore]:
         """Implements the last step of score processing.
 
         This function takes a list of (player_id, score) tuples and turns it
@@ -127,7 +126,7 @@ class ScoreMethod2023:
             byes = cls._byes_for_rank(rank) + score.byes
             byes = min(byes, cls.MAX_BYES)
 
-            scores[player] = Score(
+            scores[player] = LeaderboardScore(
                 total_score=score.qps,
                 rank=rank,
                 byes=byes,
@@ -137,7 +136,7 @@ class ScoreMethod2023:
         return scores
 
     @classmethod
-    def score_for_result(cls, result, event_size, has_top8) -> Score2023:
+    def score_for_result(cls, result, event_size, has_top8) -> Score:
         qps = cls._qps_for_result(result, event_size, has_top8)
         byes = cls._byes_for_result(result, event_size, has_top8)
-        return Score2023(qps=qps, byes=byes)
+        return cls.Score(qps=qps, byes=byes)

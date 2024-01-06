@@ -4,7 +4,7 @@ The code in this file is mostly season-independent.
 """
 
 from collections import defaultdict
-from typing import Iterable
+from typing import Iterable, Any
 
 from django.conf import settings
 from django.core.cache import cache
@@ -18,8 +18,8 @@ from championship.cache_function import cache_function
 from championship.models import EventPlayerResult, Player
 from championship.season import Season, SEASON_LIST
 
-from championship.score import Score
-from championship.score.season_2023 import ScoreMethod2023, Score2023
+from championship.score import LeaderboardScore
+from championship.score.season_2023 import ScoreMethod2023
 
 scores_computation_time_seconds = Summary(
     "scores_computation_time_seconds", "Time spent to compute scores of all players"
@@ -33,7 +33,7 @@ scores_computation_results_count = Gauge(
 
 def get_results_with_qps(
     event_player_results: models.QuerySet[EventPlayerResult],
-) -> Iterable[tuple[EventPlayerResult, Score2023]]:
+) -> Iterable[tuple[EventPlayerResult, Any]]:
     """
     Pass a QuerySet of EventPlayerResult, and get it annotated with the following fields:
     - has_top8: True if the event has a top8
@@ -61,8 +61,8 @@ def _score_cache_key(season):
 
 @cache_function(cache_key=_score_cache_key)
 @scores_computation_time_seconds.time()
-def compute_scores(season: Season) -> dict[int, Score]:
-    scores_by_player: dict[int, Score2023] = {}
+def compute_scores(season: Season) -> dict[int, LeaderboardScore]:
+    scores_by_player: dict[int, Any] = {}
 
     count = 0
     for result, score in get_results_with_qps(

@@ -10,7 +10,7 @@ from faker import Faker
 from championship.factories import *
 from championship.models import *
 from championship.score import compute_scores
-from championship.score.season_2023 import ScoreMethod2023, Score2023
+from championship.score.season_2023 import ScoreMethod2023
 from championship.season import SEASON_2023
 
 
@@ -422,7 +422,7 @@ class TestScoresQualified(TestCase):
 
 class TestScore2023(TestCase):
     def test_add(self):
-        s1 = Score2023(qps=1, byes=1)
-        s2 = Score2023(qps=2, byes=1)
+        s1 = ScoreMethod2023.Score(qps=1, byes=1)
+        s2 = ScoreMethod2023.Score(qps=2, byes=1)
         r = s1 + s2
-        self.assertEqual(Score2023(qps=3, byes=2), r)
+        self.assertEqual(ScoreMethod2023.Score(qps=3, byes=2), r)

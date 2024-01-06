@@ -2,7 +2,7 @@ from dataclasses import dataclass
 
 
 @dataclass
-class Score:
+class LeaderboardScore:
     total_score: int
     rank: int
     byes: int
