@@ -20,6 +20,7 @@ from championship.season import *
 
 from championship.score import LeaderboardScore
 from championship.score.season_2023 import ScoreMethod2023
+from championship.score.season_2024 import ScoreMethod2024
 
 scores_computation_time_seconds = Summary(
     "scores_computation_time_seconds", "Time spent to compute scores of all players"
@@ -32,6 +33,7 @@ scores_computation_results_count = Gauge(
 
 SCOREMETHOD_PER_SEASON = {
     SEASON_2023: ScoreMethod2023,
+    SEASON_2024: ScoreMethod2024,
 }
 
 
