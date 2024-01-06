@@ -4,7 +4,7 @@ from django.db.models import Count
 from django_bleach.models import BleachField
 from django.urls import reverse
 from auditlog.registry import auditlog
-from championship.season import find_current_season
+from championship.season import find_season_by_date, Season
 import datetime
 from django.contrib.humanize.templatetags.humanize import ordinal
 import urllib.parse
@@ -299,11 +299,15 @@ class Event(models.Model):
         if self.date < oldest_allowed:
             return False
 
-        season = find_current_season(self.date)
+        season = find_season_by_date(self.date)
         if not season:
             return False
 
         return season.can_enter_results(today)
+
+    @property
+    def season(self) -> Season:
+        return find_season_by_date(self.date)
 
     def can_be_deleted(self) -> bool:
         """Events can be deleted if they can still be edited or have no results."""

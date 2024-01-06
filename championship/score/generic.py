@@ -16,7 +16,7 @@ from prometheus_client import Summary, Gauge
 
 from championship.cache_function import cache_function
 from championship.models import EventPlayerResult, Player
-from championship.season import Season, SEASON_LIST
+from championship.season import *
 
 from championship.score import LeaderboardScore
 from championship.score.season_2023 import ScoreMethod2023
@@ -29,6 +29,10 @@ scores_computation_results_count = Gauge(
     "Number of EventPlayerResultUsed for computing the leaderboard.",
     ["season_id", "season_name"],
 )
+
+SCOREMETHOD_PER_SEASON = {
+    SEASON_2023: ScoreMethod2023,
+}
 
 
 def get_results_with_qps(
@@ -48,8 +52,9 @@ def get_results_with_qps(
     )
 
     for result in results:
+        method = SCOREMETHOD_PER_SEASON[result.event.season]
         result.has_top8 = result.top_count > 0
-        score = ScoreMethod2023.score_for_result(
+        score = method.score_for_result(
             result, event_size=result.event_size, has_top8=result.has_top8
         )
         yield result, score
@@ -81,7 +86,7 @@ def compute_scores(season: Season) -> dict[int, LeaderboardScore]:
 
     scores_computation_results_count.labels(season.slug, season.name).set(count)
 
-    return ScoreMethod2023.finalize_scores(scores_by_player)
+    return SCOREMETHOD_PER_SEASON[season].finalize_scores(scores_by_player)
 
 
 @receiver(post_delete, sender=EventPlayerResult)

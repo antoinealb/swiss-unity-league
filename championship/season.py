@@ -2,7 +2,7 @@ import datetime
 from dataclasses import dataclass
 
 
-@dataclass
+@dataclass(frozen=True)
 class Season:
     name: str
     slug: str
@@ -40,7 +40,7 @@ def find_season_by_slug(slug: str) -> Season:
     raise KeyError(f"Unknown season slug '{slug}'")
 
 
-def find_current_season(date: datetime.date):
+def find_season_by_date(date: datetime.date) -> Season:
     for season in SEASON_LIST:
         if season.start_date <= date <= season.end_date:
             return season
