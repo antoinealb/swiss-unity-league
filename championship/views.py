@@ -27,7 +27,7 @@ from django.db.models import F, Q
 from rest_framework import viewsets, views
 from rest_framework.response import Response
 from championship.score import get_results_with_qps, get_leaderboard
-from championship.season import SEASON_MAP, SEASONS_WITH_INFO, find_season_by_slug
+from championship.season import SEASON_LIST, SEASONS_WITH_INFO, find_season_by_slug
 
 from championship.parsers.parse_result import ParseResult
 
@@ -268,37 +268,36 @@ class CompleteRankingView(TemplateView):
 
 class PerSeasonInformationView(TemplateView):
     default_season = settings.INFO_TEXT_DEFAULT_SEASON
-    default_id = default_season.id
 
     def get_template_names(self):
         slug = self.kwargs.get("slug", self.default_season.slug)
-
-        try:
-            season_id = find_season_by_slug(slug).id
-        except KeyError:
-            season_id = self.default_id
-
         # We return two templates so that in case the season-specific one is
         # not found, the default one gets returned.
-        return [self.template_path.format(id=i) for i in (season_id, self.default_id)]
+        return [
+            self.template_path.format(slug=s) for s in (slug, self.default_season.slug)
+        ]
 
     def get_context_data(self, **kwargs):
+        try:
+            slug = self.kwargs["slug"]
+            season = find_season_by_slug(slug)
+        except KeyError:
+            season = self.default_season
+
         context = super().get_context_data(**kwargs)
         context["seasons"] = SEASONS_WITH_INFO
-        context["current_season"] = SEASON_MAP.get(
-            self.kwargs.get("season_id", self.default_id)
-        )
+        context["current_season"] = season
         context["view_name"] = self.season_view_name
         return context
 
 
 class InformationForPlayerView(PerSeasonInformationView):
-    template_path = "championship/info/{id}/info_player.html"
+    template_path = "championship/info/{slug}/info_player.html"
     season_view_name = "info_for_season"
 
 
 class InformationForOrganizerView(PerSeasonInformationView):
-    template_path = "championship/info/{id}/info_organizer.html"
+    template_path = "championship/info/{slug}/info_organizer.html"
     season_view_name = "info_organizer_for_season"
 
 

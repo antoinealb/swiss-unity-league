@@ -11,7 +11,7 @@ class InfoPlayerViewTest(TestCase):
         response = self.client.get(url)
         self.assertEqual(response.status_code, 200)
         self.assertTemplateUsed(
-            response, f"championship/info/{season.id}/info_player.html"
+            response, f"championship/info/{season.slug}/info_player.html"
         )
 
     def test_default_info_exists(self):
@@ -30,7 +30,7 @@ class InfoOrganizerViewTest(TestCase):
         response = self.client.get(url)
         self.assertEqual(response.status_code, 200)
         self.assertTemplateUsed(
-            response, f"championship/info/{season.id}/info_organizer.html"
+            response, f"championship/info/{season.slug}/info_organizer.html"
         )
 
     def test_default_info_exists(self):
