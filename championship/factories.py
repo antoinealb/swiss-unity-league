@@ -4,7 +4,7 @@ from faker.providers import BaseProvider
 from django.contrib.auth.models import User
 from django.contrib.auth.hashers import make_password
 from .models import *
-from .season import SEASON_2023
+from .season import SEASON_2023, SEASON_2024
 import datetime
 import random
 
@@ -99,6 +99,14 @@ class EventFactory(DjangoModelFactory):
     category = factory.Faker(
         "random_element",
         elements=Event.Category.values,
+    )
+
+
+class Event2024Factory(EventFactory):
+    date = factory.Faker(
+        "date_between",
+        start_date=SEASON_2024.start_date,
+        end_date=SEASON_2024.end_date,
     )
 
 
