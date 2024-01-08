@@ -56,7 +56,7 @@ def get_results_with_qps(
     for result in results:
         method = SCOREMETHOD_PER_SEASON[result.event.season]
         result.has_top8 = result.top_count > 0
-        score = method.score_for_result(
+        score = method.score_for_result(  # type: ignore
             result, event_size=result.event_size, has_top8=result.has_top8
         )
         yield result, score
@@ -88,7 +88,9 @@ def compute_scores(season: Season) -> dict[int, LeaderboardScore]:
 
     scores_computation_results_count.labels(season.slug, season.name).set(count)
 
-    return SCOREMETHOD_PER_SEASON[season].finalize_scores(scores_by_player)
+    return SCOREMETHOD_PER_SEASON[season].finalize_scores(  # type: ignore
+        scores_by_player
+    )
 
 
 @receiver(post_delete, sender=EventPlayerResult)

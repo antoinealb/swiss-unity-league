@@ -40,7 +40,8 @@ def find_season_by_slug(slug: str) -> Season:
     raise KeyError(f"Unknown season slug '{slug}'")
 
 
-def find_season_by_date(date: datetime.date) -> Season:
+def find_season_by_date(date: datetime.date) -> Season | None:
     for season in SEASON_LIST:
         if season.start_date <= date <= season.end_date:
             return season
+    return None

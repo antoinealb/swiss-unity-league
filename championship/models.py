@@ -300,13 +300,13 @@ class Event(models.Model):
             return False
 
         season = find_season_by_date(self.date)
-        if not season:
+        if season is None:
             return False
 
         return season.can_enter_results(today)
 
     @property
-    def season(self) -> Season:
+    def season(self) -> Season | None:
         return find_season_by_date(self.date)
 
     def can_be_deleted(self) -> bool:
