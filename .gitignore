@@ -182,5 +182,8 @@ commit_sha.txt
 #Pytest
 pytest.ini
 
+# Jari's private scripts
+/jari
+
 # jUnit reports
 TEST-*.xml
