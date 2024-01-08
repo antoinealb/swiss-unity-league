@@ -16,7 +16,12 @@ from django.views.generic.base import TemplateView
 from django.views.generic.list import ListView
 from django.views.generic.edit import DeleteView, FormView, UpdateView, CreateView
 from django.views.generic import DetailView
-from django.http import HttpResponse, HttpResponseRedirect, HttpResponseForbidden
+from django.http import (
+    HttpResponse,
+    HttpResponseRedirect,
+    HttpResponseForbidden,
+    Http404,
+)
 from django.urls import reverse, reverse_lazy
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
@@ -258,11 +263,29 @@ class EventDetailsView(DetailView):
 
 class CompleteRankingView(TemplateView):
     template_name = "championship/ranking.html"
+    # TODO: Provide switch between seasons
+    default_season = settings.SEASON_2023
+
+    def dispatch(self, request, *args, **kwargs):
+        slug = self.kwargs.get("slug", self.default_season.slug)
+        # TODO(antoine): Remove this warning once the season score is final
+        if slug != "2023":
+            messages.warning(
+                self.request,
+                "The score system implementation for year others than 2023 "
+                "is still being worked on, please don't rely on it yet.",
+            )
+        try:
+            find_season_by_slug(slug)
+        except KeyError:
+            raise Http404(f"Unknown season {slug}")
+        return super().dispatch(request, *args, **kwargs)
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        # TODO: Provide switch between seasons
-        context["players"] = get_leaderboard(settings.DEFAULT_SEASON)
+        slug = self.kwargs.get("slug", self.default_season.slug)
+        season = find_season_by_slug(slug)
+        context["players"] = get_leaderboard(season)
         return context
 
 

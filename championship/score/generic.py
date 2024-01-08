@@ -4,7 +4,7 @@ The code in this file is mostly season-independent.
 """
 
 from collections import defaultdict
-from typing import Iterable
+from typing import Iterable, Any
 
 from django.conf import settings
 from django.core.cache import cache
@@ -16,10 +16,11 @@ from prometheus_client import Summary, Gauge
 
 from championship.cache_function import cache_function
 from championship.models import EventPlayerResult, Player
-from championship.season import Season, SEASON_LIST
+from championship.season import *
 
-from championship.score import Score
-from championship.score.season_2023 import ScoreMethod2023, Score2023
+from championship.score import LeaderboardScore
+from championship.score.season_2023 import ScoreMethod2023
+from championship.score.season_2024 import ScoreMethod2024
 
 scores_computation_time_seconds = Summary(
     "scores_computation_time_seconds", "Time spent to compute scores of all players"
@@ -30,10 +31,15 @@ scores_computation_results_count = Gauge(
     ["season_id", "season_name"],
 )
 
+SCOREMETHOD_PER_SEASON = {
+    SEASON_2023: ScoreMethod2023,
+    SEASON_2024: ScoreMethod2024,
+}
+
 
 def get_results_with_qps(
     event_player_results: models.QuerySet[EventPlayerResult],
-) -> Iterable[tuple[EventPlayerResult, Score2023]]:
+) -> Iterable[tuple[EventPlayerResult, Any]]:
     """
     Pass a QuerySet of EventPlayerResult, and get it annotated with the following fields:
     - has_top8: True if the event has a top8
@@ -48,8 +54,9 @@ def get_results_with_qps(
     )
 
     for result in results:
+        method = SCOREMETHOD_PER_SEASON[result.event.season]
         result.has_top8 = result.top_count > 0
-        score = ScoreMethod2023.score_for_result(
+        score = method.score_for_result(  # type: ignore
             result, event_size=result.event_size, has_top8=result.has_top8
         )
         yield result, score
@@ -61,8 +68,8 @@ def _score_cache_key(season):
 
 @cache_function(cache_key=_score_cache_key)
 @scores_computation_time_seconds.time()
-def compute_scores(season: Season) -> dict[int, Score]:
-    scores_by_player: dict[int, Score2023] = {}
+def compute_scores(season: Season) -> dict[int, LeaderboardScore]:
+    scores_by_player: dict[int, Any] = {}
 
     count = 0
     for result, score in get_results_with_qps(
@@ -81,7 +88,9 @@ def compute_scores(season: Season) -> dict[int, Score]:
 
     scores_computation_results_count.labels(season.slug, season.name).set(count)
 
-    return ScoreMethod2023.finalize_scores(scores_by_player)
+    return SCOREMETHOD_PER_SEASON[season].finalize_scores(  # type: ignore
+        scores_by_player
+    )
 
 
 @receiver(post_delete, sender=EventPlayerResult)

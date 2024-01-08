@@ -3,14 +3,14 @@ from championship.models import Event, EventPlayerResult
 from championship.score.types import LeaderboardScore
 
 
-class ScoreMethod2023:
+class ScoreMethod2024:
     @dataclass
     class Score:
         qps: int
         byes: int
 
-        def __add__(self, o: "ScoreMethod2023.Score") -> "ScoreMethod2023.Score":
-            return ScoreMethod2023.Score(qps=self.qps + o.qps, byes=self.byes + o.byes)
+        def __add__(self, o: "ScoreMethod2024.Score") -> "ScoreMethod2024.Score":
+            return ScoreMethod2024.Score(qps=self.qps + o.qps, byes=self.byes + o.byes)
 
     MULT = {
         Event.Category.REGULAR: 1,
@@ -20,10 +20,10 @@ class ScoreMethod2023:
     PARTICIPATION_POINTS = 3
     POINTS_FOR_TOP = {
         Event.Category.PREMIER: {
-            EventPlayerResult.SingleEliminationResult.WINNER: 500,
-            EventPlayerResult.SingleEliminationResult.FINALIST: 300,
-            EventPlayerResult.SingleEliminationResult.SEMI_FINALIST: 200,
-            EventPlayerResult.SingleEliminationResult.QUARTER_FINALIST: 150,
+            EventPlayerResult.SingleEliminationResult.WINNER: 400,
+            EventPlayerResult.SingleEliminationResult.FINALIST: 240,
+            EventPlayerResult.SingleEliminationResult.SEMI_FINALIST: 160,
+            EventPlayerResult.SingleEliminationResult.QUARTER_FINALIST: 120,
         },
         Event.Category.REGIONAL: {
             EventPlayerResult.SingleEliminationResult.WINNER: 100,
