@@ -12,7 +12,7 @@
     </button>
     <ul class="dropdown-menu" aria-labelledby="season_dropdown_button">
         {% for season in seasons %}
-            <li><a class="dropdown-item" href="{% url view_name season_id=season.id %}">{{ season.name }}</a></li>
+            <li><a class="dropdown-item" href="{% url view_name slug=season.slug %}">{{ season.name }}</a></li>
         {% endfor %}
     </ul>
 </div>
