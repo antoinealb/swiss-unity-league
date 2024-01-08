@@ -87,26 +87,17 @@ class ScoreMethod2024:
         has_top_8: bool,
     ) -> int:
         """Returns how many byes a given result gives."""
-        MIN_SIZE_EXTRA_BYE = 128
-        if (
-            result.event_size > MIN_SIZE_EXTRA_BYE
-            and result.event.category == Event.Category.PREMIER
-            and result.single_elimination_result
-            == EventPlayerResult.SingleEliminationResult.WINNER
-        ):
-            return 2
+        # TODO The winner and finalist of the SUL Trial in March receive 1 bye
         return 0
 
     @classmethod
     def _byes_for_rank(cls, rank: int) -> int:
-        if rank <= 1:
-            return 2
-        elif rank <= 5:
+        if rank <= 4:
             return 1
         else:
             return 0
 
-    MAX_BYES = 2
+    MAX_BYES = 1
 
     @classmethod
     def finalize_scores(
