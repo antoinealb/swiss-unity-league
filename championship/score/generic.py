@@ -53,11 +53,17 @@ def get_results_with_qps(
         top_count=Count("event__eventplayerresult__single_elimination_result"),
     )
 
+    total_rounds = max(
+        [r.win_count + r.loss_count + r.draw_count for r in results] + [0]
+    )
     for result in results:
         method = SCOREMETHOD_PER_SEASON[result.event.season]
         result.has_top8 = result.top_count > 0
         score = method.score_for_result(  # type: ignore
-            result, event_size=result.event_size, has_top8=result.has_top8
+            result,
+            event_size=result.event_size,
+            has_top8=result.has_top8,
+            total_rounds=total_rounds,
         )
         yield result, score
 

@@ -32,16 +32,24 @@ class ScoreMethod2024:
             EventPlayerResult.SingleEliminationResult.QUARTER_FINALIST: 30,
         },
     }
-    POINTS_TOP_9_12 = {
-        Event.Category.PREMIER: 75,
-        Event.Category.REGIONAL: 15,
-        Event.Category.REGULAR: 0,
-    }
-    POINTS_TOP_13_16 = {
-        Event.Category.PREMIER: 50,
-        Event.Category.REGIONAL: 10,
-        Event.Category.REGULAR: 0,
-    }
+    POINTS_FOR_MATCHPOINT_RATE = [
+        (
+            0.7,
+            {
+                Event.Category.PREMIER: 60,
+                Event.Category.REGIONAL: 20,
+                Event.Category.REGULAR: 0,
+            },
+        ),
+        (
+            0.65,
+            {
+                Event.Category.PREMIER: 30,
+                Event.Category.REGIONAL: 10,
+                Event.Category.REGULAR: 0,
+            },
+        ),
+    ]
 
     @classmethod
     def _qps_for_result(
@@ -49,6 +57,7 @@ class ScoreMethod2024:
         result: EventPlayerResult,
         event_size: int,
         has_top_8: bool,
+        total_rounds: int,
     ) -> int:
         """
         Returns how many QPs a player got in a single event.
@@ -56,23 +65,18 @@ class ScoreMethod2024:
         category = result.event.category
         points = result.points + cls.PARTICIPATION_POINTS
         points = points * cls.MULT[category]
-
         if result.single_elimination_result:
             points += cls.POINTS_FOR_TOP[category][result.single_elimination_result]
         elif has_top_8:
-            # For large tournaments, we award points for placing, even outside of
-            # top8. See the rules for explanation
-            if event_size > 32 and 9 <= result.ranking <= 12:
-                points += cls.POINTS_TOP_9_12[category]
-            elif event_size > 48 and 13 <= result.ranking <= 16:
-                points += cls.POINTS_TOP_13_16[category]
-            elif result.ranking <= 8:
-                # If we are in this case, it means the event did not play a top8,
-                # only a top4, and we still need to award points for 5th-8th.
-                points += cls.POINTS_FOR_TOP[category][
-                    EventPlayerResult.SingleEliminationResult.QUARTER_FINALIST
-                ]
-
+            # If the event has a top 8, but the player didn't make it, they can
+            # still get extra points if their match point rate (mpr) is higher than the
+            # threshold of 70% or 65%.
+            maximum_match_points = 3.0 * total_rounds
+            for mpr_threshold, points_for_mpr in cls.POINTS_FOR_MATCHPOINT_RATE:
+                players_mpr = result.points / maximum_match_points
+                if players_mpr >= mpr_threshold:
+                    points += points_for_mpr[category]
+                    break
         return points
 
     @classmethod
@@ -83,26 +87,17 @@ class ScoreMethod2024:
         has_top_8: bool,
     ) -> int:
         """Returns how many byes a given result gives."""
-        MIN_SIZE_EXTRA_BYE = 128
-        if (
-            result.event_size > MIN_SIZE_EXTRA_BYE
-            and result.event.category == Event.Category.PREMIER
-            and result.single_elimination_result
-            == EventPlayerResult.SingleEliminationResult.WINNER
-        ):
-            return 2
+        # TODO The winner and finalist of the SUL Trial in March receive 1 bye
         return 0
 
     @classmethod
     def _byes_for_rank(cls, rank: int) -> int:
-        if rank <= 1:
-            return 2
-        elif rank <= 5:
+        if rank <= 4:
             return 1
         else:
             return 0
 
-    MAX_BYES = 2
+    MAX_BYES = 1
 
     @classmethod
     def finalize_scores(
@@ -130,13 +125,13 @@ class ScoreMethod2024:
                 total_score=score.qps,
                 rank=rank,
                 byes=byes,
-                qualified=rank <= 40,
+                qualified=rank <= 32,
             )
 
         return scores
 
     @classmethod
-    def score_for_result(cls, result, event_size, has_top8) -> Score:
-        qps = cls._qps_for_result(result, event_size, has_top8)
+    def score_for_result(cls, result, event_size, has_top8, total_rounds) -> Score:
+        qps = cls._qps_for_result(result, event_size, has_top8, total_rounds)
         byes = cls._byes_for_result(result, event_size, has_top8)
         return cls.Score(qps=qps, byes=byes)

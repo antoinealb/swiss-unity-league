@@ -111,7 +111,9 @@ class ScoresWithTop8TestCase(TestCase):
             single_elimination_result=result,
             ranking=1,
         )
-        return ScoreMethod2024._qps_for_result(ep, event_size=32, has_top_8=True)
+        return ScoreMethod2024._qps_for_result(
+            ep, event_size=32, has_top_8=True, total_rounds=6
+        )
 
     def test_premier_event(self):
         self.event.category = Event.Category.PREMIER
@@ -145,16 +147,93 @@ class ScoresWithTop8TestCase(TestCase):
                 gotScore = self.score(10, ranking)
                 self.assertEqual(wantScore, gotScore)
 
-    def test_top8_when_only_top4_where_played(self):
-        """Tests a scenario where we only played a top4."""
+
+class ScoresWithMatchPointRateTestCase(TestCase):
+    def setUp(self):
+        self.event = Event2024Factory()
+        self.player = PlayerFactory()
+
+    def score(self, points, total_rounds):
+        ep = EventPlayerResult(
+            points=points,
+            event=self.event,
+            player=self.player,
+            single_elimination_result=None,
+            ranking=1,
+        )
+        return ScoreMethod2024._qps_for_result(
+            ep, event_size=32, has_top_8=True, total_rounds=total_rounds
+        )
+
+    def test_premier_event_70_mpr(self):
         self.event.category = Event.Category.PREMIER
         self.event.save()
-        r = EventPlayerResultFactory(points=10, ranking=5, event=self.event)
+        test_cases = [(6, 13), (7, 15), (8, 17)]
+        for total_rounds, match_points in test_cases:
+            with self.subTest(f"70% match point rate with {total_rounds} rounds"):
+                extra_score = 60
+                base_score = (match_points + 3) * 6
+                want_score = base_score + extra_score
+                got_score = self.score(match_points, total_rounds)
+                self.assertEqual(want_score, got_score)
 
-        want = (10 + 3) * 6 + 120
-        got = ScoreMethod2024._qps_for_result(r, 5, has_top_8=True)
+                # Check that less match points gives less score
+                extra_score = 30
+                want_score = base_score - 6 + extra_score
+                got_score = self.score(match_points - 1, total_rounds)
+                self.assertEqual(want_score, got_score)
 
-        self.assertEqual(want, got)
+    def test_premier_event_65_mpr(self):
+        self.event.category = Event.Category.PREMIER
+        self.event.save()
+        test_cases = [(6, 12), (7, 14), (8, 16)]
+        for total_rounds, match_points in test_cases:
+            with self.subTest(f"70% match point rate with {total_rounds} rounds"):
+                extra_score = 30
+                base_score = (match_points + 3) * 6
+                want_score = base_score + extra_score
+                got_score = self.score(match_points, total_rounds)
+                self.assertEqual(want_score, got_score)
+
+                # Check that less match points gives less score
+                want_score = base_score - 6
+                got_score = self.score(match_points - 1, total_rounds)
+                self.assertEqual(want_score, got_score)
+
+    def test_regional_event_70_mpr(self):
+        self.event.category = Event.Category.REGIONAL
+        self.event.save()
+        test_cases = [(6, 13), (7, 15), (8, 17)]
+        for total_rounds, match_points in test_cases:
+            with self.subTest(f"70% match point rate with {total_rounds} rounds"):
+                extra_score = 20
+                base_score = (match_points + 3) * 4
+                want_score = base_score + extra_score
+                got_score = self.score(match_points, total_rounds)
+                self.assertEqual(want_score, got_score)
+
+                # Check that less match points gives less score
+                extra_score = 10
+                want_score = base_score - 4 + extra_score
+                got_score = self.score(match_points - 1, total_rounds)
+                self.assertEqual(want_score, got_score)
+
+    def test_regional_event_65_mpr(self):
+        self.event.category = Event.Category.REGIONAL
+        self.event.save()
+        test_cases = [(6, 12), (7, 14), (8, 16)]
+        for total_rounds, match_points in test_cases:
+            with self.subTest(f"65% match point rate with {total_rounds} rounds"):
+                extra_score = 10
+                base_score = (match_points + 3) * 4
+                want_score = base_score + extra_score
+                got_score = self.score(match_points, total_rounds)
+                self.assertEqual(want_score, got_score)
+
+                # Check that less match points gives less score
+                want_score = base_score - 4
+                got_score = self.score(match_points - 1, total_rounds)
+                self.assertEqual(want_score, got_score)
 
 
 class TestSortEventPlayerResults(TestCase):
@@ -253,49 +332,7 @@ class TestScoresByes(TestCase):
         players = [PlayerFactory() for _ in range(num_players)]
         create_test_tournament(players)
         byes = [s.byes for s in self.compute_scores().values()]
-        want_byes = [2] + [1] * 4 + [0] * (num_players - 5)
-        self.assertEqual(want_byes, byes)
-
-    def test_large_tournament_byes(self):
-        num_players = 130
-        players = [PlayerFactory() for _ in range(num_players)]
-
-        create_test_tournament(players)
-        # Make sure that a different player is points leader
-        EventPlayerResultFactory(
-            single_elimination_result=EventPlayerResult.SingleEliminationResult.FINALIST,
-            event=Event2024Factory(category=Event.Category.PREMIER),
-            player=players[1],
-        )
-
-        # Now the winner and the points leader should both have 2 byes
-        byes = [s.byes for s in self.compute_scores().values()]
-        want_byes = [2] * 2 + [1] * 3 + [0] * (num_players - 5)
-        self.assertEqual(want_byes, byes)
-
-        # Change event to regional and winner shouldn't get 2 byes anymore
-        Event.objects.update(category=Event.Category.REGIONAL)
-        byes = [s.byes for s in self.compute_scores().values()]
-        want_byes = [2] * 1 + [1] * 4 + [0] * (num_players - 5)
-        self.assertEqual(want_byes, byes)
-
-    def test_max_byes(self):
-        num_players = 130
-        players = [PlayerFactory() for _ in range(num_players)]
-        # One person wins 2 large events (hence 4 byes) but maximum byes should still be 2
-        create_test_tournament(players)
-        create_test_tournament(players)
-
-        # Make sure that a different player is points leader
-        for _ in range(4):
-            EventPlayerResultFactory(
-                single_elimination_result=EventPlayerResult.SingleEliminationResult.FINALIST,
-                event=Event2024Factory(category=Event.Category.PREMIER),
-                player=players[1],
-            )
-        # Now the winner and the points leader should both have 2 byes
-        byes = [s.byes for s in self.compute_scores().values()]
-        want_byes = [2] * 2 + [1] * 3 + [0] * (num_players - 5)
+        want_byes = [1] * 4 + [0] * (num_players - 4)
         self.assertEqual(want_byes, byes)
 
 
@@ -303,9 +340,9 @@ class TestScoresQualified(TestCase):
     def compute_scores(self):
         return compute_scores(SEASON_2024)
 
-    def test_top_40_qualified(self):
+    def test_top_32_qualified(self):
         num_players = 50
-        num_qualified = 40
+        num_qualified = 32
         players = [PlayerFactory() for _ in range(num_players)]
         create_test_tournament(players)
         byes = [s.qualified for s in self.compute_scores().values()]
