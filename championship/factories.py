@@ -110,6 +110,14 @@ class Event2024Factory(EventFactory):
     )
 
 
+class EventCurrentSeasonFactory(EventFactory):
+    date = factory.Faker(
+        "date_between",
+        start_date=find_season_by_date(datetime.date.today()).start_date,
+        end_date=find_season_by_date(datetime.date.today()).end_date,
+    )
+
+
 class EventPlayerResultFactory(DjangoModelFactory):
     class Meta:
         model = EventPlayerResult
