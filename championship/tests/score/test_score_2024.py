@@ -340,9 +340,9 @@ class TestScoresQualified(TestCase):
     def compute_scores(self):
         return compute_scores(SEASON_2024)
 
-    def test_top_40_qualified(self):
+    def test_top_32_qualified(self):
         num_players = 50
-        num_qualified = 40
+        num_qualified = 32
         players = [PlayerFactory() for _ in range(num_players)]
         create_test_tournament(players)
         byes = [s.qualified for s in self.compute_scores().values()]

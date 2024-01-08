@@ -125,7 +125,7 @@ class ScoreMethod2024:
                 total_score=score.qps,
                 rank=rank,
                 byes=byes,
-                qualified=rank <= 40,
+                qualified=rank <= 32,
             )
 
         return scores
