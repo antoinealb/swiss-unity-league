@@ -20,7 +20,7 @@ class InfoPlayerViewTest(TestCase):
         response = self.client.get(
             reverse("info_for_season", kwargs={"slug": "foobar"})
         )
-        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.status_code, 404)
 
 
 class InfoOrganizerViewTest(TestCase):
@@ -39,4 +39,4 @@ class InfoOrganizerViewTest(TestCase):
         response = self.client.get(
             reverse("info_organizer_for_season", kwargs={"slug": "foobar"})
         )
-        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.status_code, 404)

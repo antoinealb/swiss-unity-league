@@ -32,7 +32,12 @@ from django.db.models import F, Q
 from rest_framework import viewsets, views
 from rest_framework.response import Response
 from championship.score import get_results_with_qps, get_leaderboard
-from championship.season import SEASON_LIST, SEASONS_WITH_INFO, find_season_by_slug
+from championship.season import (
+    SEASON_LIST,
+    SEASONS_WITH_INFO,
+    SEASONS_WITH_RANKING,
+    find_season_by_slug,
+)
 
 from championship.parsers.parse_result import ParseResult
 
@@ -261,36 +266,17 @@ class EventDetailsView(DetailView):
         return context
 
 
-class CompleteRankingView(TemplateView):
-    template_name = "championship/ranking.html"
-    # TODO: Provide switch between seasons
-    default_season = settings.SEASON_2023
+class PerSeasonView(TemplateView):
+    default_season = settings.DEFAULT_SEASON
+    season_list = SEASON_LIST
 
     def dispatch(self, request, *args, **kwargs):
         slug = self.kwargs.get("slug", self.default_season.slug)
-        # TODO(antoine): Remove this warning once the season score is final
-        if slug != "2023":
-            messages.warning(
-                self.request,
-                "The score system implementation for year others than 2023 "
-                "is still being worked on, please don't rely on it yet.",
-            )
         try:
-            find_season_by_slug(slug)
+            self.current_season = find_season_by_slug(slug)
         except KeyError:
             raise Http404(f"Unknown season {slug}")
         return super().dispatch(request, *args, **kwargs)
-
-    def get_context_data(self, **kwargs):
-        context = super().get_context_data(**kwargs)
-        slug = self.kwargs.get("slug", self.default_season.slug)
-        season = find_season_by_slug(slug)
-        context["players"] = get_leaderboard(season)
-        return context
-
-
-class PerSeasonInformationView(TemplateView):
-    default_season = settings.INFO_TEXT_DEFAULT_SEASON
 
     def get_template_names(self):
         slug = self.kwargs.get("slug", self.default_season.slug)
@@ -301,27 +287,34 @@ class PerSeasonInformationView(TemplateView):
         ]
 
     def get_context_data(self, **kwargs):
-        try:
-            slug = self.kwargs["slug"]
-            season = find_season_by_slug(slug)
-        except KeyError:
-            season = self.default_season
-
         context = super().get_context_data(**kwargs)
-        context["seasons"] = SEASONS_WITH_INFO
-        context["current_season"] = season
+        context["seasons"] = self.season_list
+        context["current_season"] = self.current_season
         context["view_name"] = self.season_view_name
         return context
 
 
-class InformationForPlayerView(PerSeasonInformationView):
+class CompleteRankingView(PerSeasonView):
+    template_path = "championship/ranking/{slug}/ranking.html"
+    season_view_name = "ranking-by-season"
+    season_list = SEASONS_WITH_RANKING
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context["players"] = get_leaderboard(context["current_season"])
+        return context
+
+
+class InformationForPlayerView(PerSeasonView):
     template_path = "championship/info/{slug}/info_player.html"
     season_view_name = "info_for_season"
+    season_list = SEASONS_WITH_INFO
 
 
-class InformationForOrganizerView(PerSeasonInformationView):
+class InformationForOrganizerView(PerSeasonView):
     template_path = "championship/info/{slug}/info_organizer.html"
     season_view_name = "info_organizer_for_season"
+    season_list = SEASONS_WITH_INFO
 
 
 class CreateEventView(LoginRequiredMixin, FormView):

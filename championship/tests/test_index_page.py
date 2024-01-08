@@ -34,7 +34,9 @@ class HomepageTestCase(TestCase):
         Checks that the homepage contains some player information.
         """
         player = PlayerFactory()
-        EventPlayerResultFactory(player=player, points=1)
+        EventPlayerResultFactory(
+            player=player, points=1, event=EventCurrentSeasonFactory()
+        )
         response = self.client.get("/")
         self.assertContains(response, player.name)
 

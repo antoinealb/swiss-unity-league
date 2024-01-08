@@ -1,0 +1,46 @@
+{% extends "championship/base.html" %}
+
+{% load custom_tags %}
+
+{% block title %}Leaderboard Swiss Unity League {{ current_season.name }} - Best Magic: The Gathering Players in Switzerland{% endblock %}
+{% block meta_description %}Discover the elite players leading the Swiss Unity League in Magic: The Gathering. Only the best players in Switzerland will qualify for the Invitational.{% endblock %}
+
+{% block content %}
+    <h1>Leaderboard - Swiss Unity League {{ current_season.name }}</h1>
+    {% include 'championship/components/season_dropdown.html' %}
+    <br>
+    {% block ranking %}{% endblock %}
+    <dl>
+        <dt><i class="icon-star"></i></dt>
+        <dd>Qualified for the invitational</dd>
+        <dt><i class="icon-shield"></i></dt>
+        <dd>Bye for the invitational</dd>
+    </dl>
+    <table class="table table-striped" aria-label="Leaderboard 2023 Swiss Unity League">
+        <thead>
+            <tr>
+                <th scope="col">Rank</th>
+                <th scope="col">SUL Points</th>
+                <th scope="col">Player Name</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for player in players %}
+                <tr>
+                    <td aria-label="Rank">
+                        {{ player.score.rank }}
+                        {% if player.score.qualified %}
+                            <i class="icon-star" title="Qualified for the Invitational tournament"></i>
+                        {% endif %}
+                        {% for i in player.score.byes|range %}
+                            <i class="icon-shield" title="1 Bye for the Invitational tournament"></i>
+                        {% endfor %}
+                    </td>
+                    <td aria-label="SUL Points">{{ player.score.total_score }}</td>
+                    <td aria-label="Player Name"><a href="{{ player.get_absolute_url }}" title="View tournament statistics of {{ player.name }}">{{ player.name }}</a></td>
+                </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+
+{% endblock %}

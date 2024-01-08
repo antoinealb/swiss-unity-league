@@ -11,7 +11,7 @@ class TopPlayersEmailViewTest(TestCase):
             username="test", password="test", is_staff=True, is_superuser=True
         )
         self.client.login(username="test", password="test")
-        self.event = EventFactory()
+        self.event = EventCurrentSeasonFactory()
         for i in range(3):
             player = PlayerFactory(email=f"player{i}@example.com")
             EventPlayerResultFactory(event=self.event, points=i * 3, player=player)
