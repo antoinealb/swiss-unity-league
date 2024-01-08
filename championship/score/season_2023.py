@@ -136,7 +136,7 @@ class ScoreMethod2023:
         return scores
 
     @classmethod
-    def score_for_result(cls, result, event_size, has_top8) -> Score:
+    def score_for_result(cls, result, event_size, has_top8, total_rounds) -> Score:
         qps = cls._qps_for_result(result, event_size, has_top8)
         byes = cls._byes_for_result(result, event_size, has_top8)
         return cls.Score(qps=qps, byes=byes)

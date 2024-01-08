@@ -111,7 +111,9 @@ class ScoresWithTop8TestCase(TestCase):
             single_elimination_result=result,
             ranking=1,
         )
-        return ScoreMethod2024._qps_for_result(ep, event_size=32, has_top_8=True)
+        return ScoreMethod2024._qps_for_result(
+            ep, event_size=32, has_top_8=True, total_rounds=6
+        )
 
     def test_premier_event(self):
         self.event.category = Event.Category.PREMIER
@@ -145,17 +147,93 @@ class ScoresWithTop8TestCase(TestCase):
                 gotScore = self.score(10, ranking)
                 self.assertEqual(wantScore, gotScore)
 
-    def test_top8_when_only_top4_where_played(self):
-        """Tests a scenario where we only played a top4."""
+
+class ScoresWithMatchPointRateTestCase(TestCase):
+    def setUp(self):
+        self.event = Event2024Factory()
+        self.player = PlayerFactory()     
+
+    def score(self, points, total_rounds):
+        ep = EventPlayerResult(
+            points=points,
+            event=self.event,
+            player=self.player,
+            single_elimination_result=None,
+            ranking=1,
+        )
+        return ScoreMethod2024._qps_for_result(
+            ep, event_size=32, has_top_8=True, total_rounds=total_rounds
+        )
+    
+    def test_premier_event_70_mpr(self):
         self.event.category = Event.Category.PREMIER
         self.event.save()
-        r = EventPlayerResultFactory(points=10, ranking=5, event=self.event)
+        test_cases = [(6, 13), (7,15), (8, 17)]
+        for total_rounds, match_points in test_cases:
+            with self.subTest(f"70% match point rate with {total_rounds} rounds"):
+                extra_score = 60
+                base_score = (match_points + 3) * 6
+                want_score = base_score + extra_score
+                got_score = self.score(match_points, total_rounds)
+                self.assertEqual(want_score, got_score)
 
-        want = (10 + 3) * 6 + 120
-        got = ScoreMethod2024._qps_for_result(r, 5, has_top_8=True)
+                # Check that less match points gives less score   
+                extra_score = 30
+                want_score = base_score - 6 + extra_score
+                got_score = self.score(match_points - 1, total_rounds)
+                self.assertEqual(want_score, got_score)
 
-        self.assertEqual(want, got)
+    def test_premier_event_65_mpr(self):
+        self.event.category = Event.Category.PREMIER
+        self.event.save()
+        test_cases = [(6, 12), (7,14), (8, 16)]
+        for total_rounds, match_points in test_cases:
+            with self.subTest(f"70% match point rate with {total_rounds} rounds"):
+                extra_score = 30
+                base_score = (match_points + 3) * 6
+                want_score = base_score + extra_score
+                got_score = self.score(match_points, total_rounds)
+                self.assertEqual(want_score, got_score)
 
+                # Check that less match points gives less score   
+                want_score = base_score - 6
+                got_score = self.score(match_points - 1, total_rounds)
+                self.assertEqual(want_score, got_score)
+
+    def test_regional_event_70_mpr(self):
+        self.event.category = Event.Category.REGIONAL
+        self.event.save()
+        test_cases = [(6, 13), (7,15), (8, 17)]
+        for total_rounds, match_points in test_cases:
+            with self.subTest(f"70% match point rate with {total_rounds} rounds"):
+                extra_score = 20
+                base_score = (match_points + 3) * 4
+                want_score = base_score + extra_score
+                got_score = self.score(match_points, total_rounds)
+                self.assertEqual(want_score, got_score)
+
+                # Check that less match points gives less score   
+                extra_score = 10
+                want_score = base_score - 4 + extra_score
+                got_score = self.score(match_points - 1, total_rounds)
+                self.assertEqual(want_score, got_score)
+
+    def test_regional_event_65_mpr(self):
+        self.event.category = Event.Category.REGIONAL
+        self.event.save()
+        test_cases = [(6, 12), (7,14), (8, 16)]
+        for total_rounds, match_points in test_cases:
+            with self.subTest(f"65% match point rate with {total_rounds} rounds"):
+                extra_score = 10
+                base_score = (match_points + 3) * 4
+                want_score = base_score + extra_score
+                got_score = self.score(match_points, total_rounds)
+                self.assertEqual(want_score, got_score)
+
+                # Check that less match points gives less score   
+                want_score = base_score - 4
+                got_score = self.score(match_points - 1, total_rounds)
+                self.assertEqual(want_score, got_score)
 
 class TestSortEventPlayerResults(TestCase):
     def test_can_order_basic_player_results(self):
