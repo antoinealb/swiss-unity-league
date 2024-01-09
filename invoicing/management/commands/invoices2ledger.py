@@ -24,3 +24,18 @@ class Command(BaseCommand):
             """
                 )
             )
+
+        for invoice in (
+            Invoice.objects.filter(payment_received_date__isnull=True)
+            .select_related("event_organizer")
+            .order_by("payment_received_date", "id")
+        ):
+            print(
+                textwrap.dedent(
+                    f"""\
+            {invoice.created_date.strftime('%Y-%m-%d')} {invoice.event_organizer.name} # { invoice.reference }
+                Assets:Account Receivable:SUL Fees  CHF{invoice.total_amount}
+                Income:SUL Fees
+            """
+                )
+            )
