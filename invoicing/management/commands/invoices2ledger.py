@@ -20,7 +20,7 @@ class Command(BaseCommand):
                     f"""\
             {invoice.payment_received_date.strftime('%Y-%m-%d')} {invoice.event_organizer.name} # { invoice.reference }
                 Assets:Bank  CHF{invoice.total_amount}
-                Income:SUL Fees
+                Income:SUL Fees:{invoice.event_organizer.name}
             """
                 )
             )
@@ -35,7 +35,7 @@ class Command(BaseCommand):
                     f"""\
             {invoice.created_date.strftime('%Y-%m-%d')} {invoice.event_organizer.name} # { invoice.reference }
                 Assets:Account Receivable:SUL Fees  CHF{invoice.total_amount}
-                Income:SUL Fees
+                Income:SUL Fees:{invoice.event_organizer.name}
             """
                 )
             )
