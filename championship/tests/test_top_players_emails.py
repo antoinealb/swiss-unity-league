@@ -1,8 +1,10 @@
 from django.test import TestCase, Client
 from django.urls import reverse
+from freezegun import freeze_time
 from championship.factories import *
 
 
+@freeze_time("2023-08-20")
 class TopPlayersEmailViewTest(TestCase):
     def setUp(self):
         self.client = Client()
@@ -11,7 +13,7 @@ class TopPlayersEmailViewTest(TestCase):
             username="test", password="test", is_staff=True, is_superuser=True
         )
         self.client.login(username="test", password="test")
-        self.event = EventCurrentSeasonFactory()
+        self.event = EventFactory()
         for i in range(3):
             player = PlayerFactory(email=f"player{i}@example.com")
             EventPlayerResultFactory(event=self.event, points=i * 3, player=player)

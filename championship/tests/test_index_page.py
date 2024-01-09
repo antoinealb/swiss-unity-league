@@ -1,6 +1,7 @@
 import datetime
 from django.test import TestCase, Client
 from django.contrib.auth.models import User
+from freezegun import freeze_time
 from championship.models import Event, EventOrganizer
 from championship.factories import *
 from invoicing.factories import InvoiceFactory
@@ -29,13 +30,15 @@ class HomepageTestCase(TestCase):
         self.assertIn("TestEvent1000", response.content.decode())
         self.assertNotIn("RegularEvent", response.content.decode())
 
+    @freeze_time("2023-09-20")
     def test_shows_player_with_points(self):
         """
         Checks that the homepage contains some player information.
         """
         player = PlayerFactory()
         EventPlayerResultFactory(
-            player=player, points=1, event=EventCurrentSeasonFactory()
+            player=player,
+            points=1,
         )
         response = self.client.get("/")
         self.assertContains(response, player.name)
