@@ -9,13 +9,13 @@ from typing import Iterable, Any
 from django.conf import settings
 from django.core.cache import cache
 from django.db import models
-from django.db.models import Count
+from django.db.models import Count, Max, F
 from django.db.models.signals import post_delete, pre_save
 from django.dispatch import receiver
 from prometheus_client import Summary, Gauge
 
 from championship.cache_function import cache_function
-from championship.models import EventPlayerResult, Player
+from championship.models import EventPlayerResult, Player, Event
 from championship.season import *
 
 from championship.score import LeaderboardScore
@@ -53,9 +53,13 @@ def get_results_with_qps(
         top_count=Count("event__eventplayerresult__single_elimination_result"),
     )
 
-    total_rounds = max(
-        [r.win_count + r.loss_count + r.draw_count for r in results] + [0]
-    )
+    rounds_per_event = {
+        e.id: e.rounds
+        for e in Event.objects.raw(
+            "select event_id as id, max(win_count + loss_count + draw_count) as rounds from championship_eventplayerresult group by event_id"
+        )
+    }
+
     for result in results:
         method = SCOREMETHOD_PER_SEASON[result.event.season]
         result.has_top8 = result.top_count > 0
@@ -63,7 +67,7 @@ def get_results_with_qps(
             result,
             event_size=result.event_size,
             has_top8=result.has_top8,
-            total_rounds=total_rounds,
+            total_rounds=rounds_per_event[result.event_id],
         )
         yield result, score
 

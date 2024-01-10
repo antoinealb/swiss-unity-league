@@ -1,8 +1,10 @@
 from django.test import TestCase, Client
 from django.urls import reverse
+from django.test.utils import override_settings
 from championship.factories import *
 
 
+@override_settings(DEFAULT_SEASON=SEASON_2023)
 class TopPlayersEmailViewTest(TestCase):
     def setUp(self):
         self.client = Client()

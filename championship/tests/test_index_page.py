@@ -1,7 +1,7 @@
 import datetime
-from django.test import TestCase, Client
+from django.test import TestCase, Client, override_settings
 from django.contrib.auth.models import User
-from championship.models import Event, EventOrganizer
+from championship.models import Event
 from championship.factories import *
 from invoicing.factories import InvoiceFactory
 
@@ -29,12 +29,16 @@ class HomepageTestCase(TestCase):
         self.assertIn("TestEvent1000", response.content.decode())
         self.assertNotIn("RegularEvent", response.content.decode())
 
+    @override_settings(DEFAULT_SEASON=SEASON_2023)
     def test_shows_player_with_points(self):
         """
         Checks that the homepage contains some player information.
         """
         player = PlayerFactory()
-        EventPlayerResultFactory(player=player, points=1)
+        EventPlayerResultFactory(
+            player=player,
+            points=1,
+        )
         response = self.client.get("/")
         self.assertContains(response, player.name)
 

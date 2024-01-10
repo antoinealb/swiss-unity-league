@@ -1,7 +1,9 @@
 import datetime
 from django.test import TestCase, Client
-from championship.models import Player
 from championship.factories import *
+from parameterized import parameterized
+
+from championship.season import SEASONS_WITH_RANKING
 
 
 class RankingTestCase(TestCase):
@@ -11,6 +13,10 @@ class RankingTestCase(TestCase):
 
     def setUp(self):
         self.client = Client()
+
+    def get_by_slug(self, slug):
+        url = reverse("ranking-by-season", kwargs={"slug": slug})
+        return self.client.get(url)
 
     def test_ranking_with_no_results(self):
         """
@@ -23,7 +29,7 @@ class RankingTestCase(TestCase):
         player_with_results = PlayerFactory()
         EventPlayerResultFactory(player=player_with_results, points=1)
         player_without_results = PlayerFactory()
-        response = self.client.get("/ranking/2023")
+        response = self.get_by_slug("2023")
         self.assertContains(response, player_with_results.name)
         self.assertNotContains(response, player_without_results.name)
 
@@ -32,7 +38,7 @@ class RankingTestCase(TestCase):
         player = PlayerFactory(hidden_from_leaderboard=True)
         event = EventFactory(date=datetime.date(2023, 4, 1))
         EventPlayerResultFactory(player=player, points=1)
-        response = self.client.get("/ranking/2023")
+        response = self.get_by_slug("2023")
         self.assertNotContains(response, player.name)
 
     def test_score_properties_rendering(self):
@@ -40,7 +46,7 @@ class RankingTestCase(TestCase):
         player = PlayerFactory()
         event = EventFactory(date=datetime.date(2023, 4, 1))
         EventPlayerResultFactory(player=player, points=2, event=event)
-        response = self.client.get("/ranking/2023")
+        response = self.get_by_slug("2023")
         self.assertContains(response, """<i class="icon-star"></i>""")
         self.assertContains(response, """<i class="icon-shield"></i>""")
 
@@ -52,3 +58,8 @@ class RankingTestCase(TestCase):
     def test_ranking_for_unknown_season_returns_404(self):
         response = self.client.get("/ranking/2022")
         self.assertEqual(404, response.status_code)
+
+    @parameterized.expand(SEASONS_WITH_RANKING)
+    def test_all_ranking(self, season_slug):
+        response = self.get_by_slug(season_slug.slug)
+        self.assertEqual(200, response.status_code)

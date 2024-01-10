@@ -31,6 +31,7 @@ SEASON_2024 = Season(
 
 SEASON_LIST = [SEASON_2023, SEASON_2024]
 SEASONS_WITH_INFO = SEASON_LIST
+SEASONS_WITH_RANKING = SEASON_LIST
 
 
 def find_season_by_slug(slug: str) -> Season:
