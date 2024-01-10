@@ -271,19 +271,19 @@ class PerSeasonView(TemplateView):
     season_list = SEASON_LIST
 
     def dispatch(self, request, *args, **kwargs):
-        slug = self.kwargs.get("slug", self.default_season.slug)
+        self.slug = self.kwargs.get("slug", self.default_season.slug)
         try:
-            self.current_season = find_season_by_slug(slug)
+            self.current_season = find_season_by_slug(self.slug)
         except KeyError:
-            raise Http404(f"Unknown season {slug}")
+            raise Http404(f"Unknown season {self.slug}")
         return super().dispatch(request, *args, **kwargs)
 
     def get_template_names(self):
-        slug = self.kwargs.get("slug", self.default_season.slug)
         # We return two templates so that in case the season-specific one is
         # not found, the default one gets returned.
         return [
-            self.template_path.format(slug=s) for s in (slug, self.default_season.slug)
+            self.template_path.format(slug=s)
+            for s in (self.slug, self.default_season.slug)
         ]
 
     def get_context_data(self, **kwargs):
@@ -301,7 +301,7 @@ class CompleteRankingView(PerSeasonView):
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        context["players"] = get_leaderboard(context["current_season"])
+        context["players"] = get_leaderboard(self.current_season)
         return context
 
 
