@@ -1,6 +1,6 @@
 import datetime
 
-from django.test import TestCase
+from django.test import Client, TestCase
 
 from championship.factories import *
 from championship.models import *
@@ -348,6 +348,46 @@ class TestScoresQualified(TestCase):
         byes = [s.qualified for s in self.compute_scores().values()]
         want_byes = [True] * num_qualified + [False] * (num_players - num_qualified)
         self.assertEqual(want_byes, byes)
+
+
+class TestPlayerDetails2024(TestCase):
+    def setUp(self):
+        self.client = Client()
+        self.player = PlayerFactory()
+        self.event = Event2024Factory(category=Event.Category.PREMIER)
+
+    def test_player_details_extra_points_edge_case(self):
+        # Make sure we have a tournament with many rounds
+        EventPlayerResultFactory(
+            player=self.player,
+            ranking=1,
+            points=10,
+            win_count=7,
+            loss_count=7,
+            draw_count=0,
+        )
+
+        # Make sure the event is with top 8
+        EventPlayerResultFactory(
+            event=self.event,
+            single_elimination_result=EventPlayerResult.SingleEliminationResult.QUARTER_FINALIST,
+        )
+
+        # Create a player outside of top 8 with 65%+ match point rate
+        EventPlayerResultFactory(
+            player=self.player,
+            event=self.event,
+            ranking=1,
+            points=12,
+            win_count=4,
+            loss_count=2,
+            draw_count=0,
+        )
+        response = self.client.get(reverse("player_details", args=[self.player.id]))
+
+        # Player should get 30 extra points
+        expected_qps = 12 * 6 + 6 + 30
+        self.assertContains(response, f"<td>{expected_qps}</td>")
 
 
 class TestScore2024(TestCase):
