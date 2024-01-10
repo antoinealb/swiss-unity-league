@@ -15,7 +15,7 @@ from django.dispatch import receiver
 from prometheus_client import Summary, Gauge
 
 from championship.cache_function import cache_function
-from championship.models import EventPlayerResult, Player
+from championship.models import EventPlayerResult, Player, Event
 from championship.season import *
 
 from championship.score import LeaderboardScore
@@ -51,12 +51,14 @@ def get_results_with_qps(
     results = event_player_results.select_related("event").annotate(
         event_size=Count("event__eventplayerresult"),
         top_count=Count("event__eventplayerresult__single_elimination_result"),
-        total_rounds=Max(
-            F("event__eventplayerresult__win_count")
-            + F("event__eventplayerresult__draw_count")
-            + F("event__eventplayerresult__loss_count")
-        ),
     )
+
+    rounds_per_event = {
+        e.id: e.rounds
+        for e in Event.objects.raw(
+            "select event_id as id, max(win_count + loss_count + draw_count) as rounds from championship_eventplayerresult group by event_id"
+        )
+    }
 
     for result in results:
         method = SCOREMETHOD_PER_SEASON[result.event.season]
@@ -65,7 +67,7 @@ def get_results_with_qps(
             result,
             event_size=result.event_size,
             has_top8=result.has_top8,
-            total_rounds=result.total_rounds,
+            total_rounds=rounds_per_event[result.event_id],
         )
         yield result, score
 
