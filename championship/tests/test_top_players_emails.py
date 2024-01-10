@@ -1,10 +1,10 @@
 from django.test import TestCase, Client
 from django.urls import reverse
-from freezegun import freeze_time
+from django.test.utils import override_settings
 from championship.factories import *
 
 
-@freeze_time("2023-08-20")
+@override_settings(DEFAULT_SEASON=SEASON_2023)
 class TopPlayersEmailViewTest(TestCase):
     def setUp(self):
         self.client = Client()

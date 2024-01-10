@@ -1,8 +1,7 @@
 import datetime
-from django.test import TestCase, Client
+from django.test import TestCase, Client, override_settings
 from django.contrib.auth.models import User
-from freezegun import freeze_time
-from championship.models import Event, EventOrganizer
+from championship.models import Event
 from championship.factories import *
 from invoicing.factories import InvoiceFactory
 
@@ -30,7 +29,7 @@ class HomepageTestCase(TestCase):
         self.assertIn("TestEvent1000", response.content.decode())
         self.assertNotIn("RegularEvent", response.content.decode())
 
-    @freeze_time("2023-09-20")
+    @override_settings(DEFAULT_SEASON=SEASON_2023)
     def test_shows_player_with_points(self):
         """
         Checks that the homepage contains some player information.
