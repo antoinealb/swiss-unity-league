@@ -371,6 +371,9 @@ class TestPlayerDetails2024(TestCase):
         EventPlayerResultFactory(
             event=self.event,
             single_elimination_result=EventPlayerResult.SingleEliminationResult.QUARTER_FINALIST,
+            win_count=6,
+            loss_count=0,
+            draw_count=0,
         )
 
         # Create a player outside of top 8 with 65%+ match point rate
@@ -380,13 +383,13 @@ class TestPlayerDetails2024(TestCase):
             ranking=1,
             points=12,
             win_count=4,
-            loss_count=2,
+            loss_count=0,
             draw_count=0,
         )
         response = self.client.get(reverse("player_details", args=[self.player.id]))
 
         # Player should get 30 extra points
-        expected_qps = 12 * 6 + 6 + 30
+        expected_qps = 15 * 6 + 30
         self.assertContains(response, f"<td>{expected_qps}</td>")
 
 

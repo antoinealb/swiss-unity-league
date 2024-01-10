@@ -9,7 +9,7 @@ from typing import Iterable, Any
 from django.conf import settings
 from django.core.cache import cache
 from django.db import models
-from django.db.models import Count
+from django.db.models import Count, Max, F
 from django.db.models.signals import post_delete, pre_save
 from django.dispatch import receiver
 from prometheus_client import Summary, Gauge
@@ -51,11 +51,13 @@ def get_results_with_qps(
     results = event_player_results.select_related("event").annotate(
         event_size=Count("event__eventplayerresult"),
         top_count=Count("event__eventplayerresult__single_elimination_result"),
+        total_rounds=Max(
+            F("event__eventplayerresult__win_count")
+            + F("event__eventplayerresult__draw_count")
+            + F("event__eventplayerresult__loss_count")
+        ),
     )
 
-    total_rounds = max(
-        [r.win_count + r.loss_count + r.draw_count for r in results] + [0]
-    )
     for result in results:
         method = SCOREMETHOD_PER_SEASON[result.event.season]
         result.has_top8 = result.top_count > 0
@@ -63,7 +65,7 @@ def get_results_with_qps(
             result,
             event_size=result.event_size,
             has_top8=result.has_top8,
-            total_rounds=total_rounds,
+            total_rounds=result.total_rounds,
         )
         yield result, score
 
