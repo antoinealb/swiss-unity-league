@@ -198,7 +198,7 @@ class EventDetailTestCase(TestCase):
             category=Event.Category.REGULAR, date=datetime.date.today() - minus_delta
         )
         resp = self.client.get(reverse("event_details", args=[event.id]))
-        self.assertEquals(
+        self.assertEqual(
             missing_results_info_expected, resp.context_data["notify_missing_results"]
         )
 

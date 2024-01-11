@@ -53,9 +53,9 @@ class EventOrganizerDetailViewTests(TestCase):
             reverse("organizer_details", args=[self.organizer.id])
         )
         response_past_event = self.response.context["all_events"][1]
-        self.assertEquals(response_past_event["has_num_players"], True)
+        self.assertEqual(response_past_event["has_num_players"], True)
         first_event = response_past_event["list"][0]
-        self.assertEquals(first_event.num_players, 1)
+        self.assertEqual(first_event.num_players, 1)
 
     def test_organizer_detail_view_no_organizer(self):
         self.response = self.client.get(

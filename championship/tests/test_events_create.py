@@ -239,7 +239,7 @@ class EventCreationTestCase(TestCase):
         to = EventOrganizerFactory(user=self.user)
         response = self.client.get(reverse("events_create"))
         initial_address = response.context["form"].initial["address"]
-        self.assertEquals(to.default_address.id, initial_address)
+        self.assertEqual(to.default_address.id, initial_address)
 
     def test_create_event_form_without_any_address(self):
         self.login()
@@ -257,8 +257,8 @@ class EventCreationTestCase(TestCase):
         response = self.client.get(reverse("event_update", args=[event.id]))
         self.assertEqual(200, response.status_code)
         initial_address = response.context["form"].initial["address"]
-        self.assertNotEquals(not_default_address, to.default_address)
-        self.assertEquals(not_default_address.id, initial_address)
+        self.assertNotEqual(not_default_address, to.default_address)
+        self.assertEqual(not_default_address.id, initial_address)
 
     @parameterized.expand(
         [
@@ -271,7 +271,7 @@ class EventCreationTestCase(TestCase):
         to = EventOrganizerFactory(user=self.user)
         # Create another TO with addresses and check that both have 3 addresses
         for current_to in [to, EventOrganizerFactory()]:
-            self.assertEquals(3, current_to.addresses.count())
+            self.assertEqual(3, current_to.addresses.count())
         event = EventFactory(organizer=to, date=datetime.date.today())
         self.login()
         response = self.client.get(
@@ -279,7 +279,7 @@ class EventCreationTestCase(TestCase):
         )
         self.assertEqual(200, response.status_code)
         form_addresses = response.context["form"].fields["address"].queryset
-        self.assertEquals(to.addresses.count(), form_addresses.count())
+        self.assertEqual(to.addresses.count(), form_addresses.count())
         for address in form_addresses:
             self.assertIn(address, to.addresses.all())
 
@@ -329,5 +329,5 @@ class EventCopyTestCase(TestCase):
         event = EventFactory(address=not_default_address, organizer=self.organizer)
         response = self.client.get(reverse("event_copy", args=[event.id]))
         initial_address = response.context["form"].initial["address"]
-        self.assertNotEquals(not_default_address, self.organizer.default_address)
-        self.assertEquals(not_default_address.id, initial_address)
+        self.assertNotEqual(not_default_address, self.organizer.default_address)
+        self.assertEqual(not_default_address.id, initial_address)

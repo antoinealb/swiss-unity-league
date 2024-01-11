@@ -49,7 +49,7 @@ class EventCreationTestCase(TestCase):
         self.login()
         to = EventOrganizerFactory(user=self.user)
         new_address = to.addresses.all()[1]
-        self.assertNotEquals(to.default_address.id, new_address.id)
+        self.assertNotEqual(to.default_address.id, new_address.id)
         data = {
             "contact": "foo@foo.org",
             "name": "My test events",
