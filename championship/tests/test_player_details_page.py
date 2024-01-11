@@ -1,12 +1,13 @@
-import datetime
-from django.test import TestCase, Client
+from django.test import TestCase, Client, override_settings
 from championship.models import Player, Event
 from championship.factories import *
 from django.urls import reverse
+from parameterized import parameterized
+from championship.constants import *
+from championship.season import SEASONS_WITH_RANKING
 
-from championship.views import *
 
-
+@override_settings(DEFAULT_SEASON=SEASON_2023)
 class PlayerDetailsTest(TestCase):
     """
     Tests for the page with a player's details
@@ -52,7 +53,7 @@ class PlayerDetailsTest(TestCase):
         response = self.client.get(reverse("player_details", args=[ep.player.id]))
         wantUrl = reverse("event_details", args=[ep.event.id])
 
-        self.assertIn(wantUrl, response.content.decode())
+        self.assertContains(response, wantUrl)
 
     def test_shows_link_for_admin_page(self):
         client = Client()
@@ -168,3 +169,18 @@ class PlayerDetailsTest(TestCase):
             finish[TABLE] for finish in response.context[TOP_FINISHES]
         ]
         self.assertEqual(expected_top_finishes, actual_top_finishes)
+
+
+class PlayerDetailSeasonTestCase(TestCase):
+    def setUp(self):
+        self.client = Client()
+
+    @parameterized.expand(SEASONS_WITH_RANKING)
+    def test_player_details_all_seasons_work(self, season):
+        player = PlayerFactory()
+        event = EventFactory(date=season.start_date)
+        EventPlayerResultFactory(event=event, player=player)
+        response = self.client.get(
+            reverse("player_details_by_season", args=[player.id, season.slug])
+        )
+        self.assertContains(response, event.name)
