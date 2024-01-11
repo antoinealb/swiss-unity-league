@@ -43,3 +43,14 @@ class EventCanChangeResults(TestCase):
                 e.can_be_edited(),
                 want_can_change,
             )
+
+    @freeze_time("2023-09-30")
+    def test_edit_deadline_override(self):
+        e = EventFactory(date=date(2023, 8, 29))
+        self.assertEqual(e.can_be_edited(), False)
+
+        e.edit_deadline_override = date(2023, 9, 29)
+        self.assertEqual(e.can_be_edited(), False)
+
+        e.edit_deadline_override = date(2023, 9, 30)
+        self.assertEqual(e.can_be_edited(), True)

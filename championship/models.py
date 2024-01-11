@@ -258,6 +258,12 @@ class Event(models.Model):
         default=True,
     )
 
+    edit_deadline_override = models.DateField(
+        help_text="A custom deadline for editing results, e.g. when a TO requested an extension to upload their results.",
+        blank=True,
+        null=True,
+    )
+
     def __str__(self):
         return f"{self.name} - {self.date} ({self.get_category_display()})"
 
@@ -295,6 +301,9 @@ class Event(models.Model):
         -The end of season deadline hasn't passed.
         """
         today = datetime.date.today()
+        if self.edit_deadline_override and today <= self.edit_deadline_override:
+            return True
+
         oldest_allowed = today - settings.EVENT_MAX_AGE_FOR_RESULT_ENTRY
         if self.date < oldest_allowed:
             return False
