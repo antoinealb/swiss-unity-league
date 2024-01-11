@@ -5,7 +5,7 @@ stages:
 
 tests:
   stage: test
-  image: python:3.10
+  image: python:3.12
   before_script:
     - pip install -r requirements.txt
   script:
@@ -18,7 +18,7 @@ tests:
 
 python-typing:
   stage: test
-  image: python:3.10
+  image: python:3.12
   before_script:
     - pip install -r requirements.txt
     - pip install mypy
@@ -27,7 +27,7 @@ python-typing:
 
 python-format:
   stage: test
-  image: python:3.10
+  image: python:3.12
   before_script:
     - pip install black
   script:
@@ -35,7 +35,7 @@ python-format:
 
 templates-format:
   stage: test
-  image: python:3.10
+  image: python:3.12
   before_script:
     - pip install djhtml==1.5.2
   script:
