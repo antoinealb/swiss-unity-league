@@ -258,8 +258,8 @@ class Event(models.Model):
         default=True,
     )
 
-    edit_deadline_extension = models.DateField(
-        help_text="If set, the deadline for editing results will be extended to this date. Used to make exceptions when TOs forget to enter results.",
+    edit_deadline_override = models.DateField(
+        help_text="A custom deadline for editing results, e.g. when a TO requested an extension to upload their results.",
         blank=True,
         null=True,
     )
@@ -301,7 +301,7 @@ class Event(models.Model):
         -The end of season deadline hasn't passed.
         """
         today = datetime.date.today()
-        if self.edit_deadline_extension and today <= self.edit_deadline_extension:
+        if self.edit_deadline_override and today <= self.edit_deadline_override:
             return True
 
         oldest_allowed = today - settings.EVENT_MAX_AGE_FOR_RESULT_ENTRY
