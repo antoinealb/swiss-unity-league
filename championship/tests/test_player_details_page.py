@@ -1,10 +1,18 @@
 from django.test import TestCase, Client, override_settings
-from championship.models import Player, Event
+from championship.models import Event
 from championship.factories import *
 from django.urls import reverse
 from parameterized import parameterized
-from championship.constants import *
 from championship.season import SEASONS_WITH_RANKING
+
+LAST_RESULTS = "last_results"
+TOP_FINISHES = "top_finishes"
+QP_TABLE = "qp_table"
+THEAD = "thead"
+TBODY = "tbody"
+TABLE = "table"
+QPS = "QPs"
+EVENTS = "Events"
 
 
 @override_settings(DEFAULT_SEASON=SEASON_2023)

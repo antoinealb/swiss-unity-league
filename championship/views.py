@@ -64,7 +64,6 @@ from championship.tournament_valid import (
 )
 from django.http import JsonResponse
 from django.shortcuts import render
-from championship.constants import *
 
 
 class CustomDeleteView(LoginRequiredMixin, DeleteView):
@@ -158,6 +157,16 @@ class IndexView(TemplateView):
         return Invoice.objects.filter(
             event_organizer__user=self.request.user, payment_received_date__isnull=True
         ).exists()
+
+
+LAST_RESULTS = "last_results"
+TOP_FINISHES = "top_finishes"
+QP_TABLE = "qp_table"
+THEAD = "thead"
+TBODY = "tbody"
+TABLE = "table"
+QPS = "QPs"
+EVENTS = "Events"
 
 
 def add_to_table(table, column_title, row_title, value=1):
