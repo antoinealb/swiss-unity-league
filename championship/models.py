@@ -168,7 +168,8 @@ class EventManager(models.Manager):
         start_date = today - settings.EVENT_MAX_AGE_FOR_RESULT_ENTRY
         end_date = today
         initial_qs = (
-            self.filter(organizer__user=user, date__gte=start_date, date__lte=end_date)
+            self.filter(organizer__user=user, date__lte=end_date)
+            .exclude(date__lt=start_date, edit_deadline_override__isnull=True)
             .annotate(result_cnt=Count("eventplayerresult"))
             .filter(result_cnt=0)
         )

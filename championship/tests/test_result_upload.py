@@ -836,6 +836,32 @@ class FindEventsForUpload(TestCase):
             event, Event.objects.available_for_result_upload(event.organizer.user)
         )
 
+    def test_does_not_show_too_old_events(self):
+        too_old_to_upload = datetime.date.today() - datetime.timedelta(days=32)
+        event = EventFactory(date=too_old_to_upload)
+        self.assertNotIn(
+            event,
+            Event.objects.available_for_result_upload(event.organizer.user),
+        )
+
+    def test_edit_deadline_override(self):
+        too_old_to_upload = datetime.date.today() - datetime.timedelta(days=32)
+        event = EventFactory(
+            date=too_old_to_upload, edit_deadline_override=datetime.date.today()
+        )
+        self.assertIn(
+            event,
+            Event.objects.available_for_result_upload(event.organizer.user),
+        )
+        event.edit_deadline_override = datetime.date.today() - datetime.timedelta(
+            days=1
+        )
+        event.save()
+        self.assertNotIn(
+            event,
+            Event.objects.available_for_result_upload(event.organizer.user),
+        )
+
 
 class AddTop8Results(TestCase):
     def setUp(self):
