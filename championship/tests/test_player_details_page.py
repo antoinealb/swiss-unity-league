@@ -72,9 +72,9 @@ class PlayerDetailsTest(TestCase):
         player = PlayerFactory()
         resp = client.get(reverse("player_details", args=[player.id]))
 
-        self.assertIn(
+        self.assertContains(
             reverse("admin:championship_player_change", args=[player.id]),
-            resp.content.decode(),
+            resp,
         )
 
     def test_attributes(self):
@@ -86,9 +86,8 @@ class PlayerDetailsTest(TestCase):
         ep = EventPlayerResultFactory(event=event, ranking=1)
 
         response = self.client.get(reverse("player_details", args=[ep.player.id]))
-        decoded = response.content.decode()
-        self.assertIn(event.category.label, decoded)
-        self.assertIn("1st", decoded)
+        self.assertContains(event.category.label, response)
+        self.assertContains("1st", response)
 
     def test_qp_table(self):
         player = PlayerFactory()
