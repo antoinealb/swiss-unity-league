@@ -29,7 +29,7 @@ from django.contrib.auth.mixins import LoginRequiredMixin
 from django.conf import settings
 from django.db import transaction
 from django.db.models import F, Q
-from rest_framework import viewsets, views
+from rest_framework import viewsets
 from rest_framework.response import Response
 from championship.score import get_results_with_qps, get_leaderboard
 from championship.season import (
@@ -86,6 +86,34 @@ class CustomDeleteView(LoginRequiredMixin, DeleteView):
                 request, self.error_message.format(verbose_name=verbose_name)
             )
         return HttpResponseRedirect(self.get_success_url())
+
+
+class PerSeasonView(TemplateView):
+    default_season = settings.DEFAULT_SEASON
+    season_list = SEASON_LIST
+
+    def dispatch(self, request, *args, **kwargs):
+        self.slug = self.kwargs.get("slug", self.default_season.slug)
+        try:
+            self.current_season = find_season_by_slug(self.slug)
+        except KeyError:
+            raise Http404(f"Unknown season {self.slug}")
+        return super().dispatch(request, *args, **kwargs)
+
+    def get_template_names(self):
+        # We return two templates so that in case the season-specific one is
+        # not found, the default one gets returned.
+        return [
+            self.template_path.format(slug=s)
+            for s in (self.slug, self.default_season.slug)
+        ]
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context["seasons"] = self.season_list
+        context["current_season"] = self.current_season
+        context["view_name"] = self.season_view_name
+        return context
 
 
 EVENTS_ON_PAGE = 10
@@ -157,15 +185,23 @@ def add_to_table(table, column_title, row_title, value=1):
     tbody.append(new_row)
 
 
-class PlayerDetailsView(DetailView):
-    template_name = "championship/player_details.html"
-    model = Player
-    context_object_name = "player"
+class PlayerDetailsView(PerSeasonView):
+    season_view_name = "player_details_by_season"
+    season_list = SEASONS_WITH_RANKING
+
+    def get_template_names(self):
+        return ["championship/player_details.html"]
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
+        context["player"] = get_object_or_404(Player, pk=self.kwargs["pk"])
+
         results = get_results_with_qps(
-            EventPlayerResult.objects.filter(player=context["player"])
+            EventPlayerResult.objects.filter(
+                player=context["player"],
+                event__date__gte=self.current_season.start_date,
+                event__date__lte=self.current_season.end_date,
+            )
         )
 
         context[LAST_RESULTS] = sorted(
@@ -263,34 +299,6 @@ class EventDetailsView(DetailView):
             context["event"].date < datetime.date.today() - datetime.timedelta(days=4)
             and context["event"].can_be_edited()
         )
-        return context
-
-
-class PerSeasonView(TemplateView):
-    default_season = settings.DEFAULT_SEASON
-    season_list = SEASON_LIST
-
-    def dispatch(self, request, *args, **kwargs):
-        self.slug = self.kwargs.get("slug", self.default_season.slug)
-        try:
-            self.current_season = find_season_by_slug(self.slug)
-        except KeyError:
-            raise Http404(f"Unknown season {self.slug}")
-        return super().dispatch(request, *args, **kwargs)
-
-    def get_template_names(self):
-        # We return two templates so that in case the season-specific one is
-        # not found, the default one gets returned.
-        return [
-            self.template_path.format(slug=s)
-            for s in (self.slug, self.default_season.slug)
-        ]
-
-    def get_context_data(self, **kwargs):
-        context = super().get_context_data(**kwargs)
-        context["seasons"] = self.season_list
-        context["current_season"] = self.current_season
-        context["view_name"] = self.season_view_name
         return context
 
 

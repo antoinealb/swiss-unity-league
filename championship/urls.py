@@ -28,6 +28,11 @@ urlpatterns = [
         name="ranking-by-season",
     ),
     path("player/<int:pk>/", views.PlayerDetailsView.as_view(), name="player_details"),
+    path(
+        "player/<int:pk>/season/<slug:slug>",
+        views.PlayerDetailsView.as_view(),
+        name="player_details_by_season",
+    ),
     path("info", views.InformationForPlayerView.as_view(), name="info"),
     path(
         "info/<slug:slug>/",

@@ -1,18 +1,22 @@
-
-<!--
+{% comment %}
     This component allows the user to open a page with a specific season.
     Requires the following variables to be passed in:
         - current_season: the current season
         - seasons: a list of all seasons that can be selected
         - view_name: the name of the view that will be opened
-    -->
+        - pk: an optional primary key to reverse the view
+{% endcomment %}
 <div class="dropdown">
     <button class="btn btn-secondary dropdown-toggle" type="button" id="season_dropdown_button" data-bs-toggle="dropdown" aria-expanded="false">
         {{ current_season.name }}
     </button>
     <ul class="dropdown-menu" aria-labelledby="season_dropdown_button">
         {% for season in seasons %}
-            <li><a class="dropdown-item" href="{% url view_name slug=season.slug %}">{{ season.name }}</a></li>
+            {% if pk %}
+                <li><a class="dropdown-item" href="{% url view_name slug=season.slug pk=pk %}">{{ season.name }}</a></li>
+            {% else %}
+                <li><a class="dropdown-item" href="{% url view_name slug=season.slug %}">{{ season.name }}</a></li>
+            {% endif %}
         {% endfor %}
     </ul>
 </div>
