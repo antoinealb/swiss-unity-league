@@ -1,4 +1,4 @@
-from django.test import TestCase, Client, override_settings
+from django.test import TestCase, Client
 from championship.models import Event
 from championship.factories import *
 from django.urls import reverse
@@ -15,7 +15,6 @@ QPS = "QPs"
 EVENTS = "Events"
 
 
-@override_settings(DEFAULT_SEASON=SEASON_2023)
 class PlayerDetailsTest(TestCase):
     """
     Tests for the page with a player's details
@@ -23,6 +22,10 @@ class PlayerDetailsTest(TestCase):
 
     def setUp(self):
         self.client = Client()
+
+    def get_player_details_2023(self, player):
+        url = reverse("player_details_by_season", args=[player.id, "2023"])
+        return self.client.get(url)
 
     def test_score_with_no_results(self):
         """
@@ -32,7 +35,7 @@ class PlayerDetailsTest(TestCase):
         tournament gets deleted, then we have stale players with 0 points
         """
         player = PlayerFactory()
-        response = self.client.get(reverse("player_details", args=[player.id]))
+        response = self.get_player_details_2023(player)
         self.assertIn(player.name, response.content.decode())
 
     def test_score_in_context(self):
@@ -47,7 +50,7 @@ class PlayerDetailsTest(TestCase):
             loss_count=0,
         )
 
-        response = self.client.get(reverse("player_details", args=[ep.player.id]))
+        response = self.get_player_details_2023(ep.player)
         gotScore = response.context_data[LAST_RESULTS][0][1].qps
 
         self.assertEqual(gotScore, (10 + 3) * 6)
@@ -58,23 +61,22 @@ class PlayerDetailsTest(TestCase):
         """
         ep = EventPlayerResultFactory()
 
-        response = self.client.get(reverse("player_details", args=[ep.player.id]))
+        response = self.get_player_details_2023(ep.player)
         wantUrl = reverse("event_details", args=[ep.event.id])
 
         self.assertContains(response, wantUrl)
 
     def test_shows_link_for_admin_page(self):
-        client = Client()
         credentials = dict(username="test", password="test")
         user = User.objects.create_user(is_staff=True, **credentials)
-        client.login(**credentials)
+        self.client.login(**credentials)
 
         player = PlayerFactory()
-        resp = client.get(reverse("player_details", args=[player.id]))
-
+        resp = self.get_player_details_2023(player)
+        content = resp.content.decode()
         self.assertContains(
-            reverse("admin:championship_player_change", args=[player.id]),
             resp,
+            reverse("admin:championship_player_change", args=[player.id]),
         )
 
     def test_attributes(self):
@@ -85,9 +87,12 @@ class PlayerDetailsTest(TestCase):
         event = EventFactory(category=category)
         ep = EventPlayerResultFactory(event=event, ranking=1)
 
-        response = self.client.get(reverse("player_details", args=[ep.player.id]))
-        self.assertContains(event.category.label, response)
-        self.assertContains("1st", response)
+        response = self.get_player_details_2023(ep.player)
+        self.assertContains(
+            response,
+            event.category.label,
+        )
+        self.assertContains(response, "1st")
 
     def test_qp_table(self):
         player = PlayerFactory()
@@ -112,7 +117,7 @@ class PlayerDetailsTest(TestCase):
             loss_count=0,
             draw_count=0,
         )
-        response = self.client.get(reverse("player_details", args=[player.id]))
+        response = self.get_player_details_2023(player)
         qps_premier = (10 + 3) * 6 + 150
         qps_regular = 600 + 3
         expected_tbody = [
@@ -150,7 +155,7 @@ class PlayerDetailsTest(TestCase):
         )
         event3 = EventFactory(category=Event.Category.REGIONAL)
         EventPlayerResultFactory(points=10, player=player, event=event3, ranking=1)
-        response = self.client.get(reverse("player_details", args=[player.id]))
+        response = self.get_player_details_2023(player)
         expected_top_finishes = [
             {
                 THEAD: [
