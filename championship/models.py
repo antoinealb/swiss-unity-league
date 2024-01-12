@@ -1,6 +1,6 @@
 from django.db import models
 from django.conf import settings
-from django.db.models import Count, Q
+from django.db.models import Count
 from django_bleach.models import BleachField
 from django.urls import reverse
 from auditlog.registry import auditlog
@@ -169,7 +169,7 @@ class EventManager(models.Manager):
         end_date = today
         initial_qs = (
             self.filter(organizer__user=user, date__lte=end_date)
-            .filter(Q(date__gte=start_date) | Q(edit_deadline_override__isnull=False))
+            .exclude(date__lt=start_date, edit_deadline_override__isnull=True)
             .annotate(result_cnt=Count("eventplayerresult"))
             .filter(result_cnt=0)
         )
