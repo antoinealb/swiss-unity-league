@@ -10,8 +10,8 @@ curl -XPOST https://monitoring.antoinealb.net/api/annotations \
     "text": "$CI_COMMIT_MESSAGE\n\n
       <a href=\"$CI_JOB_URL\">Gitlab CI</a>",
     "tags": [
-      "deployment",
-      "infra"
+        "unityleague",
+        "deployment",
     ]
   }
 EOF
