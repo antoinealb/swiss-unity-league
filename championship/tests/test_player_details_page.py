@@ -4,15 +4,16 @@ from championship.factories import *
 from django.urls import reverse
 from parameterized import parameterized
 from championship.season import SEASONS_WITH_RANKING
-
-LAST_RESULTS = "last_results"
-TOP_FINISHES = "top_finishes"
-QP_TABLE = "qp_table"
-THEAD = "thead"
-TBODY = "tbody"
-TABLE = "table"
-QPS = "QPs"
-EVENTS = "Events"
+from championship.views import (
+    LAST_RESULTS,
+    QP_TABLE,
+    TBODY,
+    THEAD,
+    TABLE,
+    QPS,
+    EVENTS,
+    TOP_FINISHES,
+)
 
 
 class PlayerDetailsTest(TestCase):
