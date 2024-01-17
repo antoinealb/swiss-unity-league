@@ -1,7 +1,6 @@
 from django.test import TestCase, Client
 from django.contrib.auth.models import User
 from django.urls import reverse
-import responses
 from championship.models import EventPlayerResult
 from championship.tests.parsers.utils import load_test_html
 from championship.factories import *
