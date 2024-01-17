@@ -29,13 +29,24 @@ SEASON_2024 = Season(
     slug="2024",
 )
 
+
 SEASON_LIST = [SEASON_2023, SEASON_2024]
+
+SEASON_ALL = Season(
+    start_date=SEASON_LIST[0].start_date,
+    end_date=SEASON_LIST[-1].end_date,
+    name="all seasons",
+    slug="all",
+)
+
+SEASON_LIST_WITH_ALL = SEASON_LIST + [SEASON_ALL]
+
 SEASONS_WITH_INFO = SEASON_LIST
-SEASONS_WITH_RANKING = SEASON_LIST
+SEASONS_WITH_RANKING = SEASON_LIST_WITH_ALL
 
 
 def find_season_by_slug(slug: str) -> Season:
-    for s in SEASON_LIST:
+    for s in SEASON_LIST_WITH_ALL:
         if s.slug == slug:
             return s
     raise KeyError(f"Unknown season slug '{slug}'")

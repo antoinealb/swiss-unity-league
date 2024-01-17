@@ -15,6 +15,7 @@ from prometheus_client import Summary, Gauge
 
 from championship.cache_function import cache_function
 from championship.models import EventPlayerResult, Player, Event
+from championship.score.season_all import ScoreMethodAll
 from championship.season import *
 
 from championship.score import LeaderboardScore
@@ -33,6 +34,7 @@ scores_computation_results_count = Gauge(
 SCOREMETHOD_PER_SEASON = {
     SEASON_2023: ScoreMethod2023,
     SEASON_2024: ScoreMethod2024,
+    SEASON_ALL: ScoreMethodAll,
 }
 
 
