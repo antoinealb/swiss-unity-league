@@ -208,6 +208,33 @@ class AetherhubImportTest(TestCase):
         self.assertEqual(resp.status_code, 200)
         self.assertIn("Could not fetch standings", resp.content.decode())
 
+    @patch("requests.get")
+    def test_correctly_handles_backend_redirects(self, requests_get):
+        self.login()
+        resp = MagicMock()
+        redirect_resp = MagicMock()
+        redirect_resp.status_code = 302
+        resp.history = [redirect_resp]
+        requests_get.return_value = resp
+
+        resp = self.client.post(reverse("results_create_aetherhub"), self.data)
+
+        self.assertContains(resp, "The tournament was not found.")
+
+    @patch("requests.get")
+    def test_correctly_handles_unfinished_tournaments(self, requests_get):
+        self.login()
+        resp = MagicMock()
+        resp.content = (
+            load_test_html("aetherhub_ranking.html").replace("Finished:", "").encode()
+        )
+        resp.status_code = 200
+        requests_get.return_value = resp
+
+        resp = self.client.post(reverse("results_create_aetherhub"), self.data)
+
+        self.assertContains(resp, "The tournament is not finished.")
+
     def test_correctly_handles_wrong_url(self):
         self.login()
         self.data["url"] = "https://challonge.com/de/32qwqta"
