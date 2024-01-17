@@ -37,28 +37,29 @@ class ParserFunctionsTest(TestCase):
 
 
 class ChallongeStandingsParser(TestCase):
-    def test_can_parse_en(self):
-        self.text = load_test_html("challonge_en_ranking.html")
+    def setUp(self):
+        self.text = load_test_html("challonge_new_ranking.html")
         self.results = challonge.parse_standings_page(self.text)
-        want_standings = [
-            ("Dario Maz", 10, (3, 0, 1)),
-            ("Aleks Col", 10, (3, 0, 1)),
-            ("Antoine Alb", 9, (3, 1, 0)),
-        ]
-        got_standings = [(pr.name, pr.points, pr.record) for pr in self.results[:3]]
-        self.assertEqual(want_standings, got_standings)
+        self.got_standings = [(pr.name, pr.points, pr.record) for pr in self.results]
 
-    def test_can_parse_de(self):
-        self.text = load_test_html("challonge_de_ranking.html")
-        self.results = challonge.parse_standings_page(self.text)
+    def test_can_parse(self):
         want_standings = [
-            ("Jari Rentsch", 10, (3, 0, 1)),
-            ("Aleksander Colovic", 9, (3, 1, 0)),
-            ("Derek Kwan", 9, (3, 1, 0)),
-            ("Mikko Tuhkannen", 9, (3, 1, 0)),
+            ("Pascal Richter", 12, (4, 0, 0)),
+            ("Guillaume Berclaz", 9, (3, 1, 0)),
+            ("Michael Geisser", 9, (3, 1, 0)),
         ]
-        got_standings = [(pr.name, pr.points, pr.record) for pr in self.results[:4]]
-        self.assertEqual(want_standings, got_standings)
+
+        self.assertEqual(want_standings, self.got_standings[:3])
+
+    def test_can_parse_draws(self):
+        self.assertEqual(("Oliver Schurter", 4, (1, 2, 1)), self.got_standings[9])
+
+    def test_byes_awarded_as_wins(self):
+        self.assertEqual(("Jérèmie Boens", 3, (1, 3, 0)), self.got_standings[12])
+
+    def test_byes_not_awarded_for_drops(self):
+        """Challonge gives dropped players byes that count as wins. We check, that those are not counted."""
+        self.assertEqual(("Daniel Brünisholz", 0, (0, 3, 0)), self.got_standings[13])
 
 
 class ChallongeCleanUrlTest(TestCase):

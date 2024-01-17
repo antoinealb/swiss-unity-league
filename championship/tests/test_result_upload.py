@@ -298,7 +298,7 @@ class ChallongeImportTest(TestCase):
 
     def mock_response(self, requests_get):
         resp = MagicMock()
-        resp.content = load_test_html("challonge_with_drops.html").encode()
+        resp.content = load_test_html("challonge_new_ranking.html").encode()
         requests_get.return_value = resp
 
     @patch("requests.get")
@@ -310,22 +310,13 @@ class ChallongeImportTest(TestCase):
 
         results = EventPlayerResult.objects.filter(event=self.event).order_by("id")[:]
 
-        # hardcoded spot checks from the tournament
-        self.assertEqual(len(results), 50)
-        # Player that dropped after 2-1
-        player_id = 36
-        self.assertEqual(results[player_id].points, 6)
+        self.assertEqual(len(results), 14)
+        player_id = 1
+        self.assertEqual(results[player_id].points, 9)
         self.assertEqual(results[player_id].draw_count, 0)
         self.assertEqual(results[player_id].loss_count, 1)
-        self.assertEqual(results[player_id].win_count, 2)
-        self.assertEqual(results[player_id].ranking, 37)
-        # Player that dropped after 2-2-1
-        player_id = 30
-        self.assertEqual(results[player_id].points, 7)
-        self.assertEqual(results[player_id].draw_count, 1)
-        self.assertEqual(results[player_id].loss_count, 2)
-        self.assertEqual(results[player_id].win_count, 2)
-        self.assertEqual(results[player_id].ranking, 31)
+        self.assertEqual(results[player_id].win_count, 3)
+        self.assertEqual(results[player_id].ranking, 2)
 
     def test_correctly_handles_wrong_url(self):
         self.login()
