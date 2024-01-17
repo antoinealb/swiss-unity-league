@@ -12,7 +12,6 @@ from .models import (
 from crispy_forms.helper import FormHelper
 from crispy_forms.layout import Submit, Layout, Div, Field
 from tinymce.widgets import TinyMCE
-import datetime
 import bleach
 
 
@@ -309,7 +308,6 @@ class ResultsDeleteForm(forms.Form, SubmitButtonMixin):
     event.
     """
 
-    pass
 
 
 class TopPlayersEmailForm(forms.Form):

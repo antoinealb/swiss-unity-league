@@ -1,4 +1,3 @@
-import datetime
 import textwrap
 
 from django.core.management.base import BaseCommand

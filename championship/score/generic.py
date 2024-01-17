@@ -3,7 +3,6 @@
 The code in this file is mostly season-independent.
 """
 
-from collections import defaultdict
 from typing import Iterable, Any
 
 from django.conf import settings

@@ -5,7 +5,6 @@ from django.contrib.auth.models import User
 from django.contrib.auth.hashers import make_password
 from .models import *
 from .season import SEASON_2023, SEASON_2024
-import datetime
 import random
 
 

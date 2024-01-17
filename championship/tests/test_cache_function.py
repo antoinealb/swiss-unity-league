@@ -1,6 +1,5 @@
 from django.test import TestCase
 from unittest.mock import patch, ANY
-import hashlib
 
 from championship.cache_function import cache_function
 

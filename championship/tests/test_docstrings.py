@@ -1,4 +1,3 @@
-import unittest
 import doctest
 from championship import views
 from championship import admin

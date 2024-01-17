@@ -11,7 +11,7 @@ from championship.factories import (
     EventOrganizerFactory,
     EventPlayerResultFactory,
 )
-from subprocess import check_call, SubprocessError, DEVNULL
+from subprocess import check_call, DEVNULL
 
 
 def has_latex():

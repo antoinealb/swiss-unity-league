@@ -1,5 +1,3 @@
-from typing import Iterable
-import datetime
 from django.db import models
 from django.urls import reverse
 from championship.models import EventOrganizer, Event, EventPlayerResult
