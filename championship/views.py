@@ -669,8 +669,11 @@ class CreateLinkParserResultsView(LoginRequiredMixin, CreateResultsView):
                 return
 
             return list(self.extract_standings_from_page(response.content.decode()))
-        except:
-            messages.error(self.request, "Could not fetch standings.")
+        except Exception as e:
+            message = "Could not fetch standings."
+            if hasattr(e, "ui_error_message"):
+                message = e.ui_error_message
+            messages.error(self.request, message)
 
 
 class CreateFileParserResultsView(LoginRequiredMixin, CreateResultsView):

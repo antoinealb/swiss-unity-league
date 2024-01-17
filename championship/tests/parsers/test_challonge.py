@@ -62,6 +62,19 @@ class ChallongeStandingsParser(TestCase):
         self.assertEqual(("Daniel Brünisholz", 0, (0, 3, 0)), self.got_standings[13])
 
 
+class ChallongeSwissRoundsTest(TestCase):
+    def test_detects_no_swiss_rounds(self):
+        with self.assertRaises(challonge.TournamentNotSwissError):
+            self.text = load_test_html("challonge_new_ranking.html").replace(
+                "Swiss", "Round Robin"
+            )
+            self.results = challonge.parse_standings_page(self.text)
+
+    def test_parse_garbage(self):
+        with self.assertRaises(AttributeError):
+            challonge.parse_standings_page("Foobar")
+
+
 class ChallongeCleanUrlTest(TestCase):
     def test_positive_clean_url(self):
         tests = [

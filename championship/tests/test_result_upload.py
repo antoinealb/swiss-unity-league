@@ -2,6 +2,7 @@ from django.test import TestCase, Client
 from django.contrib.auth.models import User
 from django.urls import reverse
 from championship.models import EventPlayerResult
+from championship.parsers.challonge import TournamentNotSwissError
 from championship.tests.parsers.utils import load_test_html
 from championship.factories import *
 from django.core.files.uploadedfile import SimpleUploadedFile
@@ -317,6 +318,21 @@ class ChallongeImportTest(TestCase):
         self.assertEqual(results[player_id].loss_count, 1)
         self.assertEqual(results[player_id].win_count, 3)
         self.assertEqual(results[player_id].ranking, 2)
+
+    @patch("requests.get")
+    def test_swiss_round_error(self, requests_get):
+        self.login()
+        resp = MagicMock()
+        resp.content = (
+            load_test_html("challonge_new_ranking.html")
+            .replace("Swiss", "Round Robin")
+            .encode()
+        )
+        requests_get.return_value = resp
+
+        response = self.client.post(reverse("results_create_challonge"), self.data)
+
+        self.assertContains(response, TournamentNotSwissError.ui_error_message)
 
     def test_correctly_handles_wrong_url(self):
         self.login()
