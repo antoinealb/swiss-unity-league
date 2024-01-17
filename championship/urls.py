@@ -1,6 +1,7 @@
 from django.urls import path, include
 from rest_framework import routers
 from championship.importers import IMPORTER_LIST
+from championship.ical_feeds import *
 from . import views
 
 
@@ -93,4 +94,5 @@ urlpatterns = [
         "address/<pk>/delete/", views.AddressDeleteView.as_view(), name="address_delete"
     ),
     path("api/", include(api_router.urls)),
+    path("events.ics", LargeEventFeed(), name="events_feed"),
 ]
