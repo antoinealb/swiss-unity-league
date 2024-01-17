@@ -648,6 +648,10 @@ class CreateLinkParserResultsView(LoginRequiredMixin, CreateResultsView):
         kwargs.update({"help_text": self.help_text, "placeholder": self.placeholder})
         return kwargs
 
+    def validate_response(self, response: requests.Response):
+        """Validates the response and returns True if it is valid."""
+        return True
+
     def get_results(self, form):
         url = form.cleaned_data["url"]
         url = self.clean_url(url)
@@ -661,6 +665,10 @@ class CreateLinkParserResultsView(LoginRequiredMixin, CreateResultsView):
             }
             response = requests.get(url, headers=headers)
             response.raise_for_status()
+
+            if not self.validate_response(response):
+                return
+
             return list(self.extract_standings_from_page(response.content.decode()))
         except:
             messages.error(self.request, "Could not fetch standings.")
@@ -713,6 +721,24 @@ class CreateAetherhubResultsView(CreateLinkParserResultsView):
         tourney = re.match(url_re, url)
         if tourney:
             return f"https://aetherhub.com/Tourney/RoundTourney/{tourney.group(1)}"
+
+    def validate_response(self, response):
+        if response.history and response.history[0].status_code == 302:
+            messages.error(
+                self.request,
+                "The tournament was not found. Make sure it is a public tournament.",
+            )
+            return False
+        if (
+            response.status_code == 200
+            and "Finished: " not in response.content.decode()
+        ):
+            messages.error(
+                self.request,
+                "The tournament is not finished. Please enter the results for all rounds and end the tournament.",
+            )
+            return False
+        return True
 
 
 class CreateChallongeResultsView(CreateLinkParserResultsView):
