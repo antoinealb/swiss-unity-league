@@ -21,12 +21,12 @@ class LargeEventFeed(ICalFeed):
 
     def item_start_datetime(self, item) -> datetime.datetime:
         if item.start_time:
-            return item.date + item.start_time
+            return datetime.datetime.combine(item.date, item.start_time)
         else:
             return item.date
 
     def item_end_datetime(self, item) -> datetime.datetime:
         if item.end_time:
-            return item.date + item.end_time
+            return datetime.datetime.combine(item.date, item.end_time)
         else:
             return item.date + datetime.timedelta(days=1)
