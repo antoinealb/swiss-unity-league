@@ -11,7 +11,7 @@ class LargeEventFeed(ICalFeed):
     file_name = "events.ics"
 
     def items(self):
-        return Event.objects.all().order_by("-date")
+        return Event.objects.exclude(category=Event.Category.REGULAR).order_by("-date")
 
     def item_title(self, item):
         return f"[{item.organizer.name}] {item.name}"
