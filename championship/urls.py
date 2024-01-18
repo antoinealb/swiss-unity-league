@@ -95,4 +95,9 @@ urlpatterns = [
     ),
     path("api/", include(api_router.urls)),
     path("events.ics", LargeEventFeed(), name="events_feed"),
+    path(
+        "past-events/<slug:slug>/",
+        views.PastEventViewSet.as_view({"get": "list"}),
+        name="past-events-by-season",
+    ),
 ]

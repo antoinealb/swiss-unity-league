@@ -25,16 +25,16 @@
         <li><strong>SUL Premier</strong>: Top-tier competitive Magic tournaments, attracting players from all around Switzerland.</li>
     </ul>
     <a href="{% url 'organizer_view' %}" class="btn btn-secondary mb-2" title="View the events and detailed info of each MTG organizer">View events by organizer</a>
-    <div x-data="events()" x-init="loadEvents()">
+    <div x-data="events({{ season_urls }})" x-init="loadEvents()">
         {% for i in 2|range %}
             <div class="{% cycle 'btn-group d-none d-md-flex' 'btn-group-vertical d-block d-md-none' %}" role="group" aria-label="Filtering the events">
 
                 <nav class="btn-group">
-                    <button class="btn btn-secondary dropdown-toggle" id="futureEventsMenuButton" type="button" data-bs-toggle="dropdown" x-text="currentEventType"
+                    <button class="btn btn-secondary dropdown-toggle" id="futureEventsMenuButton" type="button" data-bs-toggle="dropdown" x-text="currentSeason"
                         aria-haspopup="true" aria-expanded="false" title="View only future or past events"></button>
                     <div class="dropdown-menu" aria-labelledby="futureEventsMenuButton">
-                        <template x-for="type in Object.keys(eventTypes)">
-                            <div class="dropdown-item" x-text="type" x-on:click="loadEvents(type); currentEventType = type"></div>
+                        <template x-for="type in Object.keys(eventsPerSeason)">
+                            <div class="dropdown-item" x-text="type" x-on:click="loadEvents(type); currentSeason = type"></div>
                         </template>
                     </div>
                 </nav>
