@@ -19,6 +19,11 @@ class LargeEventFeed(ICalFeed):
     def item_description(self, item):
         return item.description
 
+    def item_location(self, item):
+        if item.address:
+            return str(item.address)
+        return None
+
     def item_start_datetime(self, item) -> datetime.datetime:
         if item.start_time:
             return datetime.datetime.combine(item.date, item.start_time)

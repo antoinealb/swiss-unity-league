@@ -127,7 +127,7 @@ class Address(models.Model):
 
     def get_google_maps_url(self):
         """Return a URL for this address on Google Maps."""
-        query = urllib.parse.quote(self.__str__())
+        query = urllib.parse.quote(str(self))
         return f"https://www.google.com/maps/search/?api=1&query={query}"
 
 
