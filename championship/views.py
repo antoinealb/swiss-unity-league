@@ -39,6 +39,7 @@ from championship.season import (
 )
 
 from championship.parsers.parse_result import ParseResult
+from mtg_championship_site.settings import DEFAULT_SEASON
 
 from .models import *
 from invoicing.models import Invoice
@@ -992,9 +993,19 @@ class PastEventViewSet(viewsets.ReadOnlyModelViewSet):
     def get_queryset(self):
         """Returns all Events in the past."""
 
+        self.slug = self.kwargs.get("slug")
+        try:
+            self.current_season = find_season_by_slug(self.slug)
+        except KeyError:
+            raise Http404(f"Unknown season {self.slug}")
+
         # This needs to be a function (get_queryset) instead of an attribute as
         # otherwise the today means "when the app was started.
         qs = Event.objects.filter(date__lt=datetime.date.today())
+        qs = qs.filter(
+            date__gte=self.current_season.start_date,
+            date__lte=self.current_season.end_date,
+        )
         qs = qs.select_related("organizer", "address", "organizer__default_address")
         return qs.order_by("-date")
 
@@ -1023,6 +1034,17 @@ class ListFormats(viewsets.ViewSet):
 
 class FutureEventView(TemplateView):
     template_name = "championship/future_events.html"
+
+    def get_context_data(self, **kwargs: Any):
+        context = super().get_context_data(**kwargs)
+        future_events = {"Upcoming": reverse("future-events-list")}
+        past_events_each_season = [
+            {s.name: reverse("past-events-by-season", kwargs={"slug": s.slug})}
+            for s in SEASON_LIST
+        ]
+        past_events_each_season.reverse()
+        context["season_urls"] = [future_events] + past_events_each_season
+        return context
 
 
 class EventOrganizerDetailView(DetailView):

@@ -18,7 +18,7 @@ class EventApiTestCase(TestCase):
         event_address = AddressFactory(
             region=Address.Region.AARGAU, country=Address.Country.GERMANY, organizer=eo
         )
-        base_date = datetime.date(2020, 1, 1)
+        base_date = datetime.date(2023, 1, 1)
         older_date = base_date + datetime.timedelta(days=2)
         younger_date = base_date + datetime.timedelta(days=1)
         a = EventFactory(
@@ -38,14 +38,16 @@ class EventApiTestCase(TestCase):
             format=Event.Format.MODERN,
             category=Event.Category.REGIONAL,
         )
-        resp = Client().get(reverse("past-events-list"))
+        resp = Client().get(
+            reverse("past-events-by-season", kwargs={"slug": SEASON_2023.slug})
+        )
         want = [
             {
                 "name": a.name,
                 "date": older_date.strftime("%a, %d.%m.%Y"),
                 "time": "10:00 - 19:00",
-                "startDateTime": "2020-01-03T10:00:00",
-                "endDateTime": "2020-01-03T19:00:00",
+                "startDateTime": "2023-01-03T10:00:00",
+                "endDateTime": "2023-01-03T19:00:00",
                 "organizer": eo.name,
                 "format": "Legacy",
                 "locationName": event_address.location_name,
@@ -62,8 +64,8 @@ class EventApiTestCase(TestCase):
                 "name": b.name,
                 "date": younger_date.strftime("%a, %d.%m.%Y"),
                 "time": "12:00 - 14:00",
-                "startDateTime": "2020-01-02T12:00:00",
-                "endDateTime": "2020-01-02T14:00:00",
+                "startDateTime": "2023-01-02T12:00:00",
+                "endDateTime": "2023-01-02T14:00:00",
                 "organizer": eo.name,
                 "format": "Modern",
                 "locationName": eo.default_address.location_name,
