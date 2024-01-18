@@ -8,7 +8,9 @@ class ICalFeedGetTest(TestCase):
     def test_ical_feed_get(self):
         """Basic smoke test that just exercises the view and checks that the
         event appears in it."""
-        e = EventFactory(category=Event.Category.PREMIER, start_time=datetime.time(8, 0))
+        e = EventFactory(
+            category=Event.Category.PREMIER, start_time=datetime.time(8, 0)
+        )
         client = Client()
         resp = client.get("/events.ics")
         self.assertContains(resp, e.name)
