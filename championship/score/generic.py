@@ -77,7 +77,7 @@ def _score_cache_key(season):
     return f"compute_scoresS{season.slug}"
 
 
-@cache_function(cache_key=_score_cache_key)
+@cache_function(cache_key=_score_cache_key, cache_ttl=15 * 60)
 @scores_computation_time_seconds.time()
 def compute_scores(season: Season) -> dict[int, LeaderboardScore]:
     scores_by_player: dict[int, Any] = {}
