@@ -29,12 +29,12 @@ def _get_indices(table):
 
 
 def _check_tournament_swiss(soup):
-    meta_data = soup.find("ul", class_="meta inline-meta-list -themed is-hidden-mobile")
+    meta_data = soup.find("ul", class_="redesigned-meta-list")
     for item in meta_data.find_all("li", {"class": "item"}):
-        if item.find("i", {"class": "icon fa fa-trophy"}):
+        if item.find("div", {"class": "item-label"}).text == "Format":
             tournament_type = item.find("div", class_="text").text
     if tournament_type != "Swiss":
-        raise ValueError("Tournament is not a Swiss tournament")
+        raise TournamentNotSwissError()
 
 
 def _standings(soup):
@@ -82,3 +82,10 @@ def clean_url(url):
         if 7 <= len(tourney_id) <= 9:
             return https + challonge + tourney_id + "/standings"
     raise ValueError("No tournament id found")
+
+
+class TournamentNotSwissError(ValueError):
+    def __init__(self, message=f"Tournament is not Swiss.", *args, **kwargs):
+        super().__init__(message, *args, **kwargs)
+
+    ui_error_message = f"The tournament you are trying to upload is not played with Swiss rounds. Only Swiss rounds tournaments can be uploaded."
