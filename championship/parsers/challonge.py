@@ -85,7 +85,7 @@ def clean_url(url):
 
 
 class TournamentNotSwissError(ValueError):
-    def __init__(self, message=f"Tournament is not Swiss.", *args, **kwargs):
+    def __init__(self, message="Tournament is not Swiss.", *args, **kwargs):
         super().__init__(message, *args, **kwargs)
 
-    ui_error_message = f"The tournament you are trying to upload is not played with Swiss rounds. Only Swiss rounds tournaments can be uploaded."
+    ui_error_message = "The tournament you are trying to upload is not played with Swiss rounds. Only Swiss rounds tournaments can be uploaded."
