@@ -11,6 +11,7 @@ from championship.factories import *
 from championship.models import *
 from championship.score import compute_scores
 from championship.score.season_2023 import ScoreMethod2023
+from championship.score.types import QualificationType
 from championship.season import SEASON_2023
 
 
@@ -415,8 +416,10 @@ class TestScoresQualified(TestCase):
         num_qualified = 40
         players = [PlayerFactory() for _ in range(num_players)]
         create_test_tournament(players)
-        byes = [s.qualified for s in self.compute_scores().values()]
-        want_byes = [True] * num_qualified + [False] * (num_players - num_qualified)
+        byes = [s.qualification_type for s in self.compute_scores().values()]
+        want_byes = [QualificationType.LEADERBOARD] * num_qualified + [
+            QualificationType.NONE
+        ] * (num_players - num_qualified)
         self.assertEqual(want_byes, byes)
 
 
