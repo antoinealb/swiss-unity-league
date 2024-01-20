@@ -354,7 +354,7 @@ class TestScoresQualified(TestCase):
         )
         self.assertEqual(want_qualified, got_qualified)
 
-    def test_top_32_leaderboard_qualified(self):
+    def test_top_leaderboard_qualified(self):
         num_players = 39
         players = [PlayerFactory() for _ in range(num_players)]
 
@@ -378,7 +378,7 @@ class TestScoresQualified(TestCase):
         create_test_tournament(players)
         self.assert_qualifications(num_players, num_direct=2)
 
-    def test_direct_qualification_outside_top_32(self):
+    def test_direct_qualification_outside_top_leaderboard(self):
         num_players = 60
         players = [PlayerFactory() for _ in range(num_players)]
 

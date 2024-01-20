@@ -1,6 +1,6 @@
 from dataclasses import dataclass
 import datetime
-from championship.models import Event, EventPlayerResult
+from championship.models import Event, EventPlayerResult, Count
 from championship.score.types import LeaderboardScore, QualificationType
 from championship.season import SEASON_2024
 
@@ -53,7 +53,7 @@ class ScoreMethod2024:
         ),
     ]
     TOTAL_QUALIFICATION_SLOTS = 32
-    MIN_PLAYES_FOR_DIRECT_QUALIFICATION = 40
+    MIN_PLAYERS_FOR_DIRECT_QUALIFICATION = 40
 
     @classmethod
     def _qps_for_result(
@@ -117,27 +117,27 @@ class ScoreMethod2024:
         Returns a dict of (player_id: Score)
 
         """
+        # Premier events with 40 or more players award a direct qualification to the winner of the event.
+        # If that player is already qualified, then the invite is passed to the next player in the standings of the event.
         events = (
             Event.objects.filter(
                 category=Event.Category.PREMIER,
                 date__gte=SEASON_2024.start_date,
                 date__lte=SEASON_2024.end_date,
             )
+            .annotate(result_cnt=Count("eventplayerresult"))
+            .filter(result_cnt__gte=cls.MIN_PLAYERS_FOR_DIRECT_QUALIFICATION)
             .prefetch_related("eventplayerresult_set")
             .order_by("-date")
         )
-        # Premier events with 40 or more players award a direct qualification to the winner of the event.
-        # If that player is already qualified, then the invite is passed to the next player in the standings of the event.
         direct_qualification_reasons_by_player = {}
         for event in events:
-            results_for_event = event.eventplayerresult_set.all()
-            if len(results_for_event) >= cls.MIN_PLAYES_FOR_DIRECT_QUALIFICATION:
-                for result in sorted(results_for_event):
-                    if result.player_id not in direct_qualification_reasons_by_player:
-                        direct_qualification_reasons_by_player[
-                            result.player_id
-                        ] = f"Direct qualification for {result.get_ranking_display()} place at '{event.name}'"
-                        break
+            for result in sorted(event.eventplayerresult_set.all()):
+                if result.player_id not in direct_qualification_reasons_by_player:
+                    direct_qualification_reasons_by_player[
+                        result.player_id
+                    ] = f"Direct qualification for {result.get_ranking_display()} place at '{event.name}'"
+                    break
 
         if SEASON_2024.can_enter_results(datetime.date.today()):
             leaderboard_reason = "This place qualifies for the SUL Invitational tournament at the end of the Season"
