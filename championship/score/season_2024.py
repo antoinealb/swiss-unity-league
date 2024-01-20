@@ -1,6 +1,8 @@
 from dataclasses import dataclass
-from championship.models import Event, EventPlayerResult
-from championship.score.types import LeaderboardScore
+import datetime
+from championship.models import Event, EventPlayerResult, Count
+from championship.score.types import LeaderboardScore, QualificationType
+from championship.season import SEASON_2024
 
 
 class ScoreMethod2024:
@@ -50,6 +52,8 @@ class ScoreMethod2024:
             },
         ),
     ]
+    TOTAL_QUALIFICATION_SLOTS = 32
+    MIN_PLAYERS_FOR_DIRECT_QUALIFICATION = 40
 
     @classmethod
     def _qps_for_result(
@@ -101,7 +105,8 @@ class ScoreMethod2024:
 
     @classmethod
     def finalize_scores(
-        cls, scores_by_player: dict[int, Score]
+        cls,
+        scores_by_player: dict[int, Score],
     ) -> dict[int, LeaderboardScore]:
         """Implements the last step of score processing.
 
@@ -112,21 +117,61 @@ class ScoreMethod2024:
         Returns a dict of (player_id: Score)
 
         """
+        # Premier events with 40 or more players award a direct qualification to the winner of the event.
+        # If that player is already qualified, then the invite is passed to the next player in the standings of the event.
+        events = (
+            Event.objects.filter(
+                category=Event.Category.PREMIER,
+                date__gte=SEASON_2024.start_date,
+                date__lte=SEASON_2024.end_date,
+            )
+            .annotate(result_cnt=Count("eventplayerresult"))
+            .filter(result_cnt__gte=cls.MIN_PLAYERS_FOR_DIRECT_QUALIFICATION)
+            .prefetch_related("eventplayerresult_set")
+            .order_by("-date")
+        )
+        direct_qualification_reasons_by_player = {}
+        for event in events:
+            for result in sorted(event.eventplayerresult_set.all()):
+                if result.player_id not in direct_qualification_reasons_by_player:
+                    direct_qualification_reasons_by_player[
+                        result.player_id
+                    ] = f"Direct qualification for {result.get_ranking_display()} place at '{event.name}'"
+                    break
+
+        if SEASON_2024.can_enter_results(datetime.date.today()):
+            leaderboard_reason = "This place qualifies for the SUL Invitational tournament at the end of the Season"
+        else:
+            leaderboard_reason = "Qualified for SUL Invitational tournament"
+
+        num_leaderboard_qualifications = cls.TOTAL_QUALIFICATION_SLOTS - len(
+            direct_qualification_reasons_by_player
+        )
         sorted_scores = sorted(
             scores_by_player.items(), key=lambda x: x[1].qps, reverse=True
         )
         scores = {}
-        for i, (player, score) in enumerate(sorted_scores):
+        for i, (player_id, score) in enumerate(sorted_scores):
             rank = i + 1
             byes = cls._byes_for_rank(rank) + score.byes
             byes = min(byes, cls.MAX_BYES)
 
-            scores[player] = LeaderboardScore(
+            scores[player_id] = LeaderboardScore(
                 total_score=score.qps,
                 rank=rank,
                 byes=byes,
-                qualified=rank <= 32,
             )
+            if player_id in direct_qualification_reasons_by_player:
+                scores[player_id].qualification_type = QualificationType.DIRECT
+                scores[
+                    player_id
+                ].qualification_reason = direct_qualification_reasons_by_player[
+                    player_id
+                ]
+            elif num_leaderboard_qualifications > 0:
+                scores[player_id].qualification_type = QualificationType.LEADERBOARD
+                scores[player_id].qualification_reason = leaderboard_reason
+                num_leaderboard_qualifications -= 1
 
         return scores
 

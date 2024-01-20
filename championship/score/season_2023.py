@@ -1,6 +1,6 @@
 from dataclasses import dataclass
 from championship.models import Event, EventPlayerResult
-from championship.score.types import LeaderboardScore
+from championship.score.types import LeaderboardScore, QualificationType
 
 
 class ScoreMethod2023:
@@ -130,8 +130,12 @@ class ScoreMethod2023:
                 total_score=score.qps,
                 rank=rank,
                 byes=byes,
-                qualified=rank <= 40,
             )
+            if rank <= 40:
+                scores[player].qualification_type = QualificationType.LEADERBOARD
+                scores[
+                    player
+                ].qualification_reason = "Qualified for the SUL Invitational tournament"
 
         return scores
 

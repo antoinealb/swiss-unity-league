@@ -25,8 +25,6 @@ class ScoreMethodAll:
         for i, (player, score) in enumerate(sorted_scores):
             rank = i + 1
 
-            scores[player] = LeaderboardScore(
-                total_score=score.qps, rank=rank, byes=0, qualified=False
-            )
+            scores[player] = LeaderboardScore(total_score=score.qps, rank=rank)
 
         return scores
