@@ -52,7 +52,7 @@ class ScoreMethod2024:
             },
         ),
     ]
-    TOTAL_QUALIFICATION_SLOTS = 32
+    TOTAL_QUALIFICATION_SLOTS = 40
     MIN_PLAYERS_FOR_DIRECT_QUALIFICATION = 40
 
     @classmethod
