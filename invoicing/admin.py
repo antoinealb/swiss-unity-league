@@ -1,7 +1,7 @@
 from django.contrib import admin
 from django.http import HttpResponse
 from django_tex.core import compile_template_to_pdf
-from invoicing.models import Invoice
+from invoicing.models import Invoice, PayeeAddress
 from invoicing.views import get_invoice_pdf_context, INVOICE_TEMPLATE
 from typing import Iterable
 import tempfile
@@ -67,3 +67,4 @@ class InvoiceAdmin(admin.ModelAdmin):
 
 
 admin.site.register(Invoice, InvoiceAdmin)
+admin.site.register(PayeeAddress)

@@ -1,8 +1,15 @@
 import datetime
 import factory
 from factory.django import DjangoModelFactory
-from .models import Invoice
+from .models import Invoice, PayeeAddress
 from championship.factories import EventOrganizerFactory
+
+
+class PayeeAddressFactory(DjangoModelFactory):
+    class Meta:
+        model = PayeeAddress
+
+    address = factory.Faker("address")
 
 
 class InvoiceFactory(DjangoModelFactory):
@@ -20,3 +27,4 @@ class InvoiceFactory(DjangoModelFactory):
         start_date=datetime.date(2022, 4, 1),
         end_date=datetime.date(2022, 7, 1),
     )
+    payee_address = factory.SubFactory(PayeeAddressFactory)

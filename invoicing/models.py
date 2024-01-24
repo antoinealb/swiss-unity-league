@@ -27,6 +27,20 @@ def fee_for_event(event: Event) -> int:
     return fee
 
 
+class PayeeAddress(models.Model):
+    """Informations for payment. Added at the end of an invoice PDF."""
+
+    name = models.CharField(max_length=200)
+    address = models.TextField(blank=False)
+    banking_coordinates = models.TextField(
+        blank=False, help_text="Banking coordinates, i.e. IBAN, BIC, address"
+    )
+
+    def __str__(self) -> str:
+        addr = self.address.replace("\n", " ")
+        return f"{self.name} {addr}"
+
+
 class Invoice(models.Model):
     """All the information required for a single invoice.
 
@@ -53,6 +67,7 @@ class Invoice(models.Model):
         help_text="Notes about this invoice, only visible by Unity League staff.",
         blank=True,
     )
+    payee_address = models.ForeignKey(PayeeAddress, on_delete=models.PROTECT)
 
     def __str__(self) -> str:
         fmt = "%d.%m.%Y"
