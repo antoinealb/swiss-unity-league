@@ -196,11 +196,13 @@ class ImporterSelectionForm(forms.Form, SubmitButtonMixin):
         + "We will try to support as many tools as possible, but we also appreciate it if you can switch to one of the tools already supported!",
     )
 
+
 def validate_result_format(value: str):
     try:
         parse_record(value)
     except ValueError:
         raise ValidationError("Score should be in the win-loss-draw format.")
+
 
 class SingleResultForm(forms.Form):
     name = forms.CharField(
