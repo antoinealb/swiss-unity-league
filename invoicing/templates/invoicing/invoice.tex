@@ -4,10 +4,10 @@
     parskip=full,
     fontsize=10pt,
     firstfoot=false,
-    fromphone=true,
+    fromphone=false,
     fromemail=true,
     fromlogo=true,
-    fromfax=false
+    fromfax=false,
     fromrule=false,
     foldmarks=false,
     enlargefirstpage,
@@ -30,10 +30,9 @@
 
 \DeclareSIUnit\chf{\textsc{chf}}
 
-\setkomavar{fromname}{Antoine Albertelli}
-\setkomavar{fromaddress}{Swiss Unity League\\Binzallee 6\\8055 Zürich}
-\setkomavar{fromphone}{079 384 38 62}
-\setkomavar{fromemail}{antoine@antoinealb.net}
+\setkomavar{fromname}{ {{- invoice.payee_address.name -}} }
+\setkomavar{fromaddress}{ {{- invoice.payee_address.address|linebreaks -}} }
+\setkomavar{fromemail}{leoninleague@gmail.com}
 \setkomavar{fromurl}{unityleague.ch}
 \setkomavar{fromlogo}{\includegraphics[scale=.3]{ {{- logo_path -}} } \vspace{-1cm}}
 \setkomavar{myref}{ {{- invoice.reference -}} }
@@ -73,12 +72,7 @@ Please pay the amount to the following bank account under 30 days.
 Please include the text ``{{ invoice.reference }}'' as part of the wire transfer message.
 
 \begin{center}
-    IBAN: CH93 0024 3243 2366 2340 E (Bank: UBS)\\
-    Swiss Unity League\\
-    c/o Antoine Albertelli\\
-    Binzallee 6\\
-    8055 Zürich\\
-    BIC: UBSWCHZH80A\\
+    {{- invoice.payee_address.banking_coordinates|linebreaks -}}
 \end{center}
 
 \closing{Best wishes,}

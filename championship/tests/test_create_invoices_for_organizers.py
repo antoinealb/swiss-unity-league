@@ -53,7 +53,7 @@ class CreateInvoiceForOrganizerTestCase(TestCase):
         for o in self.organizers:
             self.assertEqual(1, Invoice.objects.filter(event_organizer=o).count())
 
-    def test_invoices_get_attached_to_the_latest_payee_addres(self):
+    def test_invoices_get_attached_to_the_latest_payee_address(self):
         """Check that we attach invoices to the most recent payee address."""
         for o in self.organizers:
             self.create_fake_event_with_results(o)
