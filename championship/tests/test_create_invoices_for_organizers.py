@@ -5,6 +5,7 @@ from django.urls import reverse
 from championship.factories import *
 from championship.models import *
 from invoicing.models import Invoice
+from invoicing.factories import PayeeAddressFactory
 
 
 class CreateInvoiceForOrganizerTestCase(TestCase):
@@ -15,6 +16,7 @@ class CreateInvoiceForOrganizerTestCase(TestCase):
         self.client = Client()
         self.client.login(username="test", password="test")
         self.organizers = [EventOrganizerFactory() for _ in range(3)]
+        self.address = PayeeAddressFactory()
 
     def create_invoices_for_organizers(self, organizers):
         data = {
@@ -50,6 +52,22 @@ class CreateInvoiceForOrganizerTestCase(TestCase):
         # We should have one invoice for each organizer
         for o in self.organizers:
             self.assertEqual(1, Invoice.objects.filter(event_organizer=o).count())
+
+    def test_invoices_get_attached_to_the_latest_payee_addres(self):
+        """Check that we attach invoices to the most recent payee address."""
+        for o in self.organizers:
+            self.create_fake_event_with_results(o)
+
+        pa = PayeeAddressFactory()
+
+        self.create_invoices_for_organizers(self.organizers)
+
+        # All invoices should have the new payee address
+        self.assertEqual(
+            len(self.organizers),
+            Invoice.objects.filter(payee_address=pa).count(),
+            "All invoices should have the most recent payee address",
+        )
 
     def test_does_not_create_invoice_when_there_are_no_events(self):
         """No invoice is created when the organizer has no events."""
