@@ -944,6 +944,11 @@ class ResultUpdateView(UpdateView):
     form_class = EventPlayerResultForm
     template_name = "championship/update_result.html"
 
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context["players"] = Player.leaderboard_objects.all()
+        return context
+
     def dispatch(self, request, *args, **kwargs):
         event = self.get_object().event
         organizer_allowed_to_edit = (
@@ -1011,21 +1016,6 @@ class PastEventViewSet(viewsets.ReadOnlyModelViewSet):
         )
         qs = qs.select_related("organizer", "address", "organizer__default_address")
         return qs.order_by("-date")
-
-
-class AutoCompletePlayerViewSet(viewsets.ReadOnlyModelViewSet):
-    """
-    API endpoint that yields a list of players matching the search_name.
-    """
-
-    serializer_class = PlayerAutocompleteSerializer
-
-    def get_queryset(self):
-        search_name = self.request.query_params.get("search_name", "")
-        players = Player.objects.filter(name__icontains=search_name).order_by("name")[
-            :10
-        ]
-        return players
 
 
 class ListFormats(viewsets.ViewSet):

@@ -134,16 +134,3 @@ class UpdateRankingTest(TestCase):
         self.results[7].refresh_from_db()
         results = EventPlayerResult.objects.filter(event=self.event).order_by("ranking")
         self.assertEqual(self.results[6].ranking, 7)
-
-
-class PlayerAutocompleteTest(TestCase):
-    def setUp(self):
-        self.client = Client()
-        PlayerFactory(name="John")
-        PlayerFactory(name="Mike")
-        self.url = reverse("player-autocomplete-list")
-
-    def test_autocomplete(self):
-        response = self.client.get(self.url, {"search_name": "Jo"})
-        self.assertEqual(response.status_code, 200)
-        self.assertEqual(response.json(), [{"name": "John"}])

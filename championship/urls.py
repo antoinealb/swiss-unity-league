@@ -11,11 +11,6 @@ api_router.register(
 )
 api_router.register(r"formats", views.ListFormats, basename="formats")
 api_router.register(r"past-events", views.PastEventViewSet, basename="past-events")
-api_router.register(
-    r"player-autocomplete",
-    views.AutoCompletePlayerViewSet,
-    basename="player-autocomplete",
-)
 
 urlpatterns = [
     path(parser.to_url(), parser.view, name=parser.view_name)
