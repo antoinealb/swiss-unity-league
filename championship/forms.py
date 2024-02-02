@@ -63,11 +63,20 @@ You can copy/paste the description from a website like swissmtg.ch, and the form
 
 
 class EventPlayerResultForm(forms.ModelForm):
-    player_name = forms.CharField()
+    player_name = forms.CharField(
+        widget=forms.TextInput(attrs={"list": "players-datalist"})
+    )
 
     class Meta:
         model = EventPlayerResult
-        fields = ["win_count", "loss_count", "draw_count"]
+        fields = [
+            "player_name",
+            "win_count",
+            "loss_count",
+            "draw_count",
+            "deck_name",
+            "decklist_url",
+        ]
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
