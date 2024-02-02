@@ -133,9 +133,9 @@ class ScoreMethod2023:
             )
             if rank <= 40:
                 scores[player].qualification_type = QualificationType.LEADERBOARD
-                scores[
-                    player
-                ].qualification_reason = "Qualified for the SUL Invitational tournament"
+                scores[player].qualification_reason = (
+                    "Qualified for the SUL Invitational tournament"
+                )
 
         return scores
 

@@ -134,9 +134,9 @@ class ScoreMethod2024:
         for event in events:
             for result in sorted(event.eventplayerresult_set.all()):
                 if result.player_id not in direct_qualification_reasons_by_player:
-                    direct_qualification_reasons_by_player[
-                        result.player_id
-                    ] = f"Direct qualification for {result.get_ranking_display()} place at '{event.name}'"
+                    direct_qualification_reasons_by_player[result.player_id] = (
+                        f"Direct qualification for {result.get_ranking_display()} place at '{event.name}'"
+                    )
                     break
 
         if SEASON_2024.can_enter_results(datetime.date.today()):
@@ -163,11 +163,9 @@ class ScoreMethod2024:
             )
             if player_id in direct_qualification_reasons_by_player:
                 scores[player_id].qualification_type = QualificationType.DIRECT
-                scores[
-                    player_id
-                ].qualification_reason = direct_qualification_reasons_by_player[
-                    player_id
-                ]
+                scores[player_id].qualification_reason = (
+                    direct_qualification_reasons_by_player[player_id]
+                )
             elif num_leaderboard_qualifications > 0:
                 scores[player_id].qualification_type = QualificationType.LEADERBOARD
                 scores[player_id].qualification_reason = leaderboard_reason
