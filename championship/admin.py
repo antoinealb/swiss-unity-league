@@ -9,7 +9,7 @@ from django.contrib import messages
 from championship.forms import TopPlayersEmailForm
 from .models import *
 from championship.score import get_leaderboard
-from invoicing.models import Invoice
+from invoicing.models import Invoice, PayeeAddress
 from django.urls import path
 
 
@@ -198,6 +198,9 @@ class EventOrganizerAdmin(admin.ModelAdmin):
         permissions=["invoice"],
     )
     def create_invoices(self, request, queryset):
+        # We take the most recently created payee address (the one with the
+        # highest ID).
+        payee_address = PayeeAddress.objects.order_by("-id")[0]
         for organizer in queryset:
             last_invoice = (
                 Invoice.objects.filter(event_organizer=organizer)
@@ -228,7 +231,10 @@ class EventOrganizerAdmin(admin.ModelAdmin):
                 continue
 
             invoice = Invoice(
-                event_organizer=organizer, start_date=start_date, end_date=end_date
+                event_organizer=organizer,
+                start_date=start_date,
+                end_date=end_date,
+                payee_address=payee_address,
             )
 
             if invoice.total_amount > 0:

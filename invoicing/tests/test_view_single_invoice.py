@@ -37,7 +37,7 @@ class InvoiceRenderingTest(TestCase):
     def test_get_invoice(self):
         today = datetime.date.today()
         yesterday = today - datetime.timedelta(days=1)
-        invoice = Invoice.objects.create(
+        invoice = InvoiceFactory(
             event_organizer=self.to, start_date=yesterday, end_date=today
         )
         resp = self.client.get(reverse("invoice_get", args=(invoice.id,)))
