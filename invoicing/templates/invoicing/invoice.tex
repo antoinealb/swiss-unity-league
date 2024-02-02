@@ -32,7 +32,7 @@
 
 \setkomavar{fromname}{ {{- invoice.payee_address.name -}} }
 \setkomavar{fromaddress}{ {{- invoice.payee_address.address|linebreaks -}} }
-\setkomavar{fromemail}{leoninleague@gmail.com}
+\setkomavar{fromemail}{ {{- invoice.payee_address.email -}} }
 \setkomavar{fromurl}{unityleague.ch}
 \setkomavar{fromlogo}{\includegraphics[scale=.3]{ {{- logo_path -}} } \vspace{-1cm}}
 \setkomavar{myref}{ {{- invoice.reference -}} }

@@ -17,11 +17,16 @@ Binzallee 6
 8055 Zürich
 BIC: UBSWCHZH80A"""
 
+DEFAULT_EMAIL = "leoninleague@gmail.com"
+
 
 def forward(apps, schema_editor):
     PayeeAddress = apps.get_model("invoicing", "PayeeAddress")
     addr = PayeeAddress.objects.create(
-        name=DEFAULT_NAME, banking_coordinates=DEFAULT_BANKING, address=DEFAULT_ADDR
+        name=DEFAULT_NAME,
+        address=DEFAULT_ADDR,
+        email=DEFAULT_EMAIL,
+        banking_coordinates=DEFAULT_BANKING,
     )
 
     Invoice = apps.get_model("invoicing", "Invoice")
@@ -55,6 +60,7 @@ class Migration(migrations.Migration):
                     ),
                 ),
                 ("name", models.CharField(max_length=200)),
+                ("email", models.EmailField()),
                 ("address", models.TextField()),
                 (
                     "banking_coordinates",

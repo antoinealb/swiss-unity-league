@@ -32,6 +32,7 @@ class PayeeAddress(models.Model):
 
     name = models.CharField(max_length=200)
     address = models.TextField(blank=False)
+    email = models.EmailField()
     banking_coordinates = models.TextField(
         blank=False, help_text="Banking coordinates, i.e. IBAN, BIC, address"
     )
