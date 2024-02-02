@@ -939,15 +939,8 @@ def update_ranking_order(event):
         result.save()
 
 
-class ResultUpdateView(UpdateView):
-    model = EventPlayerResult
-    form_class = EventPlayerResultForm
-    template_name = "championship/update_result.html"
-
-    def get_context_data(self, **kwargs):
-        context = super().get_context_data(**kwargs)
-        context["players"] = Player.leaderboard_objects.all()
-        return context
+class ResultUpdatePermissionMixin:
+    """Contains the logic to check if the user is allowed to update a specific result."""
 
     def dispatch(self, request, *args, **kwargs):
         event = self.get_object().event
@@ -958,6 +951,17 @@ class ResultUpdateView(UpdateView):
             return super().dispatch(request, *args, **kwargs)
         else:
             return HttpResponseForbidden()
+
+
+class ResultUpdateView(ResultUpdatePermissionMixin, UpdateView):
+    model = EventPlayerResult
+    form_class = EventPlayerResultForm
+    template_name = "championship/update_result.html"
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context["players"] = Player.leaderboard_objects.all()
+        return context
 
     @transaction.atomic
     def form_valid(self, form):
@@ -972,6 +976,25 @@ class ResultUpdateView(UpdateView):
 
     def get_success_url(self):
         return reverse("event_details", args=[self.object.event.id])
+
+
+class SingleResultDeleteView(ResultUpdatePermissionMixin, CustomDeleteView):
+    model = EventPlayerResult
+
+    def get_success_url(self):
+        return reverse("event_details", args=[self.object.event.id])
+
+    def form_valid(self, form):
+        form_valid = super().form_valid(form)
+        update_ranking_order(self.object.event)
+        return form_valid
+
+    def delete(self, request, *args, **kwargs):
+        self.object = self.get_object()
+        self.object.delete()
+        if not EventPlayerResult.objects.filter(player=self.object.player_id).count():
+            self.object.player.delete()
+        return HttpResponseRedirect(self.get_success_url())
 
 
 class FutureEventViewSet(viewsets.ReadOnlyModelViewSet):

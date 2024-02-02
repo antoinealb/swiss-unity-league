@@ -421,6 +421,7 @@ class EventPlayerResult(models.Model):
 
     class Meta:
         indexes = [models.Index(fields=["event"])]
+        verbose_name = "Result"
 
     def __str__(self):
         score = f"{self.win_count}-{self.loss_count}-{self.draw_count}"
@@ -454,6 +455,9 @@ class EventPlayerResult(models.Model):
 
     def get_record_display(self):
         return f"{self.win_count} - {self.loss_count} - {self.draw_count}"
+
+    def get_delete_url(self):
+        return reverse("single_result_delete", args=[self.pk])
 
 
 auditlog.register(EventOrganizer)
