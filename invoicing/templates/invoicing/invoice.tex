@@ -39,7 +39,16 @@
 
 \begin{document}
 
-\begin{letter}{ {{- invoice.event_organizer.name|latex_escape -}} }
+\begin{letter}{ {{- invoice.event_organizer.name|latex_escape -}}
+        {% if invoice.event_organizer.default_address %}\\
+            {% if invoice.event_organizer.name != invoice.event_organizer.default_address.location_name %}
+            {{ invoice.event_organizer.default_address.location_name }}\\
+            {% endif %}
+            {{ invoice.event_organizer.default_address.street_address }}\\
+            {{ invoice.event_organizer.default_address.postal_code }} {{ invoice.event_organizer.default_address.city }}\\
+            {{ invoice.event_organizer.default_address.get_country_display() }}
+        {% endif %}
+    }
 
 \setkomavar{subject}{Swiss Unity League}
 \opening{Dear Tournament Organizer,}
