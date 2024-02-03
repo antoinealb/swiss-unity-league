@@ -134,3 +134,42 @@ class UpdateRankingTest(TestCase):
         self.results[7].refresh_from_db()
         results = EventPlayerResult.objects.filter(event=self.event).order_by("ranking")
         self.assertEqual(self.results[6].ranking, 7)
+
+
+class DeleteResultTest(TestCase):
+    def setUp(self):
+        self.client = Client()
+        self.user = User.objects.create_user(username="test", password="test")
+        self.client.login(username="test", password="test")
+        self.to = EventOrganizerFactory(user=self.user)
+        self.player = PlayerFactory()
+        self.event = EventFactory(organizer=self.to, date=datetime.date.today())
+        self.epr = EventPlayerResultFactory(event=self.event, player=self.player)
+        self.url = reverse("single_result_delete", args=[self.epr.id])
+
+    def test_delete_result(self):
+        self.assertEqual(EventPlayerResult.objects.count(), 1)
+        response = self.client.post(self.url)
+        self.assertEqual(EventPlayerResult.objects.count(), 0)
+        self.assertEqual(Player.objects.count(), 0)
+        # Check redirect
+        self.assertEqual(response.status_code, 302)
+        self.assertEqual(response.url, reverse("event_details", args=[self.event.id]))
+
+    def test_delete_several_results_for_player(self):
+        EventPlayerResultFactory(player=self.player)
+        self.client.post(self.url)
+        self.assertEqual(EventPlayerResult.objects.count(), 1)
+        self.assertEqual(Player.objects.count(), 1)
+
+    def test_delete_result_forbidden(self):
+        self.event.date = datetime.date(2022, 1, 1)
+        self.event.save()
+        response = self.client.post(self.url)
+        self.assertEqual(response.status_code, 403)
+
+    def test_delete_result_other_organizer_forbidden(self):
+        self.event.organizer = EventOrganizerFactory()
+        self.event.save()
+        response = self.client.post(self.url)
+        self.assertEqual(response.status_code, 403)

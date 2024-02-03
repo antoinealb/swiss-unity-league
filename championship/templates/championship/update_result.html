@@ -17,6 +17,7 @@
 
     <div class="d-flex pt-5">
         <a class="btn btn-secondary-light" href="{% url 'event_details' object.event.id %}">Back to Event Details</a>
+        {% include 'championship/delete_confirmation.html' %}
     </div>
 
     <datalist id="players-datalist">

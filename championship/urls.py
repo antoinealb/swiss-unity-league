@@ -69,6 +69,11 @@ urlpatterns = [
         views.ClearEventResultsView.as_view(),
         name="event_clear_results",
     ),
+    path(
+        "results/single/<int:pk>/delete/",
+        views.SingleResultDeleteView.as_view(),
+        name="single_result_delete",
+    ),
     path("organizer/", views.OrganizerListView.as_view(), name="organizer_view"),
     path(
         "organizer/<int:pk>",
