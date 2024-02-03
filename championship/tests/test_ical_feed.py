@@ -1,5 +1,6 @@
 import datetime
 from django.test import TestCase, Client
+from icalendar import Calendar
 from championship.models import Event
 from championship.factories import EventFactory, AddressFactory, EventOrganizerFactory
 
@@ -28,4 +29,6 @@ class ICalFeedGetTest(TestCase):
         a = AddressFactory(organizer=o, city="Foobar Town")
         e = EventFactory(category=Event.Category.PREMIER, organizer=o, address=a)
         resp = Client().get("/events.ics")
-        self.assertContains(resp, "Foobar Town")
+        calendar = Calendar.from_ical(resp.content)
+        events = list(calendar.walk("VEVENT"))
+        self.assertIn("Foobar Town", events[0]["LOCATION"])
