@@ -1,6 +1,8 @@
 import math
 from championship.models import Event
 
+REQUIRED_PLAYERS_FOR_PREMIER = 24
+
 
 def get_max_rounds(num_players, event_category):
     """
@@ -19,8 +21,10 @@ def get_max_rounds(num_players, event_category):
     if event_category == Event.Category.REGULAR:
         return 6
 
-    # Premier requires min 17 players
-    if event_category == Event.Category.PREMIER and num_players < 17:
+    if (
+        event_category == Event.Category.PREMIER
+        and num_players < REQUIRED_PLAYERS_FOR_PREMIER
+    ):
         raise TooFewPlayersForPremierError()
 
     max_rounds = math.ceil(math.log2(num_players))

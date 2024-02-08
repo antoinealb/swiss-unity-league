@@ -21,7 +21,7 @@ class CheckTournamentValidTestCase(TestCase):
             (6, Event.Category.REGIONAL, 5),
             (32, Event.Category.REGIONAL, 5),
             (33, Event.Category.REGIONAL, 6),
-            (18, Event.Category.PREMIER, 5),
+            (24, Event.Category.PREMIER, 5),
             (32, Event.Category.PREMIER, 5),
             (33, Event.Category.PREMIER, 6),
         ]
@@ -70,7 +70,7 @@ class CheckTournamentValidTestCase(TestCase):
             validate_standings(standings, event_category)
 
     def test_validate_standings_single_player_too_many_points(self):
-        points_list = simulate_tournament_max_points(17, 5)
+        points_list = simulate_tournament_max_points(32, 5)
         standings = self.generate_sample_standings(points_list)
 
         event_category = Event.Category.PREMIER
