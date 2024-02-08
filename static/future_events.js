@@ -85,7 +85,6 @@ function events(seasonUrls) {
             // Set the currently shown events
             self.events = events
 
-            // Adds for each filter the options that can be selected. Initially each option is selected.
             self.filterList.forEach((filter) => {
                 let stringList = self.events.map(filter.extractProperty)
                 stringList.forEach((item) => {
@@ -94,6 +93,15 @@ function events(seasonUrls) {
                         filter.selected[item] = false
                     }
                 })
+                // Sort keys alphabetically, ignoring case, and create a new sorted object
+                const sortedKeys = Object.keys(filter.selected).sort((a, b) =>
+                    a.toLowerCase().localeCompare(b.toLowerCase())
+                )
+                const sortedSelected = {}
+                sortedKeys.forEach((key) => {
+                    sortedSelected[key] = filter.selected[key]
+                })
+                filter.selected = sortedSelected
             })
         },
     }

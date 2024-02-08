@@ -44,7 +44,7 @@ class RankingTestCase(TestCase):
     def test_score_properties_rendering(self):
         """Checks that the score properties are rendered correctly."""
         player = PlayerFactory()
-        event = EventFactory(date=datetime.date(2023, 4, 1))
+        event = RankedEventFactory(date=datetime.date(2023, 4, 1))
         EventPlayerResultFactory(player=player, points=2, event=event)
         response = self.get_by_slug("2023")
         self.assertContains(response, """<i class="icon-star"></i>""")

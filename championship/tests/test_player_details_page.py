@@ -191,7 +191,7 @@ class PlayerDetailSeasonTestCase(TestCase):
     @parameterized.expand(SEASONS_WITH_RANKING)
     def test_player_details_all_seasons_work(self, season):
         player = PlayerFactory()
-        event = EventFactory(date=season.start_date)
+        event = RankedEventFactory(date=season.start_date)
         EventPlayerResultFactory(event=event, player=player)
         response = self.client.get(
             reverse("player_details_by_season", args=[player.id, season.slug])

@@ -62,6 +62,8 @@ def get_results_with_qps(
     }
 
     for result in results:
+        if result.event.category == Event.Category.OTHER:
+            continue
         method = SCOREMETHOD_PER_SEASON[result.event.season]
         result.has_top8 = result.top_count > 0
         score = method.score_for_result(  # type: ignore
@@ -88,7 +90,7 @@ def compute_scores(season: Season) -> dict[int, LeaderboardScore]:
             event__date__gte=season.start_date,
             event__date__lte=season.end_date,
             player__in=Player.leaderboard_objects.all(),
-        )
+        ).exclude(event__category=Event.Category.OTHER)
     ):
         count += 1
 
