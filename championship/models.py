@@ -265,6 +265,10 @@ class Event(models.Model):
         null=True,
     )
 
+    include_in_invoices = models.BooleanField(
+        help_text="Whether this event will be in invoices.", default=True
+    )
+
     def __str__(self):
         return f"{self.name} - {self.date} ({self.get_category_display()})"
 

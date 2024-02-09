@@ -79,7 +79,9 @@ class Invoice(models.Model):
     @property
     def events(self) -> models.QuerySet[Event]:
         return self.event_organizer.event_set.filter(
-            date__gte=self.start_date, date__lte=self.end_date
+            date__gte=self.start_date,
+            date__lte=self.end_date,
+            include_in_invoices=True,
         ).exclude(category=Event.Category.REGULAR)
 
     @property

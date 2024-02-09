@@ -75,3 +75,25 @@ class FindEventsTest(TestCase):
         )
 
         self.assertEqual(list(invoice.events), want_events)
+
+    def test_events_for_invoice_can_be_marked_as_non_billed(self):
+        """
+        Some events can be excluded from invoices by admin (e.g. the invitational).
+
+        This test checks that they are not included in invoices.
+        """
+        event = Event2024Factory(
+            category=Event.Category.REGIONAL,
+            include_in_invoices=False,
+        )
+
+        for _ in range(10):
+            EventPlayerResultFactory(event=event)
+
+        invoice = InvoiceFactory(
+            event_organizer=event.organizer,
+            start_date=datetime.date(2024, 1, 1),
+            end_date=datetime.date(2024, 12, 31),
+        )
+
+        self.assertEqual(0, invoice.total_amount)
