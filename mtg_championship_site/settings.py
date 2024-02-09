@@ -66,6 +66,7 @@ def should_show_toolbar(request):
 INSTALLED_APPS = [
     "championship",
     "invoicing",
+    "file_storage_db",
     "django.contrib.admin",
     "django.contrib.auth",
     "django.contrib.contenttypes",
@@ -281,3 +282,14 @@ if cache_location := os.getenv("CACHE_LOCATION"):
 
 if test_runner := os.getenv("TEST_RUNNER"):
     TEST_RUNNER = test_runner
+
+# Serves static files from DB at this URl
+MEDIA_URL = "media/"
+STORAGES = {
+    "default": {
+        "BACKEND": "file_storage_db.storage.DatabaseFileStorage",
+    },
+    "staticfiles": {
+        "BACKEND": "django.contrib.staticfiles.storage.StaticFilesStorage",
+    },
+}
