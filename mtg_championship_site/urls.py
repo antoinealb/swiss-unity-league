@@ -26,4 +26,5 @@ urlpatterns = [
     path("__debug_toolbar__/", include("debug_toolbar.urls")),
     path("hijack/", include("hijack.urls")),
     path("tinymce/", include("tinymce.urls")),
+    path("media/", include("file_storage_db.urls")),
 ]
