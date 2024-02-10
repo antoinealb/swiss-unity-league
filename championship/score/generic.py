@@ -49,9 +49,13 @@ def get_results_with_qps(
     - event: the event
     - byes: Number of byes awarded for this result.
     """
-    results = event_player_results.select_related("event").annotate(
-        event_size=Count("event__eventplayerresult"),
-        top_count=Count("event__eventplayerresult__single_elimination_result"),
+    results = (
+        event_player_results.select_related("event")
+        .annotate(
+            event_size=Count("event__eventplayerresult"),
+            top_count=Count("event__eventplayerresult__single_elimination_result"),
+        )
+        .exclude(event__category=Event.Category.OTHER)
     )
 
     rounds_per_event = {
@@ -62,8 +66,6 @@ def get_results_with_qps(
     }
 
     for result in results:
-        if result.event.category == Event.Category.OTHER:
-            continue
         method = SCOREMETHOD_PER_SEASON[result.event.season]
         result.has_top8 = result.top_count > 0
         score = method.score_for_result(  # type: ignore
