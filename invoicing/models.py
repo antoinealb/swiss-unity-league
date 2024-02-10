@@ -1,28 +1,46 @@
 from django.db import models
 from django.urls import reverse
 from championship.models import EventOrganizer, Event, EventPlayerResult
+from championship.season import SEASON_2023, SEASON_2024, find_season_by_date
 from zlib import crc32
 
 FEE_PER_PLAYER = {
-    Event.Category.REGULAR: 0,
-    Event.Category.REGIONAL: 2,
-    Event.Category.PREMIER: 3,
+    SEASON_2023: {
+        Event.Category.REGULAR: 0,
+        Event.Category.REGIONAL: 2,
+        Event.Category.PREMIER: 3,
+    },
+    SEASON_2024: {
+        Event.Category.REGULAR: 0,
+        Event.Category.REGIONAL: 1,
+        Event.Category.PREMIER: 2,
+    },
 }
 
 TOP8_FEE = {
-    Event.Category.REGIONAL: 15,
-    Event.Category.PREMIER: 75,
+    SEASON_2023: {
+        Event.Category.REGIONAL: 15,
+        Event.Category.PREMIER: 75,
+    },
+    SEASON_2024: {
+        Event.Category.REGIONAL: 20,
+        Event.Category.PREMIER: 100,
+    },
 }
 
 
 def fee_for_event(event: Event) -> int:
+    season = find_season_by_date(event.date)
+    if season is None:
+        raise ValueError(f"Unknown season for date {event.date}")
+
     results = EventPlayerResult.objects.filter(event=event)
     has_top8 = results.filter(single_elimination_result__gt=0).count() > 0
 
-    fee = results.count() * FEE_PER_PLAYER[event.category]
+    fee = results.count() * FEE_PER_PLAYER[season][event.category]
 
     if has_top8:
-        fee += TOP8_FEE[event.category]
+        fee += TOP8_FEE[season][event.category]
 
     return fee
 
