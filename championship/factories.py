@@ -77,6 +77,13 @@ class PlayerFactory(DjangoModelFactory):
     name = factory.Faker("name", locale="fr_CH")
 
 
+RANKED_EVENT_CATEGORIES = [
+    Event.Category.PREMIER,
+    Event.Category.REGIONAL,
+    Event.Category.REGULAR,
+]
+
+
 class EventFactory(DjangoModelFactory):
     class Meta:
         model = Event
@@ -107,13 +114,24 @@ class Event2024Factory(EventFactory):
         start_date=SEASON_2024.start_date,
         end_date=SEASON_2024.end_date,
     )
+    category = factory.Faker(
+        "random_element",
+        elements=RANKED_EVENT_CATEGORIES,
+    )
+
+
+class RankedEventFactory(EventFactory):
+    category = factory.Faker(
+        "random_element",
+        elements=RANKED_EVENT_CATEGORIES,
+    )
 
 
 class EventPlayerResultFactory(DjangoModelFactory):
     class Meta:
         model = EventPlayerResult
 
-    event = factory.SubFactory(EventFactory)
+    event = factory.SubFactory(RankedEventFactory)
     player = factory.SubFactory(PlayerFactory)
     points = factory.LazyAttribute(lambda o: 3 * o.win_count + o.draw_count)
     ranking = factory.Faker("random_int", min=1, max=30)

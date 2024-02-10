@@ -160,7 +160,7 @@ class EventDetailTestCase(TestCase):
         )
 
     def test_shows_record(self):
-        event = EventFactory()
+        event = RankedEventFactory()
         EventPlayerResultFactory(
             event=event,
             win_count=3,
@@ -171,7 +171,7 @@ class EventDetailTestCase(TestCase):
         self.assertContains(resp, "3 - 1 - 1")
 
     def test_shows_decklists(self):
-        event = EventFactory()
+        event = RankedEventFactory()
         epr = EventPlayerResultFactory(
             event=event,
         )

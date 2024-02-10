@@ -276,8 +276,8 @@ class EventDetailsView(DetailView):
     context_object_name = "event"
 
     def get_context_data(self, **kwargs):
-        event = self.get_object()
         context = super().get_context_data(**kwargs)
+        event = context["event"]
         results = get_results_with_qps(
             EventPlayerResult.objects.filter(event=event).annotate(
                 player_name=F("player__name"),
@@ -296,8 +296,9 @@ class EventDetailsView(DetailView):
         # Prompt the players to notify the organizer that they forgot to upload results
         # Only do so when the event is finished longer than 4 days ago and results can still be uploaded.
         context["notify_missing_results"] = (
-            context["event"].date < datetime.date.today() - datetime.timedelta(days=4)
-            and context["event"].can_be_edited()
+            event.date < datetime.date.today() - datetime.timedelta(days=4)
+            and event.can_be_edited()
+            and event.category != Event.Category.OTHER
         )
         return context
 

@@ -98,6 +98,15 @@ class TestComputeScoreFor2024(TestCase):
         scores = self.compute_scores()
         self.assertFalse(any(score.total_score > 0 for score in scores.values()))
 
+    def test_category_other_does_not_contribute_score(self):
+        self.event.category = Event.Category.OTHER
+        self.event.save()
+        EventPlayerResultFactory(event=self.event)
+        scores = self.compute_scores()
+        self.assertEqual(
+            0, len(scores), "Events with category 'OTHER' should not count."
+        )
+
 
 class ScoresWithTop8TestCase(TestCase):
     def setUp(self):

@@ -170,6 +170,7 @@ class EventManager(models.Manager):
         initial_qs = (
             self.filter(organizer__user=user, date__lte=end_date)
             .exclude(date__lt=start_date, edit_deadline_override__isnull=True)
+            .exclude(category=Event.Category.OTHER)
             .annotate(result_cnt=Count("eventplayerresult"))
             .filter(result_cnt=0)
         )
@@ -230,6 +231,7 @@ class Event(models.Model):
         MODERN = "MODERN", "Modern"
         PIONEER = "PIONEER", "Pioneer"
         STANDARD = "STANDARD", "Standard"
+        EDH = "EDH", "Commander/EDH"
         DUEL_COMMANDER = "DC", "Duel Commander"
         PAUPER = "PAUPER", "Pauper"
         OLD_SCHOOL = "OS", "Old School"
@@ -245,8 +247,13 @@ class Event(models.Model):
         REGULAR = "REGULAR", "SUL Regular"
         REGIONAL = "REGIONAL", "SUL Regional"
         PREMIER = "PREMIER", "SUL Premier"
+        OTHER = "OTHER", "Other"
 
-    category = models.CharField(max_length=10, choices=Category.choices)
+    category = models.CharField(
+        max_length=10,
+        choices=Category.choices,
+        help_text="Select 'Other' for events without Swiss rounds and multiplayer events (including Two-Headed Giant).",
+    )
     decklists_url = models.URLField(
         "Decklists URL",
         help_text="A link to a page containing decklists for the event, for example mtgtop8",
@@ -293,6 +300,8 @@ class Event(models.Model):
         return reverse("event_details", args=[self.id])
 
     def get_category_icon_url(self):
+        if self.category == Event.Category.OTHER:
+            return ""
         return f"types/icons/{self.category.lower()}.png"
 
     def can_have_top8(self) -> bool:

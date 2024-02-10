@@ -245,19 +245,19 @@ class AetherhubImportTest(TestCase):
         self.assertEqual(resp.status_code, 200)
         self.assertIn("Wrong url format.", resp.content.decode())
 
+    def _choices(self, response):
+        choices = list(response.context["form"].fields["event"].choices)
+        choices = [s[0].instance for s in choices[1:]]
+        return choices
+
     def test_only_allows_selection_of_events_with_no_results(self):
         """Checks that the user is only offered to upload results to
         tournaments that don't have results yet."""
         self.login()
 
-        def _choices(response):
-            choices = list(response.context["form"].fields["event"].choices)
-            choices = [s[0].instance for s in choices[1:]]
-            return choices
-
         # First, check that we have our event offered
         response = self.client.get(reverse("results_create_aetherhub"))
-        gotChoices = _choices(response)
+        gotChoices = self._choices(response)
         wantChoices = [self.event]
         self.assertEqual(gotChoices, wantChoices)
 
@@ -273,8 +273,19 @@ class AetherhubImportTest(TestCase):
             loss_count=0,
         )
         response = self.client.get(reverse("results_create_aetherhub"))
-        gotChoices = _choices(response)
+        gotChoices = self._choices(response)
         self.assertEqual([], gotChoices)
+
+    def test_category_other_not_allowed_choice(self):
+        self.login()
+        EventFactory(
+            organizer=self.organizer,
+            date=datetime.date.today(),
+            category=Event.Category.OTHER,
+        )
+        response = self.client.get(reverse("results_create_aetherhub"))
+        gotChoices = self._choices(response)
+        self.assertEqual([self.event], gotChoices)
 
 
 class ChallongeImportTest(TestCase):

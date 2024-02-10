@@ -49,9 +49,13 @@ def get_results_with_qps(
     - event: the event
     - byes: Number of byes awarded for this result.
     """
-    results = event_player_results.select_related("event").annotate(
-        event_size=Count("event__eventplayerresult"),
-        top_count=Count("event__eventplayerresult__single_elimination_result"),
+    results = (
+        event_player_results.select_related("event")
+        .annotate(
+            event_size=Count("event__eventplayerresult"),
+            top_count=Count("event__eventplayerresult__single_elimination_result"),
+        )
+        .exclude(event__category=Event.Category.OTHER)
     )
 
     rounds_per_event = {
@@ -88,7 +92,7 @@ def compute_scores(season: Season) -> dict[int, LeaderboardScore]:
             event__date__gte=season.start_date,
             event__date__lte=season.end_date,
             player__in=Player.leaderboard_objects.all(),
-        )
+        ).exclude(event__category=Event.Category.OTHER)
     ):
         count += 1
 
