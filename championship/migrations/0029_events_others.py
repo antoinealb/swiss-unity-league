@@ -6,7 +6,7 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ("championship", "0027_alter_eventplayerresult_options"),
+        ("championship", "0028_event_include_in_invoices"),
     ]
 
     operations = [
