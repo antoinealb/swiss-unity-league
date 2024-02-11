@@ -16,6 +16,7 @@ from django.views.generic.list import ListView
 from django.views.generic.edit import DeleteView, FormView, UpdateView, CreateView
 from django.views.generic import DetailView
 from django.http import (
+    HttpRequest,
     HttpResponse,
     HttpResponseRedirect,
     HttpResponseForbidden,
@@ -377,32 +378,31 @@ def copy_event(request, pk):
     )
 
 
-@login_required
-def update_event(request, pk):
-    event = get_object_or_404(Event, pk=pk)
+class EventUpdateView(LoginRequiredMixin, UpdateView):
+    model = Event
+    form_class = EventCreateForm
+    template_name = "championship/update_event.html"
 
-    # If the event can no longer be edited, the user should not see the edit button.
-    if event.organizer.user != request.user or not event.can_be_edited():
-        return HttpResponseForbidden()
+    def dispatch(self, request, *args, **kwargs):
+        self.event = self.get_object()
+        if self.event.organizer.user != request.user or not self.event.can_be_edited():
+            return HttpResponseForbidden()
+        return super().dispatch(request, *args, **kwargs)
 
-    if request.method == "POST":
-        form = EventCreateForm(request.POST, request.FILES, instance=event)
-        if form.is_valid():
-            # Before we save the event, we need to check if the event can still be edited on the new date.
-            # This prevents TOs from moving present events with results to the past.
-            event = form.save(commit=False)
-            if event.can_be_edited():
-                event.save()
-                messages.success(request, "Succesfully saved event")
-                return HttpResponseRedirect(reverse("event_details", args=[event.id]))
-            else:
-                messages.error(request, "Event date is too old.")
-    else:
-        form = EventCreateForm(instance=event, organizer=event.organizer)
+    def get_form_kwargs(self):
+        kwargs = super().get_form_kwargs()
+        kwargs["organizer"] = self.event.organizer
+        return kwargs
 
-    return render(
-        request, "championship/update_event.html", {"form": form, "event": event}
-    )
+    def form_valid(self, form):
+        """Check again if the event can be edited, because date could have changed."""
+        event = form.save(commit=False)
+        if not event.can_be_edited():
+            messages.error(self.request, "Event date is too old.")
+            return self.form_invalid(form)
+        event.save()
+        messages.success(self.request, "Successfully saved event")
+        return HttpResponseRedirect(reverse("event_details", args=[self.object.id]))
 
 
 class EventDeleteView(CustomDeleteView):
