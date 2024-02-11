@@ -11,4 +11,4 @@ class File(models.Model):
         return reverse("file_db_serve", args=[self.filename])
 
 
-auditlog.register(File)
+auditlog.register(File, exclude_fields=["content"])

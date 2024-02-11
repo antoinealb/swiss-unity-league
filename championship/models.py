@@ -221,6 +221,12 @@ class Event(models.Model):
         blank=True,
         strip_tags=True,
     )
+    image = models.ImageField(
+        upload_to="event",
+        help_text="An image to represent the event. Will be shown on the event details page.",
+        blank=True,
+        null=True,
+    )
     address = models.ForeignKey(
         Address, on_delete=models.SET_NULL, null=True, blank=True
     )
@@ -475,5 +481,5 @@ class EventPlayerResult(models.Model):
 
 auditlog.register(EventOrganizer)
 auditlog.register(Player, m2m_fields={"events"})
-auditlog.register(Event)
+# auditlog.register(Event, exclude_fields=["image"])
 auditlog.register(EventPlayerResult)

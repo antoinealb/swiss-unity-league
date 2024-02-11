@@ -386,7 +386,7 @@ def update_event(request, pk):
         return HttpResponseForbidden()
 
     if request.method == "POST":
-        form = EventCreateForm(request.POST, instance=event)
+        form = EventCreateForm(request.POST, request.FILES, instance=event)
         if form.is_valid():
             # Before we save the event, we need to check if the event can still be edited on the new date.
             # This prevents TOs from moving present events with results to the past.
