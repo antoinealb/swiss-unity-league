@@ -53,7 +53,7 @@ urlpatterns = [
     path(
         "events/<int:pk>/delete", views.EventDeleteView.as_view(), name="event_delete"
     ),
-    path("events/<int:pk>/copy", views.copy_event, name="event_copy"),
+    path("events/<int:pk>/copy", views.CopyEventView.as_view(), name="event_copy"),
     path("events/<int:pk>/", views.EventDetailsView.as_view(), name="event_details"),
     path(
         "epr/edit/<int:pk>/",

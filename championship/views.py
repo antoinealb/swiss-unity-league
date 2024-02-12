@@ -350,34 +350,6 @@ class CreateEventView(LoginRequiredMixin, FormView):
         return HttpResponseRedirect(reverse("event_details", args=[event.id]))
 
 
-@login_required
-def copy_event(request, pk):
-    original_event = get_object_or_404(Event, pk=pk)
-    organizer = request.user.eventorganizer
-    if request.method == "POST":
-        form = EventCreateForm(request.POST)
-        if form.is_valid():
-            event = form.save(commit=False)
-            event.pk = None  # Force django to commit
-            event.organizer = organizer
-            event.save()
-
-            messages.success(request, "Succesfully created event!")
-
-            return HttpResponseRedirect(reverse("event_details", args=[event.id]))
-    else:
-        # By default, copy it one week later
-        new_event = get_object_or_404(Event, pk=pk)
-        new_event.date += datetime.timedelta(days=7)
-        form = EventCreateForm(instance=new_event, organizer=organizer)
-
-    return render(
-        request,
-        "championship/copy_event.html",
-        {"form": form, "original_event": original_event},
-    )
-
-
 class EventUpdateView(LoginRequiredMixin, UpdateView):
     model = Event
     form_class = EventCreateForm
@@ -389,11 +361,6 @@ class EventUpdateView(LoginRequiredMixin, UpdateView):
             return HttpResponseForbidden()
         return super().dispatch(request, *args, **kwargs)
 
-    def get_form_kwargs(self):
-        kwargs = super().get_form_kwargs()
-        kwargs["organizer"] = self.event.organizer
-        return kwargs
-
     def form_valid(self, form):
         """Check again if the event can be edited, because date could have changed."""
         event = form.save(commit=False)
@@ -403,6 +370,26 @@ class EventUpdateView(LoginRequiredMixin, UpdateView):
         event.save()
         messages.success(self.request, "Successfully saved event")
         return HttpResponseRedirect(reverse("event_details", args=[self.object.id]))
+
+
+class CopyEventView(LoginRequiredMixin, UpdateView):
+    model = Event
+    form_class = EventCreateForm
+    template_name = "championship/copy_event.html"
+
+    def get_initial(self):
+        # By default, copy it one week later
+        initial = super().get_initial()
+        initial["date"] = self.object.date + datetime.timedelta(days=7)
+        return initial
+
+    def form_valid(self, form):
+        event = form.save(commit=False)
+        event.pk = None  # Force Django to create a new instance
+        event.organizer = self.request.user.eventorganizer
+        event.save()
+        messages.success(self.request, "Successfully created event!")
+        return HttpResponseRedirect(reverse("event_details", args=[event.id]))
 
 
 class EventDeleteView(CustomDeleteView):

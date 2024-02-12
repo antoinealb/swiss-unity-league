@@ -60,8 +60,9 @@ You can copy/paste the description from a website like swissmtg.ch, and the form
     def __init__(self, *args, **kwargs):
         organizer = kwargs.pop("organizer", None)
         super(EventCreateForm, self).__init__(*args, **kwargs)
-        if organizer is not None:
-            self.fields["address"].queryset = organizer.get_addresses()
+        if not organizer:
+            organizer = self.instance.organizer
+        self.fields["address"].queryset = organizer.get_addresses()
 
 
 class EventPlayerResultForm(forms.ModelForm):

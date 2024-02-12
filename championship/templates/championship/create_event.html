@@ -9,7 +9,7 @@
 {% block content %}
     <h1>New event</h1>
     <p><a href="{% url 'address_list' %}" class="btn btn-secondary">Edit Addresses</a></p>
-    <form action="{% url 'events_create' %}" method="post" enctype="multipart/form-data">
+    <form method="post" enctype="multipart/form-data">
         {% csrf_token %}
         {{ form|crispy }}
         <button type="submit" value="Submit" class="btn btn-secondary">Create Event</button>
