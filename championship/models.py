@@ -221,6 +221,12 @@ class Event(models.Model):
         blank=True,
         strip_tags=True,
     )
+    image = models.ImageField(
+        upload_to="event",
+        help_text="Preferably in landscape orientation.",
+        blank=True,
+        null=True,
+    )
     address = models.ForeignKey(
         Address, on_delete=models.SET_NULL, null=True, blank=True
     )

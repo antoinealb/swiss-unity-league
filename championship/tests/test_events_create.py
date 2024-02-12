@@ -298,7 +298,7 @@ class EventCopyTestCase(TestCase):
         self.login()
         event = EventFactory(organizer=self.organizer)
         r = self.client.get(reverse("event_copy", args=[event.id]))
-        self.assertEqual(event, r.context["original_event"])
+        self.assertEqual(event, r.context["event"])
 
     def test_copy_event(self):
         self.login()

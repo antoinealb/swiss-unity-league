@@ -8,9 +8,9 @@
 
 {% block content %}
     <h1>Copy event</h1>
-    You are currently creating a copy of your event "{{ original_event }}".
+    You are currently creating a copy of your event "{{ event }}".
     The default date is one week later, but feel free to replace it.</p>
-    <form action="{% url 'event_copy' original_event.id %}" method="post">
+    <form method="post" enctype="multipart/form-data">
         {% csrf_token %}
         {{ form|crispy }}
         <button type="submit" value="Submit" class="btn btn-secondary">Create Event</button>
