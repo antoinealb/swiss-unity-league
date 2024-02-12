@@ -223,7 +223,7 @@ class Event(models.Model):
     )
     image = models.ImageField(
         upload_to="event",
-        help_text="An image to represent the event. Will be shown on the event details page.",
+        help_text="Preferably in landscape orientation.",
         blank=True,
         null=True,
     )
