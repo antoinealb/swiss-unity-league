@@ -481,5 +481,5 @@ class EventPlayerResult(models.Model):
 
 auditlog.register(EventOrganizer)
 auditlog.register(Player, m2m_fields={"events"})
-# auditlog.register(Event, exclude_fields=["image"])
+auditlog.register(Event)
 auditlog.register(EventPlayerResult)
