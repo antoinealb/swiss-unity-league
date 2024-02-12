@@ -10,21 +10,18 @@ import pandas as pd
 import io
 from typing import *
 from django.core.exceptions import ImproperlyConfigured
-from django.shortcuts import render, get_object_or_404, redirect
+from django.shortcuts import get_object_or_404
 from django.views.generic.base import TemplateView
 from django.views.generic.list import ListView
 from django.views.generic.edit import DeleteView, FormView, UpdateView, CreateView
 from django.views.generic import DetailView
 from django.http import (
-    HttpRequest,
-    HttpResponse,
     HttpResponseRedirect,
     HttpResponseForbidden,
     Http404,
 )
 from django.urls import reverse, reverse_lazy
 from django.contrib import messages
-from django.contrib.auth.decorators import login_required
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.conf import settings
 from django.db import transaction
