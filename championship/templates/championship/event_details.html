@@ -9,7 +9,7 @@
 {% block content %}
     <h1>{{ event.name }}</h1>
     {% if event.image %}
-        <img src="{{ event.image.url }}" alt="Event image" class="img-fluid img-thumbnail mb-2">
+        <img src="{{ event.image.url }}" alt="Event image" class="img-fluid img-thumbnail mb-2" style="max-height: 800px">
     {% endif %}
     <dl class="row">
         <dt class="col-sm-3">Organizer</dt>
