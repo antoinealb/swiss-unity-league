@@ -147,6 +147,12 @@ class EventOrganizer(models.Model):
         blank=True,
         strip_tags=True,
     )
+    image = models.ImageField(
+        upload_to="organizer",
+        help_text="An image to represent the event. Will be shown on the event details page.",
+        blank=True,
+        null=True,
+    )
     user = models.OneToOneField(settings.AUTH_USER_MODEL, on_delete=models.PROTECT)
     default_address = models.ForeignKey(
         Address, on_delete=models.SET_NULL, null=True, blank=True
