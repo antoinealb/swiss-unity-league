@@ -133,11 +133,11 @@ class Address(models.Model):
 
 
 def organizer_image_validator(image):
-    if image.size > 500 * 1024:
-        raise ValidationError("Image file too large ( > 500KB )")
-
     if image.file.content_type not in ["image/jpeg", "image/png"]:
         raise ValidationError("Image file must be either JPEG or PNG")
+
+    if image.size > 500 * 1024:
+        raise ValidationError("Image file too large ( > 500KB )")
 
 
 class EventOrganizer(models.Model):
@@ -196,11 +196,11 @@ class EventManager(models.Manager):
 
 
 def event_image_validator(image):
-    if image.size > 1.5 * 1024 * 1024:
-        raise ValidationError("Image file too large ( > 1.5MB )")
-
     if image.file.content_type not in ["image/jpeg", "image/png"]:
         raise ValidationError("Image file must be either JPEG or PNG")
+
+    if image.size > 1.5 * 1024 * 1024:
+        raise ValidationError("Image file too large ( > 1.5MB )")
 
 
 class Event(models.Model):
