@@ -149,7 +149,7 @@ class EventOrganizer(models.Model):
     )
     image = models.ImageField(
         upload_to="organizer",
-        help_text="An image to represent the event. Will be shown on the event details page.",
+        help_text="An image to represent the organizer. Will be shown on the organizer details page.",
         blank=True,
         null=True,
     )
