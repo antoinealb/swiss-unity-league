@@ -8,6 +8,7 @@ from championship.season import find_season_by_date, Season
 import datetime
 from django.contrib.humanize.templatetags.humanize import ordinal
 import urllib.parse
+from django.core.exceptions import ValidationError
 
 
 class Address(models.Model):
@@ -131,6 +132,14 @@ class Address(models.Model):
         return f"https://www.google.com/maps/search/?api=1&query={query}"
 
 
+def organizer_image_validator(image):
+    if image.size > 500 * 1024:
+        raise ValidationError("Image file too large ( > 500KB )")
+
+    if image.file.content_type not in ["image/jpeg", "image/png"]:
+        raise ValidationError("Image file must be either JPEG or PNG")
+
+
 class EventOrganizer(models.Model):
     """
     An organizer, who organizes several events in the championship.
@@ -149,9 +158,10 @@ class EventOrganizer(models.Model):
     )
     image = models.ImageField(
         upload_to="organizer",
-        help_text="An image to represent the organizer. Will be shown on the organizer details page.",
+        help_text="Preferably in landscape orientation or squared. Maximum size: 500KB. Supported formats: JPEG, PNG.",
         blank=True,
         null=True,
+        validators=[organizer_image_validator],
     )
     user = models.OneToOneField(settings.AUTH_USER_MODEL, on_delete=models.PROTECT)
     default_address = models.ForeignKey(
@@ -183,6 +193,14 @@ class EventManager(models.Manager):
 
         valid_event_ids = [event.id for event in initial_qs if event.can_be_edited()]
         return initial_qs.filter(id__in=valid_event_ids)
+
+
+def event_image_validator(image):
+    if image.size > 1.5 * 1024 * 1024:
+        raise ValidationError("Image file too large ( > 1.5MB )")
+
+    if image.file.content_type not in ["image/jpeg", "image/png"]:
+        raise ValidationError("Image file must be either JPEG or PNG")
 
 
 class Event(models.Model):
@@ -229,9 +247,10 @@ class Event(models.Model):
     )
     image = models.ImageField(
         upload_to="event",
-        help_text="Preferably in landscape orientation.",
+        help_text="Preferably in landscape orientation. Maximum size: 1.5MB. Supported formats: JPEG, PNG.",
         blank=True,
         null=True,
+        validators=[event_image_validator],
     )
     address = models.ForeignKey(
         Address, on_delete=models.SET_NULL, null=True, blank=True
