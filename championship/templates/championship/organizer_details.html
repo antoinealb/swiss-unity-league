@@ -7,10 +7,14 @@
 {% block content %}
     <h1>{{ eventorganizer.name }}</h1>
     <div class="row">
+        {% if eventorganizer.image %}
         <div class="col-lg-4">
             <img src="{{ eventorganizer.image.url }}" class="img-fluid" alt="{{ eventorganizer.name }}" style="max-height: 200px">
         </div>
         <div class="col-lg-8">
+        {% else %}
+        <div class="col">
+        {% endif %}
             <dl class="row">
                 {% if eventorganizer.user == user %}
                     <dt class="col-sm-4">TO actions (only shown to you)</dt>
@@ -33,7 +37,6 @@
                 {% endif %}
             </dl>
         </div>
-
     </div>
 
 
