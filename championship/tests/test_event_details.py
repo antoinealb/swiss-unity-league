@@ -4,6 +4,7 @@ from championship.factories import *
 from championship.models import *
 from parameterized import parameterized
 from freezegun import freeze_time
+from django.core.files.uploadedfile import SimpleUploadedFile
 
 
 class EventDetailTestCase(TestCase):
@@ -214,3 +215,31 @@ class EventDetailTestCase(TestCase):
         resp = self.client.get(reverse("event_details", args=[event.id]))
         self.assertContains(resp, "10:00 - 19:00")
         self.assertContains(resp, "Date & Time")
+
+    def test_image_validation_file_type(self):
+        valid_image = SimpleUploadedFile(
+            "valid_image.jpg", b"file_content", content_type="image/jpeg"
+        )
+        invalid_image = SimpleUploadedFile(
+            "invalid_image.txt", b"file_content", content_type="text/plain"
+        )
+        event = EventFactory()
+        event.image = invalid_image
+        with self.assertRaises(ValidationError):
+            event.full_clean()
+        event.image = valid_image
+        event.full_clean()
+
+    def test_image_validation_size(self):
+        valid_image = SimpleUploadedFile(
+            "valid_image.jpg", b"file_content", content_type="image/jpeg"
+        )
+        invalid_image = SimpleUploadedFile(
+            "invalid_image.jpg", b"a" * 2 * 1024**2, content_type="image/jpeg"
+        )
+        event = EventFactory()
+        event.image = invalid_image
+        with self.assertRaises(ValidationError):
+            event.full_clean()
+        event.image = valid_image
+        event.full_clean()
