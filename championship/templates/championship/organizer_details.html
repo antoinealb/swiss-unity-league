@@ -52,17 +52,19 @@
                 <thead>
                     <tr>
                         <th scope="col">Event</th>
+                        <th scope="col">Date</th>
+                        <th scope="col">Type</th>
                         {% if event_type.has_num_players %}
                             <th scope="col">Participants</th>
                         {% endif %}
-                        <th scope="col">Date</th>
-                        <th scope="col">Type</th>
                     </tr>
                 </thead>
                 <tbody>
                     {% for event in event_type.list %}
                         <tr>
                             <td><a href="{% url 'event_details' event.id %}">{{event.name }}</a></td>
+                            <td>{{ event.date }}</td>
+                            <td>{{ event.get_category_display }}</td>
                             {% if event_type.has_num_players %}
                                 <td>
                                     {% if event.num_players != 0 %}
@@ -70,8 +72,6 @@
                                     {% endif %}
                                 </td>
                             {% endif %}
-                            <td>{{ event.date }}</td>
-                            <td>{{ event.get_category_display }}</td>
                         </tr>
                     {% endfor %}
                 </tbody>
