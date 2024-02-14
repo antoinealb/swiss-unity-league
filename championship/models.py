@@ -132,10 +132,12 @@ class Address(models.Model):
         return f"https://www.google.com/maps/search/?api=1&query={query}"
 
 
-def organizer_image_validator(image):
-    if image.file.content_type not in ["image/jpeg", "image/png"]:
-        raise ValidationError("Image file must be either JPEG or PNG")
+def image_type_validator(image):
+    if image.file.content_type not in ["image/jpeg", "image/png", "image/webp"]:
+        raise ValidationError("Image file must be either JPEG, PNG, or WEBP")
 
+
+def organizer_image_validator(image):
     if image.size > 500 * 1024:
         raise ValidationError("Image file too large ( > 500KB )")
 
@@ -158,10 +160,10 @@ class EventOrganizer(models.Model):
     )
     image = models.ImageField(
         upload_to="organizer",
-        help_text="Preferably in landscape orientation or squared. Maximum size: 500KB. Supported formats: JPEG, PNG.",
+        help_text="Preferably in landscape orientation or squared. Maximum size: 500KB. Supported formats: JPEG, PNG, WEBP.",
         blank=True,
         null=True,
-        validators=[organizer_image_validator],
+        validators=[organizer_image_validator, image_type_validator],
     )
     user = models.OneToOneField(settings.AUTH_USER_MODEL, on_delete=models.PROTECT)
     default_address = models.ForeignKey(
@@ -196,9 +198,6 @@ class EventManager(models.Manager):
 
 
 def event_image_validator(image):
-    if image.file.content_type not in ["image/jpeg", "image/png"]:
-        raise ValidationError("Image file must be either JPEG or PNG")
-
     if image.size > 1.5 * 1024 * 1024:
         raise ValidationError("Image file too large ( > 1.5MB )")
 
@@ -247,10 +246,10 @@ class Event(models.Model):
     )
     image = models.ImageField(
         upload_to="event",
-        help_text="Preferably in landscape orientation. Maximum size: 1.5MB. Supported formats: JPEG, PNG.",
+        help_text="Preferably in landscape orientation. Maximum size: 1.5MB. Supported formats: JPEG, PNG, WEBP.",
         blank=True,
         null=True,
-        validators=[event_image_validator],
+        validators=[event_image_validator, image_type_validator],
     )
     address = models.ForeignKey(
         Address, on_delete=models.SET_NULL, null=True, blank=True

@@ -64,3 +64,8 @@ class DatabaseFsMediaServingTest(TestCase):
         self.storage.save("test.png", io.BytesIO(b"hello"))
         resp = self.get_file("test.png")
         self.assertEqual(resp["content-type"], "image/png")
+
+    def test_application_mimetype_webp(self):
+        self.storage.save("test.webp", io.BytesIO(b"hello"))
+        resp = self.get_file("test.webp")
+        self.assertEqual(resp["content-type"], "image/webp")
