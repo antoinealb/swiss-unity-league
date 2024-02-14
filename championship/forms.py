@@ -139,6 +139,7 @@ class OrganizerProfileEditForm(forms.ModelForm):
             "contact",
             "default_address",
             "description",
+            "image",
         ]
         widgets = {
             "description": TinyMCE(

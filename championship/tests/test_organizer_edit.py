@@ -5,7 +5,7 @@ from championship.models import EventOrganizer
 from championship.factories import AddressFactory, EventOrganizerFactory
 
 
-class EventCreationTestCase(TestCase):
+class OrganizerEditTestCase(TestCase):
     def setUp(self):
         self.client = Client()
         self.credentials = dict(username="test", password="test")

@@ -7,6 +7,8 @@ from championship.factories import (
     EventPlayerResultFactory,
 )
 from django.contrib.auth import get_user_model
+from django.core.files.uploadedfile import SimpleUploadedFile
+from django.core.exceptions import ValidationError
 
 User = get_user_model()
 
@@ -66,6 +68,34 @@ class EventOrganizerDetailViewTests(TestCase):
     def test_organizer_reverse(self):
         edit_organizer_url = reverse("organizer_update")
         self.assertContains(self.response, f'href="{edit_organizer_url}"')
+
+    def test_image_validation_file_type(self):
+        valid_image = SimpleUploadedFile(
+            "valid_image.jpg", b"file_content", content_type="image/jpeg"
+        )
+        invalid_image = SimpleUploadedFile(
+            "invalid_image.txt", b"file_content", content_type="text/plain"
+        )
+        organizer = EventOrganizerFactory()
+        organizer.image = invalid_image
+        with self.assertRaises(ValidationError):
+            organizer.full_clean()
+        organizer.image = valid_image
+        organizer.full_clean()
+
+    def test_image_validation_size(self):
+        valid_image = SimpleUploadedFile(
+            "valid_image.jpg", b"file_content", content_type="image/jpeg"
+        )
+        invalid_image = SimpleUploadedFile(
+            "invalid_image.jpg", b"a" * 501 * 1024, content_type="image/jpeg"
+        )
+        organizer = EventOrganizerFactory()
+        organizer.image = invalid_image
+        with self.assertRaises(ValidationError):
+            organizer.full_clean()
+        organizer.image = valid_image
+        organizer.full_clean()
 
 
 class OrganizerListViewTest(TestCase):
