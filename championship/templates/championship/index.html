@@ -100,9 +100,11 @@
             <div class="col-lg-6 align-items-center mx-auto my-2">
                 <div id="carouselPartnersIndicators" class="carousel slide" data-bs-ride="carousel" data-bs-interval="{% if debug %}500{% else %}3000{% endif %}">
                     <div class="carousel-inner carousel-height">
-                        {% for logo in partner_logos %}
+                        {% for organizer in organizers %}
                             <div class="carousel-item {% if forloop.counter0 == 0 %}active{% endif %}">
-                                <img class="d-block w-100" src="{% static logo %}" alt="Partner logo ({{ logo }})">
+                                <a href="{{ organizer.get_absolute_url }}" title="{{ organizer.name }}">
+                                    <img class="d-block w-100" src="{{ organizer.image.url }}" alt="{{ organizer.name}} logo">
+                                </a>
                             </div>
                         {% endfor %}
                     </div>
