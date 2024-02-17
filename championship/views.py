@@ -125,7 +125,7 @@ class IndexView(TemplateView):
         context = super().get_context_data(**kwargs)
         context["players"] = get_leaderboard(settings.DEFAULT_SEASON)[:PLAYERS_TOP]
         context["future_events"] = self._future_events()
-        context["partner_logos"] = self._partner_logos()
+        context["organizers"] = self._organizers_with_image()
         context["has_open_invoices"] = self._has_open_invoices()
         return context
 
@@ -138,15 +138,12 @@ class IndexView(TemplateView):
         )
         return future_events
 
-    def _partner_logos(self):
-        paths = [s / "partner_logos" for s in settings.STATICFILES_DIRS]
-        images = sum([os.listdir(p) for p in paths], start=[])
-        images = ["partner_logos/" + i for i in images if i.endswith("png")]
-
+    def _organizers_with_image(self):
         # Just make sure we don't always have the pictures in the same order
         # to be fair to everyone
-        random.shuffle(images)
-        return images
+        organizers = list(EventOrganizer.objects.exclude(image="").exclude(image=None))
+        random.shuffle(organizers)
+        return organizers
 
     def _has_open_invoices(self) -> bool:
         if self.request.user.is_anonymous:
