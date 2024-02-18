@@ -31,12 +31,27 @@ from .models import (
     Player,
     PlayerAlias,
 )
+from django.contrib.auth.forms import UserCreationForm
+from django.contrib.auth.models import User
 
 
 class SubmitButtonMixin:
     helper = FormHelper()
     helper.add_input(Submit("submit", "Submit", css_class="btn btn-secondary"))
     helper.form_method = "POST"
+
+
+class AllRequiredMixin(forms.ModelForm):
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        for field in self.fields.values():
+            field.required = True
+
+
+class UserForm(AllRequiredMixin, UserCreationForm):
+    class Meta(UserCreationForm.Meta):
+        model = User
+        fields = ["first_name", "last_name", "email", "password1", "password2"]
 
 
 class EventCreateForm(forms.ModelForm):
@@ -132,31 +147,34 @@ class EventPlayerResultForm(forms.ModelForm):
         return instance
 
 
-class AddressForm(forms.ModelForm):
-    set_as_organizer_address = forms.BooleanField(required=False, initial=False)
+class RegistrationAddressForm(forms.ModelForm):
 
     class Meta:
         model = Address
         fields = [
             "location_name",
             "street_address",
-            "city",
             "postal_code",
+            "city",
             "region",
             "country",
-            "set_as_organizer_address",
         ]
 
 
-class OrganizerProfileEditForm(forms.ModelForm):
+class AddressForm(RegistrationAddressForm):
+    set_as_main_address = forms.BooleanField(required=False, initial=False)
+
+
+class EventOrganizerForm(forms.ModelForm):
     class Meta:
         model = EventOrganizer
         fields = [
             "name",
             "contact",
+            "url",
             "default_address",
-            "description",
             "image",
+            "description",
         ]
         widgets = {
             "description": TinyMCE(
@@ -166,16 +184,15 @@ class OrganizerProfileEditForm(forms.ModelForm):
                 },
             ),
         }
-        help_texts = {
-            "description": """Supports the following HTML tags: {}.""".format(
-                ", ".join(bleach.ALLOWED_TAGS)
-            ),
-        }
 
     def __init__(self, *args, **kwargs):
         organizer = kwargs.get("instance", None)
         super().__init__(*args, **kwargs)
-        self.fields["default_address"].queryset = organizer.get_addresses()
+        if organizer:
+            self.fields["default_address"].queryset = organizer.get_addresses()
+        else:
+            # Remvove the default address field if we're creating a new organizer
+            self.fields.pop("default_address")
 
 
 class LinkImporterForm(forms.Form, SubmitButtonMixin):

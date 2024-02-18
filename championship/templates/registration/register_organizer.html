@@ -1,0 +1,22 @@
+{% extends "championship/base.html" %}
+
+{% load crispy_forms_tags %}
+
+{% block extrahead %}
+    {{ organizer_form.media }}
+{% endblock %}
+
+{% block title %}
+    Register as an Event Organizer
+{% endblock %}
+
+{% block content %}
+    <h2>Register as an Event Organizer</h2>
+    <form method="post" enctype="multipart/form-data">
+        {% csrf_token %}
+        {{ user_form|crispy }}
+        {{ organizer_form|crispy }}
+        {{ address_form|crispy }}
+        <button type="submit" value="Submit" class="btn btn-secondary">Submit</button>
+    </form>
+{% endblock %}

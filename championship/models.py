@@ -159,18 +159,21 @@ class EventOrganizer(models.Model):
     An organizer, who organizes several events in the championship.
     """
 
-    name = models.CharField(max_length=200)
+    name = models.CharField(max_length=200, verbose_name="Association/Store name")
     contact = models.EmailField(
-        help_text="Prefered contact email (not visible to players)"
+        verbose_name="Invoice email",
+        help_text="If you run SUL Regional or SUL Premier events, you will receive your incoices here.",
     )
+    url = models.URLField("Website", blank=True, null=True)
     description = BleachField(
-        help_text="Supports the following HTML tags: {}".format(
+        help_text="Describe your organization to the players. You can also provide links to join your group chats or follow you on social media. Supports the following HTML tags: {}".format(
             ", ".join(settings.BLEACH_ALLOWED_TAGS)
         ),
         blank=True,
         strip_tags=True,
     )
     image = models.ImageField(
+        verbose_name="Logo",
         upload_to="organizer",
         help_text="Preferably in landscape orientation or squared. Maximum size: 500KB. Supported formats: JPEG, PNG, WEBP.",
         blank=True,
@@ -179,7 +182,12 @@ class EventOrganizer(models.Model):
     )
     user = models.OneToOneField(settings.AUTH_USER_MODEL, on_delete=models.PROTECT)
     default_address = models.ForeignKey(
-        Address, on_delete=models.SET_NULL, null=True, blank=True
+        Address,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        verbose_name="Main location",
+        help_text="The location of your store or the location where most of your events take place.",
     )
 
     def get_absolute_url(self):

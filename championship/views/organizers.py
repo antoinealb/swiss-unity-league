@@ -17,15 +17,17 @@ import datetime
 from django.contrib import messages
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.db.models import Count
-from django.shortcuts import get_object_or_404
+from django.shortcuts import get_object_or_404, render
 from django.urls import reverse_lazy
 from django.views.generic import DetailView
 from django.views.generic.edit import CreateView, UpdateView
 from django.views.generic.list import ListView
 
-from championship.forms import AddressForm, OrganizerProfileEditForm
+from championship.forms import AddressForm, EventOrganizerForm, EventOrganizerForm, RegistrationAddressForm, UserForm
 from championship.models import Address, Event, EventOrganizer
 from championship.views.base import CustomDeleteView
+from django.utils.text import slugify
+from django.contrib.auth.models import User
 
 
 class EventOrganizerDetailView(DetailView):
@@ -58,7 +60,7 @@ class EventOrganizerDetailView(DetailView):
 
 class OrganizerProfileEditView(LoginRequiredMixin, UpdateView):
     template_name = "championship/update_organizer.html"
-    form_class = OrganizerProfileEditForm
+    form_class = EventOrganizerForm
 
     def get_object(self):
         return get_object_or_404(EventOrganizer, user=self.request.user)
@@ -135,3 +137,57 @@ class AddressDeleteView(CustomDeleteView):
 
     def allowed_to_delete(self, address, request):
         return address.organizer.user == request.user
+
+
+def register_event_organizer(request):
+    if request.method == "POST":
+        user_form = UserForm(request.POST)
+        organizer_form = EventOrganizerForm(request.POST, request.FILES)
+        address_form = RegistrationAddressForm(request.POST)
+
+        if (
+            user_form.is_valid()
+            and organizer_form.is_valid()
+            and address_form.is_valid()
+        ):
+            user = user_form.save(commit=False)
+
+            # Create the username based on the organizer name and the first name
+            first_name = slugify(user.first_name)[:12]
+            organizer_name = slugify(organizer_form.cleaned_data["name"])[:40]
+            base_username = f"{organizer_name}_{first_name}"
+            username = base_username
+
+            # Make sure the username is unique
+            counter = 1
+            while User.objects.filter(username=username).exists():
+                username = f"{base_username}_{counter}"
+                counter += 1
+
+            user.username = username
+            user.is_active = False
+            user.save()
+
+            organizer = organizer_form.save(commit=False)
+            organizer.user = user
+            organizer.save()
+
+            address = address_form.save(commit=False)
+            address.organizer = organizer
+            address.save()
+
+            organizer.default_address = address
+            organizer.save()
+
+            return render(request, "registration/register_organizer_success.html")
+    else:
+        user_form = UserForm()
+        organizer_form = EventOrganizerForm()
+        address_form = RegistrationAddressForm()
+
+    context = {
+        "user_form": user_form,
+        "organizer_form": organizer_form,
+        "address_form": address_form,
+    }
+    return render(request, "registration/register_organizer.html", context)
