@@ -57,7 +57,6 @@ class OrganizerRegistrationTestCase(TestCase):
             reverse("login"),
             data={"username": self.username, "password": self.data["password1"]},
         )
-        text = response.content.decode("utf-8")
         self.assertContains(response, "Please enter a correct username and password.")
         user = User.objects.get(email=self.data["email"])
         user.is_active = True
