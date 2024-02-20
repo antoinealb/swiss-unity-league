@@ -293,3 +293,14 @@ STORAGES = {
         "BACKEND": "django.contrib.staticfiles.storage.StaticFilesStorage",
     },
 }
+
+if sendgrid_api_key := os.getenv("SENDGRID_API_KEY"):
+    # Email settings, see https://docs.sendgrid.com/for-developers/sending-email/django
+    EMAIL_HOST = "smtp.sendgrid.net"
+    EMAIL_HOST_USER = "apikey"
+    EMAIL_HOST_PASSWORD = sendgrid_api_key
+    EMAIL_PORT = 587
+    EMAIL_USE_TLS = True
+else:
+    # During development log emails to the console
+    EMAIL_BACKEND = "django.core.mail.backends.console.EmailBackend"
