@@ -114,7 +114,8 @@ class PerSeasonView(TemplateView):
         return context
 
 
-EVENTS_ON_PAGE = 10
+EVENTS_ON_PAGE = 5
+PREMIERS_ON_PAGE = 3
 PLAYERS_TOP = 10
 
 
@@ -130,12 +131,19 @@ class IndexView(TemplateView):
         return context
 
     def _future_events(self):
-        future_events = (
-            Event.objects.filter(date__gte=datetime.date.today())
-            .exclude(category=Event.Category.REGULAR)
-            .order_by("date")[:EVENTS_ON_PAGE]
-            .select_related("organizer", "address")
-        )
+        future_premier = Event.objects.filter(
+            date__gte=datetime.date.today(),
+            date__lte=datetime.date.today() + datetime.timedelta(days=30),
+            category=Event.Category.PREMIER,
+        ).order_by("date")[:PREMIERS_ON_PAGE]
+
+        remaining_regionals = EVENTS_ON_PAGE - len(future_premier)
+        future_regional = Event.objects.filter(
+            date__gte=datetime.date.today(), category=Event.Category.REGIONAL
+        ).order_by("date")[:remaining_regionals]
+
+        future_events = list(future_regional) + list(future_premier)
+        future_events.sort(key=lambda e: e.date)
         return future_events
 
     def _organizers_with_image(self):
