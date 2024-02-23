@@ -25,9 +25,25 @@ class HomepageTestCase(TestCase):
 
         response = self.client.get("/")
 
-        self.assertIn("TestEvent2000", response.content.decode())
-        self.assertIn("TestEvent1000", response.content.decode())
-        self.assertNotIn("RegularEvent", response.content.decode())
+        self.assertContains(response, "TestEvent2000")
+        self.assertContains(response, "TestEvent1000")
+        self.assertNotContains(response, "RegularEvent")
+
+    def test_premier_events_prioritized(self):
+        """Checks that up to 3 premier events are shown even if there are several regional events before them."""
+        d = datetime.date.today()
+        premiers = [
+            EventFactory(
+                date=(d + datetime.timedelta(days=i)), category=Event.Category.PREMIER
+            )
+            for i in range(5)
+        ]
+        regionals = [
+            EventFactory(date=d, category=Event.Category.REGIONAL) for i in range(5)
+        ]
+        got_events = self.client.get("/").context["future_events"]
+        expected_events = regionals[:2] + premiers[:3]
+        self.assertEqual(got_events, expected_events)
 
     @override_settings(DEFAULT_SEASON=SEASON_2023)
     def test_shows_player_with_points(self):

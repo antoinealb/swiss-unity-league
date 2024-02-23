@@ -26,7 +26,7 @@
                 <div class="card-body">
                     <h2 class="card-title">Upcoming Magic events</h2>
                     <dl>
-                        {% for event in future_events|slice:":5" %}
+                        {% for event in future_events %}
                             <div itemscope itemtype="http://schema.org/Event">
                                 <dt>
                                     <time itemprop="startDate" datetime="{{ event.date|date:'Y-m-d' }}">{{ event.date|date:"D, d.m.Y" }}</time>
