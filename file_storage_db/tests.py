@@ -33,6 +33,9 @@ class DatabaseFSTestCase(TestCase):
         with self.assertRaises(PermissionError):
             self.storage.open("test.txt", "w")
 
+    def test_storage_size(self):
+        self.assertEqual(12, self.storage.size("test.txt"))
+
 
 class DatabaseFsMediaServingTest(TestCase):
     """Tests that the media serving from the DB is working as expected."""

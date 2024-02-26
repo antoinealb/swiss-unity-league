@@ -2,6 +2,7 @@
 
 import championship.models
 from django.db import migrations, models
+from django.core.validators import validate_image_file_extension
 
 
 class Migration(migrations.Migration):
@@ -21,7 +22,7 @@ class Migration(migrations.Migration):
                 upload_to="event",
                 validators=[
                     championship.models.event_image_validator,
-                    championship.models.image_type_validator,
+                    validate_image_file_extension,
                 ],
             ),
         ),
@@ -35,7 +36,7 @@ class Migration(migrations.Migration):
                 upload_to="organizer",
                 validators=[
                     championship.models.organizer_image_validator,
-                    championship.models.image_type_validator,
+                    validate_image_file_extension,
                 ],
             ),
         ),
