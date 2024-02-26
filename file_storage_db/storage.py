@@ -28,5 +28,13 @@ class DatabaseFileStorage(Storage):
 
         return files.base.ContentFile(content=content, name=name)
 
+    def size(self, name):
+        try:
+            f = File.objects.get(filename=name)
+        except File.DoesNotExist:
+            raise FileNotFoundError(f"No file named {name}")
+
+        return len(f.content)
+
     def url(self, name):
         return reverse("file_db_serve", args=[name])
