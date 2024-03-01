@@ -15,6 +15,7 @@ import os
 import datetime
 from datetime import date
 import logging
+import sys
 from prometheus_client import Info
 from django.contrib.messages import constants as messages
 from championship.season import SEASON_2024, SEASON_2023
@@ -304,3 +305,42 @@ if sendgrid_api_key := os.getenv("SENDGRID_API_KEY"):
 else:
     # During development log emails to the console
     EMAIL_BACKEND = "django.core.mail.backends.console.EmailBackend"
+
+if "test" in sys.argv:
+    # Set some options for faster unit testing in Django See:
+    # https://docs.djangoproject.com/en/5.0/topics/testing/overview/
+    # https://medium.com/@thehackadda/tips-for-speeding-up-your-django-tests-35bab8250760
+
+    # Use a fast, insecure password hasher
+    PASSWORD_HASHERS = [
+        "django.contrib.auth.hashers.MD5PasswordHasher",
+    ]
+
+    # Those middleware are not needed in tests but slow down everything
+    middleware_to_remove = [
+        "django_prometheus.middleware.PrometheusBeforeMiddleware",
+        "django.middleware.security.SecurityMiddleware",
+        "whitenoise.middleware.WhiteNoiseMiddleware",
+        "auditlog.middleware.AuditlogMiddleware",
+        "django.middleware.clickjacking.XFrameOptionsMiddleware",
+        "django_prometheus.middleware.PrometheusAfterMiddleware",
+        "debug_toolbar.middleware.DebugToolbarMiddleware",
+        "hijack.middleware.HijackUserMiddleware",
+    ]
+    for middleware in middleware_to_remove:
+        MIDDLEWARE.remove(middleware)
+
+    # Remove useless slow apps
+    apps_to_remove = [
+        "django_prometheus",
+        "debug_toolbar",
+        "cid.apps.CidAppConfig",
+        "hijack",
+        "hijack.contrib.admin",
+    ]
+
+    for app in apps_to_remove:
+        INSTALLED_APPS.remove(app)
+
+    # Finally, disable logging in unit testing
+    logging.disable(logging.CRITICAL)
