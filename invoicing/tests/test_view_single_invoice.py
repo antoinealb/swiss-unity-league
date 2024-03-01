@@ -1,6 +1,6 @@
 import unittest
 import os
-from django.test import TestCase, Client
+from django.test import TestCase, Client, tag
 from django.urls import reverse
 from django.contrib.auth.models import User, Permission
 from parameterized import parameterized
@@ -23,11 +23,7 @@ def has_latex():
     return True
 
 
-def want_to_run_latex():
-    return not ("SKIP_LATEX_TESTS" in os.environ)
-
-
-@unittest.skipUnless(want_to_run_latex(), "Only runs if asked to via RUN_LATEX_TESTS")
+@tag("latex")
 @unittest.skipUnless(has_latex(), "Can only run if lualatex is available")
 class InvoiceRenderingTest(TestCase):
     def setUp(self):
