@@ -25,8 +25,12 @@ source /env/bin/activate
 ### Running the unit tests
 
 ```shell
-./manage.py test
+./manage.py test --exclude-tag=latex
 ```
+
+Note that here we are removing the tests that include Latex (PDF generator), as
+generating PDF is quite slow. If you are testing invoice generation, you can
+ommit `--exclude-tag` from your command.
 
 ### Creating the database
 
