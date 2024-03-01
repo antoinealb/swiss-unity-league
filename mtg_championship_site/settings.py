@@ -281,9 +281,6 @@ if cache_location := os.getenv("CACHE_LOCATION"):
         }
     }
 
-if test_runner := os.getenv("TEST_RUNNER"):
-    TEST_RUNNER = test_runner
-
 # Serves static files from DB at this URl
 MEDIA_URL = "media/"
 STORAGES = {
