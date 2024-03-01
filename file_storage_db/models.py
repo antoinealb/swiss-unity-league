@@ -1,6 +1,6 @@
 from django.db import models
 from django.urls import reverse
-from auditlog.registry import auditlog
+from django.conf import settings
 
 
 class File(models.Model):
@@ -11,4 +11,7 @@ class File(models.Model):
         return reverse("file_db_serve", args=[self.filename])
 
 
-auditlog.register(File, exclude_fields=["content"])
+if "auditlog" in settings.INSTALLED_APPS:
+    from auditlog.registry import auditlog
+
+    auditlog.register(File, exclude_fields=["content"])

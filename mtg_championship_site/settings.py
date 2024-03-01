@@ -334,6 +334,7 @@ if "test" in sys.argv:
         "cid.apps.CidAppConfig",
         "hijack",
         "hijack.contrib.admin",
+        "auditlog",
     ]
 
     for app in apps_to_remove:

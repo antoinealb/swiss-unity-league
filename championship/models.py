@@ -3,7 +3,6 @@ from django.conf import settings
 from django.db.models import Count
 from django_bleach.models import BleachField
 from django.urls import reverse
-from auditlog.registry import auditlog
 from championship.season import find_season_by_date, Season
 import datetime
 from django.contrib.humanize.templatetags.humanize import ordinal
@@ -499,7 +498,10 @@ class EventPlayerResult(models.Model):
         return reverse("single_result_delete", args=[self.pk])
 
 
-auditlog.register(EventOrganizer)
-auditlog.register(Player, m2m_fields={"events"})
-auditlog.register(Event)
-auditlog.register(EventPlayerResult)
+if "auditlog" in settings.INSTALLED_APPS:
+    from auditlog.registry import auditlog
+
+    auditlog.register(EventOrganizer)
+    auditlog.register(Player, m2m_fields={"events"})
+    auditlog.register(Event)
+    auditlog.register(EventPlayerResult)
