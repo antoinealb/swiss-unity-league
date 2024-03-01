@@ -131,16 +131,24 @@ class IndexView(TemplateView):
         return context
 
     def _future_events(self):
-        future_premier = Event.objects.filter(
-            date__gte=datetime.date.today(),
-            date__lte=datetime.date.today() + datetime.timedelta(days=30),
-            category=Event.Category.PREMIER,
-        ).order_by("date")[:PREMIERS_ON_PAGE]
+        future_premier = (
+            Event.objects.filter(
+                date__gte=datetime.date.today(),
+                date__lte=datetime.date.today() + datetime.timedelta(days=30),
+                category=Event.Category.PREMIER,
+            )
+            .order_by("date")[:PREMIERS_ON_PAGE]
+            .prefetch_related("address", "organizer")
+        )
 
         remaining_regionals = EVENTS_ON_PAGE - len(future_premier)
-        future_regional = Event.objects.filter(
-            date__gte=datetime.date.today(), category=Event.Category.REGIONAL
-        ).order_by("date")[:remaining_regionals]
+        future_regional = (
+            Event.objects.filter(
+                date__gte=datetime.date.today(), category=Event.Category.REGIONAL
+            )
+            .order_by("date")[:remaining_regionals]
+            .prefetch_related("address", "organizer")
+        )
 
         future_events = list(future_regional) + list(future_premier)
         future_events.sort(key=lambda e: e.date)
