@@ -1,4 +1,5 @@
 import random
+import logging
 
 from django.db import transaction
 from django.core.management.base import BaseCommand
@@ -33,12 +34,12 @@ class Command(BaseCommand):
 
     @transaction.atomic
     def handle(self, players_count, organizers_count, events_count, *args, **kwargs):
-        self.stdout.write("Deleting old data...")
+        logging.info("Deleting old data...")
         models = [EventPlayerResult, Player, Event, EventOrganizer]
         for m in models:
             m.objects.all().delete()
 
-        self.stdout.write("Creating new data...")
+        logging.info("Creating new data...")
 
         organizers = [EventOrganizerFactory() for _ in range(organizers_count)]
         players = [PlayerFactory() for _ in range(players_count)]
