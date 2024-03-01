@@ -20,7 +20,7 @@ class ExcelCsvStandingParser(TestCase):
         self.df = pd.DataFrame(
             {
                 PLAYER_NAME: [f"Player {i}" for i in range(1, len(match_points) + 1)],
-                MATCH_POINTS: match_points,
+                MATCH_POINTS: [str(s) for s in match_points],
             }
         )
 
@@ -89,6 +89,7 @@ class ExcelCsvStandingParserExceptions(TestCase):
 
     def test_invalid_match_points(self):
         del self.df[RECORD]
+        self.df[MATCH_POINTS] = self.df[MATCH_POINTS].astype(str)
         self.df.loc[0, MATCH_POINTS] = "invalid"
         with self.assertRaises(InvalidMatchPointsError):
             parse_standings_page(self.df)
