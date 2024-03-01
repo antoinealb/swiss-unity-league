@@ -985,15 +985,13 @@ class SingleResultDeleteView(ResultUpdatePermissionMixin, CustomDeleteView):
         return reverse("event_details", args=[self.object.event.id])
 
     def form_valid(self, form):
-        form_valid = super().form_valid(form)
         update_ranking_order(self.object.event)
-        return form_valid
 
-    def delete(self, request, *args, **kwargs):
         self.object = self.get_object()
         self.object.delete()
         if not EventPlayerResult.objects.filter(player=self.object.player_id).count():
             self.object.player.delete()
+
         return HttpResponseRedirect(self.get_success_url())
 
 
