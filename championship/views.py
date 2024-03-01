@@ -669,6 +669,7 @@ class CreateLinkParserResultsView(LoginRequiredMixin, CreateResultsView):
 
             return list(self.extract_standings_from_page(response.content.decode()))
         except Exception as e:
+            logging.exception("Could not fetch standings")
             message = "Could not fetch standings."
             if hasattr(e, "ui_error_message"):
                 message = e.ui_error_message
@@ -755,6 +756,7 @@ class CreateChallongeResultsView(CreateLinkParserResultsView):
         try:
             return challonge.clean_url(url)
         except ValueError:
+            logging.exception("Could not clean Challonge URL")
             pass
 
 
