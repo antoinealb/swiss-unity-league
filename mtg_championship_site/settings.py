@@ -303,7 +303,7 @@ else:
     # During development log emails to the console
     EMAIL_BACKEND = "django.core.mail.backends.console.EmailBackend"
 
-if "test" in sys.argv:
+if "test" in sys.argv or "pytest" in sys.modules:
     # Set some options for faster unit testing in Django See:
     # https://docs.djangoproject.com/en/5.0/topics/testing/overview/
     # https://medium.com/@thehackadda/tips-for-speeding-up-your-django-tests-35bab8250760
