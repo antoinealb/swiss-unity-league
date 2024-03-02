@@ -16,6 +16,12 @@ urlpatterns = [
     path(parser.to_url(), parser.view, name=parser.view_name)
     for parser in IMPORTER_LIST
 ] + [
+    # Add a temporary url so we can test the challonge link parser again in a few months
+    path(
+        "results/create/challongelink",
+        views.ChallongeLinkResultsView.as_view(),
+        name="challonge_create_link_results",
+    ),
     path("", views.IndexView.as_view(), name="index"),
     path("ranking", views.CompleteRankingView.as_view(), name="ranking"),
     path(

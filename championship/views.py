@@ -585,7 +585,7 @@ class CreateResultsView(FormView):
         return self.event.get_absolute_url()
 
 
-class CreateManualResultsView(LoginRequiredMixin, CreateResultsView):
+class ManualResultsView(LoginRequiredMixin, CreateResultsView):
     template_name = "championship/create_results_manual.html"
 
     def get_context_data(self, formset=None, metadata_form=None):
@@ -716,7 +716,7 @@ class CreateHTMLParserResultsView(CreateFileParserResultsView):
             messages.error(self.request, self.error_text)
 
 
-class CreateAetherhubResultsView(CreateLinkParserResultsView):
+class AetherhubResultsView(CreateLinkParserResultsView):
     help_text = (
         "Link to your tournament. Make sure it is a public and finished tournament."
     )
@@ -751,7 +751,8 @@ class CreateAetherhubResultsView(CreateLinkParserResultsView):
         return True
 
 
-class CreateChallongeResultsView(CreateLinkParserResultsView):
+# Curently disabled as challonge flags our requests as spam
+class ChallongeLinkResultsView(CreateLinkParserResultsView):
     help_text = (
         "Link to your tournament. Make sure the tournament system is Swiss rounds."
     )
@@ -768,17 +769,22 @@ class CreateChallongeResultsView(CreateLinkParserResultsView):
             pass
 
 
-class CreateEventlinkResultsView(CreateHTMLParserResultsView):
+class ChallongeHtmlResultsView(CreateHTMLParserResultsView):
+    def extract_standings_from_page(self, text):
+        return challonge.parse_standings_page(text)
+
+
+class EventlinkResultsView(CreateHTMLParserResultsView):
     def extract_standings_from_page(self, text):
         return eventlink.parse_standings_page(text)
 
 
-class CreateMtgEventResultsView(CreateHTMLParserResultsView):
+class MtgEventResultsView(CreateHTMLParserResultsView):
     def extract_standings_from_page(self, text):
         return mtgevent.parse_standings_page(text)
 
 
-class CreateExcelCsvResultsView(CreateFileParserResultsView):
+class ExcelCsvResultsView(CreateFileParserResultsView):
     help_text = (
         "Upload an Excel (.xlsx) or CSV (.csv) file. The headers of the columns need to be named in a specific way: "
         + "PLAYER_NAME for the column with the name of the player. "
@@ -820,7 +826,7 @@ class CreateExcelCsvResultsView(CreateFileParserResultsView):
         messages.error(self.request, error_text)
 
 
-class CreateMeleeResultsView(CreateFileParserResultsView):
+class MeleeResultsView(CreateFileParserResultsView):
     help_text = "Upload the standings exported by clicking on 'Export All Standings' in Melee's Tournament Controller's Standings page (.csv file)."
 
     def get_results(self, form):
