@@ -1,12 +1,15 @@
 import datetime
+import logging
 from django.contrib import admin
+from django.http import HttpResponseRedirect
 from django.shortcuts import render, redirect
 from django.urls import reverse
 from django import forms
 from django.conf import settings
 from django.contrib import messages
+import pandas as pd
+from championship import views
 
-from championship.forms import TopPlayersEmailForm
 from .models import *
 from championship.score import get_leaderboard
 from invoicing.models import Invoice, PayeeAddress
@@ -55,6 +58,17 @@ class PlayerMergeForm(forms.Form):
         self.fields["player_to_keep"].initial = players[0]
 
 
+class TopPlayersEmailForm(forms.Form):
+    num_of_players = forms.IntegerField(initial=32, min_value=1)
+
+
+class EventfrogFileUploadForm(forms.Form):
+    file = forms.FileField(
+        help_text="The file you can export in the Eventfrog.ch dashboard under Sales > Orders, Cancellations > Export.",
+        label="Eventfrog Excel file",
+    )
+
+
 class PlayerAdmin(admin.ModelAdmin):
     inlines = [ResultInline, PlayerAliasInline]
     search_fields = ["name"]
@@ -69,7 +83,12 @@ class PlayerAdmin(admin.ModelAdmin):
                 "top_emails/",
                 self.admin_site.admin_view(self.top_players_emails_view),
                 name="top_players_emails",
-            )
+            ),
+            path(
+                "email_upload/eventfrog",
+                self.admin_site.admin_view(self.upload_emails_eventfrog),
+                name="email_upload_eventfrog",
+            ),
         ]
         return custom_urls + urls
 
@@ -96,6 +115,62 @@ class PlayerAdmin(admin.ModelAdmin):
             context["entries"] = entries
             context["emails"] = emails
         return render(request, "admin/top_players_emails.html", context)
+
+    def upload_emails_eventfrog(self, request):
+
+        def find_email_column_index(df):
+            for col in df.columns:
+                if df[col].apply(lambda x: "@" in str(x) and "." in str(x)).any():
+                    return df.columns.get_loc(col)
+
+        if request.method == "POST":
+            form = EventfrogFileUploadForm(request.POST, request.FILES)
+            if form.is_valid():
+                excel_file = request.FILES["file"]
+                try:
+                    df = pd.read_excel(excel_file)
+                    email_index = find_email_column_index(df)
+                    if email_index is None:
+                        self.message_user(request, "No email column found in the file.")
+                    else:
+                        first_name_index = email_index - 2
+                        last_name_index = email_index - 1
+                        player_names_and_emails = [
+                            (
+                                views.clean_name(
+                                    f"{row[first_name_index]} {row[last_name_index]}"
+                                ),
+                                row[email_index],
+                            )
+                            for _, row in df.iterrows()
+                        ]
+                        # Remove rows with no email
+                        player_names_and_emails = [
+                            (name, email)
+                            for name, email in player_names_and_emails
+                            if pd.notna(email)
+                        ]
+                        player_names = [name for name, _ in player_names_and_emails]
+                        matching_players = Player.objects.filter(name__in=player_names)
+
+                        for player_name, email in player_names_and_emails:
+                            player = matching_players.filter(name=player_name).first()
+                            if player:
+                                player.email = email
+                                player.save()
+
+                        self.message_user(
+                            request, "Excel file has been processed successfully."
+                        )
+                        return HttpResponseRedirect(
+                            reverse("admin:championship_player_changelist")
+                        )
+                except Exception as e:
+                    self.message_user(request, "Error processing the file")
+                    logging.exception("Error processing the file")
+        else:
+            form = EventfrogFileUploadForm()
+        return render(request, "admin/eventfrog_email_upload.html", {"form": form})
 
     @admin.action(
         description="Merge selected players",
