@@ -288,7 +288,7 @@ class AetherhubImportTest(TestCase):
         self.assertEqual([self.event], gotChoices)
 
 
-class ChallongeImportTest(TestCase):
+class ChallongeLinkImportTest(TestCase):
     def setUp(self):
         self.client = Client()
         self.credentials = dict(username="test", password="test")
@@ -308,6 +308,9 @@ class ChallongeImportTest(TestCase):
     def login(self):
         self.client.login(**self.credentials)
 
+    def post_form(self):
+        return self.client.post(reverse("challonge_create_link_results"), self.data)
+
     def mock_response(self, requests_get):
         resp = MagicMock()
         resp.content = load_test_html("challonge_new_ranking.html").encode()
@@ -318,7 +321,7 @@ class ChallongeImportTest(TestCase):
         self.login()
         self.mock_response(requests_get)
 
-        response = self.client.post(reverse("results_create_challonge"), self.data)
+        response = self.post_form()
 
         results = EventPlayerResult.objects.filter(event=self.event).order_by("id")[:]
 
@@ -341,7 +344,7 @@ class ChallongeImportTest(TestCase):
         )
         requests_get.return_value = resp
 
-        response = self.client.post(reverse("results_create_challonge"), self.data)
+        response = self.post_form()
 
         self.assertContains(response, TournamentNotSwissError.ui_error_message)
 
@@ -349,10 +352,78 @@ class ChallongeImportTest(TestCase):
         self.login()
         self.data["url"] = "https://aetherhub.com/Tourney/RoundTourney/13923"
 
-        resp = self.client.post(reverse("results_create_challonge"), self.data)
+        resp = self.post_form()
 
         self.assertEqual(resp.status_code, 200)
         self.assertIn("Wrong url format.", resp.content.decode())
+
+
+class ChallongeHtmlImportTest(TestCase):
+    def setUp(self):
+        self.client = Client()
+        self.credentials = dict(username="test", password="test")
+        self.user = User.objects.create_user(**self.credentials)
+        self.organizer = EventOrganizerFactory(user=self.user)
+        self.event = RankedEventFactory(
+            organizer=self.organizer,
+            date=datetime.date.today(),
+            category=Event.Category,
+        )
+
+        text = load_test_html("challonge_new_ranking.html")
+
+        standings = SimpleUploadedFile(
+            "standings", text.encode(), content_type="text/html"
+        )
+
+        self.data = {
+            "standings": standings,
+            "event": self.event.id,
+        }
+
+    def login(self):
+        self.client.login(**self.credentials)
+
+    def post_form(self):
+        return self.client.post(reverse("results_create_challonge"), self.data)
+
+    def test_imports_result_for_correct_tourney(self):
+        self.login()
+
+        self.post_form()
+
+        results = EventPlayerResult.objects.filter(event=self.event).order_by("id")[:]
+
+        # hardcoded spot checks from the tournament
+        self.assertEqual(len(results), 14)
+        self.assertEqual(results[0].points, 12)
+        self.assertEqual(results[0].ranking, 1)
+        self.assertEqual(results[3].points, 9)
+        self.assertEqual(results[3].ranking, 4)
+        self.assertEqual(results[0].player.name, "Pascal Richter")
+
+    def test_import_result_with_aliasing(self):
+        self.login()
+
+        orig_player = PlayerFactory(name="Test Player")
+        PlayerAlias.objects.create(name="Pascal Richter", true_player=orig_player)
+
+        self.post_form()
+        results = EventPlayerResult.objects.filter(event=self.event).order_by("id")[:]
+        self.assertEqual(results[0].player.name, "Test Player")
+
+    def test_import_garbage(self):
+        """Checks that when we try to import garbage data, we get a nice error
+        message instead of a 500."""
+
+        self.data["standings"] = SimpleUploadedFile(
+            "standings", "FOOBAR".encode(), content_type="text/html"
+        )
+
+        self.login()
+        resp = self.post_form()
+        self.assertEqual(200, resp.status_code)
+        self.assertIn("Could not parse standings", resp.content.decode())
 
 
 class EventLinkImportTestCase(TestCase):
