@@ -48,7 +48,10 @@
                         {% endfor %}
                     </dl>
                 </div>
-                <div class="card-footer"><a class="btn btn-secondary btn-sm" href="{% url 'events' %}" title="Upcoming Magic: the Gathering events in Switzerland">All upcoming events</a></div>
+                <div class="card-footer">
+                    <a class="btn btn-secondary btn-sm" href="{% url 'events' %}" title="Upcoming Magic: the Gathering events in Switzerland">All upcoming events</a>
+                    <a class="btn btn-secondary btn-sm" href="{% url 'info_ical' %}">Add to my calendar</a>
+                </div>
             </div>
         </div>
         <div class="col-lg-4 mb-5">
