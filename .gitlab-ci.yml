@@ -3,11 +3,19 @@ stages:
   - package
   - rollout
 
+variables:
+  PIP_CACHE_DIR: "$CI_PROJECT_DIR/.cache/pip"
+
+cache:
+  key: pipcache
+  paths:
+    - .cache/pip
+
 tests:
   stage: test
   image: python:3.12
   before_script:
-    - pip install -r requirements.txt
+    - pip install --upgrade -r requirements.txt
   script:
     - ./manage.py test --testrunner "xmlrunner.extra.djangotestrunner.XMLTestRunner"
   artifacts:
@@ -20,8 +28,8 @@ python-typing:
   stage: test
   image: python:3.12
   before_script:
-    - pip install -r requirements.txt
-    - pip install mypy
+    - pip install --upgrade -r requirements.txt
+    - pip install --upgrade mypy
   script:
     - mypy --install-types --non-interactive championship invoicing
 
