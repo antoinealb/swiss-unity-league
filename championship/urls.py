@@ -102,10 +102,12 @@ urlpatterns = [
         "address/<pk>/delete/", views.AddressDeleteView.as_view(), name="address_delete"
     ),
     path("api/", include(api_router.urls)),
-    path("events.ics", LargeEventFeed(), name="events_feed"),
     path(
         "past-events/<slug:slug>/",
         views.PastEventViewSet.as_view({"get": "list"}),
         name="past-events-by-season",
     ),
+    path("events.ics", LargeEventFeed(), name="events_feed"),
+    path("allevents.ics", AllEventsFeed(), name="all_events_feed"),
+    path("premierevents.ics", PremierEventsFeed(), name="premier_events_feed"),
 ]

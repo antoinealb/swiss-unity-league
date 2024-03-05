@@ -32,3 +32,24 @@ class ICalFeedGetTest(TestCase):
         calendar = Calendar.from_ical(resp.content)
         events = list(calendar.walk("VEVENT"))
         self.assertIn("Foobar Town", events[0]["LOCATION"])
+
+    def test_ical_feed_all_events(self):
+        e = EventFactory(category=Event.Category.REGULAR)
+        client = Client()
+        resp = client.get("/allevents.ics")
+        calendar = Calendar.from_ical(resp.content)
+        events = list(calendar.walk("VEVENT"))
+        self.assertIn(e.name, events[0]["SUMMARY"])
+
+    def test_ical_feed_only_premier(self):
+        """Checks that there is an ical feed with only premier events"""
+        e1 = EventFactory(category=Event.Category.REGULAR)
+        e2 = EventFactory(category=Event.Category.REGIONAL)
+        e3 = EventFactory(category=Event.Category.PREMIER)
+        client = Client()
+        resp = client.get("/premierevents.ics")
+
+        calendar = Calendar.from_ical(resp.content)
+        events = [str(c["SUMMARY"]) for c in calendar.walk("VEVENT")]
+
+        self.assertEqual([f"[{e3.organizer.name}] {e3.name}"], events)
