@@ -27,7 +27,7 @@ class EventfrogMailUploadTest(TestCase):
         self.assertEqual(response.status_code, 302)
         login_url = reverse("admin:login")
         expected_redirect_url = f"{login_url}?next={self.url}"
-        self.assertTrue(response.url.startswith(expected_redirect_url))
+        self.assertRedirects(response, expected_redirect_url)
 
     def test_upload(self):
         self.login()
