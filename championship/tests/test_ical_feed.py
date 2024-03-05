@@ -1,5 +1,6 @@
 import datetime
 from django.test import TestCase, Client
+from django.urls import reverse
 from icalendar import Calendar
 from championship.models import Event
 from championship.factories import EventFactory, AddressFactory, EventOrganizerFactory
@@ -53,3 +54,9 @@ class ICalFeedGetTest(TestCase):
         events = [str(c["SUMMARY"]) for c in calendar.walk("VEVENT")]
 
         self.assertEqual([f"[{e3.organizer.name}] {e3.name}"], events)
+
+    def test_get_ical_page(self):
+        """Checks that the information page for ical integration exists."""
+        client = Client()
+        resp = client.get(reverse("info_ical"))
+        self.assertEqual(200, resp.status_code)

@@ -110,4 +110,5 @@ urlpatterns = [
     path("events.ics", LargeEventFeed(), name="events_feed"),
     path("allevents.ics", AllEventsFeed(), name="all_events_feed"),
     path("premierevents.ics", PremierEventsFeed(), name="premier_events_feed"),
+    path("calendar-integration", views.IcalInformationView.as_view(), name="info_ical"),
 ]

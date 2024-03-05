@@ -1,0 +1,35 @@
+{% extends "championship/base.html" %}
+
+{% block title %}
+    Integrating SUL Events in your calendar
+{% endblock %}
+
+{% block meta_description %}
+    How to integrate Swiss Unity League events in your Apple, Google, Android Calendar.
+{% endblock %}
+
+{% block content %}
+    <h1>Exporting SUL events to your calendar</h1>
+    <p>Want to never miss a SUL event in the future? You can now add them automatically to your agenda by subscribing to our calendar.
+        This works on all platforms and shows you what is happening around you, so you can plan.</p>
+    <p>We offer three shared calendars, which allow you to decide what kind of events you are interested in:
+        <li>One with only Premier events,</li>
+        <li>One with all Premier &amp; regional events,</li>
+        <li>One with all events. This one has a lot going on!</lI>
+    </ul>
+    </p>
+    <h2>How do I add those to my calendar?</h2>
+    <p>Follow the instructions for your platform:</p>
+    <ul>
+        <li><a href="https://support.google.com/calendar/answer/37100?hl=en">Google Calendar: Add someone else’s Google calendar</a></li>
+        <li><a href="https://support.apple.com/en-mn/guide/iphone/iph3d1110d4/ios">iOS: Set up multiple calendars on iPhone</a></li>
+        <li><a href="https://support.apple.com/guide/calendar/subscribe-to-calendars-icl1022/mac">Apple Calendar: Subscribe to calendars</a></li>
+        <li><a href="https://support.microsoft.com/en-us/office/import-or-subscribe-to-a-calendar-in-outlook-com-cff1429c-5af6-41ec-a5b4-74f2c278e98c">Outlook: Import or subscribe to a calendar in Outlook</a></li>
+    </ul>
+    <p>When asked for the calendar's URL, use those:</p>
+    <ul>
+        <li>Premier events only: <code>{{ premier_events_url }}</code></li>
+        <li>Premier & Regional events: <code>{{ regional_events_url }}</code></li>
+        <li>All events: <code>{{ all_events_url }}</code></li>
+    </ul>
+{% endblock %}
