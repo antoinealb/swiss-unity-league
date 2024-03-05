@@ -322,7 +322,3 @@ class ResultsDeleteForm(forms.Form, SubmitButtonMixin):
     that will be shown to the user when they want to delete results for the
     event.
     """
-
-
-class TopPlayersEmailForm(forms.Form):
-    num_of_players = forms.IntegerField(initial=32, min_value=1)

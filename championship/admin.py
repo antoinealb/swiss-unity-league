@@ -1,12 +1,18 @@
 import datetime
+import logging
+import warnings
 from django.contrib import admin
+from django.http import HttpResponseRedirect
 from django.shortcuts import render, redirect
 from django.urls import reverse
 from django import forms
 from django.conf import settings
 from django.contrib import messages
+from django.db import transaction
+from django.core.validators import validate_email, ValidationError
+import openpyxl
+from championship import views
 
-from championship.forms import TopPlayersEmailForm
 from .models import *
 from championship.score import get_leaderboard
 from invoicing.models import Invoice, PayeeAddress
@@ -55,6 +61,17 @@ class PlayerMergeForm(forms.Form):
         self.fields["player_to_keep"].initial = players[0]
 
 
+class TopPlayersEmailForm(forms.Form):
+    num_of_players = forms.IntegerField(initial=32, min_value=1)
+
+
+class EventfrogFileUploadForm(forms.Form):
+    file = forms.FileField(
+        help_text="The file you can export in the Eventfrog.ch dashboard under Sales > Orders, Cancellations > Export.",
+        label="Eventfrog Excel file",
+    )
+
+
 class PlayerAdmin(admin.ModelAdmin):
     inlines = [ResultInline, PlayerAliasInline]
     search_fields = ["name"]
@@ -69,7 +86,12 @@ class PlayerAdmin(admin.ModelAdmin):
                 "top_emails/",
                 self.admin_site.admin_view(self.top_players_emails_view),
                 name="top_players_emails",
-            )
+            ),
+            path(
+                "email_upload/eventfrog",
+                self.admin_site.admin_view(self.upload_emails_eventfrog),
+                name="email_upload_eventfrog",
+            ),
         ]
         return custom_urls + urls
 
@@ -97,10 +119,66 @@ class PlayerAdmin(admin.ModelAdmin):
             context["emails"] = emails
         return render(request, "admin/top_players_emails.html", context)
 
+    @transaction.atomic
+    def upload_emails_eventfrog(self, request):
+        if request.method != "POST":
+            form = EventfrogFileUploadForm()
+            return render(request, "admin/eventfrog_email_upload.html", {"form": form})
+
+        form = EventfrogFileUploadForm(request.POST, request.FILES)
+        if not form.is_valid():
+            return render(request, "admin/eventfrog_email_upload.html", {"form": form})
+
+        excel_file = request.FILES["file"]
+
+        # openpyxl throws a warnings about styling of the sheet, which we don't
+        # really care about.
+        with warnings.catch_warnings():
+            warnings.simplefilter("ignore")
+            sheet = openpyxl.load_workbook(excel_file).active
+
+        rows = sheet.iter_rows()
+
+        column_indices = {}
+        for row in rows:
+            if row[0].value != "Ticket ID":
+                continue
+
+            interesting_columns = {"First name", "Last name", "Email", "Status"}
+            for i, c in enumerate(row):
+                c = c.value
+                if c in interesting_columns:
+                    column_indices[c] = i
+            break
+
+        if "Email" not in column_indices:
+            self.message_user(request, "No email column found in the file.")
+            return render(request, "admin/eventfrog_email_upload.html", {"form": form})
+
+        # Extract a list of (name, emails) tuple
+        player_names_and_emails = []
+        for row in rows:
+            email = row[column_indices["Email"]].value
+            if not email:
+                continue
+
+            first = row[column_indices["First name"]].value
+            last = row[column_indices["Last name"]].value
+            full = views.clean_name(f"{first} {last}")
+            player_names_and_emails.append((full, email))
+
+        # Update all players
+        for player_name, email in player_names_and_emails:
+            Player.objects.filter(name=player_name).update(email=email)
+
+        self.message_user(request, "Excel file has been processed successfully.")
+        return HttpResponseRedirect(reverse("admin:championship_player_changelist"))
+
     @admin.action(
         description="Merge selected players",
         permissions=["delete"],
     )
+    @transaction.atomic
     def merge_players(self, request, queryset):
         queryset = queryset.order_by("id")
         players = queryset.order_by("id")
