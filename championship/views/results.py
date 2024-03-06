@@ -1,415 +1,53 @@
 import csv
-import datetime
-import re
-import logging
-import os
-from zipfile import BadZipFile
-import requests
-import random
-import pandas as pd
 import io
-from typing import *
-from django.core.exceptions import ImproperlyConfigured
-from django.shortcuts import get_object_or_404
-from django.views.generic.base import TemplateView
-from django.views.generic.list import ListView
-from django.views.generic.edit import DeleteView, FormView, UpdateView, CreateView
-from django.views.generic import DetailView
-from django.http import (
-    HttpResponseRedirect,
-    HttpResponseForbidden,
-    Http404,
-)
-from django.urls import reverse, reverse_lazy
+import logging
+import re
+from collections import Counter
+from typing import Iterable
+from zipfile import BadZipFile
+
 from django.contrib import messages
 from django.contrib.auth.mixins import LoginRequiredMixin
-from django.conf import settings
+from django.core.exceptions import ImproperlyConfigured
 from django.db import transaction
-from django.db.models import F, Q
-from rest_framework import viewsets
-from rest_framework.response import Response
-from championship.score import get_results_with_qps, get_leaderboard
-from championship.season import (
-    SEASON_LIST,
-    SEASONS_WITH_INFO,
-    SEASONS_WITH_RANKING,
-    find_season_by_slug,
+from django.http import HttpResponseForbidden, HttpResponseRedirect
+from django.shortcuts import get_object_or_404
+from django.urls import reverse
+from django.views.generic.edit import FormView, UpdateView
+
+import pandas as pd
+import requests
+
+from championship.forms import (
+    AddTop8ResultsForm,
+    EventPlayerResultForm,
+    FileImporterForm,
+    ImporterSelectionForm,
+    LinkImporterForm,
+    ManualUploadMetadataForm,
+    ResultsDeleteForm,
+    ResultsFormset,
 )
-
-from championship.parsers.parse_result import ParseResult
-from mtg_championship_site.settings import DEFAULT_SEASON
-
-from .models import *
-from invoicing.models import Invoice
-from .forms import *
+from championship.models import Event, EventPlayerResult, Player, PlayerAlias
 from championship.parsers import (
     aetherhub,
+    challonge,
     eventlink,
     excel_csv_parser,
-    mtgevent,
-    challonge,
     melee,
+    mtgevent,
 )
-from championship.parsers.general_parser_functions import record_to_points, parse_record
-from championship.serializers import EventSerializer, PlayerAutocompleteSerializer
+from championship.parsers.general_parser_functions import parse_record, record_to_points
+from championship.parsers.parse_result import ParseResult
 from championship.tournament_valid import (
-    validate_standings,
-    get_max_round_error_message,
-    TooManyPointsForPlayerError,
-    TooManyPointsInTotalError,
-    TooManyPointsForTop8Error,
     TooFewPlayersForPremierError,
+    TooManyPointsForPlayerError,
+    TooManyPointsForTop8Error,
+    TooManyPointsInTotalError,
+    get_max_round_error_message,
+    validate_standings,
 )
-from django.http import JsonResponse
-from django.shortcuts import render
-
-
-class CustomDeleteView(LoginRequiredMixin, DeleteView):
-    success_message = "Successfully deleted {verbose_name}!"
-    error_message = "You are not allowed to delete this {verbose_name}!"
-
-    def allowed_to_delete(self, object, request):
-        return True
-
-    def form_valid(self, form):
-        request = self.request
-        verbose_name = self.object._meta.verbose_name.lower()
-        if self.allowed_to_delete(self.object, request):
-            messages.success(
-                request, self.success_message.format(verbose_name=verbose_name)
-            )
-            self.delete(self.request)
-        else:
-            messages.error(
-                request, self.error_message.format(verbose_name=verbose_name)
-            )
-        return HttpResponseRedirect(self.get_success_url())
-
-
-class PerSeasonView(TemplateView):
-    default_season = settings.DEFAULT_SEASON
-    season_list = SEASON_LIST
-
-    def dispatch(self, request, *args, **kwargs):
-        self.slug = self.kwargs.get("slug", self.default_season.slug)
-        try:
-            self.current_season = find_season_by_slug(self.slug)
-        except KeyError:
-            raise Http404(f"Unknown season {self.slug}")
-        return super().dispatch(request, *args, **kwargs)
-
-    def get_template_names(self):
-        # We return two templates so that in case the season-specific one is
-        # not found, the default one gets returned.
-        return [
-            self.template_path.format(slug=s)
-            for s in (self.slug, self.default_season.slug)
-        ]
-
-    def get_context_data(self, **kwargs):
-        context = super().get_context_data(**kwargs)
-        context["seasons"] = self.season_list
-        context["current_season"] = self.current_season
-        context["view_name"] = self.season_view_name
-        return context
-
-
-EVENTS_ON_PAGE = 5
-PREMIERS_ON_PAGE = 3
-PLAYERS_TOP = 10
-
-
-class IndexView(TemplateView):
-    template_name = "championship/index.html"
-
-    def get_context_data(self, **kwargs):
-        context = super().get_context_data(**kwargs)
-        context["players"] = get_leaderboard(settings.DEFAULT_SEASON)[:PLAYERS_TOP]
-        context["future_events"] = self._future_events()
-        context["organizers"] = self._organizers_with_image()
-        context["has_open_invoices"] = self._has_open_invoices()
-        return context
-
-    def _future_events(self):
-        future_premier = (
-            Event.objects.filter(
-                date__gte=datetime.date.today(),
-                date__lte=datetime.date.today() + datetime.timedelta(days=30),
-                category=Event.Category.PREMIER,
-            )
-            .order_by("date")[:PREMIERS_ON_PAGE]
-            .prefetch_related("address", "organizer")
-        )
-
-        remaining_regionals = EVENTS_ON_PAGE - len(future_premier)
-        future_regional = (
-            Event.objects.filter(
-                date__gte=datetime.date.today(), category=Event.Category.REGIONAL
-            )
-            .order_by("date")[:remaining_regionals]
-            .prefetch_related("address", "organizer")
-        )
-
-        future_events = list(future_regional) + list(future_premier)
-        future_events.sort(key=lambda e: e.date)
-        return future_events
-
-    def _organizers_with_image(self):
-        # Just make sure we don't always have the pictures in the same order
-        # to be fair to everyone
-        organizers = list(EventOrganizer.objects.exclude(image="").exclude(image=None))
-        random.shuffle(organizers)
-        return organizers
-
-    def _has_open_invoices(self) -> bool:
-        if self.request.user.is_anonymous:
-            return False
-
-        return Invoice.objects.filter(
-            event_organizer__user=self.request.user, payment_received_date__isnull=True
-        ).exists()
-
-
-LAST_RESULTS = "last_results"
-TOP_FINISHES = "top_finishes"
-QP_TABLE = "qp_table"
-THEAD = "thead"
-TBODY = "tbody"
-TABLE = "table"
-QPS = "QPs"
-EVENTS = "Events"
-
-
-def add_to_table(table, column_title, row_title, value=1):
-    """Increases the entry of the table in the given column-row pair by the value."""
-    thead = table[THEAD]
-    if column_title not in thead:
-        return
-    column_index = thead.index(column_title)
-    tbody = table[TBODY]
-    for existing_row in tbody:
-        if existing_row[0] == row_title:
-            existing_row[column_index] += value
-            return
-    new_row = [row_title] + [0] * (len(thead) - 1)
-    new_row[column_index] = value
-    tbody.append(new_row)
-
-
-class PlayerDetailsView(PerSeasonView):
-    season_view_name = "player_details_by_season"
-    season_list = SEASONS_WITH_RANKING
-
-    def get_template_names(self):
-        return ["championship/player_details.html"]
-
-    def get_context_data(self, **kwargs):
-        context = super().get_context_data(**kwargs)
-        context["player"] = get_object_or_404(Player, pk=self.kwargs["pk"])
-
-        results = get_results_with_qps(
-            EventPlayerResult.objects.filter(
-                player=context["player"],
-                event__date__gte=self.current_season.start_date,
-                event__date__lte=self.current_season.end_date,
-            )
-        )
-
-        context[LAST_RESULTS] = sorted(
-            results, key=lambda r: r[0].event.date, reverse=True
-        )
-
-        qp_table = {
-            THEAD: [
-                "",
-                Event.Category.PREMIER.label,
-                Event.Category.REGIONAL.label,
-                Event.Category.REGULAR.label,
-                "Total",
-            ],
-            TBODY: [],
-        }
-        with_top_8_table = {
-            THEAD: ["", Event.Category.PREMIER.label, Event.Category.REGIONAL.label],
-            TBODY: [],
-        }
-        without_top_8_table = {
-            THEAD: ["", Event.Category.REGIONAL.label, Event.Category.REGULAR.label],
-            TBODY: [],
-        }
-        for result, score in sorted(context[LAST_RESULTS]):
-            add_to_table(
-                qp_table,
-                column_title=result.event.get_category_display(),
-                row_title=QPS,
-                value=score.qps,
-            )
-            add_to_table(
-                qp_table,
-                column_title=result.event.get_category_display(),
-                row_title=EVENTS,
-            )
-
-            if result.has_top8:
-                # For events with top 8 only display the results if the player made top 8
-                if result.single_elimination_result:
-                    add_to_table(
-                        with_top_8_table,
-                        column_title=result.event.get_category_display(),
-                        row_title=result.get_ranking_display(),
-                    )
-            else:
-                # For swiss rounds only display top 3 finishes
-                if result.ranking < 4:
-                    add_to_table(
-                        without_top_8_table,
-                        column_title=result.event.get_category_display(),
-                        row_title=result.get_ranking_display(),
-                    )
-
-        if len(qp_table[TBODY]) > 0:
-            # Compute the total and add it in the last column
-            for row in qp_table[TBODY]:
-                row[-1] = sum(row[1:])
-
-            context[QP_TABLE] = qp_table
-
-        context[TOP_FINISHES] = [
-            {"title": "Top 8 Finishes", TABLE: with_top_8_table},
-            {"title": "Best Swiss Round Finishes", TABLE: without_top_8_table},
-        ]
-        return context
-
-
-class EventDetailsView(DetailView):
-    template_name = "championship/event_details.html"
-    model = Event
-    context_object_name = "event"
-
-    def get_context_data(self, **kwargs):
-        context = super().get_context_data(**kwargs)
-        event = context["event"]
-        results = get_results_with_qps(
-            EventPlayerResult.objects.filter(event=event).annotate(
-                player_name=F("player__name"),
-            )
-        )
-
-        context["can_edit_results"] = (
-            event.can_be_edited() and event.organizer.user == self.request.user
-        ) or self.request.user.is_superuser
-
-        context["results"] = sorted(results)
-        context["has_decklists"] = any(
-            result.decklist_url for result, _ in context["results"]
-        )
-
-        # Prompt the players to notify the organizer that they forgot to upload results
-        # Only do so when the event is finished longer than 4 days ago and results can still be uploaded.
-        context["notify_missing_results"] = (
-            event.date < datetime.date.today() - datetime.timedelta(days=4)
-            and event.can_be_edited()
-            and event.category != Event.Category.OTHER
-        )
-        return context
-
-
-class CompleteRankingView(PerSeasonView):
-    template_path = "championship/ranking/{slug}/ranking.html"
-    season_view_name = "ranking-by-season"
-    season_list = SEASONS_WITH_RANKING
-
-    def get_context_data(self, **kwargs):
-        context = super().get_context_data(**kwargs)
-        context["players"] = get_leaderboard(self.current_season)
-        return context
-
-
-class InformationForPlayerView(PerSeasonView):
-    template_path = "championship/info/{slug}/info_player.html"
-    season_view_name = "info_for_season"
-    season_list = SEASONS_WITH_INFO
-
-
-class InformationForOrganizerView(PerSeasonView):
-    template_path = "championship/info/{slug}/info_organizer.html"
-    season_view_name = "info_organizer_for_season"
-    season_list = SEASONS_WITH_INFO
-
-
-class CreateEventView(LoginRequiredMixin, FormView):
-    template_name = "championship/create_event.html"
-    form_class = EventCreateForm
-
-    def get_form_kwargs(self):
-        kwargs = super(CreateEventView, self).get_form_kwargs()
-        kwargs["organizer"] = self.request.user.eventorganizer
-
-        default_address = kwargs["organizer"].default_address
-        if default_address:
-            kwargs["initial"]["address"] = default_address.id
-        return kwargs
-
-    def form_valid(self, form):
-        event = form.save(commit=False)
-        event.organizer = self.request.user.eventorganizer
-        event.save()
-
-        messages.success(self.request, "Succesfully created event!")
-
-        return HttpResponseRedirect(reverse("event_details", args=[event.id]))
-
-
-class EventUpdateView(LoginRequiredMixin, UpdateView):
-    model = Event
-    form_class = EventCreateForm
-    template_name = "championship/update_event.html"
-
-    def dispatch(self, request, *args, **kwargs):
-        self.event = self.get_object()
-        if self.event.organizer.user != request.user or not self.event.can_be_edited():
-            return HttpResponseForbidden()
-        return super().dispatch(request, *args, **kwargs)
-
-    def form_valid(self, form):
-        """Check again if the event can be edited, because date could have changed."""
-        event = form.save(commit=False)
-        if not event.can_be_edited():
-            messages.error(self.request, "Event date is too old.")
-            return self.form_invalid(form)
-        event.save()
-        messages.success(self.request, "Successfully saved event")
-        return HttpResponseRedirect(reverse("event_details", args=[self.object.id]))
-
-
-class CopyEventView(LoginRequiredMixin, UpdateView):
-    model = Event
-    form_class = EventCreateForm
-    template_name = "championship/copy_event.html"
-
-    def get_initial(self):
-        # By default, copy it one week later
-        initial = super().get_initial()
-        initial["date"] = self.object.date + datetime.timedelta(days=7)
-        return initial
-
-    def form_valid(self, form):
-        event = form.save(commit=False)
-        event.pk = None  # Force Django to create a new instance
-        event.organizer = self.request.user.eventorganizer
-        event.save()
-        messages.success(self.request, "Successfully created event!")
-        return HttpResponseRedirect(reverse("event_details", args=[event.id]))
-
-
-class EventDeleteView(CustomDeleteView):
-    model = Event
-
-    def get_success_url(self):
-        return reverse("organizer_details", args=[self.object.organizer.id])
-
-    def allowed_to_delete(self, event, request):
-        return event.can_be_deleted() and event.organizer.user == request.user
+from championship.views.base import CustomDeleteView
 
 
 def validate_standings_and_show_error(request, standings, category):
@@ -766,7 +404,6 @@ class ChallongeLinkResultsView(CreateLinkParserResultsView):
             return challonge.clean_url(url)
         except ValueError:
             logging.exception("Could not clean Challonge URL")
-            pass
 
 
 class ChallongeHtmlResultsView(CreateHTMLParserResultsView):
@@ -1007,178 +644,3 @@ class SingleResultDeleteView(ResultUpdatePermissionMixin, CustomDeleteView):
             self.object.player.delete()
 
         return HttpResponseRedirect(self.get_success_url())
-
-
-class FutureEventViewSet(viewsets.ReadOnlyModelViewSet):
-    """
-    API endpoint that allows events to be viewed or edited.
-    """
-
-    serializer_class = EventSerializer
-
-    def get_queryset(self):
-        """Returns all Events in the future."""
-
-        # This needs to be a function (get_queryset) instead of an attribute as
-        # otherwise the today means "when the app was started.
-        qs = Event.objects.filter(date__gte=datetime.date.today())
-        qs = qs.select_related("organizer", "address", "organizer__default_address")
-        return qs.order_by("date")
-
-
-class PastEventViewSet(viewsets.ReadOnlyModelViewSet):
-    """
-    API endpoint that allows events to be viewed or edited.
-    """
-
-    serializer_class = EventSerializer
-
-    def get_queryset(self):
-        """Returns all Events in the past."""
-
-        self.slug = self.kwargs.get("slug")
-        try:
-            self.current_season = find_season_by_slug(self.slug)
-        except KeyError:
-            raise Http404(f"Unknown season {self.slug}")
-
-        # This needs to be a function (get_queryset) instead of an attribute as
-        # otherwise the today means "when the app was started.
-        qs = Event.objects.filter(date__lt=datetime.date.today())
-        qs = qs.filter(
-            date__gte=self.current_season.start_date,
-            date__lte=self.current_season.end_date,
-        )
-        qs = qs.select_related("organizer", "address", "organizer__default_address")
-        return qs.order_by("-date")
-
-
-class ListFormats(viewsets.ViewSet):
-    """API Endpoint returning all the formats we play in the league."""
-
-    def list(self, request, format=None):
-        return Response(sorted(Event.Format.labels))
-
-
-class FutureEventView(TemplateView):
-    template_name = "championship/future_events.html"
-
-    def get_context_data(self, **kwargs: Any):
-        context = super().get_context_data(**kwargs)
-        future_events = {"Upcoming": reverse("future-events-list")}
-        past_events_each_season = [
-            {s.name: reverse("past-events-by-season", kwargs={"slug": s.slug})}
-            for s in SEASON_LIST
-        ]
-        past_events_each_season.reverse()
-        context["season_urls"] = [future_events] + past_events_each_season
-        return context
-
-
-class EventOrganizerDetailView(DetailView):
-    model = EventOrganizer
-    template_name = "championship/organizer_details.html"
-
-    def get_context_data(self, **kwargs):
-        context = super().get_context_data(**kwargs)
-        organizer = self.get_object()
-
-        future_events = Event.objects.filter(
-            organizer=organizer, date__gte=datetime.date.today()
-        ).order_by("date")
-        past_events = (
-            Event.objects.filter(organizer=organizer, date__lt=datetime.date.today())
-            .annotate(num_players=Count("eventplayerresult"))
-            .order_by("-date")
-        )
-
-        all_events = []
-        if future_events:
-            all_events.append({"title": "Upcoming Events", "list": future_events})
-        if past_events:
-            all_events.append(
-                {"title": "Past Events", "list": past_events, "has_num_players": True}
-            )
-        context["all_events"] = all_events
-        return context
-
-
-class OrganizerProfileEditView(LoginRequiredMixin, UpdateView):
-    template_name = "championship/update_organizer.html"
-    form_class = OrganizerProfileEditForm
-
-    def get_object(self):
-        return get_object_or_404(EventOrganizer, user=self.request.user)
-
-    def get_success_url(self):
-        return self.get_object().get_absolute_url()
-
-    def form_valid(self, form):
-        messages.success(self.request, "Succesfully updated organizer profile!")
-        return super().form_valid(form)
-
-
-class OrganizerListView(ListView):
-    template_name = "championship/organizer_list.html"
-    context_object_name = "organizers"
-
-    def get_queryset(self):
-        organizers = (
-            EventOrganizer.objects.select_related("default_address")
-            .annotate(num_events=Count("event"))
-            .filter(num_events__gt=0)
-            .order_by("name")
-            .all()
-        )
-        organizers_with_address = [o for o in organizers if o.default_address]
-        organizers_without_address = [o for o in organizers if not o.default_address]
-        return (
-            sorted(organizers_with_address, key=lambda o: o.default_address)
-            + organizers_without_address
-        )
-
-
-class AddressListView(LoginRequiredMixin, ListView):
-    model = Address
-    template_name = "championship/address_list.html"
-
-    def get_queryset(self):
-        return self.request.user.eventorganizer.get_addresses()
-
-    def get_context_data(self, **kwargs):
-        context = super().get_context_data(**kwargs)
-        context["organizer_url"] = self.request.user.eventorganizer.get_absolute_url()
-        return context
-
-
-class AddressViewMixin:
-    model = Address
-    form_class = AddressForm
-    template_name = "championship/address_form.html"
-    success_url = reverse_lazy("address_list")
-
-    def form_valid(self, form):
-        organizer = self.request.user.eventorganizer
-        form.instance.organizer = organizer
-        self.object = form.save()
-        if form.cleaned_data["set_as_organizer_address"]:
-            organizer.default_address = self.object
-            organizer.save()
-        return super().form_valid(form)
-
-
-class AddressCreateView(LoginRequiredMixin, AddressViewMixin, CreateView):
-    pass
-
-
-class AddressUpdateView(LoginRequiredMixin, AddressViewMixin, UpdateView):
-    def get_queryset(self):
-        return self.request.user.eventorganizer.get_addresses()
-
-
-class AddressDeleteView(CustomDeleteView):
-    model = Address
-    success_url = reverse_lazy("address_list")
-
-    def allowed_to_delete(self, address, request):
-        return address.organizer.user == request.user
