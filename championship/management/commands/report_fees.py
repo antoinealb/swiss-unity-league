@@ -31,8 +31,12 @@ class Command(BaseCommand):
         for e in (
             Event.objects.exclude(category=Event.Category.REGULAR)
             .annotate(results_count=Count("eventplayerresult"))
-            .exclude(results_count=0)
-            .filter(date__lte=season.end_date, date__gte=season.start_date)
+            .filter(
+                results_count__gt=0,
+                date__lte=season.end_date,
+                date__gte=season.start_date,
+                include_in_invoices=True,
+            )
             .order_by("organizer__name", "date")
         ):
             fee = fee_for_event(e)
