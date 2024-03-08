@@ -3,15 +3,11 @@ from django_ical.views import ICalFeed
 from championship.models import Event
 
 
-class LargeEventFeed(ICalFeed):
+class EventFeed(ICalFeed):
     """Calendar showing Premier & Regional events."""
 
     product_id = "-//example.com//Event//EN"
     timezone = "Europe/Zurich"
-    file_name = "events.ics"
-
-    def items(self):
-        return Event.objects.exclude(category=Event.Category.REGULAR).order_by("-date")
 
     def item_title(self, item):
         return f"[{item.organizer.name}] {item.name}"
@@ -35,3 +31,28 @@ class LargeEventFeed(ICalFeed):
             return datetime.datetime.combine(item.date, item.end_time)
         else:
             return item.date + datetime.timedelta(days=1)
+
+    def items(self):
+        return Event.objects.all().order_by("-date")
+
+
+class AllEventsFeed(EventFeed):
+    file_name = "allevents.ics"
+
+
+class LargeEventFeed(EventFeed):
+    file_name = "events.ics"
+
+    def items(self):
+        return (
+            super()
+            .items()
+            .filter(category__in=(Event.Category.REGIONAL, Event.Category.PREMIER))
+        )
+
+
+class PremierEventsFeed(EventFeed):
+    file_name = "premierevents.ics"
+
+    def items(self):
+        return super().items().filter(category=Event.Category.PREMIER)
