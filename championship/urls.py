@@ -1,7 +1,7 @@
 from django.urls import path, include
 from rest_framework import routers
 from championship.importers import IMPORTER_LIST
-from championship.ical_feeds import *
+from championship import ical_feeds
 from . import views
 
 
@@ -107,8 +107,10 @@ urlpatterns = [
         views.PastEventViewSet.as_view({"get": "list"}),
         name="past-events-by-season",
     ),
-    path("events.ics", LargeEventFeed(), name="events_feed"),
-    path("allevents.ics", AllEventsFeed(), name="all_events_feed"),
-    path("premierevents.ics", PremierEventsFeed(), name="premier_events_feed"),
+    path("events.ics", ical_feeds.LargeEventFeed(), name="events_feed"),
+    path("allevents.ics", ical_feeds.AllEventsFeed(), name="all_events_feed"),
+    path(
+        "premierevents.ics", ical_feeds.PremierEventsFeed(), name="premier_events_feed"
+    ),
     path("calendar-integration", views.IcalInformationView.as_view(), name="info_ical"),
 ]

@@ -27,7 +27,8 @@ class ICalFeedGetTest(TestCase):
         )
         events = self.get_ical_feed("/events.ics")
 
-        self.assertIn(e.name, events[0]["SUMMARY"])
+        events = [str(c["SUMMARY"]) for c in events]
+        self.assertEqual([f"[{e.organizer.name}] {e.name}"], events)
 
     def test_ical_feed_exclude_regular(self):
         """Checks that SUL Regular events are not in the feed."""
@@ -55,7 +56,6 @@ class ICalFeedGetTest(TestCase):
         e = EventFactory(category=Event.Category.PREMIER)
         events = self.get_ical_feed("/premierevents.ics")
         events = [str(c["SUMMARY"]) for c in events]
-
         self.assertEqual([f"[{e.organizer.name}] {e.name}"], events)
 
     def test_get_ical_page(self):
