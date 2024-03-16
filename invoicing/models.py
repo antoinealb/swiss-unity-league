@@ -1,3 +1,4 @@
+import uuid
 from django.db import models
 from django.urls import reverse
 from championship.models import EventOrganizer, Event, EventPlayerResult
@@ -87,6 +88,17 @@ class Invoice(models.Model):
         blank=True,
     )
     payee_address = models.ForeignKey(PayeeAddress, on_delete=models.PROTECT)
+
+    def frozen_file_upload_to(instance: "Invoice", filename: str) -> str:
+        # We return an UUID so that it will not collide.
+        uid = str(uuid.uuid4())
+        return f"invoices/{uid}.pdf"
+
+    frozen_file = models.FileField(
+        null=True,
+        help_text="Cached PDF output, to prevent invoices from changing once they are correct.",
+        upload_to=frozen_file_upload_to,
+    )
 
     def __str__(self) -> str:
         fmt = "%d.%m.%Y"

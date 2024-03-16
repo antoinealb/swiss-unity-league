@@ -1,5 +1,7 @@
 from django.contrib import admin
 from django.http import HttpResponse
+from django.db import transaction
+from django.core.files.base import ContentFile
 from django_tex.core import compile_template_to_pdf
 from invoicing.models import Invoice, PayeeAddress
 from invoicing.views import get_invoice_pdf_context, INVOICE_TEMPLATE
@@ -26,7 +28,7 @@ class InvoiceAdmin(admin.ModelAdmin):
         "sent_date",
         "payment_received_date",
     )
-    actions = ["download"]
+    actions = ["download", "freeze", "unfreeze"]
 
     @admin.display(ordering="id", description="Reference number")
     def reference(self, instance: Invoice) -> str:
@@ -46,9 +48,12 @@ class InvoiceAdmin(admin.ModelAdmin):
             zipname = os.path.join(dir, "out.zip")
             with zipfile.ZipFile(zipname, "w") as zipout:
                 for invoice in queryset:
-                    pdf_data = compile_template_to_pdf(
-                        INVOICE_TEMPLATE, get_invoice_pdf_context(invoice)
-                    )
+                    if invoice.frozen_file:
+                        pdf_data = invoice.frozen_file.read()
+                    else:
+                        pdf_data = compile_template_to_pdf(
+                            INVOICE_TEMPLATE, get_invoice_pdf_context(invoice)
+                        )
                     pdfpath = os.path.join(
                         dir, f"{invoice.reference} - {invoice.event_organizer.name}.pdf"
                     )
@@ -64,6 +69,29 @@ class InvoiceAdmin(admin.ModelAdmin):
                     'attachment; filename="%s"' % "invoices.zip"
                 )
                 return response
+
+    @admin.action(
+        description="Freeze invoices PDF.",
+        permissions=["change"],
+    )
+    @transaction.atomic
+    def freeze(self, request, queryset: Iterable[Invoice]):
+        for invoice in queryset:
+            output = compile_template_to_pdf(
+                INVOICE_TEMPLATE, get_invoice_pdf_context(invoice)
+            )
+            invoice.frozen_file.save("", ContentFile(output))
+            invoice.save()
+
+    @admin.action(
+        description="Unfreeze invoices PDF.",
+        permissions=["change"],
+    )
+    @transaction.atomic
+    def unfreeze(self, request, queryset: Iterable[Invoice]):
+        for invoice in queryset:
+            invoice.frozen_file.delete()
+            invoice.save()
 
 
 admin.site.register(Invoice, InvoiceAdmin)

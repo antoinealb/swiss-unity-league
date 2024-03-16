@@ -1,12 +1,11 @@
 import unittest
-import os
+import datetime
 from django.test import TestCase, Client, tag
 from django.urls import reverse
+from django.core.files.base import ContentFile
 from django.contrib.auth.models import User, Permission
-from parameterized import parameterized
-from championship.models import *
-from invoicing.models import Invoice
-from invoicing.factories import *
+from championship.models import Event
+from invoicing.factories import InvoiceFactory
 from championship.factories import (
     EventFactory,
     EventOrganizerFactory,
@@ -72,7 +71,7 @@ class InvoiceRenderingTest(TestCase):
             organizer=self.to,
             date=yesterday,
             category=Event.Category.REGIONAL,
-            name=f"Dangerous event '#'",
+            name="Dangerous event '#'",
         )
 
         for _ in range(10):
@@ -93,3 +92,60 @@ class InvoiceRenderingTest(TestCase):
         self.login()
         resp = self.client.get(reverse("invoice_get", args=(invoice.id,)))
         self.assertEqual(200, resp.status_code)
+
+    def test_freeze_invoice(self):
+        """Checks if we can freeze an invoice, meaning render it once and
+        attach it as PDF."""
+        self.user.is_superuser = True
+        self.user.is_staff = True
+        self.user.save()
+        invoice = InvoiceFactory(event_organizer=self.to)
+        self.login()
+
+        data = {"action": "freeze", "_selected_action": [invoice.id]}
+        resp = self.client.post(
+            reverse("admin:invoicing_invoice_changelist"), data, follow=True
+        )
+        self.assertEqual(200, resp.status_code)
+
+        # Check that a file was attached to the invoice
+        invoice.refresh_from_db()
+        self.assertTrue(invoice.frozen_file, "Should have a saved file.")
+
+
+class FrozenInvoiceTestCase(TestCase):
+    def setUp(self):
+        self.client = Client()
+        self.credentials = dict(username="test", password="test")
+        self.user = User.objects.create_user(**self.credentials)
+        self.to = EventOrganizerFactory(user=self.user)
+        self.login()
+        self.invoice = InvoiceFactory(
+            event_organizer=self.to,
+        )
+        self.invoice.frozen_file.save("", ContentFile(b"foobar"))
+
+    def login(self):
+        self.client.login(**self.credentials)
+
+    def test_serve_frozen_invoice(self):
+        resp = self.client.get(
+            reverse("invoice_get", args=(self.invoice.id,)), follow=True
+        )
+        self.assertEqual(200, resp.status_code)
+        self.assertEqual("foobar", resp.content.decode())
+
+    def test_unfreeze_invoices(self):
+        self.user.is_superuser = True
+        self.user.is_staff = True
+        self.user.save()
+
+        data = {"action": "unfreeze", "_selected_action": [self.invoice.id]}
+        resp = self.client.post(
+            reverse("admin:invoicing_invoice_changelist"), data, follow=True
+        )
+        self.assertEqual(200, resp.status_code)
+        self.invoice.refresh_from_db()
+        self.assertFalse(
+            self.invoice.frozen_file, "The frozen file should have been removed"
+        )

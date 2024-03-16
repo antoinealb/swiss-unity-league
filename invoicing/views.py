@@ -1,11 +1,12 @@
-from django.http import Http404
-from django.shortcuts import render
-from django.views.generic import DetailView, ListView
-from django_tex.shortcuts import render_to_pdf
-from .models import Invoice, fee_for_event
-from django.db.models import F, Q, Count
 from django.conf import settings
 from django.contrib.auth.mixins import LoginRequiredMixin
+from django.db.models import Count, Q
+from django.http import Http404
+from django.shortcuts import redirect
+from django.views.generic import DetailView, ListView
+from django_tex.shortcuts import render_to_pdf
+
+from .models import Invoice, fee_for_event
 
 INVOICE_TEMPLATE = "invoicing/invoice.tex"
 
@@ -54,8 +55,12 @@ class RenderInvoice(LoginRequiredMixin, DetailView):
         return super().get_context_data(**context)
 
     def render_to_response(self, context):
+        invoice = self.get_object()
+        if invoice.frozen_file:
+            return redirect(invoice.frozen_file.url)
+
         template = self.get_template_names()[0]
-        return render_to_pdf(self.request, template, context, filename=f"invoice.pdf")
+        return render_to_pdf(self.request, template, context, filename="invoice.pdf")
 
 
 class InvoiceList(LoginRequiredMixin, ListView):
