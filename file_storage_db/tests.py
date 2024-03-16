@@ -36,6 +36,11 @@ class DatabaseFSTestCase(TestCase):
     def test_storage_size(self):
         self.assertEqual(12, self.storage.size("test.txt"))
 
+    def test_can_delete(self):
+        self.storage.delete("test.txt")
+        with self.assertRaises(FileNotFoundError):
+            self.storage.open("test.txt")
+
 
 class DatabaseFsMediaServingTest(TestCase):
     """Tests that the media serving from the DB is working as expected."""
