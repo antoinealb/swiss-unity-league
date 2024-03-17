@@ -36,5 +36,12 @@ class DatabaseFileStorage(Storage):
 
         return len(f.content)
 
+    def delete(self, name):
+        try:
+            f = File.objects.get(filename=name)
+        except File.DoesNotExist:
+            raise FileNotFoundError(f"No file named {name}")
+        f.delete()
+
     def url(self, name):
         return reverse("file_db_serve", args=[name])
