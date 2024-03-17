@@ -4,6 +4,7 @@ from django.db.models import Count, Q
 from django.http import Http404
 from django.shortcuts import redirect
 from django.views.generic import DetailView, ListView
+
 from django_tex.shortcuts import render_to_pdf
 
 from .models import Invoice, fee_for_event

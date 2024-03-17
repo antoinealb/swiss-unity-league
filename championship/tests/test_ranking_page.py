@@ -1,8 +1,10 @@
 import datetime
-from django.test import TestCase, Client
-from championship.factories import *
+
+from django.test import Client, TestCase
+
 from parameterized import parameterized
 
+from championship.factories import *
 from championship.season import SEASONS_WITH_RANKING
 
 

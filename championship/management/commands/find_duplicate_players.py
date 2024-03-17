@@ -2,8 +2,8 @@ import itertools
 from difflib import SequenceMatcher
 
 from django.core.management.base import BaseCommand
-from prettytable import PrettyTable
 
+from prettytable import PrettyTable
 
 from championship.models import *
 

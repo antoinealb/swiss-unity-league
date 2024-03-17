@@ -1,9 +1,11 @@
 import datetime
+
 from django.test import TestCase
-from invoicing.models import Invoice
-from championship.models import EventOrganizer, Event
+
 from championship.factories import *
+from championship.models import Event, EventOrganizer
 from invoicing.factories import InvoiceFactory
+from invoicing.models import Invoice
 
 
 class InvoiceHelpersTest(TestCase):

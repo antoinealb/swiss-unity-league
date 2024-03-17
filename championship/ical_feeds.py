@@ -1,5 +1,7 @@
 import datetime
+
 from django_ical.views import ICalFeed
+
 from championship.models import Event
 
 

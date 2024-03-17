@@ -3,24 +3,24 @@
 The code in this file is mostly season-independent.
 """
 
-from typing import Iterable, Any
+from typing import Any, Iterable
 
 from django.conf import settings
 from django.core.cache import cache
 from django.db import models
-from django.db.models import Count, Max, F
+from django.db.models import Count, F, Max
 from django.db.models.signals import post_delete, pre_save
 from django.dispatch import receiver
-from prometheus_client import Summary, Gauge
+
+from prometheus_client import Gauge, Summary
 
 from championship.cache_function import cache_function
-from championship.models import EventPlayerResult, Player, Event
-from championship.score.season_all import ScoreMethodAll
-from championship.season import *
-
-from championship.score import LeaderboardScore
+from championship.models import Event, EventPlayerResult, Player
 from championship.score.season_2023 import ScoreMethod2023
 from championship.score.season_2024 import ScoreMethod2024
+from championship.score.season_all import ScoreMethodAll
+from championship.score.types import LeaderboardScore
+from championship.season import *
 
 scores_computation_time_seconds = Summary(
     "scores_computation_time_seconds", "Time spent to compute scores of all players"

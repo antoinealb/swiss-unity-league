@@ -1,9 +1,11 @@
 import uuid
+from zlib import crc32
+
 from django.db import models
 from django.urls import reverse
-from championship.models import EventOrganizer, Event, EventPlayerResult
+
+from championship.models import Event, EventOrganizer, EventPlayerResult
 from championship.season import SEASON_2023, SEASON_2024, find_season_by_date
-from zlib import crc32
 
 FEE_PER_PLAYER = {
     SEASON_2023: {

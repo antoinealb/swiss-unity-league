@@ -1,11 +1,13 @@
 import datetime
-from django.test import TestCase, Client
+
 from django.contrib.auth.models import User
+from django.test import Client, TestCase
 from django.urls import reverse
+
 from championship.factories import *
 from championship.models import *
-from invoicing.models import Invoice
 from invoicing.factories import PayeeAddressFactory
+from invoicing.models import Invoice
 
 
 class CreateInvoiceForOrganizerTestCase(TestCase):

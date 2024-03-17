@@ -1,7 +1,7 @@
 import doctest
-from championship import views
-from championship import admin
+
 import championship.views.results
+from championship import admin, views
 from championship.parsers import general_parser_functions
 
 

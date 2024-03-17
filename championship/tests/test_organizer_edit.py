@@ -1,8 +1,9 @@
-from django.test import TestCase, Client
 from django.contrib.auth.models import User
+from django.test import Client, TestCase
 from django.urls import reverse
-from championship.models import EventOrganizer
+
 from championship.factories import AddressFactory, EventOrganizerFactory
+from championship.models import EventOrganizer
 
 
 class OrganizerEditTestCase(TestCase):

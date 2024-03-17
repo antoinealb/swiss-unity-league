@@ -1,8 +1,9 @@
 import pandas as pd
+
 from championship.parsers.general_parser_functions import (
+    estimate_rounds,
     parse_record,
     record_to_points,
-    estimate_rounds,
 )
 from championship.parsers.parse_result import ParseResult
 

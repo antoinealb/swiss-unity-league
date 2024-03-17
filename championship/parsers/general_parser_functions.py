@@ -1,8 +1,9 @@
 import math
 import re
-from typing import Tuple, cast
-from parsita import ParserContext, reg, longest, lit, Failure, Success
 from collections.abc import Iterable
+from typing import Tuple, cast
+
+from parsita import Failure, ParserContext, Success, lit, longest, reg
 from parsita.util import constant
 
 RECORD_DELIMITERS = ["-", "–", "—", "/", ",", "_"]

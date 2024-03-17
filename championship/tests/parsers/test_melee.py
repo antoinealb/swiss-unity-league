@@ -1,6 +1,8 @@
+from unittest import TestCase
+
 from championship.parsers import melee
 from championship.parsers.parse_result import ParseResult
-from unittest import TestCase
+
 from .utils import load_test_html
 
 

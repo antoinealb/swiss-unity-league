@@ -1,17 +1,19 @@
-from django.test import TestCase, Client
-from championship.models import Event
-from championship.factories import *
+from django.test import Client, TestCase
 from django.urls import reverse
+
 from parameterized import parameterized
+
+from championship.factories import *
+from championship.models import Event
 from championship.season import SEASONS_WITH_RANKING
 from championship.views import (
+    EVENTS,
     LAST_RESULTS,
     QP_TABLE,
+    QPS,
+    TABLE,
     TBODY,
     THEAD,
-    TABLE,
-    QPS,
-    EVENTS,
     TOP_FINISHES,
 )
 

@@ -1,6 +1,7 @@
-from dataclasses import dataclass
 import datetime
-from championship.models import Event, EventPlayerResult, Count
+from dataclasses import dataclass
+
+from championship.models import Count, Event, EventPlayerResult
 from championship.score.types import LeaderboardScore, QualificationType
 from championship.season import SEASON_2024
 

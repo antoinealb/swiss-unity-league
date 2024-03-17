@@ -1,5 +1,7 @@
-from championship.parsers import eventlink
 from unittest import TestCase
+
+from championship.parsers import eventlink
+
 from .utils import load_test_html
 
 

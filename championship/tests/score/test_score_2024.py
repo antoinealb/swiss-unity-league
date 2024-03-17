@@ -1,7 +1,9 @@
 import datetime
 
 from django.test import Client, TestCase
+
 from freezegun import freeze_time
+
 from championship.factories import *
 from championship.models import *
 from championship.score import compute_scores

@@ -1,5 +1,7 @@
 import unittest
+
 from parameterized import parameterized
+
 from championship.parsers.general_parser_functions import *
 
 

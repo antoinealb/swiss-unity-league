@@ -1,16 +1,19 @@
-from django.test import TestCase, Client
+from unittest.mock import MagicMock, patch
+
 from django.contrib.auth.models import User
+from django.core.files.uploadedfile import SimpleUploadedFile
+from django.test import Client, TestCase
 from django.urls import reverse
+
+from parameterized import parameterized
+from requests import HTTPError
+
+from championship.factories import *
+from championship.forms import AddTop8ResultsForm
 from championship.models import EventPlayerResult
 from championship.parsers.challonge import TournamentNotSwissError
 from championship.tests.parsers.utils import load_test_html
-from championship.factories import *
-from django.core.files.uploadedfile import SimpleUploadedFile
 from championship.views import clean_name
-from championship.forms import AddTop8ResultsForm
-from requests import HTTPError
-from parameterized import parameterized
-from unittest.mock import patch, MagicMock
 
 
 class CleanNameTest(TestCase):

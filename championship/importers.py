@@ -1,7 +1,8 @@
+import re
 from dataclasses import dataclass
 from typing import Callable
+
 from . import views
-import re
 
 
 @dataclass

@@ -1,10 +1,11 @@
-import itertools
 import collections
+import itertools
 
 from django.core.management.base import BaseCommand
 from django.db.models import Count
 
 from prettytable import PrettyTable
+
 from championship.models import *
 from championship.score.generic import get_leaderboard, get_results_with_qps
 from championship.season import SEASON_LIST_WITH_ALL, find_season_by_slug

@@ -1,4 +1,5 @@
 import math
+
 from championship.models import Event
 
 REQUIRED_PLAYERS_FOR_PREMIER = 24

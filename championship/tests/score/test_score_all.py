@@ -1,4 +1,5 @@
 from django.test import TestCase
+
 from championship.factories import EventFactory, EventPlayerResultFactory, PlayerFactory
 from championship.models import Event
 from championship.score.generic import compute_scores

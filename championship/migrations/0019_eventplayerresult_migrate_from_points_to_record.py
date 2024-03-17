@@ -1,5 +1,6 @@
-from django.db import migrations, models
 import math
+
+from django.db import migrations, models
 
 
 def estimate_rounds(match_point_list: list[int]) -> int:
