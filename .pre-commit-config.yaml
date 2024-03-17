@@ -1,0 +1,33 @@
+# See https://pre-commit.com for more information
+# See https://pre-commit.com/hooks.html for more hooks
+repos:
+- repo: https://github.com/pre-commit/pre-commit-hooks
+  rev: v4.5.0
+  hooks:
+    -   id: trailing-whitespace
+    -   id: end-of-file-fixer
+    -   id: check-yaml
+    -   id: check-added-large-files
+    -   id: check-merge-conflict
+    -   id: check-yaml
+- repo: https://github.com/PyCQA/autoflake
+  rev: v2.3.1
+  hooks:
+    -   id: autoflake
+        args: [--remove-all-unused-imports]
+- repo: https://github.com/pycqa/isort
+  rev: 5.13.2
+  hooks:
+    - id: isort
+- repo: https://github.com/psf/black
+  rev: 24.3.0
+  hooks:
+    - id: black
+- repo: local
+  hooks:
+    - id: pre-commit-django-migrations
+      name: Check django migrations
+      entry: ./manage.py makemigrations --dry-run --check
+      language: system
+      types: [python]
+      pass_filenames: false

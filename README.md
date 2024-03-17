@@ -62,3 +62,9 @@ This command just generates a few fake tournaments, with fake players and fake T
 ```shell
 ./manage.py runserver
 ```
+
+### Setting up pre-commit hooks
+
+1. First, install [pre-commit](https://pre-commit.com/), you can do it with `pip install pre-commit` or use your package manager.
+2. Then, run `pre-commit install`
+3. Now, everytime you run `git commit`, code formatting will be enforced and fixed automatically.
