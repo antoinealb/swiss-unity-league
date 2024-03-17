@@ -23,6 +23,13 @@ tests:
     reports:
       junit: TEST-*.xml
 
+migrations:
+  stage: test
+  image: python:3.12
+  before_script:
+    - pip install --upgrade -r requirements.txt
+  script:
+    - ./manage.py makemigrations --check --dry-run
 
 python-typing:
   stage: test
