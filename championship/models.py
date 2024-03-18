@@ -1,14 +1,17 @@
-from django.db import models
-from django.conf import settings
-from django.db.models import Count
-from django_bleach.models import BleachField
-from django.urls import reverse
-from championship.season import find_season_by_date, Season
 import datetime
-from django.contrib.humanize.templatetags.humanize import ordinal
 import urllib.parse
+
+from django.conf import settings
+from django.contrib.humanize.templatetags.humanize import ordinal
 from django.core.exceptions import ValidationError
 from django.core.validators import validate_image_file_extension
+from django.db import models
+from django.db.models import Count
+from django.urls import reverse
+
+from django_bleach.models import BleachField
+
+from championship.season import Season, find_season_by_date
 
 
 class Address(models.Model):

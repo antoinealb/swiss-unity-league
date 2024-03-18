@@ -1,13 +1,15 @@
 import datetime
-from django.test import TestCase, Client
+
 from django.contrib.auth.models import User
+from django.test import Client, TestCase
 from django.urls import reverse
-from championship.models import Event, EventOrganizer, EventPlayerResult
+
 from championship.factories import (
-    EventOrganizerFactory,
     EventFactory,
+    EventOrganizerFactory,
     EventPlayerResultFactory,
 )
+from championship.models import Event, EventOrganizer, EventPlayerResult
 
 
 class EventClearResult(TestCase):

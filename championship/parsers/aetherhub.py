@@ -1,4 +1,5 @@
 from bs4 import BeautifulSoup
+
 from championship.parsers.general_parser_functions import parse_record
 from championship.parsers.parse_result import ParseResult
 

@@ -185,7 +185,7 @@ class CreateResultsView(FormView):
             if points != w * 3 + d:
                 messages.error(
                     self.request,
-                    f"""The record of {parse_result.name} does not add up to the match points. Please send us 
+                    f"""The record of {parse_result.name} does not add up to the match points. Please send us
                     the results link or file via email to leoninleague@gmail.com""",
                 )
                 return self.form_invalid(form)

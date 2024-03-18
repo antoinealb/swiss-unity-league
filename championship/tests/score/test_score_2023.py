@@ -1,10 +1,11 @@
 import datetime
 
-from django.core.exceptions import ValidationError
-from django.test import TestCase
-from django.contrib.auth.models import User
 from django.conf import settings
+from django.contrib.auth.models import User
+from django.core.exceptions import ValidationError
 from django.db.models import Count, F
+from django.test import TestCase
+
 from faker import Faker
 
 from championship.factories import *

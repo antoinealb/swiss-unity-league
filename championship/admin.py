@@ -1,22 +1,23 @@
 import datetime
 import logging
 import warnings
-from django.contrib import admin
-from django.http import HttpResponseRedirect
-from django.shortcuts import render, redirect
-from django.urls import reverse
+
 from django import forms
 from django.conf import settings
-from django.contrib import messages
+from django.contrib import admin, messages
+from django.core.validators import ValidationError, validate_email
 from django.db import transaction
-from django.core.validators import validate_email, ValidationError
-import openpyxl
-from championship import views
+from django.http import HttpResponseRedirect
+from django.shortcuts import redirect, render
+from django.urls import path, reverse
 
-from .models import *
+import openpyxl
+
+from championship import views
 from championship.score import get_leaderboard
 from invoicing.models import Invoice, PayeeAddress
-from django.urls import path
+
+from .models import *
 
 
 class ResultInline(admin.TabularInline):

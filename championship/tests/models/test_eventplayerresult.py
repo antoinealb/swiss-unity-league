@@ -1,5 +1,6 @@
-from championship.factories import EventPlayerResultFactory
 from django.test import TestCase
+
+from championship.factories import EventPlayerResultFactory
 
 
 class EventPlayerResultFactoryTest(TestCase):

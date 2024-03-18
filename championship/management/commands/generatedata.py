@@ -1,12 +1,13 @@
-import random
 import logging
+import random
 
-from django.db import transaction
 from django.core.management.base import BaseCommand
+from django.db import transaction
 
-from championship.models import *
-from championship.factories import *
 import factory
+
+from championship.factories import *
+from championship.models import *
 
 
 class Command(BaseCommand):

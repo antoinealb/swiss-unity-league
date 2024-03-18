@@ -1,8 +1,8 @@
 # This migration is written by hand to create a default PayeeAddress for
 # pre-existing invoices, before adding a constraint that every invoice has a
 # non-null foreign key to a PayeeAddress.
-from django.db import migrations, models
 import django.db.models.deletion
+from django.db import migrations, models
 
 DEFAULT_NAME = "Antoine Albertelli"
 

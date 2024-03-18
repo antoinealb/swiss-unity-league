@@ -1,17 +1,19 @@
-import unittest
 import datetime
-from django.test import TestCase, Client, tag
-from django.urls import reverse
+import unittest
+from subprocess import DEVNULL, check_call
+
+from django.contrib.auth.models import Permission, User
 from django.core.files.base import ContentFile
-from django.contrib.auth.models import User, Permission
-from championship.models import Event
-from invoicing.factories import InvoiceFactory
+from django.test import Client, TestCase, tag
+from django.urls import reverse
+
 from championship.factories import (
     EventFactory,
     EventOrganizerFactory,
     EventPlayerResultFactory,
 )
-from subprocess import check_call, DEVNULL
+from championship.models import Event
+from invoicing.factories import InvoiceFactory
 
 
 def has_latex():

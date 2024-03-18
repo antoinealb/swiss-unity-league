@@ -1,14 +1,17 @@
-from django.contrib import admin
-from django.http import HttpResponse
-from django.db import transaction
-from django.core.files.base import ContentFile
-from django_tex.core import compile_template_to_pdf
-from invoicing.models import Invoice, PayeeAddress
-from invoicing.views import get_invoice_pdf_context, INVOICE_TEMPLATE
-from typing import Iterable
-import tempfile
 import os.path
+import tempfile
 import zipfile
+from typing import Iterable
+
+from django.contrib import admin
+from django.core.files.base import ContentFile
+from django.db import transaction
+from django.http import HttpResponse
+
+from django_tex.core import compile_template_to_pdf
+
+from invoicing.models import Invoice, PayeeAddress
+from invoicing.views import INVOICE_TEMPLATE, get_invoice_pdf_context
 
 
 class InvoiceAdmin(admin.ModelAdmin):

@@ -1,7 +1,9 @@
-from championship.parsers.excel_csv_parser import *
 from unittest import TestCase
+
 import pandas as pd
 from parameterized import parameterized
+
+from championship.parsers.excel_csv_parser import *
 
 
 class ExcelCsvStandingParser(TestCase):

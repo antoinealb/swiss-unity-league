@@ -1,9 +1,11 @@
 import datetime
+
+from django.conf import settings
 from django.core.management.base import BaseCommand
 from django.db.models import Count
-from django.conf import settings
 
 from prettytable import PrettyTable
+
 from championship.models import Event
 from championship.season import SEASON_LIST_WITH_ALL, find_season_by_slug
 from invoicing.models import fee_for_event

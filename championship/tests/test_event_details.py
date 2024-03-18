@@ -1,10 +1,12 @@
-from django.test import TestCase, Client
+from django.core.files.uploadedfile import SimpleUploadedFile
+from django.test import Client, TestCase
 from django.urls import reverse
+
+from freezegun import freeze_time
+from parameterized import parameterized
+
 from championship.factories import *
 from championship.models import *
-from parameterized import parameterized
-from freezegun import freeze_time
-from django.core.files.uploadedfile import SimpleUploadedFile
 
 
 class EventDetailTestCase(TestCase):

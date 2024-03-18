@@ -1,9 +1,12 @@
 import datetime
-from django.test import TestCase, Client
+
+from django.test import Client, TestCase
 from django.urls import reverse
+
 from icalendar import Calendar
+
+from championship.factories import AddressFactory, EventFactory, EventOrganizerFactory
 from championship.models import Event
-from championship.factories import EventFactory, AddressFactory, EventOrganizerFactory
 
 
 class ICalFeedGetTest(TestCase):

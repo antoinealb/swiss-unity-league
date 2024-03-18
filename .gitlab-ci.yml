@@ -44,9 +44,10 @@ python-format:
   stage: test
   image: python:3.12
   before_script:
-    - pip install black
+    - pip install -r requirements.txt
+    - pip install pre-commit
   script:
-    - black --check --verbose .
+    - pre-commit run --all-files
 
 templates-format:
   stage: test

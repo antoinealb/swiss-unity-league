@@ -1,5 +1,7 @@
-from championship.parsers import aetherhub
 from unittest import TestCase
+
+from championship.parsers import aetherhub
+
 from .utils import load_test_html
 
 

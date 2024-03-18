@@ -1,5 +1,6 @@
+from unittest.mock import ANY, patch
+
 from django.test import TestCase
-from unittest.mock import patch, ANY
 
 from championship.cache_function import cache_function
 

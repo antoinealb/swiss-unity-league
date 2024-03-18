@@ -1,7 +1,9 @@
-from championship.models import Address, Event, Player
-from rest_framework import serializers
 import datetime
+
 from django.templatetags.static import static
+from rest_framework import serializers
+
+from championship.models import Address, Event, Player
 
 
 class EventSerializer(serializers.ModelSerializer):

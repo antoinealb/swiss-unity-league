@@ -1,6 +1,7 @@
 from bs4 import BeautifulSoup
 
 from championship.parsers.parse_result import ParseResult
+
 from .general_parser_functions import *
 
 

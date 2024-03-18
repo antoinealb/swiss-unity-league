@@ -1,7 +1,9 @@
 import mimetypes
+
 from django.http import HttpResponse
 from django.shortcuts import get_object_or_404
 from django.views import View
+
 from file_storage_db.models import File
 
 

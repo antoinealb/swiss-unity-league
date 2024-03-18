@@ -47,7 +47,7 @@ author: Antoine Albertelli, Leonin League
 
 # Database entitites
 
-## Player 
+## Player
 
 - Name
 - Many to Many relationship with events through an EventResult
@@ -55,7 +55,7 @@ author: Antoine Albertelli, Leonin League
 ## Organizer
 
 - Name (Leonin League, KSVZ, etc.)
-- Contact email 
+- Contact email
 - Foreign key or whatever to associate it with a login account.
 
 ## Event

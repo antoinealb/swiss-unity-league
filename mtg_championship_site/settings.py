@@ -10,15 +10,18 @@ For the full list of settings and their values, see
 https://docs.djangoproject.com/en/4.1/ref/settings/
 """
 
-from pathlib import Path
-import os
 import datetime
-from datetime import date
 import logging
+import os
 import sys
-from prometheus_client import Info
+from datetime import date
+from pathlib import Path
+
 from django.contrib.messages import constants as messages
-from championship.season import SEASON_2024, SEASON_2023
+
+from prometheus_client import Info
+
+from championship.season import SEASON_2023, SEASON_2024
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent

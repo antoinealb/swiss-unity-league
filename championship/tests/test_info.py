@@ -1,6 +1,8 @@
 from django.test import TestCase
 from django.urls import reverse
+
 from parameterized import parameterized
+
 from championship.season import SEASONS_WITH_INFO
 
 

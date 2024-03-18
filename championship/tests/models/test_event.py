@@ -1,11 +1,13 @@
-from parameterized import parameterized
-from championship.models import Event
-from championship.factories import EventFactory
-from django.test import TestCase
 import datetime
 from datetime import date
-from freezegun import freeze_time
 
+from django.test import TestCase
+
+from freezegun import freeze_time
+from parameterized import parameterized
+
+from championship.factories import EventFactory
+from championship.models import Event
 from mtg_championship_site import settings
 
 

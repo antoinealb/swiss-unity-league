@@ -1,4 +1,5 @@
 from dataclasses import dataclass
+
 from championship.models import Event, EventPlayerResult
 from championship.score.types import LeaderboardScore, QualificationType
 

@@ -1,9 +1,11 @@
-from django.test import TestCase, RequestFactory
+import io
+
 from django.http import Http404
+from django.test import RequestFactory, TestCase
+
 from file_storage_db.models import File
 from file_storage_db.storage import DatabaseFileStorage
 from file_storage_db.views import FileView
-import io
 
 
 class DatabaseFSTestCase(TestCase):

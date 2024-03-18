@@ -1,15 +1,18 @@
 import datetime
-from django.test import TestCase, Client
+
 from django.contrib.auth.models import User
+from django.test import Client, TestCase
 from django.urls import reverse
-from championship.models import Event, EventOrganizer, Address
+
+from parameterized import parameterized
+
 from championship.factories import (
     AddressFactory,
-    EventOrganizerFactory,
     EventFactory,
+    EventOrganizerFactory,
     EventPlayerResultFactory,
 )
-from parameterized import parameterized
+from championship.models import Address, Event, EventOrganizer
 
 
 class EventCreationTestCase(TestCase):

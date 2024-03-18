@@ -1,5 +1,7 @@
-from championship.parsers import mtgevent
 from unittest import TestCase
+
+from championship.parsers import mtgevent
+
 from .utils import load_test_html
 
 

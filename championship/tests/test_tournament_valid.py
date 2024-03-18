@@ -1,7 +1,9 @@
 from django.test import TestCase
+
 from parameterized import parameterized
-from championship.tournament_valid import *
+
 from championship.models import Event
+from championship.tournament_valid import *
 
 
 class CheckTournamentValidTestCase(TestCase):

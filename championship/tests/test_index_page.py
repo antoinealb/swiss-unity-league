@@ -1,8 +1,10 @@
 import datetime
-from django.test import TestCase, Client, override_settings
+
 from django.contrib.auth.models import User
-from championship.models import Event
+from django.test import Client, TestCase, override_settings
+
 from championship.factories import *
+from championship.models import Event
 from invoicing.factories import InvoiceFactory
 
 

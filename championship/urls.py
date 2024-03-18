@@ -1,9 +1,10 @@
-from django.urls import path, include
+from django.urls import include, path
 from rest_framework import routers
-from championship.importers import IMPORTER_LIST
-from championship import ical_feeds
-from . import views
 
+from championship import ical_feeds
+from championship.importers import IMPORTER_LIST
+
+from . import views
 
 api_router = routers.DefaultRouter()
 api_router.register(

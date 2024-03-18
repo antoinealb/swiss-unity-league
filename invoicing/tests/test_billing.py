@@ -1,7 +1,9 @@
 import datetime
+
+from django.test import TestCase
+
 from championship.factories import *
 from championship.models import *
-from django.test import TestCase
 from invoicing.models import fee_for_event
 
 

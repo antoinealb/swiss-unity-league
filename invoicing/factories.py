@@ -1,8 +1,11 @@
 import datetime
+
 import factory
 from factory.django import DjangoModelFactory
-from .models import Invoice, PayeeAddress
+
 from championship.factories import EventOrganizerFactory
+
+from .models import Invoice, PayeeAddress
 
 
 class PayeeAddressFactory(DjangoModelFactory):
