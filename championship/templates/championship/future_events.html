@@ -32,7 +32,7 @@
 
                 <nav class="btn-group">
                     <button class="btn btn-secondary dropdown-toggle" id="futureEventsMenuButton" type="button" data-bs-toggle="dropdown" x-text="currentSeason"
-                        aria-haspopup="true" aria-expanded="false" title="View only future or past events"></button>
+                            aria-haspopup="true" aria-expanded="false" title="View only future or past events"></button>
                     <div class="dropdown-menu" aria-labelledby="futureEventsMenuButton">
                         <template x-for="type in Object.keys(eventsPerSeason)">
                             <div class="dropdown-item" x-text="type" x-on:click="loadEvents(type); currentSeason = type"></div>
@@ -43,7 +43,7 @@
                 <template x-for="(filter, index) in filterList" :key="index">
                     <nav class="btn-group">
                         <button x-text="filter.title" class="btn btn-secondary dropdown-toggle" type="button"  data-bs-toggle="dropdown" data-bs-auto-close="outside"
-                            :id="'dropdownMenuButton-' + index" x-bind:title="'Filter by the '+filter.title+' of the event'"></button>
+                                :id="'dropdownMenuButton-' + index" x-bind:title="'Filter by the '+filter.title+' of the event'"></button>
                         <div class="dropdown-menu" :aria-labelledby="'dropdownMenuButton-' + index">
                             <div class="dropdown-item" x-on:click="toggleAll(index)">
                                 <div class="form-check">

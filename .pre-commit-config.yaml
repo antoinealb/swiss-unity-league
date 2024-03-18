@@ -6,7 +6,6 @@ repos:
   hooks:
     -   id: trailing-whitespace
     -   id: end-of-file-fixer
-    -   id: check-yaml
     -   id: check-added-large-files
     -   id: check-merge-conflict
     -   id: check-yaml
@@ -31,3 +30,9 @@ repos:
       language: system
       types: [python]
       pass_filenames: false
+    - id: djhtml
+      name: Check django template
+      entry: djhtml
+      language: system
+      files: templates/
+      types: [html]

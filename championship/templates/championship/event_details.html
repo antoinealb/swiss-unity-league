@@ -29,7 +29,7 @@
         <dd class="col-sm-9">
             {% if event.category != "OTHER" %}
                 <img src="{% static event.get_category_icon_url %}" class="sul-type-icon me-2"
-                    title="{{ event.get_category_display }}" alt="Icon {{ event.get_category_display }}">
+                     title="{{ event.get_category_display }}" alt="Icon {{ event.get_category_display }}">
             {% endif %}
             <span>{{ event.get_category_display }}</span>
         </dd>
