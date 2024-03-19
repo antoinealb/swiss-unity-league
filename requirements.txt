@@ -14,7 +14,6 @@ django_debug_toolbar~=3.8.1
 djangorestframework~=3.14.0
 django-sass-processor~=1.2.2
 libsass~=0.22.0
-djhtml~=1.5.2
 prettytable~=3.6.0
 django-cid~=2.3
 # TODO: Change this once an auditlog is released
