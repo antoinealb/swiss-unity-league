@@ -40,14 +40,20 @@ except KeyError:
 # SECURITY WARNING: don't run with debug turned on in production!
 if "RUN_IN_PROD" in os.environ:
     DEBUG = False
-    ALLOWED_HOSTS = ["0.0.0.0", "leoninleague.ch", "unityleague.ch"]
-    CSRF_TRUSTED_ORIGINS = ["https://leoninleague.ch", "https://unityleague.ch"]
     PROMETHEUS_METRICS_EXPORT_PORT_RANGE = range(8001, 8004)
     PROMETHEUS_METRICS_EXPORT_ADDRESS = ""  # all addresses
 else:
     DEBUG = True
+
+try:
+    ALLOWED_HOSTS = os.environ["ALLOWED_HOSTS"].split(";")
+except KeyError:
     ALLOWED_HOSTS = []
 
+try:
+    CSRF_TRUSTED_ORIGINS = os.environ["CSRF_TRUSTED_ORIGINS"].split(";")
+except KeyError:
+    CSRF_TRUSTED_ORIGINS = []
 
 DEBUG_TOOLBAR_CONFIG = {
     "SHOW_TOOLBAR_CALLBACK": "mtg_championship_site.settings.should_show_toolbar",
