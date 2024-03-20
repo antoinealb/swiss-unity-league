@@ -1,3 +1,4 @@
+import rest_framework.authtoken.views
 from django.urls import include, path
 from rest_framework import routers
 
@@ -12,6 +13,7 @@ api_router.register(
 )
 api_router.register(r"formats", views.ListFormats, basename="formats")
 api_router.register(r"past-events", views.PastEventViewSet, basename="past-events")
+api_router.register(r"events", views.EventViewSet, basename="events")
 
 urlpatterns = [
     path(parser.to_url(), parser.view, name=parser.view_name)
@@ -103,6 +105,11 @@ urlpatterns = [
         "address/<pk>/delete/", views.AddressDeleteView.as_view(), name="address_delete"
     ),
     path("api/", include(api_router.urls)),
+    path(
+        "api/auth/",
+        rest_framework.authtoken.views.obtain_auth_token,
+        name="api_auth_token",
+    ),
     path(
         "past-events/<slug:slug>/",
         views.PastEventViewSet.as_view({"get": "list"}),

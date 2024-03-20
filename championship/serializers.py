@@ -3,7 +3,13 @@ import datetime
 from django.templatetags.static import static
 from rest_framework import serializers
 
-from championship.models import Address, Event, Player
+from championship.models import (
+    Address,
+    Event,
+    EventOrganizer,
+    EventPlayerResult,
+    Player,
+)
 
 
 class EventSerializer(serializers.ModelSerializer):
@@ -85,6 +91,33 @@ class EventSerializer(serializers.ModelSerializer):
 
     def get_icon_url(self, event):
         return static(event.get_category_icon_url())
+
+
+class EventInformationSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Event
+        fields = [
+            "id",
+            "name",
+            "date",
+            "start_time",
+            "end_time",
+            "format",
+            "category",
+            "url",
+            "decklists_url",
+            "description",
+        ]
+
+    def create(self, validated_data):
+        # We need a custom create() because we want to attach informations from
+        # the current user to the created event.
+        organizer = EventOrganizer.objects.get(user=self.context["request"].user)
+        addr = organizer.default_address
+        # TODO: Support other addresses
+        return Event.objects.create(
+            organizer=organizer, address=organizer.default_address, **validated_data
+        )
 
 
 class PlayerAutocompleteSerializer(serializers.ModelSerializer):
