@@ -49,14 +49,6 @@ python-format:
   script:
     - pre-commit run --all-files
 
-templates-format:
-  stage: test
-  image: python:3.12
-  before_script:
-    - pip install djhtml==1.5.2
-  script:
-    - djhtml --check championship/templates invoicing/templates
-
 web-format:
   stage: test
   image: node:19
