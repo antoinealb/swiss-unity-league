@@ -90,6 +90,7 @@ INSTALLED_APPS = [
     "django_bleach",
     "debug_toolbar",
     "rest_framework",
+    "rest_framework.authtoken",
     "sass_processor",
     "auditlog",
     "cid.apps.CidAppConfig",
@@ -299,6 +300,15 @@ STORAGES = {
     "staticfiles": {
         "BACKEND": "django.contrib.staticfiles.storage.StaticFilesStorage",
     },
+}
+
+# Settings for API views
+REST_FRAMEWORK = {
+    "DEFAULT_AUTHENTICATION_CLASSES": [
+        "rest_framework.authentication.BasicAuthentication",
+        "rest_framework.authentication.TokenAuthentication",
+        "rest_framework.authentication.SessionAuthentication",
+    ]
 }
 
 if sendgrid_api_key := os.getenv("SENDGRID_API_KEY"):
