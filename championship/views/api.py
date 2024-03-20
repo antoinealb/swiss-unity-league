@@ -1,18 +1,24 @@
 import datetime
 
+from django.db.models import Count
 from django.http import Http404
 from rest_framework import viewsets
+from rest_framework.decorators import action
+from rest_framework.permissions import (
+    SAFE_METHODS,
+    BasePermission,
+    IsAuthenticated,
+    IsAuthenticatedOrReadOnly,
+)
 from rest_framework.response import Response
 
-from championship.models import Event
+from championship.models import Event, EventOrganizer
 from championship.season import find_season_by_slug
-from championship.serializers import EventSerializer
+from championship.serializers import EventInformationSerializer, EventSerializer
 
 
 class FutureEventViewSet(viewsets.ReadOnlyModelViewSet):
-    """
-    API endpoint that allows events to be viewed or edited.
-    """
+    """API endpoint for the upcoming events page, showing future events."""
 
     serializer_class = EventSerializer
 
@@ -27,9 +33,7 @@ class FutureEventViewSet(viewsets.ReadOnlyModelViewSet):
 
 
 class PastEventViewSet(viewsets.ReadOnlyModelViewSet):
-    """
-    API endpoint that allows events to be viewed or edited.
-    """
+    """API endpoint for the upcoming events page, showing past events."""
 
     serializer_class = EventSerializer
 
@@ -58,3 +62,54 @@ class ListFormats(viewsets.ViewSet):
 
     def list(self, request, format=None):
         return Response(sorted(Event.Format.labels))
+
+
+class IsOwner(BasePermission):
+    """
+    Object-level permission to only allow owners of an object to edit it.
+    Assumes the model instance has an `organizer` attribute.
+    """
+
+    def has_object_permission(self, request, view, obj):
+        return obj.organizer.user == request.user
+
+
+class IsEventModificationAllowed(BasePermission):
+    """
+    Object-level permission check that verifies we are allowed by the SUL rules
+    to still change an event.
+    """
+
+    def has_object_permission(self, request, view, obj: Event):
+        if request.method in SAFE_METHODS:
+            return True
+        elif request.method in ["DELETE"]:
+            return obj.can_be_deleted()
+
+        return obj.can_be_edited()
+
+
+class IsReadonly(BasePermission):
+    def has_permission(self, request, view):
+        if request.method in SAFE_METHODS:
+            return True
+
+
+class EventViewSet(viewsets.ModelViewSet):
+    """API endpoint showing events and allowing their creation."""
+
+    serializer_class = EventInformationSerializer
+    queryset = Event.objects.all()
+    permission_classes = [
+        IsReadonly | (IsAuthenticated & IsOwner & IsEventModificationAllowed)
+    ]
+
+    @action(
+        detail=False,
+        name="List events needing results from me.",
+        permission_classes=[IsAuthenticated],
+    )
+    def need_results(self, request):
+        events = Event.objects.available_for_result_upload(request.user)
+        serializer = self.get_serializer(events, many=True)
+        return Response(serializer.data)
