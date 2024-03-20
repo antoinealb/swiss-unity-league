@@ -81,7 +81,13 @@ restart-service:
     - infra
   script:
     - sudo /usr/bin/docker pull antoinealb/league:latest
+
+    - sudo /bin/systemctl restart league_playground.service
+    - sleep 30
+    - sudo /usr/bin/docker exec league_playground.service ./manage.py migrate --no-input
+
     - sudo /bin/systemctl restart league.service
     - sleep 30
     - sudo /usr/bin/docker exec league.service ./manage.py migrate --no-input
+
     - ./notify_deploy_on_grafana.sh
