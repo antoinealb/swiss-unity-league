@@ -1,0 +1,10 @@
+{% if debug %}
+User-Agent: *
+Disallow: /
+{% else %}
+User-Agent: *
+Disallow: /admin/
+Disallow: /api/
+Disallow: /media/
+Disallow: /static/
+{% endif %}

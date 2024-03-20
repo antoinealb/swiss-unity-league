@@ -74,6 +74,12 @@
                         </div>
                     {% endfor %}
                 {% endif %}
+                {% if debug %}
+                    <div class="alert alert-warning" role="alert">
+                        You are currently on the <b>debug / playground</b> version of the Swiss Unity League website.</br>
+                        This is intended to be used for your experiments and testing features, not for saving your data.
+                    </div>
+                {% endif %}
                 {% block content %}
                     You now need to fill in the block content :)
                 {% endblock %}

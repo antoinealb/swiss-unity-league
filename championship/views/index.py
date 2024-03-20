@@ -62,3 +62,8 @@ class IndexView(TemplateView):
         return Invoice.objects.filter(
             event_organizer__user=self.request.user, payment_received_date__isnull=True
         ).exists()
+
+
+class RobotsTxtView(TemplateView):
+    template_name = "robots.txt"
+    content_type = "text/plain"
