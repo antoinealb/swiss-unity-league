@@ -158,7 +158,11 @@ def get_max_round_error_message(category, standings):
     return f" A {event_category_label} event with {num_players} players should have{at_maximum_text} {max_rounds} rounds."
 
 
-class TooManyPointsForPlayerError(ValueError):
+class StandingsValidationError(ValueError):
+    pass
+
+
+class TooManyPointsForPlayerError(StandingsValidationError):
     def __init__(self, player, message=BASE_VALUE_ERROR_MESSAGE, *args, **kwargs):
         super().__init__(message, *args, **kwargs)
         self.player = player
@@ -167,7 +171,7 @@ class TooManyPointsForPlayerError(ValueError):
         return f"Player {self.player} has too many match points."
 
 
-class TooManyPointsInTotalError(ValueError):
+class TooManyPointsInTotalError(StandingsValidationError):
     def __init__(self, message=BASE_VALUE_ERROR_MESSAGE, *args, **kwargs):
         super().__init__(message, *args, **kwargs)
 
@@ -175,7 +179,7 @@ class TooManyPointsInTotalError(ValueError):
         return "Your event awards too many points in total."
 
 
-class TooManyPointsForTop8Error(ValueError):
+class TooManyPointsForTop8Error(StandingsValidationError):
     def __init__(self, message=BASE_VALUE_ERROR_MESSAGE, *args, **kwargs):
         super().__init__(message, *args, **kwargs)
 
@@ -183,7 +187,7 @@ class TooManyPointsForTop8Error(ValueError):
         return "Your top 8 players have too many points."
 
 
-class TooFewPlayersForPremierError(ValueError):
+class TooFewPlayersForPremierError(StandingsValidationError):
     def __init__(self, message=BASE_VALUE_ERROR_MESSAGE, *args, **kwargs):
         super().__init__(message, *args, **kwargs)
 

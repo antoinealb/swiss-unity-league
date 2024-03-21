@@ -23,7 +23,9 @@ class TestEventResultsAPI(APITestCase):
         self.user = User.objects.create_user(**self.credentials)
         self.organizer = EventOrganizerFactory(user=self.user)
         yesterday = datetime.date.today() - datetime.timedelta(days=1)
-        self.event = RankedEventFactory(organizer=self.organizer, date=yesterday)
+        self.event = RankedEventFactory(
+            organizer=self.organizer, date=yesterday, category=Event.Category.REGIONAL
+        )
         self.url = reverse("events-detail", args=[self.event.id])
 
     def test_event_includes_result(self):
@@ -135,3 +137,49 @@ class TestEventResultsAPI(APITestCase):
         self.event.refresh_from_db()
 
         self.assertEqual(1, self.event.eventplayerresult_set.count())
+
+    def test_upload_results_failing_validation(self):
+        """Checks that we cannot upload a tournament that do not passes
+        validation, same as with manual entry."""
+        points_list = [5] * 8 + [0] * 16
+        results = [
+            dict(
+                player=f"Player {i}",
+                ranking=i + 1,
+                win_count=points,
+                draw_count=0,
+                loss_count=0,
+                single_elimination_result=None,
+            )
+            for i, points in enumerate(points_list)
+        ]
+        self.client.login(**self.credentials)
+        resp = self.client.patch(self.url, data={"results": results}, format="json")
+        self.assertEqual(400, resp.status_code)
+        self.assertEqual(0, self.event.eventplayerresult_set.count())
+        self.assertIn("message", resp.json())
+
+    def test_upload_results_failing_validation_but_exemption(self):
+        """Checks that we can give exemptions to events in API too."""
+        points_list = [5] * 8 + [0] * 16
+        results = [
+            dict(
+                player=f"Player {i}",
+                ranking=i + 1,
+                win_count=points,
+                draw_count=0,
+                loss_count=0,
+                single_elimination_result=None,
+            )
+            for i, points in enumerate(points_list)
+        ]
+
+        # Allow the event to submit invalid results
+        self.event.results_validation_enabled = False
+        self.event.save()
+
+        self.client.login(**self.credentials)
+        resp = self.client.patch(self.url, data={"results": results}, format="json")
+
+        self.assertEqual(200, resp.status_code)
+        self.assertEqual(24, self.event.eventplayerresult_set.count())
