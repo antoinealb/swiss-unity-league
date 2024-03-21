@@ -361,3 +361,5 @@ if "test" in sys.argv or "pytest" in sys.modules:
 
     # Finally, disable logging in unit testing
     logging.disable(logging.CRITICAL)
+
+SECURE_PROXY_SSL_HEADER = ("HTTP_X_FORWARDED_PROTO", "https")
