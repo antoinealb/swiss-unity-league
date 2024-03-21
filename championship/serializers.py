@@ -1,5 +1,6 @@
 import datetime
 
+from django.db import transaction
 from django.templatetags.static import static
 from rest_framework import serializers
 
@@ -9,7 +10,9 @@ from championship.models import (
     EventOrganizer,
     EventPlayerResult,
     Player,
+    PlayerAlias,
 )
+from championship.views.results import clean_name
 
 
 class EventSerializer(serializers.ModelSerializer):
@@ -93,11 +96,26 @@ class EventSerializer(serializers.ModelSerializer):
         return static(event.get_category_icon_url())
 
 
+class EventPlayerResultSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = EventPlayerResult
+        fields = [
+            "player",
+            "single_elimination_result",
+            "ranking",
+            "win_count",
+            "loss_count",
+            "draw_count",
+        ]
+
+    player = serializers.CharField(source="player.name")
+
+
 class EventInformationSerializer(serializers.ModelSerializer):
     class Meta:
         model = Event
         fields = [
-            "id",
+            "api_url",
             "name",
             "date",
             "start_time",
@@ -108,21 +126,58 @@ class EventInformationSerializer(serializers.ModelSerializer):
             "decklists_url",
             "description",
             "organizer",
+            "results",
         ]
+
+    api_url = serializers.HyperlinkedIdentityField(view_name="events-detail")
 
     organizer = serializers.HyperlinkedRelatedField(
         view_name="organizers-detail", read_only=True
     )
 
+    results = EventPlayerResultSerializer(
+        many=True, source="eventplayerresult_set", read_only=False, required=False
+    )
+
     def create(self, validated_data):
         # We need a custom create() because we want to attach informations from
         # the current user to the created event.
+        validated_data.pop("eventplayerresult_set", [])
         organizer = EventOrganizer.objects.get(user=self.context["request"].user)
         addr = organizer.default_address
         # TODO: Support other addresses
         return Event.objects.create(
             organizer=organizer, address=organizer.default_address, **validated_data
         )
+
+    @transaction.atomic
+    def update(self, instance, validated_data):
+        results = validated_data.pop("eventplayerresult_set", [])
+
+        res = super().update(instance, validated_data)
+
+        if results:
+            instance.eventplayerresult_set.all().delete()
+
+        for result in results:
+            name = clean_name(result["player"]["name"])
+            try:
+                player = PlayerAlias.objects.get(name=name).true_player
+            except PlayerAlias.DoesNotExist:
+                player, _ = Player.objects.get_or_create(name=name)
+
+            EventPlayerResult.objects.create(
+                points=3 * result["win_count"] + result["draw_count"],
+                player=player,
+                event=instance,
+                ranking=result["ranking"],
+                win_count=result["win_count"],
+                loss_count=result["loss_count"],
+                draw_count=result["draw_count"],
+                single_elimination_result=result["single_elimination_result"],
+            )
+
+        return res
 
 
 class OrganizerSerializer(serializers.ModelSerializer):
