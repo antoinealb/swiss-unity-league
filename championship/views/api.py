@@ -14,7 +14,11 @@ from rest_framework.response import Response
 
 from championship.models import Event, EventOrganizer
 from championship.season import find_season_by_slug
-from championship.serializers import EventInformationSerializer, EventSerializer
+from championship.serializers import (
+    EventInformationSerializer,
+    EventSerializer,
+    OrganizerSerializer,
+)
 
 
 class FutureEventViewSet(viewsets.ReadOnlyModelViewSet):
@@ -112,4 +116,20 @@ class EventViewSet(viewsets.ModelViewSet):
     def need_results(self, request):
         events = Event.objects.available_for_result_upload(request.user)
         serializer = self.get_serializer(events, many=True)
+        return Response(serializer.data)
+
+
+class OrganizersViewSet(viewsets.ReadOnlyModelViewSet):
+    serializer_class = OrganizerSerializer
+    queryset = EventOrganizer.objects.all()
+
+    @action(
+        detail=False,
+        name="Link to organizer profile for the logged in organizer.",
+        permission_classes=[IsAuthenticated],
+        methods=["get"],
+    )
+    def me(self, request):
+        organizer = EventOrganizer.objects.get(user=request.user)
+        serializer = self.get_serializer(organizer)
         return Response(serializer.data)

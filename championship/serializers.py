@@ -107,7 +107,12 @@ class EventInformationSerializer(serializers.ModelSerializer):
             "url",
             "decklists_url",
             "description",
+            "organizer",
         ]
+
+    organizer = serializers.HyperlinkedRelatedField(
+        view_name="organizers-detail", read_only=True
+    )
 
     def create(self, validated_data):
         # We need a custom create() because we want to attach informations from
@@ -118,6 +123,19 @@ class EventInformationSerializer(serializers.ModelSerializer):
         return Event.objects.create(
             organizer=organizer, address=organizer.default_address, **validated_data
         )
+
+
+class OrganizerSerializer(serializers.ModelSerializer):
+    events = serializers.HyperlinkedRelatedField(
+        many=True,
+        read_only=True,
+        view_name="events-detail",
+        source="event_set",
+    )
+
+    class Meta:
+        model = EventOrganizer
+        fields = ["id", "name", "events"]
 
 
 class PlayerAutocompleteSerializer(serializers.ModelSerializer):

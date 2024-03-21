@@ -14,6 +14,7 @@ api_router.register(
 api_router.register(r"formats", views.ListFormats, basename="formats")
 api_router.register(r"past-events", views.PastEventViewSet, basename="past-events")
 api_router.register(r"events", views.EventViewSet, basename="events")
+api_router.register(r"organizers", views.OrganizersViewSet, basename="organizers")
 
 urlpatterns = [
     path(parser.to_url(), parser.view, name=parser.view_name)

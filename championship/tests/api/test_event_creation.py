@@ -41,6 +41,9 @@ class TestEventListAPI(APITestCase):
         self.assertEqual(HTTP_200_OK, resp.status_code)
 
         resp = resp.json()
+        want_organizer_url = "http://testserver" + reverse(
+            "organizers-detail", args=[e1.organizer.id]
+        )
         want = {
             "id": e1.id,
             "name": e1.name,
@@ -52,6 +55,7 @@ class TestEventListAPI(APITestCase):
             "description": e1.description,
             "start_time": e1.start_time.strftime("%H:%M:%S"),
             "end_time": e1.end_time.strftime("%H:%M:%S"),
+            "organizer": want_organizer_url,
         }
         self.assertDictEqual(want, resp[0])
 
