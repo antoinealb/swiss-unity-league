@@ -180,7 +180,9 @@ class EventInformationSerializer(serializers.ModelSerializer):
         # Delete existing results to replace them with the new ones
         instance.eventplayerresult_set.all().delete()
 
-        for result in results:
+        results.sort(key=lambda r: 3 * r["win_count"] + r["draw_count"], reverse=True)
+
+        for i, result in enumerate(results):
             name = clean_name(result["player"]["name"])
             try:
                 player = PlayerAlias.objects.get(name=name).true_player
@@ -191,7 +193,7 @@ class EventInformationSerializer(serializers.ModelSerializer):
                 points=3 * result["win_count"] + result["draw_count"],
                 player=player,
                 event=instance,
-                ranking=result["ranking"],
+                ranking=i + 1,
                 win_count=result["win_count"],
                 loss_count=result["loss_count"],
                 draw_count=result["draw_count"],

@@ -48,7 +48,6 @@ class TestEventResultsAPI(APITestCase):
             "results": [
                 {
                     "player": "Antoine Albertelli",
-                    "ranking": 1,
                     "win_count": 3,
                     "draw_count": 2,
                     "loss_count": 0,
@@ -82,7 +81,6 @@ class TestEventResultsAPI(APITestCase):
             "results": [
                 {
                     "player": "Darth Vader",
-                    "ranking": 1,
                     "win_count": 3,
                     "draw_count": 2,
                     "loss_count": 0,
@@ -102,7 +100,6 @@ class TestEventResultsAPI(APITestCase):
             "results": [
                 {
                     "player": player.name.lower(),
-                    "ranking": 1,
                     "win_count": 3,
                     "draw_count": 2,
                     "loss_count": 0,
@@ -122,7 +119,6 @@ class TestEventResultsAPI(APITestCase):
             "results": [
                 {
                     "player": player.name,
-                    "ranking": 1,
                     "win_count": 3,
                     "draw_count": 2,
                     "loss_count": 0,
@@ -145,7 +141,6 @@ class TestEventResultsAPI(APITestCase):
         results = [
             dict(
                 player=f"Player {i}",
-                ranking=i + 1,
                 win_count=points,
                 draw_count=0,
                 loss_count=0,
@@ -165,7 +160,6 @@ class TestEventResultsAPI(APITestCase):
         results = [
             dict(
                 player=f"Player {i}",
-                ranking=i + 1,
                 win_count=points,
                 draw_count=0,
                 loss_count=0,
@@ -183,3 +177,26 @@ class TestEventResultsAPI(APITestCase):
 
         self.assertEqual(200, resp.status_code)
         self.assertEqual(24, self.event.eventplayerresult_set.count())
+
+    def test_upload_results_unsorted(self):
+        """Checks that results are sorted according to points."""
+        points_list = [0] * 2 + [3] * 2
+        results = [
+            dict(
+                player=f"Player {i}",
+                win_count=points,
+                draw_count=0,
+                loss_count=0,
+                single_elimination_result=None,
+            )
+            for i, points in enumerate(points_list)
+        ]
+
+        self.client.login(**self.credentials)
+        resp = self.client.patch(self.url, data={"results": results}, format="json")
+
+        results = EventPlayerResult.objects.filter(event=self.event).order_by("ranking")
+        self.assertEqual(results[0].win_count, 3, "Results should have been sorted.")
+        self.assertEqual(
+            results[0].player.name, "Player 2", "Results should have been sorted."
+        )

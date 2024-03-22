@@ -50,7 +50,6 @@ def upload_results(event_url: str, token: str):
     example_results = [
         {
             "player": "Darth Vader",
-            "ranking": 1,
             "win_count": 3,
             "draw_count": 2,
             "loss_count": 0,
@@ -58,7 +57,6 @@ def upload_results(event_url: str, token: str):
         },
         {
             "player": "Obiwan Kenobi",
-            "ranking": 4,
             "win_count": 3,
             "draw_count": 1,
             "loss_count": 1,
@@ -66,7 +64,6 @@ def upload_results(event_url: str, token: str):
         },
         {
             "player": "Padme Amidala",
-            "ranking": 3,
             "win_count": 3,
             "draw_count": 1,
             "loss_count": 1,
@@ -74,7 +71,6 @@ def upload_results(event_url: str, token: str):
         },
         {
             "player": "R2D2",
-            "ranking": 2,
             "win_count": 3,
             "draw_count": 2,
             "loss_count": 0,
@@ -82,7 +78,6 @@ def upload_results(event_url: str, token: str):
         },
         {
             "player": "Han Solo",
-            "ranking": 5,
             "win_count": 2,
             "draw_count": 2,
             "loss_count": 0,
@@ -90,7 +85,6 @@ def upload_results(event_url: str, token: str):
         },
         {
             "player": "Yoda",
-            "ranking": 6,
             "win_count": 0,
             "draw_count": 0,
             "loss_count": 2,
@@ -98,7 +92,6 @@ def upload_results(event_url: str, token: str):
         },
         {
             "player": "Qui-Gon Jinn",
-            "ranking": 7,
             "win_count": 0,
             "draw_count": 0,
             "loss_count": 1,
