@@ -66,7 +66,6 @@ def main():
 
     print("Creating example event...")
     event = create_example_event(args.instance, token)
-    print(f"Event is at {args.instance}/events/{event['id']}")
     print(json.dumps(event, indent=4))
 
 

@@ -45,7 +45,7 @@ class TestEventListAPI(APITestCase):
             "organizers-detail", args=[e1.organizer.id]
         )
         want = {
-            "id": e1.id,
+            "api_url": "http://testserver" + reverse("events-detail", args=[e1.id]),
             "name": e1.name,
             "date": e1.date.strftime("%Y-%m-%d"),
             "category": e1.category,
@@ -56,6 +56,7 @@ class TestEventListAPI(APITestCase):
             "start_time": e1.start_time.strftime("%H:%M:%S"),
             "end_time": e1.end_time.strftime("%H:%M:%S"),
             "organizer": want_organizer_url,
+            "results": [],
         }
         self.assertDictEqual(want, resp[0])
 
@@ -104,7 +105,7 @@ class TestEventCreate(APITestCase):
 
     def test_can_create_event(self):
         self.login()
-        resp = self.client.post(reverse("events-list"), data=self.data)
+        resp = self.client.post(reverse("events-list"), data=self.data, format="json")
         self.assertEqual(HTTP_201_CREATED, resp.status_code)
         self.assertEqual(1, Event.objects.count())
 
@@ -149,3 +150,12 @@ class TestEventCreate(APITestCase):
         resp = self.client.delete(reverse("events-detail", args=[e.id]))
         self.assertEqual(HTTP_403_FORBIDDEN, resp.status_code)
         self.assertTrue(Event.objects.exists())
+
+    def test_edit_event(self):
+        yesterday = datetime.date.today() - datetime.timedelta(days=1)
+        e = RankedEventFactory(organizer=self.organizer, date=yesterday)
+        self.login()
+        data = {"name": "foobar"}
+        resp = self.client.patch(reverse("events-detail", args=[e.id]), data=data)
+        self.assertEqual(HTTP_200_OK, resp.status_code)
+        self.assertEqual(Event.objects.all()[0].name, "foobar")

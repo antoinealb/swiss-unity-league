@@ -1,5 +1,6 @@
 import datetime
 
+from django.db import transaction
 from django.templatetags.static import static
 from rest_framework import serializers
 
@@ -9,7 +10,10 @@ from championship.models import (
     EventOrganizer,
     EventPlayerResult,
     Player,
+    PlayerAlias,
 )
+from championship.tournament_valid import StandingsValidationError, validate_standings
+from championship.views.results import clean_name
 
 
 class EventSerializer(serializers.ModelSerializer):
@@ -93,11 +97,26 @@ class EventSerializer(serializers.ModelSerializer):
         return static(event.get_category_icon_url())
 
 
+class EventPlayerResultSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = EventPlayerResult
+        fields = [
+            "player",
+            "single_elimination_result",
+            "ranking",
+            "win_count",
+            "loss_count",
+            "draw_count",
+        ]
+
+    player = serializers.CharField(source="player.name")
+
+
 class EventInformationSerializer(serializers.ModelSerializer):
     class Meta:
         model = Event
         fields = [
-            "id",
+            "api_url",
             "name",
             "date",
             "start_time",
@@ -108,21 +127,80 @@ class EventInformationSerializer(serializers.ModelSerializer):
             "decklists_url",
             "description",
             "organizer",
+            "results",
         ]
+
+    api_url = serializers.HyperlinkedIdentityField(view_name="events-detail")
 
     organizer = serializers.HyperlinkedRelatedField(
         view_name="organizers-detail", read_only=True
     )
 
+    results = EventPlayerResultSerializer(
+        many=True, source="eventplayerresult_set", read_only=False, required=False
+    )
+
     def create(self, validated_data):
         # We need a custom create() because we want to attach informations from
         # the current user to the created event.
+        validated_data.pop("eventplayerresult_set", [])
         organizer = EventOrganizer.objects.get(user=self.context["request"].user)
         addr = organizer.default_address
         # TODO: Support other addresses
         return Event.objects.create(
             organizer=organizer, address=organizer.default_address, **validated_data
         )
+
+    @transaction.atomic
+    def update(self, instance, validated_data):
+        results = validated_data.pop("eventplayerresult_set", [])
+
+        res = super().update(instance, validated_data)
+
+        # If the results are not touched, there is nothing more to do
+        if not results:
+            return res
+
+        # Check that uploaded results make sense
+        results_for_validation = [
+            (
+                r["player"]["name"],
+                r["win_count"] * 3 + r["draw_count"],
+                (r["win_count"], r["draw_count"], r["loss_count"]),
+            )
+            for r in results
+        ]
+        try:
+            validate_standings(results_for_validation, instance.category)
+        except StandingsValidationError as e:
+            error = {"message": e.ui_error_message()}
+            if instance.results_validation_enabled:
+                raise serializers.ValidationError(error)
+
+        # Delete existing results to replace them with the new ones
+        instance.eventplayerresult_set.all().delete()
+
+        results.sort(key=lambda r: 3 * r["win_count"] + r["draw_count"], reverse=True)
+
+        for i, result in enumerate(results):
+            name = clean_name(result["player"]["name"])
+            try:
+                player = PlayerAlias.objects.get(name=name).true_player
+            except PlayerAlias.DoesNotExist:
+                player, _ = Player.objects.get_or_create(name=name)
+
+            EventPlayerResult.objects.create(
+                points=3 * result["win_count"] + result["draw_count"],
+                player=player,
+                event=instance,
+                ranking=i + 1,
+                win_count=result["win_count"],
+                loss_count=result["loss_count"],
+                draw_count=result["draw_count"],
+                single_elimination_result=result["single_elimination_result"],
+            )
+
+        return res
 
 
 class OrganizerSerializer(serializers.ModelSerializer):
