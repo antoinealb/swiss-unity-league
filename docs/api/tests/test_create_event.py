@@ -42,3 +42,9 @@ class CreateEventApiExample(LiveServerTestCase):
         subprocess.check_output(shlex.split(cmd))
 
         self.assertEqual(7, EventPlayerResult.objects.count())
+        self.assertEqual(
+            EventPlayerResult.SingleEliminationResult.WINNER,
+            EventPlayerResult.objects.get(
+                player__name="Darth Vader"
+            ).single_elimination_result,
+        )

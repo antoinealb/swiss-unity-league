@@ -4,6 +4,7 @@ Simple example for the API of unityleague.ch, showing how to create an event.
 """
 
 import argparse
+import enum
 import getpass
 import json
 
@@ -45,6 +46,18 @@ def get_events_for_result_upload(instance: str, token: str) -> list[tuple[str, s
     return [(event["name"], event["api_url"]) for event in resp.json()]
 
 
+class SingleEliminationResult(enum.IntEnum):
+    """Enum representing how far in the top8 a player went.
+
+    The API expects numbers, this enum allows the example to be more readable.
+    """
+
+    WINNER = 1
+    FINALIST = 2
+    SEMI_FINALIST = 4
+    QUARTER_FINALIST = 8
+
+
 def upload_results(event_url: str, token: str):
     # Simple example with Top 4
     example_results = [
@@ -53,28 +66,28 @@ def upload_results(event_url: str, token: str):
             "win_count": 3,
             "draw_count": 2,
             "loss_count": 0,
-            "single_elimination_result": 1,
+            "single_elimination_result": SingleEliminationResult.WINNER,
         },
         {
             "player": "Obiwan Kenobi",
             "win_count": 3,
             "draw_count": 1,
             "loss_count": 1,
-            "single_elimination_result": 2,
+            "single_elimination_result": SingleEliminationResult.FINALIST,
         },
         {
             "player": "Padme Amidala",
             "win_count": 3,
             "draw_count": 1,
             "loss_count": 1,
-            "single_elimination_result": 4,
+            "single_elimination_result": SingleEliminationResult.SEMI_FINALIST,
         },
         {
             "player": "R2D2",
             "win_count": 3,
             "draw_count": 2,
             "loss_count": 0,
-            "single_elimination_result": 4,
+            "single_elimination_result": SingleEliminationResult.FINALIST,
         },
         {
             "player": "Han Solo",
