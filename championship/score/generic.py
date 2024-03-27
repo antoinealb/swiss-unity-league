@@ -19,6 +19,7 @@ from championship.models import Event, EventPlayerResult, Player
 from championship.score.season_2023 import ScoreMethod2023
 from championship.score.season_2024 import ScoreMethod2024
 from championship.score.season_all import ScoreMethodAll
+from championship.score.trial_2024 import ScoreMethodTrial2024
 from championship.score.types import LeaderboardScore
 from championship.season import *
 
@@ -34,6 +35,7 @@ scores_computation_results_count = Gauge(
 SCOREMETHOD_PER_SEASON = {
     SEASON_2023: ScoreMethod2023,
     SEASON_2024: ScoreMethod2024,
+    SUL_TRIAL_2024: ScoreMethodTrial2024,
     SEASON_ALL: ScoreMethodAll,
 }
 
@@ -111,7 +113,7 @@ def compute_scores(season: Season) -> dict[int, LeaderboardScore]:
 @receiver(post_delete, sender=EventPlayerResult)
 @receiver(pre_save, sender=EventPlayerResult)
 def invalidate_score_cache(sender, **kwargs):
-    for s in SEASON_LIST:
+    for s in SEASONS_WITH_RANKING:
         cache.delete(_score_cache_key(s))
 
 
