@@ -1,3 +1,5 @@
+import datetime
+
 from django.test import TestCase
 
 from championship.factories import *
@@ -5,11 +7,37 @@ from championship.models import *
 from championship.score import compute_scores
 from championship.score.trial_2024 import ScoreMethodTrial2024
 from championship.score.types import QualificationType
-from championship.season import SUL_TRIAL_2024
+from championship.season import SEASON_2024, SUL_TRIAL_2024
+
+
+class TestScoresOutOfTrialSeason(TestCase):
+
+    def compute_scores(self):
+        return compute_scores(SUL_TRIAL_2024)
+
+    def test_events_out_of_season_dont_contribute_score(self):
+        event = Event2024Factory(
+            date=SUL_TRIAL_2024.start_date - datetime.timedelta(days=1)
+        )
+        EventPlayerResultFactory(event=event)
+        event = Event2024Factory(
+            date=SUL_TRIAL_2024.end_date + datetime.timedelta(days=1)
+        )
+        EventPlayerResultFactory(event=event)
+        got_scores = self.compute_scores()
+        self.assertEqual({}, got_scores)
+
+    def test_events_in_season_contribute_score(self):
+        event = Event2024Factory(date=SUL_TRIAL_2024.start_date)
+        EventPlayerResultFactory(event=event)
+        event = Event2024Factory(date=SUL_TRIAL_2024.end_date)
+        EventPlayerResultFactory(event=event)
+        got_scores = self.compute_scores()
+        self.assertEqual(2, len(got_scores))
 
 
 def create_test_tournament(players, category=Event.Category.PREMIER, with_top8=True):
-    event = Event2024Factory(category=category)
+    event = Event2024Factory(category=category, date=SUL_TRIAL_2024.start_date)
     num_players = len(players)
     for i, player in enumerate(players):
         rank = i + 1
