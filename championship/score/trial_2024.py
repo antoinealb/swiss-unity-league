@@ -24,7 +24,6 @@ class ScoreMethodTrial2024(ScoreMethod2024):
 
         """
 
-        num_leaderboard_qualifications = cls.TOTAL_QUALIFICATION_SLOTS
         sorted_scores = sorted(
             scores_by_player.items(), key=lambda x: x[1].qps, reverse=True
         )
@@ -36,9 +35,8 @@ class ScoreMethodTrial2024(ScoreMethod2024):
                 total_score=score.qps,
                 rank=rank,
             )
-            if num_leaderboard_qualifications > 0:
+            if i < cls.TOTAL_QUALIFICATION_SLOTS:
                 scores[player_id].qualification_type = QualificationType.LEADERBOARD
                 scores[player_id].qualification_reason = "Qualified for SUL Trial 2024"
-                num_leaderboard_qualifications -= 1
 
         return scores
