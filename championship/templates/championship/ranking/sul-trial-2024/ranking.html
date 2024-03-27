@@ -1,0 +1,13 @@
+{% extends "championship/ranking/base_ranking.html" %}
+
+{% block info_text %}
+    <p>
+        The top 80 players on the leaderboard at the end of April (30.04.2024) will qualify for the SUL Trial 2024.
+        The SUL Trial is a one-day invite only tournament where the top 2 players will recive a direct invite and a bye for the SUL Invitational later this year.
+        <br><a class="btn btn-secondary-light mt-1" href="{% url 'event_details' pk=1009 %}">SUL Trial Info</a>
+    </p>
+    <dl>
+        <dt><i class="icon-star"></i></dt>
+        <dd>Qualification for the SUL Trial (cutoff 30th April 2024)</dd>
+    </dl>
+{% endblock %}

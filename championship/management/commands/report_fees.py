@@ -7,7 +7,7 @@ from django.db.models import Count
 from prettytable import PrettyTable
 
 from championship.models import Event
-from championship.season import SEASON_LIST_WITH_ALL, find_season_by_slug
+from championship.season import ALL_SEASONS_LIST, find_season_by_slug
 from invoicing.models import fee_for_event
 
 
@@ -15,12 +15,12 @@ class Command(BaseCommand):
     help = "Report how many fees are paid in total per organizer "
 
     def add_arguments(self, parser):
-        all_seasons = ",".join(s.slug for s in SEASON_LIST_WITH_ALL)
+        all_seasons = ",".join(s.slug for s in ALL_SEASONS_LIST)
         parser.add_argument(
             "--season",
             "-s",
             default=settings.DEFAULT_SEASON.slug,
-            choices=[s.slug for s in SEASON_LIST_WITH_ALL],
+            choices=[s.slug for s in ALL_SEASONS_LIST],
             help=f"Season to report fees. Can be one of [{all_seasons}]",
         )
 
