@@ -31,6 +31,7 @@ class InvoiceAdmin(admin.ModelAdmin):
         "sent_date",
         "payment_received_date",
     )
+    exclude = ["frozen_file"]
     actions = ["download", "freeze", "unfreeze"]
 
     @admin.display(ordering="id", description="Reference number")
