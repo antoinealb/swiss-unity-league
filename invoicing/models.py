@@ -112,6 +112,7 @@ class Invoice(models.Model):
 
     frozen_file = models.FileField(
         null=True,
+        blank=True,
         help_text="Cached PDF output, to prevent invoices from changing once they are correct.",
         upload_to=frozen_file_upload_to,
     )
