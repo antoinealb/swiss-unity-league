@@ -146,7 +146,7 @@ class FutureEventView(TemplateView):
         context = super().get_context_data(**kwargs)
         future_events = {"Upcoming": reverse("future-events-list")}
         past_events_each_season = [
-            {s.name: reverse("past-events-by-season", kwargs={"slug": s.slug})}
+            {s.name: reverse("past-events-list", kwargs={"slug": s.slug})}
             for s in SEASON_LIST
         ]
         past_events_each_season.reverse()

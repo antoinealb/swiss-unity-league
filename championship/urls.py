@@ -14,7 +14,6 @@
 
 from django.urls import include, path
 
-from api.views import PastEventViewSet
 from championship import ical_feeds
 from championship.importers import IMPORTER_LIST
 
@@ -108,11 +107,6 @@ urlpatterns = [
     ),
     path(
         "address/<pk>/delete/", views.AddressDeleteView.as_view(), name="address_delete"
-    ),
-    path(
-        "past-events/<slug:slug>/",
-        PastEventViewSet.as_view({"get": "list"}),
-        name="past-events-by-season",
     ),
     path("events.ics", ical_feeds.LargeEventFeed(), name="events_feed"),
     path("allevents.ics", ical_feeds.AllEventsFeed(), name="all_events_feed"),
