@@ -12,23 +12,13 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-import rest_framework.authtoken.views
 from django.urls import include, path
-from rest_framework import routers
 
+from api.views import PastEventViewSet
 from championship import ical_feeds
 from championship.importers import IMPORTER_LIST
 
 from . import views
-
-api_router = routers.DefaultRouter()
-api_router.register(
-    r"future-events", views.FutureEventViewSet, basename="future-events"
-)
-api_router.register(r"formats", views.ListFormats, basename="formats")
-api_router.register(r"past-events", views.PastEventViewSet, basename="past-events")
-api_router.register(r"events", views.EventViewSet, basename="events")
-api_router.register(r"organizers", views.OrganizersViewSet, basename="organizers")
 
 urlpatterns = [
     path(parser.to_url(), parser.view, name=parser.view_name)
@@ -119,15 +109,9 @@ urlpatterns = [
     path(
         "address/<pk>/delete/", views.AddressDeleteView.as_view(), name="address_delete"
     ),
-    path("api/", include(api_router.urls)),
-    path(
-        "api/auth/",
-        rest_framework.authtoken.views.obtain_auth_token,
-        name="api_auth_token",
-    ),
     path(
         "past-events/<slug:slug>/",
-        views.PastEventViewSet.as_view({"get": "list"}),
+        PastEventViewSet.as_view({"get": "list"}),
         name="past-events-by-season",
     ),
     path("events.ics", ical_feeds.LargeEventFeed(), name="events_feed"),

@@ -33,6 +33,7 @@ from django.urls import include, path
 
 urlpatterns = [
     path("", include("championship.urls")),
+    path("api/", include("api.urls")),
     path("invoicing/", include("invoicing.urls")),
     path("admin/", admin.site.urls),
     path("accounts/", include("django.contrib.auth.urls")),
