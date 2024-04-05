@@ -12,11 +12,14 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+import datetime
+
 from django.test import Client, TestCase
 from django.urls import reverse
 
-from championship.factories import *
-from championship.models import *
+from championship.factories import AddressFactory, EventFactory, EventOrganizerFactory
+from championship.models import Address, Event
+from championship.season import SEASON_2023
 
 TEST_SERVER = "http://testserver"
 
@@ -54,7 +57,7 @@ class EventApiTestCase(TestCase):
             category=Event.Category.REGIONAL,
         )
         resp = Client().get(
-            reverse("past-events-by-season", kwargs={"slug": SEASON_2023.slug})
+            reverse("past-events-list", kwargs={"slug": SEASON_2023.slug})
         )
         want = [
             {
