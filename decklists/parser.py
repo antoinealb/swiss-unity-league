@@ -25,3 +25,37 @@ class DecklistParser(ParserContext, whitespace=r"[ \t]*"):  # type: ignore
     card = reg(r"[^\r\n]*")
     line = integer & card
     deck = rep1sep(line, newline)
+
+
+class Color(enum.Enum):
+    WHITE = "W"
+    BLUE = "U"
+    RED = "R"
+    BLACK = "B"
+    GREEN = "G"
+
+
+@dataclasses.dataclass
+class Hybrid:
+    colors: tuple[Color | int, Color]
+
+
+@dataclasses.dataclass
+class Phyrexian:
+    color: Color
+
+
+Snow = object()
+Colorless = object()
+
+
+class ManaParser(ParserContext):
+    integer = reg(r"[0-9]+") > int
+    color = longest(*(lit(s) for s in "WURBG")) > Color
+    letter = lit("X") | lit("Y") | lit("Z")
+    hybrid = ((color | integer) << "/" & color) > (lambda s: Hybrid(tuple(s)))
+    phyrexian = (color | hybrid) << lit("/P") > Phyrexian
+    snow = lit("S") > constant(Snow)
+    colorless = lit("C") > constant(Colorless)
+    mana_inside = integer | color | letter | hybrid | phyrexian | snow | colorless
+    mana = rep1("{" >> mana_inside << "}")

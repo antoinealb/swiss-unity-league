@@ -14,7 +14,15 @@
 
 from unittest import TestCase
 
-from decklists.parser import DecklistParser
+from decklists.parser import (
+    Color,
+    Colorless,
+    DecklistParser,
+    Hybrid,
+    ManaParser,
+    Phyrexian,
+    Snow,
+)
 
 
 class ParserTestCase(TestCase):
@@ -40,4 +48,61 @@ class ParserTestCase(TestCase):
         decklist = "4 Thalia, Guardian of Thraben\r\n4 Lightning Bolt"
         want = [[4, "Thalia, Guardian of Thraben"], [4, "Lightning Bolt"]]
         got = DecklistParser.deck.parse(decklist).unwrap()
+        self.assertEqual(want, got)
+
+
+class ManaParserTestCase(TestCase):
+    def test_parse_generic_mana(self):
+        a = ManaParser.mana.parse("{3}").unwrap()
+        self.assertEqual([3], a)
+
+    def test_parse_x(self):
+        a = ManaParser.mana.parse("{X}").unwrap()
+        self.assertEqual(["X"], a)
+
+    def test_parse_colored(self):
+        a = ManaParser.color.parse("G").unwrap()
+        self.assertIsInstance(a, Color)
+        self.assertEqual(Color.GREEN, a)
+
+    def test_parse_hybrid(self):
+        a = ManaParser.hybrid.parse("G/U").unwrap()
+        self.assertIsInstance(a, Hybrid)
+        self.assertEqual((Color.GREEN, Color.BLUE), a.colors)
+
+    def test_parse_phyrexian(self):
+        a = ManaParser.phyrexian.parse("B/P").unwrap()
+        self.assertIsInstance(a, Phyrexian)
+        self.assertEqual(Color.BLACK, a.color)
+
+    def test_parse_phyrexian_hybrid(self):
+        got = ManaParser.phyrexian.parse("G/U/P").unwrap()
+        want = Phyrexian(Hybrid((Color.GREEN, Color.BLUE)))
+        self.assertEqual(want, got)
+
+    def test_parse_tamyo_compleated_sage(self):
+        got = ManaParser.mana.parse("{2}{G}{G/U/P}{U}").unwrap()
+        want = [
+            2,
+            Color.GREEN,
+            Phyrexian(Hybrid((Color.GREEN, Color.BLUE))),
+            Color.BLUE,
+        ]
+        self.assertEqual(got, want)
+
+    def test_parse_snow(self):
+        got = ManaParser.mana_inside.parse("S").unwrap()
+        want = Snow
+        self.assertEqual(want, got)
+
+    def test_parse_colorless(self):
+        got = ManaParser.mana_inside.parse("C").unwrap()
+        want = Colorless
+        self.assertEqual(want, got)
+
+    def test_parse_hybrid(self):
+        """Parses hybrid generic / colored mana à la Spectral Procession."""
+        # See Spectral Procession for an example card
+        got = ManaParser.mana.parse("{2/W}").unwrap()
+        want = [Hybrid((2, Color.WHITE))]
         self.assertEqual(want, got)
