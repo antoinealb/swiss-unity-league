@@ -69,3 +69,12 @@ class DecklistTest(TestCase):
             DecklistFactory(collection=collection, player=player).id for _ in range(n)
         )
         self.assertEqual(n, len(ids))
+
+    def test_can_be_edited_if_before_deadline(self):
+        decklist = DecklistFactory()
+        self.assertTrue(decklist.can_be_edited())
+
+    def test_can_not_be_edited_if_after(self):
+        decklist = DecklistFactory()
+        decklist.collection.submission_deadline -= datetime.timedelta(days=200)
+        self.assertFalse(decklist.can_be_edited())

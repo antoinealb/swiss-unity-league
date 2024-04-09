@@ -34,7 +34,7 @@ class DecklistParser(ParserContext, whitespace=r"[ \t]*"):  # type: ignore
     integer = reg(r"[0-9]+") > int
     card = reg(r"[^\r\n]*")
     line = integer & card
-    deck = rep1sep(line, newline)
+    deck = repsep(line, newline)
 
 
 class Color(enum.Enum):

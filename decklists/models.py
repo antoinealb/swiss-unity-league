@@ -15,7 +15,8 @@
 import uuid
 
 from django.db import models
-from django.utils.timezone import now
+from django.urls import reverse
+from django.utils import timezone
 
 from championship.models import Event, Player
 
@@ -46,7 +47,7 @@ class Collection(models.Model):
 
     @property
     def decklists_published(self):
-        return now() > self.publication_time
+        return timezone.now() > self.publication_time
 
 
 class Decklist(models.Model):
@@ -72,3 +73,9 @@ class Decklist(models.Model):
 
     def __str__(self) -> str:
         return f"{self.player.name} ({self.archetype})"
+
+    def can_be_edited(self) -> bool:
+        return timezone.now() < self.collection.submission_deadline
+
+    def get_absolute_url(self):
+        return reverse("decklist-details", args=[self.id])
