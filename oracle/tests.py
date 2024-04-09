@@ -35,3 +35,4 @@ class LoadTestCase(TestCase):
         card = Card.objects.get(oracle_id="0004ebd0-dfd6-4276-b4a6-de0003e94237")
         self.assertEqual(card.name, "Static Orb")
         self.assertEqual(card.mana_cost, "{3}")
+        self.assertEqual(card.mana_value, 3)

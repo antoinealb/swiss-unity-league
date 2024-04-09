@@ -20,6 +20,12 @@ from django.core.management.base import BaseCommand
 from oracle.models import Card
 
 
+def is_valid(entry):
+    if entry.get("set_type", "") in ["memorabilia"]:
+        return False
+    return True
+
+
 class Command(BaseCommand):
     help = "Import all cards from a Scryfall bulk data dump."
 
@@ -45,7 +51,10 @@ class Command(BaseCommand):
                 oracle_id=entry["oracle_id"],
                 name=entry["name"],
                 mana_cost=entry.get("mana_cost", ""),
+                scryfall_uri=entry["scryfall_uri"],
+                mana_value=int(entry.get("cmc", 0)),
             )
             for entry in data
+            if is_valid(entry)
         ]
         Card.objects.bulk_create(cards)
