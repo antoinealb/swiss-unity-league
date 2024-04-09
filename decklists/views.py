@@ -20,6 +20,8 @@ from django.http import HttpResponseForbidden
 from django.views.generic import DetailView
 from django.views.generic.edit import UpdateView
 
+from championship.models import Player
+from decklists.forms import DecklistForm
 from decklists.models import Decklist
 from decklists.parser import DecklistParser
 from oracle.models import Card
@@ -100,12 +102,20 @@ class DecklistView(DetailView):
         return context
 
 
-# TODO: Deadline Control
-# TODO: Actual edit of the list
-# TODO: What if we change the player name
-# TODO: Own template
-class DecklistUpdateView(UpdateView):
+class PlayerAutoCompleteMixin:
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context["players"] = Player.objects.all()
+        return context
+
+
+class DecklistUpdateView(PlayerAutoCompleteMixin, UpdateView):
     model = Decklist
-    template_name = "decklists/decklist_details.html"
-    object_name = "decklist"
-    fields = ["archetype", "player"]
+    form_class = DecklistForm
+    template_name = "decklists/decklist_edit.html"
+
+    def dispatch(self, request, *args, **kwargs):
+        self.event = self.get_object()
+        if not self.event.can_be_edited():
+            return HttpResponseForbidden()
+        return super().dispatch(request, *args, **kwargs)
