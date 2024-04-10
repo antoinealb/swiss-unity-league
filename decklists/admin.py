@@ -13,5 +13,41 @@
 # limitations under the License.
 
 from django.contrib import admin
+from django.db.models import QuerySet
+from django.utils import timezone
 
-# Register your models here.
+import decklists.models
+
+
+class DecklistPublishedListFilter(admin.SimpleListFilter):
+    title = "decklist publication status"
+    parameter_name = "published"
+
+    def lookups(self, request, model_admin):
+        return [("published", "Published"), ("private", "Unpublished")]
+
+    def queryset(self, request, queryset: QuerySet[decklists.models.Collection]):
+        now = timezone.now()
+        if self.value() == "published":
+            return queryset.filter(publication_time__lte=now)
+        if self.value() == "private":
+            return queryset.filter(publication_time__gte=now)
+
+
+class CollectionAdmin(admin.ModelAdmin):
+    date_hierarchy = "submission_deadline"
+    list_display = (
+        "name",
+        "owner_name",
+        "submission_deadline",
+        "publication_time",
+    )
+    list_filter = ["event__organizer", DecklistPublishedListFilter]
+
+    @admin.display(ordering="event__organizer__name", description="Owner name")
+    def owner_name(self, instance: decklists.models.Collection) -> str:
+        return instance.event.organizer.name
+
+
+admin.site.register(decklists.models.Collection, CollectionAdmin)
+admin.site.register(decklists.models.Decklist)
