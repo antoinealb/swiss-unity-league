@@ -19,7 +19,15 @@ from django.utils.safestring import mark_safe
 
 from parsita import Success
 
-from decklists.parser import Color, Colorless, Hybrid, ManaParser, Phyrexian, Snow
+from decklists.parser import (
+    AlternativeMana,
+    Color,
+    Colorless,
+    Hybrid,
+    ManaParser,
+    Phyrexian,
+    Snow,
+)
 
 register = template.Library()
 
@@ -35,6 +43,9 @@ def mana(mana_spec):
         else:
             logging.warning("Could not parse mana %s", mana_spec)
             return mana_spec
+
+    if isinstance(mana_spec, AlternativeMana):
+        return mark_safe(" // ".join(mana(s) for s in mana_spec.content))
 
     def _class_suffix(spec):
         if isinstance(spec, int):

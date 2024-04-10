@@ -15,6 +15,7 @@
 from unittest import TestCase
 
 from decklists.parser import (
+    AlternativeMana,
     Color,
     Colorless,
     DecklistParser,
@@ -100,9 +101,16 @@ class ManaParserTestCase(TestCase):
         want = Colorless
         self.assertEqual(want, got)
 
-    def test_parse_hybrid(self):
+    def test_parse_hybrid_generic(self):
         """Parses hybrid generic / colored mana à la Spectral Procession."""
         # See Spectral Procession for an example card
         got = ManaParser.mana.parse("{2/W}").unwrap()
         want = [Hybrid((2, Color.WHITE))]
+        self.assertEqual(want, got)
+
+    def test_parse_split(self):
+        """test parsing split cards mana"""
+        # See Spectral Procession for an example card
+        got = ManaParser.mana.parse("{2}{R} // {4}{W}").unwrap()
+        want = AlternativeMana([[2, Color.RED], [4, Color.WHITE]])
         self.assertEqual(want, got)

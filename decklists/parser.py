@@ -15,7 +15,17 @@
 import dataclasses
 import enum
 
-from parsita import Failure, ParserContext, Success, lit, longest, reg, rep1, rep1sep
+from parsita import (
+    Failure,
+    ParserContext,
+    Success,
+    lit,
+    longest,
+    reg,
+    rep1,
+    rep1sep,
+    repsep,
+)
 from parsita.util import constant
 
 
@@ -45,6 +55,11 @@ class Phyrexian:
     color: Color
 
 
+@dataclasses.dataclass
+class AlternativeMana:
+    content: list
+
+
 Snow = object()
 Colorless = object()
 
@@ -58,4 +73,12 @@ class ManaParser(ParserContext):
     snow = lit("S") > constant(Snow)
     colorless = lit("C") > constant(Colorless)
     mana_inside = integer | color | letter | hybrid | phyrexian | snow | colorless
-    mana = rep1("{" >> mana_inside << "}")
+    mana_with_braces = rep1("{" >> mana_inside << "}")
+    mana = mana_with_braces | (rep1sep(mana_with_braces, " // ") > AlternativeMana)
+
+
+def parse_mana(mana_cost: str):
+    res = ManaParser.mana.parse(mana_cost)
+    if isinstance(res, Success):
+        return res.unwrap()
+    raise ValueError(res.failure())

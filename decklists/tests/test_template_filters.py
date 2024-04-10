@@ -14,7 +14,7 @@
 
 from unittest import TestCase
 
-from decklists.parser import Color, Colorless, Hybrid, Phyrexian, Snow
+from decklists.parser import AlternativeMana, Color, Colorless, Hybrid, Phyrexian, Snow
 from decklists.templatetags.mana import mana
 
 
@@ -67,6 +67,11 @@ class ManaRendererTestCase(TestCase):
     def test_conversion_first(self):
         want = '<i class="ms ms-cost ms-2"></i>'
         got = mana("{2}")
+        self.assertEqual(want, got)
+
+    def test_alternative_mana(self):
+        want = '<i class="ms ms-cost ms-2"></i> // <i class="ms ms-cost ms-r"></i>'
+        got = mana(AlternativeMana([[2], [Color.RED]]))
         self.assertEqual(want, got)
 
     def test_badparse(self):
