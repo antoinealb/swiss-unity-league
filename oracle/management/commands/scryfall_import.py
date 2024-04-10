@@ -23,6 +23,11 @@ from oracle.models import Card
 def is_valid(entry):
     if entry.get("set_type", "") in ["memorabilia"]:
         return False
+
+    # Remove cards that are legal in no formats
+    if not any(v == "legal" for v in entry["legalities"].values()):
+        return False
+
     return True
 
 
