@@ -12,11 +12,16 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from django.urls import include, path
+from django.urls import path
 
 from . import views
 
 urlpatterns = [
     path("<uuid:pk>/", views.DecklistView.as_view(), name="decklist-details"),
     path("<uuid:pk>/edit/", views.DecklistUpdateView.as_view(), name="decklist-update"),
+    path(
+        "collections/<int:pk>/",
+        views.CollectionView.as_view(),
+        name="collection-details",
+    ),
 ]

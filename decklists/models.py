@@ -53,6 +53,9 @@ class Collection(models.Model):
     def decklists_published(self):
         return timezone.now() > self.publication_time
 
+    def get_absolute_url(self):
+        return reverse("collection-details", args=[self.id])
+
 
 def validate_decklist_format(value: str):
     parsed = DecklistParser.deck.parse(value)

@@ -1,0 +1,36 @@
+{% extends "championship/base.html" %}
+
+{% block title %}
+    {{ collection.name }}
+{% endblock %}
+
+{% block content %}
+    <h1>{{ collection.name }}
+        <small class="text-muted">by {{ collection.event.organizer.name }}</small>
+    </h1>
+    <p>Submission deadline: {{ collection.submission_deadline }}</p>
+    <table class="table table-striped">
+        <thead>
+            <tr>
+                <th scope="col">Player</th>
+                <th scope="col">Last modified</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for decklist in decklists %}
+                <tr>
+                    <td>
+                        {% if show_links %}
+                            <a href={{decklist.get_absolute_url}}>{{ decklist.player.name }} ({{ decklist.archetype }})</a>
+                        {% else %}
+                            {{ decklist.player.name }}
+                        {% endif %}
+                    </td>
+                    <td>
+                        {{ decklist.last_modified }}
+                    </td>
+                </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+{% endblock %}

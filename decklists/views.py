@@ -22,7 +22,7 @@ from django.views.generic.edit import UpdateView
 
 from championship.models import Player
 from decklists.forms import DecklistForm
-from decklists.models import Decklist
+from decklists.models import Collection, Decklist
 from decklists.parser import DecklistParser
 from oracle.models import Card
 
@@ -119,3 +119,26 @@ class DecklistUpdateView(PlayerAutoCompleteMixin, UpdateView):
         if not self.event.can_be_edited():
             return HttpResponseForbidden()
         return super().dispatch(request, *args, **kwargs)
+
+
+class CollectionView(DetailView):
+    model = Collection
+    template_name = "decklists/collection_details.html"
+
+    def get_decklists(self):
+        return self.get_object().decklist_set.order_by("player__name", "-last_modified")
+
+    def get_show_links(self):
+        if self.get_object().event.organizer.user == self.request.user:
+            return True
+
+        if self.request.user.has_perm("decklists.view_decklist"):
+            return True
+
+        return self.get_object().decklists_published
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context["decklists"] = self.get_decklists()
+        context["show_links"] = self.get_show_links()
+        return context
