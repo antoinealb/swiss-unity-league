@@ -16,13 +16,12 @@ from django.conf import settings
 from django.contrib import messages
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.http import Http404, HttpResponseRedirect
-from django.views.generic.base import TemplateView
 from django.views.generic.edit import DeleteView
 
 from championship.season import SEASON_LIST, find_season_by_slug
 
 
-class PerSeasonView(TemplateView):
+class PerSeasonMixin:
     default_season = settings.DEFAULT_SEASON
     season_list = SEASON_LIST
 

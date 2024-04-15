@@ -12,12 +12,14 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+from django.views.generic.base import TemplateView
+
 from championship.score import get_leaderboard
 from championship.season import SEASONS_WITH_RANKING
-from championship.views.base import PerSeasonView
+from championship.views.base import PerSeasonMixin
 
 
-class CompleteRankingView(PerSeasonView):
+class CompleteRankingView(PerSeasonMixin, TemplateView):
     template_path = "championship/ranking/{slug}/ranking.html"
     season_view_name = "ranking-by-season"
     season_list = SEASONS_WITH_RANKING
