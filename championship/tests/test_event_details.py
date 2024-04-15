@@ -12,6 +12,10 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+import datetime
+
+from django.contrib.auth.models import User
+from django.core.exceptions import ValidationError
 from django.core.files.uploadedfile import SimpleUploadedFile
 from django.test import Client, TestCase
 from django.urls import reverse
@@ -19,8 +23,14 @@ from django.urls import reverse
 from freezegun import freeze_time
 from parameterized import parameterized
 
-from championship.factories import *
-from championship.models import *
+from championship.factories import (
+    EventFactory,
+    EventOrganizerFactory,
+    EventPlayerResultFactory,
+    RankedEventFactory,
+)
+from championship.models import Event, EventPlayerResult
+from championship.templatetags.custom_tags import initials
 
 
 class EventDetailTestCase(TestCase):
@@ -175,6 +185,25 @@ class EventDetailTestCase(TestCase):
             reverse("event_clear_results", args=[event.id]),
             resp.content.decode(),
         )
+
+    def test_shows_link_to_player_details(self):
+        result = EventPlayerResultFactory()
+        resp = self.client.get(reverse("event_details", args=[result.event.id]))
+        self.assertIn(
+            reverse("player_details", args=[result.player.id]), resp.content.decode()
+        )
+
+    def test_skips_links_if_hidden(self):
+        result = EventPlayerResultFactory()
+        result.player.hidden_from_leaderboard = True
+        result.player.save()
+        resp = self.client.get(reverse("event_details", args=[result.event.id]))
+        self.assertNotIn(
+            reverse("player_details", args=[result.player.id]), resp.content.decode()
+        )
+
+        # The name should be replaced by initials
+        self.assertIn(initials(result.player.name), resp.content.decode())
 
     def test_shows_record(self):
         event = RankedEventFactory()

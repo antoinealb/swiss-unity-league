@@ -16,16 +16,16 @@ from django.urls import reverse
 from django.views.generic import TemplateView
 
 from championship.season import SEASONS_WITH_INFO
-from championship.views.base import PerSeasonView
+from championship.views.base import PerSeasonMixin
 
 
-class InformationForPlayerView(PerSeasonView):
+class InformationForPlayerView(PerSeasonMixin, TemplateView):
     template_path = "championship/info/{slug}/info_player.html"
     season_view_name = "info_for_season"
     season_list = SEASONS_WITH_INFO
 
 
-class InformationForOrganizerView(PerSeasonView):
+class InformationForOrganizerView(PerSeasonMixin, TemplateView):
     template_path = "championship/info/{slug}/info_organizer.html"
     season_view_name = "info_organizer_for_season"
     season_list = SEASONS_WITH_INFO

@@ -13,11 +13,12 @@
 # limitations under the License.
 
 from django.shortcuts import get_object_or_404
+from django.views.generic import DetailView
 
 from championship.models import Event, EventPlayerResult, Player
 from championship.score import get_results_with_qps
 from championship.season import SEASONS_WITH_RANKING
-from championship.views.base import PerSeasonView
+from championship.views.base import PerSeasonMixin
 
 LAST_RESULTS = "last_results"
 TOP_FINISHES = "top_finishes"
@@ -45,16 +46,17 @@ def add_to_table(table, column_title, row_title, value=1):
     tbody.append(new_row)
 
 
-class PlayerDetailsView(PerSeasonView):
+class PlayerDetailsView(PerSeasonMixin, DetailView):
     season_view_name = "player_details_by_season"
     season_list = SEASONS_WITH_RANKING
+    model = Player
+    queryset = Player.objects.exclude(hidden_from_leaderboard=True)
 
     def get_template_names(self):
         return ["championship/player_details.html"]
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        context["player"] = get_object_or_404(Player, pk=self.kwargs["pk"])
 
         results = get_results_with_qps(
             EventPlayerResult.objects.filter(

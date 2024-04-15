@@ -12,13 +12,20 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+from django.contrib.auth.models import User
 from django.test import Client, TestCase
 from django.urls import reverse
+from rest_framework.status import HTTP_404_NOT_FOUND
 
 from parameterized import parameterized
 
-from championship.factories import *
-from championship.models import Event
+from championship.factories import (
+    EventFactory,
+    EventPlayerResultFactory,
+    PlayerFactory,
+    RankedEventFactory,
+)
+from championship.models import Event, EventPlayerResult
 from championship.season import SEASONS_WITH_RANKING
 from championship.views import (
     EVENTS,
@@ -72,6 +79,14 @@ class PlayerDetailsTest(TestCase):
 
         self.assertEqual(gotScore, (10 + 3) * 6)
 
+    def test_404_when_player_is_hidden(self):
+        """
+        Checks that if a player wants to be hidden from leaderboard, we
+        cannot access their profile page."""
+        player = PlayerFactory(hidden_from_leaderboard=True)
+        resp = self.get_player_details_2023(player)
+        self.assertEqual(resp.status_code, HTTP_404_NOT_FOUND)
+
     def test_link_to_event(self):
         """
         Checks that we correctly link to events.
@@ -85,12 +100,12 @@ class PlayerDetailsTest(TestCase):
 
     def test_shows_link_for_admin_page(self):
         credentials = dict(username="test", password="test")
-        user = User.objects.create_user(is_staff=True, **credentials)
+        User.objects.create_user(is_staff=True, **credentials)
         self.client.login(**credentials)
 
         player = PlayerFactory()
         resp = self.get_player_details_2023(player)
-        content = resp.content.decode()
+        resp.content.decode()
         self.assertContains(
             resp,
             reverse("admin:championship_player_change", args=[player.id]),
@@ -114,7 +129,7 @@ class PlayerDetailsTest(TestCase):
     def test_qp_table(self):
         player = PlayerFactory()
         event = EventFactory(category=Event.Category.PREMIER, id=1234)
-        EventPlayerResult.objects.create(
+        EventPlayerResultFactory(
             player=player,
             event=event,
             ranking=1,
@@ -125,7 +140,7 @@ class PlayerDetailsTest(TestCase):
             single_elimination_result=EventPlayerResult.SingleEliminationResult.QUARTER_FINALIST,
         )
         event = EventFactory(category=Event.Category.REGULAR, id=12345)
-        EventPlayerResult.objects.create(
+        EventPlayerResultFactory(
             player=player,
             event=event,
             ranking=1,
