@@ -1,6 +1,7 @@
 {% extends "championship/base.html" %}
 {% load humanize %}
 {% load static %}
+{% load custom_tags %}
 
 {% block title %}
     {{ event.name }}
@@ -105,7 +106,7 @@
                             <td>{{ r.get_ranking_display }}</td>
                             <td>
                                 {% if r.player.hidden_from_leaderboard %}
-                                    {{ r.player_name }}
+                                    {{ r.player_name|initials }}
                                 {% else %}
                                     <a href="{{ r.player.get_absolute_url }}">{{ r.player_name }}</a>
                                 {% endif %}

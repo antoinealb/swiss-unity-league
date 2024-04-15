@@ -12,27 +12,21 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-import re
+from django.test import TestCase
 
-from django import template
+from parameterized import parameterized
 
-register = template.Library()
-
-
-@register.filter(name="range")
-def rangeFilter(value):
-    return range(value)
+from championship.templatetags.custom_tags import initials
 
 
-@register.simple_tag
-def verbose_name(model):
-    return model._meta.verbose_name
-
-
-@register.filter(name="initials")
-def initials(name):
-    components = re.split(r"[\s-]", name)
-    # We keep the first name complete and initial the rest
-    for c in components[1:]:
-        name = name.replace(c, f"{c[0]}.")
-    return name
+class InitialFilterTestCase(TestCase):
+    @parameterized.expand(
+        [
+            ("Antoine Albertelli", "Antoine A."),
+            ("Antoine Renaud-Goud", "Antoine R.-G."),
+            ("Laurin van der Haegen", "Laurin v. d. H."),
+        ]
+    )
+    def test_initial(self, name, want):
+        got = initials(name)
+        self.assertEqual(got, want)

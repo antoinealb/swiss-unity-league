@@ -30,6 +30,7 @@ from championship.factories import (
     RankedEventFactory,
 )
 from championship.models import Event, EventPlayerResult
+from championship.templatetags.custom_tags import initials
 
 
 class EventDetailTestCase(TestCase):
@@ -200,6 +201,9 @@ class EventDetailTestCase(TestCase):
         self.assertNotIn(
             reverse("player_details", args=[result.player.id]), resp.content.decode()
         )
+
+        # The name should be replaced by initials
+        self.assertIn(initials(result.player.name), resp.content.decode())
 
     def test_shows_record(self):
         event = RankedEventFactory()
