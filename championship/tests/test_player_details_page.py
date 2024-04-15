@@ -15,6 +15,7 @@
 from django.contrib.auth.models import User
 from django.test import Client, TestCase
 from django.urls import reverse
+from rest_framework.status import HTTP_404_NOT_FOUND
 
 from parameterized import parameterized
 
@@ -77,6 +78,14 @@ class PlayerDetailsTest(TestCase):
         gotScore = response.context_data[LAST_RESULTS][0][1].qps
 
         self.assertEqual(gotScore, (10 + 3) * 6)
+
+    def test_404_when_player_is_hidden(self):
+        """
+        Checks that if a player wants to be hidden from leaderboard, we
+        cannot access their profile page."""
+        player = PlayerFactory(hidden_from_leaderboard=True)
+        resp = self.get_player_details_2023(player)
+        self.assertEqual(resp.status_code, HTTP_404_NOT_FOUND)
 
     def test_link_to_event(self):
         """

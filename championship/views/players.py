@@ -50,6 +50,7 @@ class PlayerDetailsView(PerSeasonMixin, DetailView):
     season_view_name = "player_details_by_season"
     season_list = SEASONS_WITH_RANKING
     model = Player
+    queryset = Player.objects.exclude(hidden_from_leaderboard=True)
 
     def get_template_names(self):
         return ["championship/player_details.html"]
