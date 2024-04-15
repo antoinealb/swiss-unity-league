@@ -12,6 +12,10 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+import datetime
+
+from django.contrib.auth.models import User
+from django.core.exceptions import ValidationError
 from django.core.files.uploadedfile import SimpleUploadedFile
 from django.test import Client, TestCase
 from django.urls import reverse
@@ -19,8 +23,13 @@ from django.urls import reverse
 from freezegun import freeze_time
 from parameterized import parameterized
 
-from championship.factories import *
-from championship.models import *
+from championship.factories import (
+    EventFactory,
+    EventOrganizerFactory,
+    EventPlayerResultFactory,
+    RankedEventFactory,
+)
+from championship.models import Event, EventPlayerResult
 
 
 class EventDetailTestCase(TestCase):
