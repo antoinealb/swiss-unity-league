@@ -185,6 +185,22 @@ class EventDetailTestCase(TestCase):
             resp.content.decode(),
         )
 
+    def test_shows_link_to_player_details(self):
+        result = EventPlayerResultFactory()
+        resp = self.client.get(reverse("event_details", args=[result.event.id]))
+        self.assertIn(
+            reverse("player_details", args=[result.player.id]), resp.content.decode()
+        )
+
+    def test_skips_links_if_hidden(self):
+        result = EventPlayerResultFactory()
+        result.player.hidden_from_leaderboard = True
+        result.player.save()
+        resp = self.client.get(reverse("event_details", args=[result.event.id]))
+        self.assertNotIn(
+            reverse("player_details", args=[result.player.id]), resp.content.decode()
+        )
+
     def test_shows_record(self):
         event = RankedEventFactory()
         EventPlayerResultFactory(
