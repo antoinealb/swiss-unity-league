@@ -14,8 +14,11 @@
 
 import argparse
 import json
+import logging
 
 from django.core.management.base import BaseCommand
+
+import requests
 
 from oracle.models import Card
 
@@ -40,14 +43,30 @@ class Command(BaseCommand):
             "-s",
             help="Oracle file downloaded from https://scryfall.com/docs/api/bulk-data",
             type=argparse.FileType(),
-            required=True,
         )
 
+    def load_data(self, path):
+        if path:
+            # Unit tests require this to be a string
+            if isinstance(path, str):
+                path = open(path)
+            return json.load(path)
+
+        # if no path was provided, instead fetch it from Scryfall directly
+        logging.info("No local path provided, querying Scryfall")
+        resp = requests.get("https://api.scryfall.com/bulk-data")
+        resp.raise_for_status()
+
+        data = resp.json()["data"]
+
+        url = [s["download_uri"] for s in data if s["type"] == "oracle_cards"][0]
+        data = requests.get(url)
+        data.raise_for_status()
+
+        return data.json()
+
     def handle(self, scryfall_dump, *args, **kwargs):
-        # Unit tests require this to be a string
-        if isinstance(scryfall_dump, str):
-            scryfall_dump = open(scryfall_dump)
-        data = json.load(scryfall_dump)
+        data = self.load_data(scryfall_dump)
 
         Card.objects.all().delete()
 
@@ -63,3 +82,4 @@ class Command(BaseCommand):
             if is_valid(entry)
         ]
         Card.objects.bulk_create(cards)
+        logging.info("Imported %d cards", len(cards))
