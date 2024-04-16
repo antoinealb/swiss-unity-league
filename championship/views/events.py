@@ -40,9 +40,7 @@ class EventDetailsView(DetailView):
         context = super().get_context_data(**kwargs)
         event = context["event"]
         results = get_results_with_qps(
-            EventPlayerResult.objects.filter(event=event).annotate(
-                player_name=F("player__name"),
-            )
+            EventPlayerResult.objects.filter(event=event).select_related("player")
         )
 
         context["can_edit_results"] = (

@@ -106,9 +106,9 @@
                             <td>{{ r.get_ranking_display }}</td>
                             <td>
                                 {% if r.player.hidden_from_leaderboard %}
-                                    {{ r.player_name|initials }}
+                                    {{ r.player.name|initials }}
                                 {% else %}
-                                    <a href="{{ r.player.get_absolute_url }}">{{ r.player_name }}</a>
+                                    <a href="{{ r.player.get_absolute_url }}">{{ r.player.name }}</a>
                                 {% endif %}
                             </td>
                             <td>{{ r.points }}</td>
