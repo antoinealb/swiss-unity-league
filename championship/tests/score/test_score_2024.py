@@ -362,6 +362,26 @@ class TestScoresByes(TestCase):
         want_byes = [1] * 4 + [0] * (num_players - 4)
         self.assertEqual(want_byes, byes)
 
+    def test_reward_byes(self):
+        event = Event2024Factory()
+        top_4_results_with_byes = [
+            EventPlayerResultFactory(event=event, points=1000, ranking=i + 1)
+            for i in range(4)
+        ]
+
+        result5 = EventPlayerResultFactory(
+            points=0,
+            ranking=1,
+            event=event,
+        )
+        byes = [s.byes for s in self.compute_scores().values()]
+        want_byes = [1] * 4 + [0]
+        self.assertEqual(want_byes, byes)
+        SpecialRewardFactory(byes=1, result=result5)
+        byes = [s.byes for s in self.compute_scores().values()]
+        want_byes = [1] * 5
+        self.assertEqual(want_byes, byes)
+
 
 class TestScoresQualified(TestCase):
     def setUp(self):
@@ -424,6 +444,18 @@ class TestScoresQualified(TestCase):
             + [QualificationType.DIRECT]
         )
         self.assertEqual(want_qualified, got_qualified)
+
+    def test_reward_qualifications(self):
+        event = Event2024Factory()
+        result = EventPlayerResultFactory(
+            points=3,
+            ranking=5,
+            event=event,
+        )
+        SpecialRewardFactory(direct_invite=True, result=result)
+        qualifications = [s.qualification_type for s in self.compute_scores().values()]
+        want_qualifications = [QualificationType.DIRECT]
+        self.assertEqual(want_qualifications, qualifications)
 
 
 class TestQualificationReason(TestCase):
