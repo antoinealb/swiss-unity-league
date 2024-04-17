@@ -34,16 +34,43 @@ from invoicing.models import Invoice, PayeeAddress
 from .models import *
 
 
+class SpecialRewardInline(admin.TabularInline):
+    model = SpecialReward
+    extra = 0
+
+
 class ResultInline(admin.TabularInline):
     model = EventPlayerResult
     extra = 0
     ordering = ("-event__date", "-points")
+    exclude = ["migrated_from_points_to_record"]
+    show_change_link = True
 
 
 class PlayerAliasInline(admin.TabularInline):
     model = PlayerAlias
     extra = 1
     ordering = ("name",)
+
+
+class EventPlayerResultAdmin(admin.ModelAdmin):
+    fields = [
+        "player",
+        "event",
+        ("ranking", "points"),
+        ("win_count", "loss_count", "draw_count"),
+        "single_elimination_result",
+    ]
+    search_fields = [
+        "player__name",
+        "event__organizer__name",
+        "event__category",
+        "event__format",
+    ]
+    inlines = [SpecialRewardInline]
+
+
+admin.site.register(EventPlayerResult, EventPlayerResultAdmin)
 
 
 class EventAdmin(admin.ModelAdmin):

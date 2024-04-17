@@ -515,6 +515,18 @@ class EventPlayerResult(models.Model):
         return reverse("single_result_delete", args=[self.pk])
 
 
+class SpecialReward(models.Model):
+    result = models.ForeignKey(EventPlayerResult, on_delete=models.CASCADE)
+    byes = models.PositiveIntegerField(
+        help_text="Number of additional byes the player receives for this result.",
+        default=0,
+    )
+    direct_invite = models.BooleanField(
+        help_text="Whether the player receives a direct invite for this result.",
+        default=False,
+    )
+
+
 if "auditlog" in settings.INSTALLED_APPS:
     from auditlog.registry import auditlog
 
