@@ -155,3 +155,10 @@ class EventPlayerResultFactory(DjangoModelFactory):
     win_count = factory.Faker("random_int", min=0, max=3)
     loss_count = factory.Faker("random_int", min=0, max=3)
     draw_count = factory.Faker("random_int", min=0, max=3)
+
+
+class SpecialRewardFactory(DjangoModelFactory):
+    class Meta:
+        model = SpecialReward
+
+    result = factory.SubFactory(EventPlayerResultFactory)

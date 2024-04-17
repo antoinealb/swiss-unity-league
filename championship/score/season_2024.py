@@ -15,7 +15,7 @@
 import datetime
 from dataclasses import dataclass
 
-from championship.models import Count, Event, EventPlayerResult
+from championship.models import Count, Event, EventPlayerResult, SpecialReward
 from championship.score.types import LeaderboardScore, QualificationType
 from championship.season import SEASON_2024
 
@@ -69,6 +69,9 @@ class ScoreMethod2024:
     ]
     TOTAL_QUALIFICATION_SLOTS = 40
     MIN_PLAYERS_FOR_DIRECT_QUALIFICATION = 40
+    DIRECT_QUALIFICATION_REASON = template = (
+        "Direct qualification for {ranking} place at '{event_name}'"
+    )
 
     @classmethod
     def _qps_for_result(
@@ -150,9 +153,24 @@ class ScoreMethod2024:
             for result in sorted(event.eventplayerresult_set.all()):
                 if result.player_id not in direct_qualification_reasons_by_player:
                     direct_qualification_reasons_by_player[result.player_id] = (
-                        f"Direct qualification for {result.get_ranking_display()} place at '{event.name}'"
+                        cls.DIRECT_QUALIFICATION_REASON.format(
+                            ranking=result.get_ranking_display(), event_name=event.name
+                        )
                     )
                     break
+
+        rewards = SpecialReward.objects.filter(
+            result__event__date__gte=SEASON_2024.start_date,
+            result__event__date__lte=SEASON_2024.end_date,
+        ).select_related("result", "result__event")
+        for reward in rewards:
+            if reward.direct_invite:
+                direct_qualification_reasons_by_player[reward.result.player_id] = (
+                    cls.DIRECT_QUALIFICATION_REASON.format(
+                        ranking=reward.result.get_ranking_display(),
+                        event_name=reward.result.event.name,
+                    )
+                )
 
         if SEASON_2024.can_enter_results(datetime.date.today()):
             leaderboard_reason = "This place qualifies for the SUL Invitational tournament at the end of the Season"
@@ -168,7 +186,11 @@ class ScoreMethod2024:
         scores = {}
         for i, (player_id, score) in enumerate(sorted_scores):
             rank = i + 1
-            byes = cls._byes_for_rank(rank) + score.byes
+            byes = (
+                cls._byes_for_rank(rank)
+                + score.byes
+                + sum([r.byes for r in rewards if r.result.player_id == player_id])
+            )
             byes = min(byes, cls.MAX_BYES)
 
             scores[player_id] = LeaderboardScore(
