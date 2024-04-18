@@ -24,6 +24,9 @@ COPY . /app
 
 RUN /app/manage.py collectstatic --no-input
 
+# Update Oracle cards from scryfall
+RUN /app/manage.py migrate --database oracle && /app/manage.py scryfall_import
+
 # HTTP endpoint
 EXPOSE 8000
 

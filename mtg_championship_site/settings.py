@@ -92,6 +92,7 @@ INSTALLED_APPS = [
     "invoicing",
     "file_storage_db",
     "api",
+    "oracle",
     "django.contrib.admin",
     "django.contrib.auth",
     "django.contrib.contenttypes",
@@ -168,8 +169,19 @@ DATABASES = {
     "default": {
         "ENGINE": "django.db.backends.sqlite3",
         "NAME": db_path,
-    }
+        "TEST": {
+            "DEPENDENCIES": [],
+        },
+    },
+    "oracle": {
+        "ENGINE": "django.db.backends.sqlite3",
+        "NAME": os.path.join(BASE_DIR, "oracle.sqlite3"),
+        "TEST": {
+            "DEPENDENCIES": [],
+        },
+    },
 }
+DATABASE_ROUTERS = ["oracle.db_routers.OracleRouter"]
 
 
 # Password validation
