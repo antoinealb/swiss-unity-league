@@ -93,6 +93,7 @@ INSTALLED_APPS = [
     "file_storage_db",
     "api",
     "oracle",
+    "decklists",
     "django.contrib.admin",
     "django.contrib.auth",
     "django.contrib.contenttypes",
