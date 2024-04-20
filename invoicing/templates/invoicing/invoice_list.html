@@ -6,31 +6,32 @@
 
 {% block content %}
     <h1>My invoices</h1>
-
-    <table class="table table-striped">
-        <thead>
-            <tr>
-                <th scope="col">Reference</th>
-                <th scope="col">Payment Received</th>
-                <th scope="col">Amount</th>
-                <th scope="col">Start Date</th>
-                <th scope="col">End Date</th>
-                <th scope="col">Invoice</th>
-            </tr>
-        </thead>
-        <tbody>
-            {% for invoice in object_list %}
+    <div class="table-responsive">
+        <table class="table table-striped">
+            <thead>
                 <tr>
-                    <td>{{ invoice.reference }}</td>
-                    <td>{% if invoice.is_paid %}✅{% else %}❌{% endif %}</td>
-                    <td>{{ invoice.total_amount }} CHF</td>
-                    <td>{{ invoice.start_date|date:"d.n.Y" }}</td>
-                    <td>{{ invoice.end_date|date:"d.n.Y" }}</td>
-                    <td><a href="{{ invoice.get_absolute_url }}">Download</a></td>
+                    <th scope="col">Reference</th>
+                    <th scope="col">Payment Received</th>
+                    <th scope="col">Amount</th>
+                    <th scope="col">Start Date</th>
+                    <th scope="col">End Date</th>
+                    <th scope="col">Invoice</th>
                 </tr>
-            {% endfor %}
-        </tbody>
-    </table>
+            </thead>
+            <tbody>
+                {% for invoice in object_list %}
+                    <tr>
+                        <td>{{ invoice.reference }}</td>
+                        <td>{% if invoice.is_paid %}✅{% else %}❌{% endif %}</td>
+                        <td>{{ invoice.total_amount }} CHF</td>
+                        <td>{{ invoice.start_date|date:"d.n.Y" }}</td>
+                        <td>{{ invoice.end_date|date:"d.n.Y" }}</td>
+                        <td><a href="{{ invoice.get_absolute_url }}">Download</a></td>
+                    </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
 
 
 {% endblock %}
