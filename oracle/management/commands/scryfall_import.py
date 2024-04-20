@@ -20,6 +20,7 @@ from django.core.management.base import BaseCommand
 
 import requests
 
+from decklists.parser import parse_mana
 from oracle.models import Card
 
 
@@ -83,3 +84,18 @@ class Command(BaseCommand):
         ]
         Card.objects.bulk_create(cards)
         logging.info("Imported %d cards", len(cards))
+
+        invalid_mana_costs = set()
+        for card in cards:
+            if not card.mana_cost:
+                continue
+            try:
+                parse_mana(card.mana_cost)
+            except ValueError:
+                invalid_mana_costs.add(card.mana_cost)
+                logging.warning(f"Could not parse mana cost for '{card.name}'")
+
+        if invalid_mana_costs:
+            logging.warning("The following mana cost did not parse succesfully:")
+            for c in sorted(invalid_mana_costs):
+                logging.warning(c)
