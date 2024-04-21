@@ -1,0 +1,36 @@
+{% extends "championship/base.html" %}
+{% load mana %}
+
+{% block title %}
+    {{ decklist.archetype }} by {{ decklist.player.name }}
+{% endblock %}
+
+{% block extrahead %}
+    <link href="//cdn.jsdelivr.net/npm/mana-font@latest/css/mana.min.css" rel="stylesheet" type="text/css" />
+{% endblock %}
+
+{% block content %}
+    <h1>{{ decklist.archetype}}
+        <small class="text-muted">by {{decklist.player.name}}</small>
+    </h1>
+    <p>Last edit: {{ decklist.last_modified }}</p>
+
+    {% if decklist.can_be_edited %}
+        <p><a href="{% url 'decklist-update' decklist.id %}" class="btn btn-secondary">Edit decklist</a></p>
+    {% endif %}
+    {% if errors %}
+        <br>
+        {% for error in errors %}
+            <div class="alert alert-warning" role="alert">
+                {{ error }}
+            </div>
+        {% endfor %}
+    {% endif %}
+
+
+    <h3>Mainboard</h3>
+    {% include "decklists/deck_section.html" with content=mainboard %}
+
+    <h3>Sideboard</h3>
+    {% include "decklists/deck_section.html" with content=sideboard %}
+{% endblock %}

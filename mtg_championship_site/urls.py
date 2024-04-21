@@ -35,6 +35,7 @@ urlpatterns = [
     path("", include("championship.urls")),
     path("api/", include("api.urls")),
     path("invoicing/", include("invoicing.urls")),
+    path("decklists/", include("decklists.urls")),
     path("admin/", admin.site.urls),
     path("accounts/", include("django.contrib.auth.urls")),
     path("", include("django_prometheus.urls")),

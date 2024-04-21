@@ -14,10 +14,15 @@
 
 import uuid
 
+from django.core.validators import ValidationError
 from django.db import models
-from django.utils.timezone import now
+from django.urls import reverse
+from django.utils import timezone
+
+from parsita import Failure
 
 from championship.models import Event, Player
+from decklists.parser import DecklistParser
 
 
 class Collection(models.Model):
@@ -46,7 +51,16 @@ class Collection(models.Model):
 
     @property
     def decklists_published(self):
-        return now() > self.publication_time
+        return timezone.now() > self.publication_time
+
+    def get_absolute_url(self):
+        return reverse("collection-details", args=[self.id])
+
+
+def validate_decklist_format(value: str):
+    parsed = DecklistParser.deck.parse(value)
+    if isinstance(parsed, Failure):
+        raise ValidationError(f"Invalid decklist: {parsed}")
 
 
 class Decklist(models.Model):
@@ -64,11 +78,19 @@ class Decklist(models.Model):
         help_text="Last modification timestamp.", auto_now=True
     )
     mainboard = models.TextField(
-        help_text="Content of the main deck, one entry per line (e.g. 4 Brainstorm)"
+        help_text="Content of the main deck, one entry per line (e.g. 4 Brainstorm)",
+        validators=[validate_decklist_format],
     )
     sideboard = models.TextField(
-        help_text="Content of the sideboard, also one entry per line"
+        help_text="Content of the sideboard, also one entry per line",
+        validators=[validate_decklist_format],
     )
 
     def __str__(self) -> str:
         return f"{self.player.name} ({self.archetype})"
+
+    def can_be_edited(self) -> bool:
+        return timezone.now() < self.collection.submission_deadline
+
+    def get_absolute_url(self):
+        return reverse("decklist-details", args=[self.id])

@@ -1,0 +1,23 @@
+{% extends "championship/base.html" %}
+
+{% load crispy_forms_tags %}
+
+{% block extrahead %}
+    {{ form.media }}
+{% endblock %}
+
+{% block content %}
+    <h1>Edit Decklist</h1>
+    <p>Last edit: {{ object.last_modified }}</p>
+    <form method="post" enctype="multipart/form-data">
+        {% csrf_token %}
+        {{ form|crispy }}
+        <button type="submit" value="Submit" class="btn btn-secondary">Save</button>
+    </form>
+
+    <datalist id="players-datalist">
+        {% for p in players %}
+            <option value="{{ p.name }}">
+        {% endfor %}
+    </datalist>
+{% endblock %}

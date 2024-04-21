@@ -1,0 +1,12 @@
+{% load mana %}
+<ul>
+    {% for entry in content %}
+        <li>{{ entry.qty }}
+            {% if entry.scryfall_uri %}
+                <a href="{{ entry.scryfall_uri }}">{{ entry.name }}</a>
+            {% else %}
+                {{ entry.name }}
+            {% endif %} {{ entry.mana_cost|mana }}</li>
+
+    {% endfor %}
+</ul>
