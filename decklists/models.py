@@ -49,6 +49,9 @@ class Collection(models.Model):
     def __str__(self) -> str:
         return f"{self.name} (by {self.event.organizer.name})"
 
+    def is_past_deadline(self):
+        return timezone.now() > self.submission_deadline
+
     @property
     def decklists_published(self):
         return timezone.now() > self.publication_time
@@ -90,7 +93,7 @@ class Decklist(models.Model):
         return f"{self.player.name} ({self.archetype})"
 
     def can_be_edited(self) -> bool:
-        return timezone.now() < self.collection.submission_deadline
+        return not self.collection.is_past_deadline()
 
     def get_absolute_url(self):
         return reverse("decklist-details", args=[self.id])

@@ -12,7 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from django.test import Client, TestCase
+from django.test import TestCase
 from django.urls import reverse
 from django.utils import timezone
 from rest_framework.status import HTTP_403_FORBIDDEN
@@ -20,6 +20,7 @@ from rest_framework.status import HTTP_403_FORBIDDEN
 from championship.factories import PlayerFactory
 from championship.models import Player
 from decklists.factories import CollectionFactory, DecklistFactory
+from decklists.models import Decklist
 
 
 class DecklistEdit(TestCase):
@@ -78,3 +79,28 @@ class DecklistEdit(TestCase):
         decklist = DecklistFactory()
         resp = self.client.get(reverse("decklist-update", args=[decklist.id]))
         self.assertEqual([decklist.player], list(resp.context["players"]))
+
+
+class DecklistCreate(TestCase):
+    data = {
+        "player_name": "Antoine Albertelli",
+        "archetype": "new",
+        "mainboard": "1 Fog",
+        "sideboard": "1 Fly",
+    }
+
+    def setUp(self):
+        self.collection = CollectionFactory()
+        self.url = reverse("decklist-create") + f"?collection={self.collection.id}"
+
+    def test_create(self):
+        self.client.post(self.url, data=self.data)
+        d = Decklist.objects.get(player__name="Antoine Albertelli")
+        self.assertEqual(d.archetype, "new")
+        self.assertEqual(d.collection, self.collection)
+
+    def test_create_past_deadline(self):
+        self.collection.submission_deadline = timezone.now()
+        self.collection.save()
+        self.client.post(self.url, data=self.data)
+        self.assertFalse(Decklist.objects.exists())

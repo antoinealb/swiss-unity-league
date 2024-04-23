@@ -9,6 +9,9 @@
         <small class="text-muted">by {{ collection.event.organizer.name }}</small>
     </h1>
     <p>Submission deadline: {{ collection.submission_deadline }}</p>
+    {% if not collection.is_past_deadline %}
+        <p><a href="{% url 'decklist-create' %}?collection={{ collection.id }}" class="btn btn-secondary-light">Submit decklist</a></p>
+    {% endif %}
     <table class="table table-striped">
         <thead>
             <tr>

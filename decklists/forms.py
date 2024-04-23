@@ -33,9 +33,17 @@ class DecklistForm(forms.ModelForm):
     )
 
     def __init__(self, *args, **kwargs):
+        try:
+            self.collection = kwargs.pop("collection")
+        except KeyError:
+            self.collection = None
+
         super().__init__(*args, **kwargs)
         if self.instance:
-            self.fields["player_name"].initial = self.instance.player.name
+            try:
+                self.fields["player_name"].initial = self.instance.player.name
+            except Decklist.player.RelatedObjectDoesNotExist:
+                pass
 
         self.fields["archetype"].widget.attrs["placeholder"] = "E.g. 'Burn'"
         self.fields["mainboard"].widget.attrs["placeholder"] = (
@@ -58,6 +66,9 @@ class DecklistForm(forms.ModelForm):
         except Player.DoesNotExist:
             player = Player.objects.create(name=name)
         instance.player = player
+
+        if self.collection:
+            instance.collection = self.collection
 
         if commit:
             instance.save()

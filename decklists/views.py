@@ -18,7 +18,7 @@ from typing import TypeAlias
 
 from django.http import HttpResponseForbidden
 from django.views.generic import DetailView
-from django.views.generic.edit import UpdateView
+from django.views.generic.edit import CreateView, UpdateView
 
 from championship.models import Player
 from decklists.forms import DecklistForm
@@ -115,10 +115,31 @@ class DecklistUpdateView(PlayerAutoCompleteMixin, UpdateView):
     template_name = "decklists/decklist_edit.html"
 
     def dispatch(self, request, *args, **kwargs):
-        self.event = self.get_object()
-        if not self.event.can_be_edited():
+        decklist = self.get_object()
+        if not decklist.can_be_edited():
             return HttpResponseForbidden()
         return super().dispatch(request, *args, **kwargs)
+
+
+class DecklistCreateView(CreateView):
+    model = Decklist
+    form_class = DecklistForm
+    template_name = "decklists/decklist_edit.html"
+
+    def get_collection(self) -> Collection:
+        collection_pk = self.request.GET["collection"]
+        return Collection.objects.get(pk=collection_pk)
+
+    def dispatch(self, request, *args, **kwargs):
+        if self.get_collection().is_past_deadline():
+            return HttpResponseForbidden()
+        return super().dispatch(request, *args, **kwargs)
+
+    def get_form_kwargs(self, *args, **kwargs):
+        res = super().get_form_kwargs(*args, **kwargs)
+        res["collection"] = self.get_collection()
+
+        return res
 
 
 class CollectionView(DetailView):
