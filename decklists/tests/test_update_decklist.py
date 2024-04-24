@@ -15,7 +15,7 @@
 from django.test import TestCase
 from django.urls import reverse
 from django.utils import timezone
-from rest_framework.status import HTTP_403_FORBIDDEN
+from rest_framework.status import HTTP_302_FOUND
 
 from championship.factories import PlayerFactory
 from championship.models import Player
@@ -30,7 +30,7 @@ class DecklistEdit(TestCase):
         )
         decklist = DecklistFactory(collection=collection)
         resp = self.client.post(reverse("decklist-update", args=[decklist.id]))
-        self.assertEqual(HTTP_403_FORBIDDEN, resp.status_code)
+        self.assertRedirects(resp, reverse("decklist-details", args=[decklist.id]))
 
     def test_can_change_decklist_archetype_and_sideboard(self):
         decklist = DecklistFactory()
@@ -102,5 +102,8 @@ class DecklistCreate(TestCase):
     def test_create_past_deadline(self):
         self.collection.submission_deadline = timezone.now()
         self.collection.save()
-        self.client.post(self.url, data=self.data)
+        resp = self.client.post(self.url, data=self.data)
+        self.assertRedirects(
+            resp, reverse("collection-details", args=[self.collection.id])
+        )
         self.assertFalse(Decklist.objects.exists())

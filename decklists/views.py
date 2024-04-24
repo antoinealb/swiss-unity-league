@@ -16,7 +16,11 @@ import dataclasses
 from collections.abc import Iterable
 from typing import TypeAlias
 
+from django.contrib import messages
+from django.contrib.messages.views import SuccessMessageMixin
 from django.http import HttpResponseForbidden
+from django.shortcuts import redirect
+from django.urls import reverse
 from django.views.generic import DetailView
 from django.views.generic.edit import CreateView, UpdateView
 
@@ -109,22 +113,28 @@ class PlayerAutoCompleteMixin:
         return context
 
 
-class DecklistUpdateView(PlayerAutoCompleteMixin, UpdateView):
+class DecklistUpdateView(PlayerAutoCompleteMixin, SuccessMessageMixin, UpdateView):
     model = Decklist
     form_class = DecklistForm
     template_name = "decklists/decklist_edit.html"
+    success_message = "Decklist was saved succesfully."
 
     def dispatch(self, request, *args, **kwargs):
         decklist = self.get_object()
         if not decklist.can_be_edited():
-            return HttpResponseForbidden()
+            messages.error(
+                request,
+                "This decklist cannot be edited because you are past the submission deadline.",
+            )
+            return redirect(reverse("decklist-details", args=[decklist.id]))
         return super().dispatch(request, *args, **kwargs)
 
 
-class DecklistCreateView(CreateView):
+class DecklistCreateView(SuccessMessageMixin, CreateView):
     model = Decklist
     form_class = DecklistForm
     template_name = "decklists/decklist_edit.html"
+    success_message = "Decklist was saved succesfully."
 
     def get_collection(self) -> Collection:
         collection_pk = self.request.GET["collection"]
@@ -132,7 +142,14 @@ class DecklistCreateView(CreateView):
 
     def dispatch(self, request, *args, **kwargs):
         if self.get_collection().is_past_deadline():
-            return HttpResponseForbidden()
+            messages.error(
+                request,
+                "This decklist cannot be created because you are past the submission deadline.",
+            )
+
+            return redirect(
+                reverse("collection-details", args=[self.get_collection().id])
+            )
         return super().dispatch(request, *args, **kwargs)
 
     def get_form_kwargs(self, *args, **kwargs):
