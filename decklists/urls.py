@@ -17,6 +17,7 @@ from django.urls import path
 from . import views
 
 urlpatterns = [
+    path("create/", views.DecklistCreateView.as_view(), name="decklist-create"),
     path("<uuid:pk>/", views.DecklistView.as_view(), name="decklist-details"),
     path("<uuid:pk>/edit/", views.DecklistUpdateView.as_view(), name="decklist-update"),
     path(

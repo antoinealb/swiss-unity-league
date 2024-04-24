@@ -12,8 +12,6 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from textwrap import dedent
-
 from django import forms
 
 from championship.models import Player
@@ -33,21 +31,23 @@ class DecklistForm(forms.ModelForm):
     )
 
     def __init__(self, *args, **kwargs):
+        try:
+            self.collection = kwargs.pop("collection")
+        except KeyError:
+            self.collection = None
+
         super().__init__(*args, **kwargs)
         if self.instance:
-            self.fields["player_name"].initial = self.instance.player.name
+            try:
+                self.fields["player_name"].initial = self.instance.player.name
+            except Decklist.player.RelatedObjectDoesNotExist:
+                pass
 
         self.fields["archetype"].widget.attrs["placeholder"] = "E.g. 'Burn'"
-        self.fields["mainboard"].widget.attrs["placeholder"] = (
-            "One card per line with quantity, e.g.\n"
-            "4 Brainstorm\n"
-            "2 Counterbalance\n"
-        )
-        self.fields["sideboard"].widget.attrs["placeholder"] = (
-            "One card per line with quantity, e.g.\n"
-            "4 Surgical Extraction\n\n"
-            "If you use extra decks, such as attractions, add them here as well."
-        )
+        self.fields["mainboard"].widget.attrs["placeholder"] = "e.g. 4 Brainstorm"
+        self.fields["sideboard"].widget.attrs[
+            "placeholder"
+        ] = "e.g. 4 Surgical Extraction"
 
     def save(self, commit=True):
         instance = super().save(commit=False)
@@ -58,6 +58,9 @@ class DecklistForm(forms.ModelForm):
         except Player.DoesNotExist:
             player = Player.objects.create(name=name)
         instance.player = player
+
+        if self.collection:
+            instance.collection = self.collection
 
         if commit:
             instance.save()
