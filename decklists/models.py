@@ -85,7 +85,10 @@ class Decklist(models.Model):
         validators=[validate_decklist_format],
     )
     sideboard = models.TextField(
-        help_text="Content of the sideboard, also one entry per line",
+        help_text=(
+            "Content of the sideboard, also one entry per line."
+            " If you use extra decks, such as attractions, add them here as well."
+        ),
         validators=[validate_decklist_format],
     )
 

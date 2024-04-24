@@ -38,7 +38,7 @@ class Migration(migrations.Migration):
             model_name="decklist",
             name="sideboard",
             field=models.TextField(
-                help_text="Content of the sideboard, also one entry per line",
+                help_text="Content of the sideboard, also one entry per line. If you use extra decks, such as attractions, add them here as well.",
                 validators=[decklists.models.validate_decklist_format],
             ),
         ),

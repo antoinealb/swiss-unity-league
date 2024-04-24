@@ -12,8 +12,6 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from textwrap import dedent
-
 from django import forms
 
 from championship.models import Player
@@ -46,16 +44,10 @@ class DecklistForm(forms.ModelForm):
                 pass
 
         self.fields["archetype"].widget.attrs["placeholder"] = "E.g. 'Burn'"
-        self.fields["mainboard"].widget.attrs["placeholder"] = (
-            "One card per line with quantity, e.g.\n"
-            "4 Brainstorm\n"
-            "2 Counterbalance\n"
-        )
-        self.fields["sideboard"].widget.attrs["placeholder"] = (
-            "One card per line with quantity, e.g.\n"
-            "4 Surgical Extraction\n\n"
-            "If you use extra decks, such as attractions, add them here as well."
-        )
+        self.fields["mainboard"].widget.attrs["placeholder"] = "e.g. 4 Brainstorm"
+        self.fields["sideboard"].widget.attrs[
+            "placeholder"
+        ] = "e.g. 4 Surgical Extraction"
 
     def save(self, commit=True):
         instance = super().save(commit=False)
