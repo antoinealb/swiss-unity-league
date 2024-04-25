@@ -21,6 +21,8 @@ from decklists.factories import CollectionFactory, DecklistFactory
 
 
 class DecklistViewTestCase(TestCase):
+    databases = ["oracle", "default"]
+
     def setUp(self):
         self.client = Client()
 
@@ -44,3 +46,13 @@ class DecklistViewTestCase(TestCase):
         url = reverse("decklist-update", args=[decklist.id])
         resp = self.client.get(reverse("decklist-details", args=[decklist.id]))
         self.assertNotIn(url, resp.content.decode())
+
+    def test_card_counter(self):
+        decklist = DecklistFactory(archetype="Burn")
+        decklist.mainboard = "4 Thalia, Guardian of Thraben\n3Plains"
+        decklist.sideboard = "2 Path to Exile"
+        decklist.save()
+
+        resp = self.client.get(reverse("decklist-details", args=[decklist.id]))
+        self.assertIn("7 cards", resp.content.decode(), "Missing mainboard counter")
+        self.assertIn("2 cards", resp.content.decode(), "Missing sideboard counter")

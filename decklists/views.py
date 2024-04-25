@@ -103,6 +103,9 @@ class DecklistView(DetailView):
         context["sideboard"] = sideboard
         context["errors"] += errors
 
+        context["mainboard_total"] = sum(c.qty for c in mainboard)
+        context["sideboard_total"] = sum(c.qty for c in sideboard)
+
         return context
 
 

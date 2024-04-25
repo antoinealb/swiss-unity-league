@@ -29,8 +29,10 @@
 
 
     <h3>Mainboard</h3>
+    <p><b>{{ mainboard_total }} cards</b></p>
     {% include "decklists/deck_section.html" with content=mainboard %}
 
     <h3>Sideboard</h3>
+    <p><b>{{ sideboard_total }} cards</b></p>
     {% include "decklists/deck_section.html" with content=sideboard %}
 {% endblock %}
