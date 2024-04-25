@@ -18,7 +18,6 @@ from typing import TypeAlias
 
 from django.contrib import messages
 from django.contrib.messages.views import SuccessMessageMixin
-from django.http import HttpResponseForbidden
 from django.shortcuts import redirect
 from django.urls import reverse
 from django.views.generic import DetailView
@@ -75,6 +74,31 @@ def annotate_card_attributes(
     return result, errors
 
 
+def parse_decklist(content: str) -> (list[DecklistEntry], list[DecklistError]):
+    entries = DecklistParser.deck.parse(content).unwrap()
+    entries = [tuple(line) for line in entries]
+    entries = [DecklistEntry(qty, card) for (qty, card) in entries]
+    return entries, []
+
+
+def sort_decklist(
+    entries: Iterable[DecklistEntry],
+) -> (list[DecklistEntry], list[DecklistError]):
+    key = lambda c: (c.mana_value, c.name)
+    return sorted(entries, key=key), []
+
+
+def pipe_filters(filters, entries) -> (list[DecklistEntry], list[DecklistError]):
+    result = entries
+    errors = []
+
+    for f in filters:
+        result, err = f(result)
+        errors += err
+
+    return result, errors
+
+
 class DecklistView(DetailView):
     model = Decklist
     template_name = "decklists/decklist_details.html"
@@ -83,25 +107,24 @@ class DecklistView(DetailView):
     def get_context_data(self, *args, **kwargs):
         context = super().get_context_data(*args, **kwargs)
 
-        # TODO: Error handling
-        # TODO: Pipeline all the steps
-        mainboard = DecklistParser.deck.parse(context["decklist"].mainboard).unwrap()
-        mainboard = [tuple(line) for line in mainboard]
-        mainboard = [DecklistEntry(qty, card) for (qty, card) in mainboard]
-        mainboard, _ = normalize_decklist(mainboard)
-        mainboard, errors = annotate_card_attributes(mainboard)
+        all_filters = [
+            parse_decklist,
+            normalize_decklist,
+            annotate_card_attributes,
+            sort_decklist,
+        ]
+
+        mainboard, errors_main = pipe_filters(
+            all_filters, context["decklist"].mainboard
+        )
+        sideboard, errors_side = pipe_filters(
+            all_filters, context["decklist"].sideboard
+        )
 
         context["mainboard"] = mainboard
-        context["errors"] = errors
-
-        sideboard = DecklistParser.deck.parse(context["decklist"].sideboard).unwrap()
-        sideboard = [tuple(line) for line in sideboard]
-        sideboard = [DecklistEntry(qty, card) for (qty, card) in sideboard]
-        sideboard, _ = normalize_decklist(sideboard)
-        sideboard, errors = annotate_card_attributes(sideboard)
-
         context["sideboard"] = sideboard
-        context["errors"] += errors
+
+        context["errors"] = errors_main + errors_side
 
         context["mainboard_total"] = sum(c.qty for c in mainboard)
         context["sideboard_total"] = sum(c.qty for c in sideboard)

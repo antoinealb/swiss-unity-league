@@ -18,6 +18,7 @@ from django.utils import timezone
 from rest_framework.status import HTTP_200_OK
 
 from decklists.factories import CollectionFactory, DecklistFactory
+from oracle.factories import CardFactory
 
 
 class DecklistViewTestCase(TestCase):
@@ -56,3 +57,12 @@ class DecklistViewTestCase(TestCase):
         resp = self.client.get(reverse("decklist-details", args=[decklist.id]))
         self.assertIn("7 cards", resp.content.decode(), "Missing mainboard counter")
         self.assertIn("2 cards", resp.content.decode(), "Missing sideboard counter")
+
+    def test_cards_are_sorted_by_mana_value(self):
+        c1 = CardFactory(mana_value=1)
+        c2 = CardFactory(mana_value=2)
+        decklist = DecklistFactory(mainboard=f"4 {c2.name}\n4 {c1.name}")
+        resp = self.client.get(reverse("decklist-details", args=[decklist.id]))
+        want = [c1.name, c2.name]
+        got = [c.name for c in resp.context["mainboard"]]
+        self.assertEqual(want, got)
