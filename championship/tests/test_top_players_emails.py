@@ -13,13 +13,11 @@
 # limitations under the License.
 
 from django.test import Client, TestCase
-from django.test.utils import override_settings
 from django.urls import reverse
 
 from championship.factories import *
 
 
-@override_settings(DEFAULT_SEASON=SEASON_2023)
 class TopPlayersEmailViewTest(TestCase):
     def setUp(self):
         self.client = Client()
