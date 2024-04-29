@@ -44,7 +44,19 @@ class ResultInline(admin.TabularInline):
     model = EventPlayerResult
     extra = 0
     ordering = ("-event__date", "-points")
-    exclude = ["migrated_from_points_to_record"]
+    fields = [
+        "player",
+        "event",
+        "ranking",
+        "single_elimination_result",
+        "points",
+        "win_count",
+        "loss_count",
+        "draw_count",
+        "deck_name",
+        "decklist_url",
+    ]
+    readonly_fields = ["player", "event"]
     show_change_link = True
 
 
