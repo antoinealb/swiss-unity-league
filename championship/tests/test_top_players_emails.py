@@ -40,7 +40,9 @@ class TopPlayersEmailViewTest(TestCase):
         self.assertEqual(response.status_code, 302)
 
     def test_post_method(self):
-        response = self.client.post(self.url, {"num_of_players": 2})
+        response = self.client.post(
+            self.url, {"num_of_players": 2, "season": SEASON_2023.slug}
+        )
 
         # Check that the status code is 200 (success)
         self.assertEqual(response.status_code, 200)
@@ -55,13 +57,17 @@ class TopPlayersEmailViewTest(TestCase):
     def test_hidden_from_leaderboard(self):
         player = PlayerFactory()
         EventPlayerResultFactory(event=self.event, points=100, player=player)
-        response = self.client.post(self.url, {"num_of_players": 4})
+        response = self.client.post(
+            self.url, {"num_of_players": 4, "season": SEASON_2023.slug}
+        )
 
         # Check that first all players are returned
         self.assertEqual(len(response.context["entries"]), 4)
         player.hidden_from_leaderboard = True
         player.save()
 
-        response = self.client.post(self.url, {"num_of_players": 4})
+        response = self.client.post(
+            self.url, {"num_of_players": 4, "season": SEASON_2023.slug}
+        )
         # Check that hidden players are not returned
         self.assertEqual(len(response.context["entries"]), 3)

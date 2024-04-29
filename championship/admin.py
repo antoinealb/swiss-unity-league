@@ -29,6 +29,7 @@ import openpyxl
 
 from championship import views
 from championship.score import get_leaderboard
+from championship.season import SEASONS_WITH_RANKING, find_season_by_slug
 from invoicing.models import Invoice, PayeeAddress
 
 from .models import *
@@ -104,7 +105,11 @@ class PlayerMergeForm(forms.Form):
 
 
 class TopPlayersEmailForm(forms.Form):
-    num_of_players = forms.IntegerField(initial=32, min_value=1)
+    num_of_players = forms.IntegerField(initial=40, min_value=1)
+    season = forms.ChoiceField(
+        choices=[(s.slug, s.name) for s in SEASONS_WITH_RANKING],
+        initial=settings.DEFAULT_SEASON,
+    )
 
 
 class EventfrogFileUploadForm(forms.Form):
@@ -142,8 +147,8 @@ class PlayerAdmin(admin.ModelAdmin):
         context = {"form": form}
         if request.method == "POST" and form.is_valid():
             num_of_players = form.cleaned_data["num_of_players"]
-            # TODO: Expose other seasons here
-            top_players = get_leaderboard(settings.DEFAULT_SEASON)[:num_of_players]
+            season = find_season_by_slug(form.cleaned_data["season"])
+            top_players = get_leaderboard(season)[:num_of_players]
             entries = [
                 {
                     "rank": i + 1,
