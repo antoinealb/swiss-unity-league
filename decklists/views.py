@@ -84,7 +84,7 @@ def parse_decklist(content: str) -> (list[DecklistEntry], list[DecklistError]):
 def sort_decklist(
     entries: Iterable[DecklistEntry],
 ) -> (list[DecklistEntry], list[DecklistError]):
-    key = lambda c: (c.mana_value, c.name)
+    key = lambda c: (c.mana_value is None, c.mana_value, c.name)
     return sorted(entries, key=key), []
 
 

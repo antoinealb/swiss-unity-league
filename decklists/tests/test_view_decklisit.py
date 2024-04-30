@@ -66,3 +66,9 @@ class DecklistViewTestCase(TestCase):
         want = [c1.name, c2.name]
         got = [c.name for c in resp.context["mainboard"]]
         self.assertEqual(want, got)
+
+    def test_cards_are_sorted_unknown_card(self):
+        c1 = CardFactory(mana_value=1)
+        decklist = DecklistFactory(mainboard=f"4 {c1.name}\n4 Fooburb")
+        resp = self.client.get(reverse("decklist-details", args=[decklist.id]))
+        self.assertEqual(resp.context["mainboard"][0].name, c1.name)
