@@ -21,6 +21,7 @@ from django.conf import settings
 from django.contrib import admin, messages
 from django.core.validators import ValidationError, validate_email
 from django.db import transaction
+from django.db.models import Q
 from django.http import HttpResponseRedirect
 from django.shortcuts import redirect, render
 from django.urls import path, reverse
@@ -136,7 +137,19 @@ class PlayerAdmin(admin.ModelAdmin):
     search_fields = ["name"]
     list_display = ["name", "email"]
     actions = ["merge_players"]
-    list_per_page = 2000
+
+    def get_search_results(self, request, queryset, search_term):
+        """We search for players that contain at least one of the search terms."""
+        queryset, use_distinct = super().get_search_results(
+            request, queryset, search_term
+        )
+        search_terms = search_term.split()
+        if search_terms:
+            query = Q(name__icontains=search_terms[0])
+            for term in search_terms[1:]:
+                query |= Q(name__icontains=term)
+            queryset |= self.model.objects.filter(query)
+        return queryset.distinct(), use_distinct
 
     def get_urls(self):
         urls = super().get_urls()
