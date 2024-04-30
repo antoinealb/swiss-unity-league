@@ -78,6 +78,7 @@ class Command(BaseCommand):
                 mana_cost=entry.get("mana_cost", ""),
                 scryfall_uri=entry["scryfall_uri"],
                 mana_value=int(entry.get("cmc", 0)),
+                type_line=entry["type_line"],
             )
             for entry in data
             if is_valid(entry)
