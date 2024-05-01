@@ -36,3 +36,4 @@ class LoadTestCase(TestCase):
         self.assertEqual(card.name, "Static Orb")
         self.assertEqual(card.mana_cost, "{3}")
         self.assertEqual(card.mana_value, 3)
+        self.assertEqual(card.type_line, "Artifact")
