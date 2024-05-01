@@ -391,3 +391,6 @@ if "test" in sys.argv or "pytest" in sys.modules:
     logging.disable(logging.CRITICAL)
 
 SECURE_PROXY_SSL_HEADER = ("HTTP_X_FORWARDED_PROTO", "https")
+
+# The age of session cookies, in seconds.
+SESSION_COOKIE_AGE = datetime.timedelta(days=30).total_seconds()
