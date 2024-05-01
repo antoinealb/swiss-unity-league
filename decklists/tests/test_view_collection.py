@@ -20,6 +20,7 @@ from rest_framework.status import HTTP_200_OK
 
 from championship.factories import EventFactory, EventOrganizerFactory, PlayerFactory
 from decklists.factories import CollectionFactory, DecklistFactory
+from decklists.models import Decklist
 
 
 class CollectionViewTestCase(TestCase):
@@ -93,3 +94,21 @@ class CollectionViewTestCase(TestCase):
             reverse("decklist-details", args=[d.id]), resp.content.decode()
         )
         self.assertFalse(resp.context["show_links"])
+
+    def test_decklist_are_shown_if_we_are_the_creator_of_the_list(self):
+        collection = CollectionFactory()
+        data = {
+            "player_name": "Antoine Albertelli",
+            "archetype": "new",
+            "mainboard": "1 Fog",
+            "sideboard": "1 Fly",
+        }
+        url = reverse("decklist-create") + f"?collection={collection.id}"
+        self.client.post(url, data=data)
+        decklist = Decklist.objects.all()[0]
+        resp = self.client.get(
+            reverse("collection-details", args=[decklist.collection.id])
+        )
+        self.assertIn(
+            reverse("decklist-details", args=[decklist.id]), resp.content.decode()
+        )
