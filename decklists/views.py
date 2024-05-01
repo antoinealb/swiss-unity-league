@@ -184,6 +184,14 @@ class DecklistCreateView(SuccessMessageMixin, CreateView):
 
         return res
 
+    def form_valid(self, form):
+        resp = super().form_valid(form)
+        try:
+            self.request.session["owned_decklists"] += [self.object.id.hex]
+        except KeyError:
+            self.request.session["owned_decklists"] = [self.object.id.hex]
+        return resp
+
 
 class CollectionView(DetailView):
     model = Collection
@@ -205,4 +213,5 @@ class CollectionView(DetailView):
         context = super().get_context_data(**kwargs)
         context["decklists"] = self.get_decklists()
         context["show_links"] = self.get_show_links()
+        context["owned_decklists"] = self.request.session.get("owned_decklists", [])
         return context

@@ -23,7 +23,7 @@
             {% for decklist in decklists %}
                 <tr>
                     <td>
-                        {% if show_links %}
+                        {% if show_links or decklist.id.hex in owned_decklists %}
                             <a href={{decklist.get_absolute_url}}>{{ decklist.player.name }} ({{ decklist.archetype }})</a>
                         {% else %}
                             {{ decklist.player.name }}

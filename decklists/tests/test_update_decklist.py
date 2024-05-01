@@ -107,3 +107,14 @@ class DecklistCreate(TestCase):
             resp, reverse("collection-details", args=[self.collection.id])
         )
         self.assertFalse(Decklist.objects.exists())
+
+    def test_create_decklist_saves_in_session(self):
+        """Checks that we save a decklist as ours in a session."""
+        self.client.post(self.url, data=self.data)
+        self.client.post(self.url, data=self.data)
+        decklists = Decklist.objects.filter(player__name="Antoine Albertelli").order_by(
+            "last_modified"
+        )
+        self.assertEqual(
+            self.client.session["owned_decklists"], [d.id.hex for d in decklists]
+        )
