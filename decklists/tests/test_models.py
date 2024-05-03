@@ -19,7 +19,7 @@ from django.utils.timezone import now
 
 from championship.factories import EventFactory, EventOrganizerFactory, PlayerFactory
 from decklists.factories import CollectionFactory, DecklistFactory
-from decklists.models import Collection, Decklist
+from decklists.models import Collection
 
 
 class CollectionTest(TestCase):

@@ -27,7 +27,7 @@ from championship.models import Player
 from decklists.forms import DecklistForm
 from decklists.models import Collection, Decklist
 from decklists.parser import DecklistParser
-from oracle.models import Card
+from oracle.models import Card, get_card_by_name
 
 
 @dataclasses.dataclass
@@ -63,7 +63,7 @@ def annotate_card_attributes(
     errors = []
     for e in entries:
         try:
-            card = Card.objects.get(name=e.name)
+            card = get_card_by_name(e.name)
             e.mana_cost = card.mana_cost
             e.mana_value = card.mana_value
             e.scryfall_uri = card.scryfall_uri

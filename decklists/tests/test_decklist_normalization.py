@@ -12,14 +12,11 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from dataclasses import dataclass
-from typing import Iterable, TypeAlias
 
 from django.test import TestCase
 
 from decklists.views import DecklistEntry, annotate_card_attributes, normalize_decklist
 from oracle.factories import CardFactory
-from oracle.models import Card
 
 
 class ListProcessing(TestCase):

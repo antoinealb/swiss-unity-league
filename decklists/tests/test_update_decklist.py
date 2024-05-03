@@ -15,7 +15,6 @@
 from django.test import TestCase
 from django.urls import reverse
 from django.utils import timezone
-from rest_framework.status import HTTP_302_FOUND
 
 from championship.factories import PlayerFactory
 from championship.models import Player

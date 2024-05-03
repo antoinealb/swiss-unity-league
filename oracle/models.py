@@ -27,3 +27,18 @@ class Card(models.Model):
 
     def __str__(self):
         return self.name
+
+
+class AlternateName(models.Model):
+    name = models.CharField(max_length=128)
+    card = models.ForeignKey(Card, on_delete=models.CASCADE)
+
+
+def get_card_by_name(name: str) -> Card:
+    try:
+        return Card.objects.get(name=name)
+    except Card.DoesNotExist as e:
+        try:
+            return AlternateName.objects.get(name=name).card
+        except AlternateName.DoesNotExist:
+            raise e
