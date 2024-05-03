@@ -67,6 +67,7 @@ def annotate_card_attributes(
             e.name = card.name
             e.mana_cost = card.mana_cost
             e.mana_value = card.mana_value
+            e.type_line = card.type_line
             e.scryfall_uri = card.scryfall_uri
         except Card.DoesNotExist:
             errors.append(f"Unknown card '{e.name}'")
@@ -82,10 +83,44 @@ def parse_decklist(content: str) -> (list[DecklistEntry], list[DecklistError]):
     return entries, []
 
 
-def sort_decklist(
+def sort_decklist_by_mana_value(
     entries: Iterable[DecklistEntry],
 ) -> (list[DecklistEntry], list[DecklistError]):
     key = lambda c: (c.mana_value is None, c.mana_value, c.name)
+    return sorted(entries, key=key), []
+
+
+def sort_decklist_by_type(
+    entries: Iterable[DecklistEntry],
+) -> (list[DecklistEntry], list[DecklistError]):
+    categories = [
+        ["Creature"],
+        ["Battle"],
+        ["Planeswalker"],
+        ["Instant", "Sorcery"],
+        ["Artifact"],
+        ["Enchantment"],
+        ["Land"],
+    ]
+
+    def find_category(type_line):
+        end = len(categories)
+        if type_line is None:
+            return end
+
+        for i, types in enumerate(categories):
+            if any(t in type_line for t in types):
+                return i
+        # We send every unknown type at the end
+        return end
+
+    key = lambda c: (
+        find_category(c.type_line),
+        c.mana_value is None,
+        c.mana_value,
+        c.name,
+    )
+
     return sorted(entries, key=key), []
 
 
@@ -108,11 +143,18 @@ class DecklistView(DetailView):
     def get_context_data(self, *args, **kwargs):
         context = super().get_context_data(*args, **kwargs)
 
+        # For players we show the list by types, but for TOs / Judges, only
+        # sorted by mana value for deck checks.
+        if self.request.user.is_anonymous:
+            sort_fn = sort_decklist_by_type
+        else:
+            sort_fn = sort_decklist_by_mana_value
+
         all_filters = [
             parse_decklist,
             normalize_decklist,
             annotate_card_attributes,
-            sort_decklist,
+            sort_fn,
         ]
 
         mainboard, errors_main = pipe_filters(

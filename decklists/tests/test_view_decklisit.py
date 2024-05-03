@@ -12,6 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+
 from django.test import Client, TestCase
 from django.urls import reverse
 from django.utils import timezone
@@ -59,8 +60,8 @@ class DecklistViewTestCase(TestCase):
         self.assertIn("2 cards", resp.content.decode(), "Missing sideboard counter")
 
     def test_cards_are_sorted_by_mana_value(self):
-        c1 = CardFactory(mana_value=1)
-        c2 = CardFactory(mana_value=2)
+        c1 = CardFactory(mana_value=1, type_line="Instant")
+        c2 = CardFactory(mana_value=2, type_line="Instant")
         decklist = DecklistFactory(mainboard=f"4 {c2.name}\n4 {c1.name}")
         resp = self.client.get(reverse("decklist-details", args=[decklist.id]))
         want = [c1.name, c2.name]
@@ -72,3 +73,11 @@ class DecklistViewTestCase(TestCase):
         decklist = DecklistFactory(mainboard=f"4 {c1.name}\n4 Fooburb")
         resp = self.client.get(reverse("decklist-details", args=[decklist.id]))
         self.assertEqual(resp.context["mainboard"][0].name, c1.name)
+
+    def test_cards_are_sorted_by_type_if_logged_out(self):
+        c1 = CardFactory(mana_value=1, type_line="Instant")
+        c2 = CardFactory(mana_value=2, type_line="Creature")
+        decklist = DecklistFactory(mainboard=f"4 {c1.name}\n4 {c2.name}")
+        resp = self.client.get(reverse("decklist-details", args=[decklist.id]))
+        self.assertEqual(resp.context["mainboard"][0].type_line, "Creature")
+        self.assertEqual(resp.context["mainboard"][1].type_line, "Instant")
