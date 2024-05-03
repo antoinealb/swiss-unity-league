@@ -64,6 +64,7 @@ def annotate_card_attributes(
     for e in entries:
         try:
             card = get_card_by_name(e.name)
+            e.name = card.name
             e.mana_cost = card.mana_cost
             e.mana_value = card.mana_value
             e.scryfall_uri = card.scryfall_uri
