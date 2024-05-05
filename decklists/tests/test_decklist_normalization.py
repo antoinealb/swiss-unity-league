@@ -11,11 +11,16 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-
+import random
 
 from django.test import TestCase
 
-from decklists.views import DecklistEntry, annotate_card_attributes, normalize_decklist
+from decklists.views import (
+    DecklistEntry,
+    annotate_card_attributes,
+    normalize_decklist,
+    sort_decklist_by_type,
+)
 from oracle.factories import CardFactory
 from oracle.models import AlternateName
 
@@ -43,6 +48,7 @@ class ListProcessing(TestCase):
                 mana_cost=c.mana_cost,
                 mana_value=c.mana_value,
                 scryfall_uri=c.scryfall_uri,
+                type_line=c.type_line,
             )
         ]
         got, _ = annotate_card_attributes(decklist)
@@ -62,3 +68,21 @@ class ListProcessing(TestCase):
         decklist = [DecklistEntry(4, "Brazen Borrower")]
         got, _ = annotate_card_attributes(decklist)
         self.assertEqual(c.name, got[0].name)
+
+    def test_sort_cards_by_type(self):
+        want_order = [
+            "Creature",
+            "Battle",
+            "Planeswalker",
+            "Instant",
+            "Artifact",
+            "Enchantment",
+            "Land",
+        ]
+        cards = [
+            DecklistEntry(qty=4, name=t, mana_value=1, type_line=t) for t in want_order
+        ]
+        random.shuffle(cards)
+        cards, _ = sort_decklist_by_type(cards)
+        got_order = [c.type_line for c in cards]
+        self.assertEqual(want_order, got_order)

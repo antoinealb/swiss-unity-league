@@ -21,22 +21,59 @@ from faker.providers import BaseProvider
 import championship.factories  # noqa
 from oracle.models import Card
 
+CARD_NAMES = [
+    "Road of Return",
+    "Storm Crow",
+    "Snarlfang Vermin",
+    "Walking Sponge",
+    "Ravnica at War",
+    "Greta, Sweettooth Scourge",
+    "Torrent of Fire",
+    "Wyluli Wolf",
+    "Static Orb",
+    "Sensory Deprivation",
+    "Road of Return",
+    "Storm Crow",
+    "Snarlfang Vermin",
+    "Walking Sponge",
+    "Ravnica at War",
+    "Greta, Sweettooth Scourge",
+    "Torrent of Fire",
+    "Wyluli Wolf",
+    "Pteramander",
+    "Nantuko Elder",
+    "Vedalken Heretic",
+    "Waterknot",
+    "Ruthless Knave",
+    "Palinchron",
+    "Hua Tuo, Honored Physician",
+    "Veil of Summer",
+    "Disposal Mummy",
+    "Wei Strike Force",
+    "Marang River Prowler",
+    "Aura Graft",
+    "Murk Dwellers",
+    "Whispering Shade",
+    "Saheeli's Artistry",
+    "Kalitas, Bloodchief of Ghet",
+    "Safewright Quest",
+    "Instill Infection",
+    "Weakstone",
+    "Strength of Night",
+    "High-Rise Sawjack",
+    "Keldon Raider",
+    "Leopard-Spotted Jiao",
+    "Escape Tunnel",
+    "Food Fight",
+    "Behemoth Sledge",
+    "Toluz, Clever Conductor",
+    "Kindred Discovery",
+    "Stern Marshal",
+    "Trapjaw Tyrant",
+]
+
 
 class MagicProvider(BaseProvider):
-    def card_name(self):
-        return random.choice(
-            [
-                "Road of Return",
-                "Storm Crow",
-                "Snarlfang Vermin",
-                "Walking Sponge",
-                "Ravnica at War",
-                "Greta, Sweettooth Scourge",
-                "Torrent of Fire",
-                "Wyluli Wolf",
-            ]
-        )
-
     def mana_cost(self):
         return random.choice(
             [
@@ -53,6 +90,20 @@ class MagicProvider(BaseProvider):
             ]
         )
 
+    def card_type(self):
+        return random.choice(
+            [
+                "Land",
+                "Creature",
+                "Artifact",
+                "Enchantment",
+                "Planeswalker",
+                "Battle",
+                "Instant",
+                "Sorcery",
+            ]
+        )
+
 
 factory.Faker.add_provider(MagicProvider)
 
@@ -61,7 +112,8 @@ class CardFactory(DjangoModelFactory):
     class Meta:
         model = Card
 
-    name = factory.Faker("card_name")
+    name = factory.Faker("random_element", elements=CARD_NAMES)
     mana_cost = factory.Faker("mana_cost")
     mana_value = factory.Faker("random_int", max=18)
+    type_line = factory.Faker("card_type")
     scryfall_uri = factory.Faker("uri")
