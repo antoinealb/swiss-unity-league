@@ -15,17 +15,7 @@
 import dataclasses
 import enum
 
-from parsita import (
-    Failure,
-    ParserContext,
-    Success,
-    lit,
-    longest,
-    reg,
-    rep1,
-    rep1sep,
-    repsep,
-)
+from parsita import ParserContext, Success, lit, longest, reg, rep1, rep1sep, repsep
 from parsita.util import constant
 
 

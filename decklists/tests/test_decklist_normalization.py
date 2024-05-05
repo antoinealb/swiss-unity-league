@@ -12,14 +12,12 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from dataclasses import dataclass
-from typing import Iterable, TypeAlias
 
 from django.test import TestCase
 
 from decklists.views import DecklistEntry, annotate_card_attributes, normalize_decklist
 from oracle.factories import CardFactory
-from oracle.models import Card
+from oracle.models import AlternateName
 
 
 class ListProcessing(TestCase):
@@ -56,3 +54,11 @@ class ListProcessing(TestCase):
         got, errors = annotate_card_attributes(decklist)
         self.assertEqual(got, decklist)
         self.assertEqual(want_errors, errors)
+
+    def test_normalize_name(self):
+        """Checks that we always use the canonical name for a card."""
+        c = CardFactory(name="Brazen Borrower // Petty Theft")
+        AlternateName.objects.create(name="Brazen Borrower", card=c)
+        decklist = [DecklistEntry(4, "Brazen Borrower")]
+        got, _ = annotate_card_attributes(decklist)
+        self.assertEqual(c.name, got[0].name)

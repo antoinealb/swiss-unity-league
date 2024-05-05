@@ -21,7 +21,7 @@ from django.core.management.base import BaseCommand
 import requests
 
 from decklists.parser import parse_mana
-from oracle.models import Card
+from oracle.models import AlternateName, Card
 
 
 def is_valid(entry):
@@ -85,16 +85,36 @@ class Command(BaseCommand):
         ]
         Card.objects.bulk_create(cards)
         logging.info("Imported %d cards", len(cards))
+        self.register_alternate_names(data)
+        self.validate_mana_parsing()
 
+    def register_alternate_names(self, data):
+        to_create = []
+        logging.info("Creating alternate names")
+        for entry in data:
+            if not is_valid(entry):
+                continue
+
+            if "card_faces" not in entry:
+                continue
+
+            card = Card.objects.get(name=entry["name"])
+
+            for face in entry["card_faces"]:
+                to_create.append(AlternateName(name=face["name"], card=card))
+
+        AlternateName.objects.bulk_create(to_create)
+        logging.info("Created %d alternate names", len(to_create))
+
+    def validate_mana_parsing(self):
         invalid_mana_costs = set()
-        for card in cards:
-            if not card.mana_cost:
+        for (mana_cost,) in Card.objects.all().values_list("mana_cost"):
+            if not mana_cost:
                 continue
             try:
-                parse_mana(card.mana_cost)
+                parse_mana(mana_cost)
             except ValueError:
-                invalid_mana_costs.add(card.mana_cost)
-                logging.warning(f"Could not parse mana cost for '{card.name}'")
+                invalid_mana_costs.add(mana_cost)
 
         if invalid_mana_costs:
             logging.warning("The following mana cost did not parse succesfully:")
