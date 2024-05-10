@@ -22,7 +22,7 @@ from parsita.util import constant
 class DecklistParser(ParserContext, whitespace=r"[ \t]*"):  # type: ignore
     newline = longest(lit("\r\n"), lit("\n"), lit("\r"))
     integer = reg(r"[0-9]+") > int
-    card = reg(r"[^\r\n]*")
+    card = reg(r"[^\r\n]*") > (lambda s: s.rstrip())
     line = integer & card
     deck = repsep(line, newline)
 

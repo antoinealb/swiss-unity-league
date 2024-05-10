@@ -45,6 +45,12 @@ class ParserTestCase(TestCase):
         got = DecklistParser.deck.parse(decklist).unwrap()
         self.assertEqual(want, got)
 
+    def test_parse_deck_with_trailing_whitespace(self):
+        decklist = "4 Thalia, Guardian of Thraben" + "  \n" + "4 Lightning Bolt"
+        want = [[4, "Thalia, Guardian of Thraben"], [4, "Lightning Bolt"]]
+        got = DecklistParser.deck.parse(decklist).unwrap()
+        self.assertEqual(want, got)
+
     def test_parse_deck_with_windows_newsline(self):
         decklist = "4 Thalia, Guardian of Thraben\r\n4 Lightning Bolt"
         want = [[4, "Thalia, Guardian of Thraben"], [4, "Lightning Bolt"]]
