@@ -50,6 +50,13 @@ class LoadTestCase(TestCase):
 
         self.assertEqual(face.card, card)
 
+    def test_load_data_case_insensitive(self):
+        f = os.path.join(os.path.dirname(__file__), "testdata.json")
+        call_command("scryfall_import", scryfall_dump=f)
+        # All lower case, will not raise any errors
+        get_card_by_name("fable of the mirror-breaker")
+        get_card_by_name("static orb")
+
     def test_get_card(self):
         with self.assertRaises(Card.DoesNotExist):
             get_card_by_name("Foobar")

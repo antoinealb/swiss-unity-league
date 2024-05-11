@@ -36,9 +36,9 @@ class AlternateName(models.Model):
 
 def get_card_by_name(name: str) -> Card:
     try:
-        return Card.objects.get(name=name)
+        return Card.objects.get(name__iexact=name)
     except Card.DoesNotExist as e:
         try:
-            return AlternateName.objects.get(name=name).card
+            return AlternateName.objects.get(name__iexact=name).card
         except AlternateName.DoesNotExist:
             raise e
