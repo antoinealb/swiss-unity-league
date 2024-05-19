@@ -112,3 +112,10 @@ class CollectionViewTestCase(TestCase):
         self.assertIn(
             reverse("decklist-details", args=[decklist.id]), resp.content.decode()
         )
+
+    def test_num_players_shown(self):
+        collection = CollectionFactory()
+        DecklistFactory(collection=collection)
+        DecklistFactory(collection=collection)
+        resp = self.client.get(reverse("collection-details", args=[collection.id]))
+        self.assertContains(resp, "2 Players")
