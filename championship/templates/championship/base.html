@@ -95,8 +95,11 @@
                     <div class="col-4">
                         <div class="float-end">
                             {% if user.is_authenticated %}
-                                Logged in as {{ user.username }}, <a href="{% url 'logout' %}" class="text-muted">logout</a>
-                            {% else %}
+                                Logged in as {{ user.username }},
+                                <form method="post" action="{% url 'logout' %}" style="display:inline;">
+                                    {% csrf_token %}
+                                    <button type="submit" class="btn btn-link text-muted" style="padding: 0; border: none; background: none;">logout</button>
+                                </form>                            {% else %}
                                 <a href="{% url 'login' %}" class="btn btn-secondary">Login</a>
                             {% endif %}
                         </div>
