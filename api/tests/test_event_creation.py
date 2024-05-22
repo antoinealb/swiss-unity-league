@@ -156,7 +156,7 @@ class TestEventCreate(APITestCase):
         SUL rules do not allow old events to be edited if they have results.
         See Event.can_be_edited.
         """
-        e = RankedEventFactory(organizer=self.organizer, date=datetime.date(2022, 1, 1))
+        e = RankedEventFactory(organizer=self.organizer, date=datetime.date(2023, 1, 1))
         for _ in range(10):
             EventPlayerResultFactory(event=e)
 

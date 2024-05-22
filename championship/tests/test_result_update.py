@@ -83,7 +83,7 @@ class ResultUpdateViewTest(TestCase):
         self.assertEqual(players[0], existing_player)
 
     def test_edit_old_event_forbidden(self):
-        self.event.date = datetime.date(2022, 1, 1)
+        self.event.date = datetime.date(2023, 1, 1)
         self.event.save()
         response = self.client.post(self.url, data=self.data)
         self.assertEqual(response.status_code, 403)
@@ -178,7 +178,7 @@ class DeleteResultTest(TestCase):
         self.assertEqual(Player.objects.count(), 1)
 
     def test_delete_result_forbidden(self):
-        self.event.date = datetime.date(2022, 1, 1)
+        self.event.date = datetime.date(2023, 1, 1)
         self.event.save()
         response = self.client.post(self.url)
         self.assertEqual(response.status_code, 403)

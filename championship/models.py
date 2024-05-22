@@ -350,22 +350,24 @@ class Event(models.Model):
         return self.category != Event.Category.REGULAR
 
     def can_be_edited(self) -> bool:
-        """Returns whether changing scores for this Event is allowed.
+        """Returns whether changing the Event or its EventPlayerResults is allowed.
 
-        A TO can edit the event when all of the following conditions are met:
-        -The event is not older than settings.EVENT_MAX_AGE_FOR_RESULT_ENTRY
+        A TO can edit the event when:
+        -The event is not part of a season.
+        -The event is recent (not older than settings.EVENT_MAX_AGE_FOR_RESULT_ENTRY)
         -The end of season deadline hasn't passed.
+        -The deadline to edit the event was overridden by an admin.
         """
         today = datetime.date.today()
         if self.edit_deadline_override and today <= self.edit_deadline_override:
             return True
 
-        oldest_allowed = today - settings.EVENT_MAX_AGE_FOR_RESULT_ENTRY
-        if self.date < oldest_allowed:
-            return False
-
         season = find_season_by_date(self.date)
         if season is None:
+            return True
+
+        oldest_allowed = today - settings.EVENT_MAX_AGE_FOR_RESULT_ENTRY
+        if self.date < oldest_allowed:
             return False
 
         return season.can_enter_results(today)
