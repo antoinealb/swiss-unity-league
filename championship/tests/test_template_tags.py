@@ -25,6 +25,8 @@ class InitialFilterTestCase(TestCase):
             ("Antoine Albertelli", "Antoine A."),
             ("Antoine Renaud-Goud", "Antoine R.-G."),
             ("Laurin van der Haegen", "Laurin v. d. H."),
+            ("Jean D.", "Jean D."),
+            ("-Missing Name-", "-Missing N.-"),
         ]
     )
     def test_initial(self, name, want):

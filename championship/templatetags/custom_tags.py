@@ -32,6 +32,7 @@ def verbose_name(model):
 @register.filter(name="initials")
 def initials(name):
     components = re.split(r"[\s-]", name)
+    components = [c for c in components if c]
     # We keep the first name complete and initial the rest
     for c in components[1:]:
         name = name.replace(c, f"{c[0]}.")
