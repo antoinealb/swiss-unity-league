@@ -80,3 +80,12 @@ class OrganizerRegistrationTestCase(TestCase):
             data={"username": self.username, "password": self.data["password1"]},
         )
         self.assertRedirects(response, reverse("index"))
+
+    def test_username_already_taken(self):
+        User.objects.create_user(username=self.username)
+        response = self.client.post(reverse("register"), data=self.data)
+        self.assertContains(
+            response,
+            "An account with this name already exists. We will contact you shortly.",
+        )
+        self.assertFalse(User.objects.filter(email=self.data["email"]).exists())

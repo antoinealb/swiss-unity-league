@@ -160,14 +160,23 @@ def register_event_organizer(request):
             # Create the username based on the organizer name and the first name
             first_name = slugify(user.first_name)[:12]
             organizer_name = slugify(organizer_form.cleaned_data["name"])[:40]
-            base_username = f"{organizer_name}_{first_name}"
-            username = base_username
+            username = f"{organizer_name}_{first_name}"
 
-            # Make sure the username is unique
-            counter = 1
-            while User.objects.filter(username=username).exists():
-                username = f"{base_username}_{counter}"
-                counter += 1
+            # Throw error if the username is already taken
+            if User.objects.filter(username=username).exists():
+                user_form.add_error(
+                    None,
+                    "An account with this name already exists. We will contact you shortly.",
+                )
+                return render(
+                    request,
+                    "registration/register_organizer.html",
+                    {
+                        "user_form": user_form,
+                        "organizer_form": organizer_form,
+                        "address_form": address_form,
+                    },
+                )
 
             user.username = username
             user.is_active = False
