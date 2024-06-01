@@ -122,7 +122,7 @@ class AddressViewMixin:
         organizer = self.request.user.eventorganizer
         form.instance.organizer = organizer
         self.object = form.save()
-        if form.cleaned_data["set_as_organizer_address"]:
+        if form.cleaned_data["set_as_main_address"]:
             organizer.default_address = self.object
             organizer.save()
         return super().form_valid(form)
