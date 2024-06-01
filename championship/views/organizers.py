@@ -17,6 +17,7 @@ import datetime
 from django.contrib import messages
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.contrib.auth.models import User
+from django.db import transaction
 from django.db.models import Count
 from django.shortcuts import get_object_or_404, render
 from django.urls import reverse_lazy
@@ -144,6 +145,7 @@ class AddressDeleteView(CustomDeleteView):
         return address.organizer.user == request.user
 
 
+@transaction.atomic
 def register_event_organizer(request):
     if request.method == "POST":
         user_form = UserForm(request.POST)
