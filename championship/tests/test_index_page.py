@@ -123,3 +123,37 @@ class HomepageTestCase(TestCase):
         self.client.login(**credentials)
         response = self.client.get("/")
         self.assertFalse(response.context["has_open_invoices"])
+
+    def test_no_pending_registration(self):
+        """Checks that by default we don't have a pending registration."""
+        response = self.client.get("/")
+        self.assertFalse(response.context["has_pending_registration"])
+
+    def test_pending_registration(self):
+        data = {
+            "first_name": "First##",
+            "last_name": "Last",
+            "password1": "ah18afh8as",
+            "password2": "ah18afh8as",
+            "email": "test@example.com",
+            "name": "Organizer Name",
+            "contact": "invoice@mail.com",
+            "url": "http://example.com",
+            "description": "This is a test description",
+            "location_name": "Test Location",
+            "street_address": "Test Street",
+            "postal_code": "123456",
+            "city": "Test City",
+            "region": Address.Region.AARGAU,
+            "country": Address.Country.SWITZERLAND,
+        }
+
+        response = self.client.post(reverse("register"), data=data)
+
+        self.admin_user = User.objects.create_superuser(
+            username="admin", password="password123", email="admin@example.com"
+        )
+        self.client.login(username="admin", password="password123")
+        
+        response = self.client.get("/")
+        self.assertTrue(response.context["has_pending_registration"])
