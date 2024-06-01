@@ -154,6 +154,6 @@ class HomepageTestCase(TestCase):
             username="admin", password="password123", email="admin@example.com"
         )
         self.client.login(username="admin", password="password123")
-        
+
         response = self.client.get("/")
         self.assertTrue(response.context["has_pending_registration"])

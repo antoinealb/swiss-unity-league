@@ -80,13 +80,11 @@ class IndexView(TemplateView):
         ).exists()
 
     def _has_pending_registration(self):
-        user_has_modify_permission = self.request.user.has_perm("auth.change_user")
-        if user_has_modify_permission:
-            # Check if there are any users waiting for approval
-            pending_users = User.objects.filter(is_active=False).exists()
-            if pending_users:
-                return True
-        return False
+        authorized = self.request.user.has_perm("auth.change_user")
+        pending_registration = User.objects.filter(
+            is_active=False, last_login__isnull=True
+        )
+        return authorized and pending_registration.exists()
 
 
 class RobotsTxtView(TemplateView):
