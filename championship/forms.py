@@ -195,37 +195,42 @@ class EventOrganizerForm(forms.ModelForm):
             self.fields.pop("default_address")
 
 
-class LinkImporterForm(forms.Form, SubmitButtonMixin):
+class SelectEventForm(forms.Form):
+    def __init__(self, user, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.fields["event"] = forms.ModelChoiceField(
+            queryset=Event.objects.available_for_result_upload(user),
+            required=True,
+            help_text="Please create an event first before uploading results. Ensure to upload the results within 30 days from the event date.",
+        )
+
+
+class LinkImporterForm(SelectEventForm, SubmitButtonMixin):
     url = forms.URLField(
         label="Tournament URL",
         help_text="Link to your tournament.",
         widget=forms.URLInput(),
         required=True,
     )
-    event = forms.ModelChoiceField(queryset=Event.objects.all(), required=True)
 
     def __init__(self, user, *args, **kwargs):
         help_text = kwargs.pop("help_text", None)
         placeholder = kwargs.pop("placeholder", None)
-        super().__init__(*args, **kwargs)
+        super().__init__(user, *args, **kwargs)
         if help_text:
             self.fields["url"].help_text = help_text
         if placeholder:
             self.fields["url"].widget.attrs["placeholder"] = placeholder
 
-        self.fields["event"].queryset = Event.objects.available_for_result_upload(user)
 
-
-class FileImporterForm(forms.Form, SubmitButtonMixin):
+class FileImporterForm(SelectEventForm, SubmitButtonMixin):
     standings = forms.FileField(help_text="The file that contains the standings.")
-    event = forms.ModelChoiceField(queryset=Event.objects.all(), required=True)
 
     def __init__(self, user, *args, **kwargs):
         help_text = kwargs.pop("help_text", None)
-        super().__init__(*args, **kwargs)
+        super().__init__(user, *args, **kwargs)
         if help_text:
             self.fields["standings"].help_text = help_text
-        self.fields["event"].queryset = Event.objects.available_for_result_upload(user)
 
 
 class ImporterSelectionForm(forms.Form, SubmitButtonMixin):
@@ -267,13 +272,9 @@ class SingleResultForm(forms.Form):
         self.helper = SingleResultFormHelper(self)
 
 
-class ManualUploadMetadataForm(forms.Form, SubmitButtonMixin):
-    event = forms.ModelChoiceField(queryset=Event.objects.all(), required=True)
-
+class ManualUploadMetadataForm(SelectEventForm, SubmitButtonMixin):
     def __init__(self, user, *args, **kwargs):
-        super().__init__(*args, **kwargs)
-
-        self.fields["event"].queryset = Event.objects.available_for_result_upload(user)
+        super().__init__(user, *args, **kwargs)
 
         self.helper = FormHelper()
         self.helper.form_tag = False
