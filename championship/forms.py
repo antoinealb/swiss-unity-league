@@ -13,6 +13,8 @@
 # limitations under the License.
 
 from django import forms
+from django.contrib.auth.forms import UserCreationForm
+from django.contrib.auth.models import User
 from django.core.validators import ValidationError
 from django.db.models import Count, TextChoices
 
@@ -31,8 +33,6 @@ from .models import (
     Player,
     PlayerAlias,
 )
-from django.contrib.auth.forms import UserCreationForm
-from django.contrib.auth.models import User
 
 
 class SubmitButtonMixin:

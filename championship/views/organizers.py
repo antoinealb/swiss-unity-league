@@ -16,18 +16,23 @@ import datetime
 
 from django.contrib import messages
 from django.contrib.auth.mixins import LoginRequiredMixin
+from django.contrib.auth.models import User
 from django.db.models import Count
 from django.shortcuts import get_object_or_404, render
 from django.urls import reverse_lazy
+from django.utils.text import slugify
 from django.views.generic import DetailView
 from django.views.generic.edit import CreateView, UpdateView
 from django.views.generic.list import ListView
 
-from championship.forms import AddressForm, EventOrganizerForm, EventOrganizerForm, RegistrationAddressForm, UserForm
+from championship.forms import (
+    AddressForm,
+    EventOrganizerForm,
+    RegistrationAddressForm,
+    UserForm,
+)
 from championship.models import Address, Event, EventOrganizer
 from championship.views.base import CustomDeleteView
-from django.utils.text import slugify
-from django.contrib.auth.models import User
 
 
 class EventOrganizerDetailView(DetailView):
