@@ -62,7 +62,7 @@ class AddressCreateViewTest(BaseSetupTest):
                 "postal_code": "123456",
                 "region": Address.Region.AARGAU,
                 "country": Address.Country.SWITZERLAND,
-                "set_as_organizer_address": True,
+                "set_as_main_address": True,
             },
         )
         self.assertEqual(Address.objects.count(), 1)
@@ -89,7 +89,7 @@ class AddressUpdateViewTest(BaseSetupTest):
                 "postal_code": "654321",
                 "region": Address.Region.BERN,
                 "country": Address.Country.SWITZERLAND,
-                "set_as_organizer_address": False,
+                "set_as_main_address": False,
             },
         )
         self.assertEqual(response.url, reverse("address_list"))

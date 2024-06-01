@@ -16,14 +16,22 @@ import datetime
 
 from django.contrib import messages
 from django.contrib.auth.mixins import LoginRequiredMixin
+from django.contrib.auth.models import User
+from django.db import transaction
 from django.db.models import Count
-from django.shortcuts import get_object_or_404
+from django.shortcuts import get_object_or_404, render
 from django.urls import reverse_lazy
+from django.utils.text import slugify
 from django.views.generic import DetailView
 from django.views.generic.edit import CreateView, UpdateView
 from django.views.generic.list import ListView
 
-from championship.forms import AddressForm, OrganizerProfileEditForm
+from championship.forms import (
+    AddressForm,
+    EventOrganizerForm,
+    RegistrationAddressForm,
+    UserForm,
+)
 from championship.models import Address, Event, EventOrganizer
 from championship.views.base import CustomDeleteView
 
@@ -58,7 +66,7 @@ class EventOrganizerDetailView(DetailView):
 
 class OrganizerProfileEditView(LoginRequiredMixin, UpdateView):
     template_name = "championship/update_organizer.html"
-    form_class = OrganizerProfileEditForm
+    form_class = EventOrganizerForm
 
     def get_object(self):
         return get_object_or_404(EventOrganizer, user=self.request.user)
@@ -114,7 +122,7 @@ class AddressViewMixin:
         organizer = self.request.user.eventorganizer
         form.instance.organizer = organizer
         self.object = form.save()
-        if form.cleaned_data["set_as_organizer_address"]:
+        if form.cleaned_data["set_as_main_address"]:
             organizer.default_address = self.object
             organizer.save()
         return super().form_valid(form)
@@ -135,3 +143,67 @@ class AddressDeleteView(CustomDeleteView):
 
     def allowed_to_delete(self, address, request):
         return address.organizer.user == request.user
+
+
+@transaction.atomic
+def register_event_organizer(request):
+    if request.method == "POST":
+        user_form = UserForm(request.POST)
+        organizer_form = EventOrganizerForm(request.POST, request.FILES)
+        address_form = RegistrationAddressForm(request.POST)
+
+        if (
+            user_form.is_valid()
+            and organizer_form.is_valid()
+            and address_form.is_valid()
+        ):
+            user = user_form.save(commit=False)
+
+            # Create the username based on the organizer name and the first name
+            first_name = slugify(user.first_name)[:12]
+            organizer_name = slugify(organizer_form.cleaned_data["name"])[:40]
+            username = f"{organizer_name}_{first_name}"
+
+            # Throw error if the username is already taken
+            if User.objects.filter(username=username).exists():
+                user_form.add_error(
+                    None,
+                    "An account with this name already exists. We will contact you shortly.",
+                )
+                return render(
+                    request,
+                    "registration/register_organizer.html",
+                    {
+                        "user_form": user_form,
+                        "organizer_form": organizer_form,
+                        "address_form": address_form,
+                    },
+                )
+
+            user.username = username
+            user.is_active = False
+            user.save()
+
+            organizer = organizer_form.save(commit=False)
+            organizer.user = user
+            organizer.save()
+
+            address = address_form.save(commit=False)
+            address.organizer = organizer
+            address.save()
+
+            organizer.default_address = address
+            organizer.save()
+
+            return render(request, "registration/register_organizer_success.html")
+    else:
+        user_form = UserForm()
+        organizer_form = EventOrganizerForm()
+        address_form = RegistrationAddressForm()
+
+    context = {
+        "user_form": user_form,
+        "organizer_form": organizer_form,
+        "address_form": address_form,
+    }
+    return render(request, "registration/register_organizer.html", context)

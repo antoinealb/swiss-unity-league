@@ -20,6 +20,7 @@ from django.views.generic.base import TemplateView
 
 from championship.models import Event, EventOrganizer
 from championship.score import get_leaderboard
+from championship.tests.test_organizer_details import User
 from invoicing.models import Invoice
 
 EVENTS_ON_PAGE = 5
@@ -36,6 +37,7 @@ class IndexView(TemplateView):
         context["future_events"] = self._future_events()
         context["organizers"] = self._organizers_with_image()
         context["has_open_invoices"] = self._has_open_invoices()
+        context["has_pending_registration"] = self._has_pending_registration()
         return context
 
     def _future_events(self):
@@ -76,6 +78,13 @@ class IndexView(TemplateView):
         return Invoice.objects.filter(
             event_organizer__user=self.request.user, payment_received_date__isnull=True
         ).exists()
+
+    def _has_pending_registration(self):
+        authorized = self.request.user.has_perm("auth.change_user")
+        pending_registration = User.objects.filter(
+            is_active=False, last_login__isnull=True
+        )
+        return authorized and pending_registration.exists()
 
 
 class RobotsTxtView(TemplateView):

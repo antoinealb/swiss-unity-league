@@ -69,6 +69,7 @@ class EventOrganizerFactory(DjangoModelFactory):
     contact = factory.Faker("email")
     description = factory.Faker("text")
     user = factory.SubFactory(UserFactory)
+    url = factory.Faker("uri")
 
     @factory.post_generation
     def addresses(self, create, extracted, **kwargs):

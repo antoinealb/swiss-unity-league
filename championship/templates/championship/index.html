@@ -8,6 +8,11 @@
             <p>If you already paid them and we haven't marked them as received yet, please ignore this message!</p>
         </div>
     {% endif %}
+    {% if has_pending_registration %}
+        <div class="alert alert-warning" role="alert">
+            <p>A new Organizer registered and is waiting for approval. You can verify their account <a href="{% url 'admin:auth_user_changelist' %}?is_active__exact=0">here</a>.</p>
+        </div>
+    {% endif %}
     <div class="row gx-4 gx-lg-5 mb-5 mt-4">
         <div class="col-lg-5 mb-2">
             <div class="text-center mb-4">
