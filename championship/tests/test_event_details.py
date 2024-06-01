@@ -131,6 +131,20 @@ class EventDetailTestCase(TestCase):
             resp.content.decode(),
         )
 
+    def test_hides_link_for_top8_if_no_results(self):
+        organizer = EventOrganizerFactory(user=self.user)
+        event = EventFactory(
+            category=Event.Category.REGIONAL,
+            organizer=organizer,
+            date=datetime.date.today(),
+        )
+
+        resp = self.client.get(reverse("event_details", args=[event.id]))
+        self.assertNotContains(
+            resp,
+            reverse("results_top8_add", args=[event.id]),
+        )
+
     def test_shows_link_for_top8(self):
         organizer = EventOrganizerFactory(user=self.user)
         event = EventFactory(
@@ -138,6 +152,8 @@ class EventDetailTestCase(TestCase):
             organizer=organizer,
             date=datetime.date.today(),
         )
+        # Result is needed to show the link
+        EventPlayerResultFactory(event=event)
 
         resp = self.client.get(reverse("event_details", args=[event.id]))
         self.assertContains(
