@@ -6,37 +6,40 @@
         <p>
             <a class="btn btn-secondary-light" href="{{ organizer_url }}">Back to My Events</a>
         </p>
-        <table class="table table-striped">
-            <thead>
-                <tr>
-                    <th>Location Name</th>
-                    <th>Street Address</th>
-                    <th>City</th>
-                    <th>Postal Code</th>
-                    <th>Region</th>
-                    <th>Actions</th>
-                </tr>
-            </thead>
-            <tbody>
-                {% for address in view.get_queryset %}
+        <div class="table-responsive">
+
+            <table class="table table-striped">
+                <thead>
                     <tr>
-                        <td>{{ address.location_name }}</td>
-                        <td>{{ address.street_address }}</td>
-                        <td>{{ address.city }}</td>
-                        <td>{{ address.postal_code }}</td>
-                        <td>{{ address.get_region_display }}</td>
-                        <td>
-                            <a class="btn btn-secondary" href="{% url 'address_edit' address.id %}">Edit</a>
-                            {% include 'championship/delete_confirmation.html' with object=address %}
-                        </td>
+                        <th>Location Name</th>
+                        <th>Street Address</th>
+                        <th>City</th>
+                        <th>Postal Code</th>
+                        <th>Region</th>
+                        <th>Actions</th>
                     </tr>
-                {% empty %}
-                    <tr>
-                        <td colspan="6">No addresses found</td>
-                    </tr>
-                {% endfor %}
-            </tbody>
-        </table>
+                </thead>
+                <tbody>
+                    {% for address in view.get_queryset %}
+                        <tr>
+                            <td>{{ address.location_name }}</td>
+                            <td>{{ address.street_address }}</td>
+                            <td>{{ address.city }}</td>
+                            <td>{{ address.postal_code }}</td>
+                            <td>{{ address.get_region_display }}</td>
+                            <td>
+                                <a class="btn btn-secondary" href="{% url 'address_edit' address.id %}">Edit</a>
+                                {% include 'championship/delete_confirmation.html' with object=address %}
+                            </td>
+                        </tr>
+                    {% empty %}
+                        <tr>
+                            <td colspan="6">No addresses found</td>
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
         <a class="btn btn-secondary" href="{% url 'address_create' %}">Add New Address</a>
     </div>
 {% endblock %}
