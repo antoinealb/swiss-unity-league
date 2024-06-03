@@ -216,8 +216,10 @@ class EventManager(models.Manager):
         valid_event_ids = [event.id for event in initial_qs if event.can_be_edited()]
         return initial_qs.filter(id__in=valid_event_ids)
 
+
 def tomorrow():
     return datetime.date.today() + datetime.timedelta(days=1)
+
 
 class RecurringEvent(models.Model):
     start_date = models.DateField(
