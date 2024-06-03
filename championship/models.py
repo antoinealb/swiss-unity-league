@@ -216,46 +216,60 @@ class EventManager(models.Manager):
         valid_event_ids = [event.id for event in initial_qs if event.can_be_edited()]
         return initial_qs.filter(id__in=valid_event_ids)
 
+def tomorrow():
+    return datetime.date.today() + datetime.timedelta(days=1)
 
 class RecurringEvent(models.Model):
-    # Make sure this can be max 1 year in the future
+    start_date = models.DateField(
+        default=tomorrow,
+        help_text="The first date on which this event will be held. Only future events will be rescheduled. Today's and past events won't change.",
+    )
+    # TODO Make sure the end_date is max 1 year from now. We can make the end_date optional in the future, so that it scheduls indefinitely.
     end_date = models.DateField(
-        help_text="The last date on which this event will be held.",
+        help_text="The last date on which this event series will be held. Can be up to 1 year in the future.",
     )
 
 
 class RecurrenceRule(models.Model):
-    class WeekDay(models.TextChoices):
-        MONDAY = "MO", "Monday"
-        TUESDAY = "TU", "Tuesday"
-        WEDNESDAY = "WE", "Wednesday"
-        THURSDAY = "TH", "Thursday"
-        FRIDAY = "FR", "Friday"
-        SATURDAY = "SA", "Saturday"
-        SUNDAY = "SU", "Sunday"
+    class Weekday(models.TextChoices):
+        MONDAY = "MONDAY", "Monday"
+        TUESDAY = "TUESDAY", "Tuesday"
+        WEDNESDAY = "WEDNESDAY", "Wednesday"
+        THURSDAY = "THURSDAY", "Thursday"
+        FRIDAY = "FRIDAY", "Friday"
+        SATURDAY = "SATURDAY", "Saturday"
+        SUNDAY = "SUNDAY", "Sunday"
 
-    class WeekOfMonth(models.TextChoices):
-        FIRST = "F_1", "First"
-        SECOND = "F_2", "Second"
-        SECOND_LAST = "L_2", "Second last"
-        LAST = "L_1", "Last"
-        EVERY = "EV", "Every week"
+    class Week(models.TextChoices):
+        FIRST = "FIRST_WEEK", "First week of the month"
+        SECOND = "SECOND_WEEK", "Second week of the month"
+        SECOND_LAST = "SECOND_LAST_WEEK", "Second to last week of the month"
+        LAST = "LAST_WEEK", "Last week of the month"
+        EVERY = "EVERY_WEEK", "Every week"
+        EVERY_OTHER = "EVERY_OTHER_WEEK", "Every other week"
+
+    class Type(models.TextChoices):
+        SCHEDULE = "SCHEDULE", "Schedule"
+        SKIP = "SKIP", "Skip"
+        REGIONAL = "REGIONAL", "SUL Regional"
 
     recurring_event = models.ForeignKey(RecurringEvent, on_delete=models.CASCADE)
-    exception = models.BooleanField(
-        help_text="Whether this rule is an exception where the event doesn't take place.",
-        default=False,
+    type = models.CharField(
+        max_length=10,
+        choices=Type.choices,
+        default=Type.SCHEDULE,
+        help_text="Select 'Schedule' to run the event on each of those days. Chose 'Skip' to skip the event on some days. Chose 'SUL Regional' to make the event SUL Regional on these days.",
     )
-    day_of_week = models.CharField(
-        max_length=2,
-        choices=WeekDay.choices,
-        default=WeekDay.FRIDAY,
+    weekday = models.CharField(
+        max_length=10,
+        choices=Weekday.choices,
+        default=Weekday.FRIDAY,
         help_text="The weekday your event will take place.",
     )
-    week_of_month = models.CharField(
-        max_length=3,
-        choices=WeekOfMonth.choices,
-        default=WeekOfMonth.FIRST,
+    week = models.CharField(
+        max_length=20,
+        choices=Week.choices,
+        default=Week.FIRST,
         help_text="Which week of the month your event will take place.",
     )
 
