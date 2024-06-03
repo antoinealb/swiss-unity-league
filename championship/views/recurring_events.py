@@ -16,7 +16,7 @@ import datetime
 
 from django.db import transaction
 
-from dateutil.rrule import FR, MO, MONTHLY, SA, SU, TH, TU, WE, WEEKLY, rruleset
+from dateutil.rrule import FR, MO, MONTHLY, SA, SU, TH, TU, WE, WEEKLY, rrule, rruleset
 
 from championship.models import Event, RecurrenceRule, RecurringEvent
 
@@ -38,49 +38,45 @@ WEEK_OF_MONTH_MAP = {
 }
 
 
+def _get_rrule(rule: RecurrenceRule, recurring_event: RecurringEvent) -> rrule:
+    start_date = recurring_event.start_date
+    end_date = recurring_event.end_date
+    weekday = WEEKDAY_MAP[rule.weekday]
+
+    if rule.week == RecurrenceRule.Week.EVERY:
+        return rrule(WEEKLY, byweekday=weekday, dtstart=start_date, until=end_date)
+    elif rule.week == RecurrenceRule.Week.EVERY_OTHER:
+        return rrule(
+            WEEKLY,
+            interval=2,
+            byweekday=weekday,
+            dtstart=start_date,
+            until=end_date,
+        )
+    else:
+        week_num = WEEK_OF_MONTH_MAP[rule.week]
+        return rrule(
+            MONTHLY,
+            byweekday=weekday(week_num),
+            dtstart=start_date,
+            until=end_date,
+        )
+
+
 def calculate_recurrence_dates(recurring_event: RecurringEvent):
     """Returns a list of dates from the given recurrence rules.
     Starts from today and ends at the given end_date."""
-
-    start_date = recurring_event.start_date
-    end_date = recurring_event.end_date
-
-    # Somehow I need to import it here, so that it's available for the function
-    from dateutil.rrule import rrule
-
-    def get_rrule(rule: RecurrenceRule):
-        weekday = WEEKDAY_MAP[rule.weekday]
-
-        if rule.week == RecurrenceRule.Week.EVERY:
-            return rrule(WEEKLY, byweekday=weekday, dtstart=start_date, until=end_date)
-        elif rule.week == RecurrenceRule.Week.EVERY_OTHER:
-            return rrule(
-                WEEKLY,
-                interval=2,
-                byweekday=weekday,
-                dtstart=start_date,
-                until=end_date,
-            )
-        else:
-            week_num = WEEK_OF_MONTH_MAP[rule.week]
-            return rrule(
-                MONTHLY,
-                byweekday=weekday(week_num),
-                dtstart=start_date,
-                until=end_date,
-            )
-
     rset = rruleset()
     regional_rset = rruleset()
 
     for rule in recurring_event.recurrencerule_set.all():
 
         if rule.type == RecurrenceRule.Type.SCHEDULE:
-            rset.rrule(get_rrule(rule))
+            rset.rrule(_get_rrule(rule, recurring_event))
         elif rule.type == RecurrenceRule.Type.SKIP:
-            rset.exrule(get_rrule(rule))
+            rset.exrule(_get_rrule(rule, recurring_event))
         elif rule.type == RecurrenceRule.Type.REGIONAL:
-            rrule = get_rrule(rule)
+            rrule = _get_rrule(rule, recurring_event)
             regional_rset.rrule(rrule)
             rset.exrule(rrule)
 
