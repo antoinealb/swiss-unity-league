@@ -16,7 +16,7 @@ import datetime
 
 from django.db import transaction
 
-from dateutil.rrule import rruleset, FR, MO, SA, SU, TH, TU, WE, WEEKLY, MONTHLY
+from dateutil.rrule import FR, MO, MONTHLY, SA, SU, TH, TU, WE, WEEKLY, rruleset
 
 from championship.models import Event, RecurrenceRule, RecurringEvent
 
@@ -38,9 +38,7 @@ WEEK_OF_MONTH_MAP = {
 }
 
 
-def calculate_recurrence_dates(
-    recurring_event: RecurringEvent
-):
+def calculate_recurrence_dates(recurring_event: RecurringEvent):
     """Returns a list of dates from the given recurrence rules.
     Starts from today and ends at the given end_date."""
 
@@ -71,6 +69,7 @@ def calculate_recurrence_dates(
                 dtstart=start_date,
                 until=end_date,
             )
+
     rset = rruleset()
     regional_rset = rruleset()
 
@@ -86,48 +85,3 @@ def calculate_recurrence_dates(
             rset.exrule(rrule)
 
     return list(rset), list(regional_rset)
-
-
-# Below is work in progress, please don't review it yet
-
-# We can just allow the user to edit one of the RecurringEvent's events.
-# When the user saves, then edit the data of the other events.
-@transaction.atomic
-def edit_recurring_event_data(recurring_event: RecurringEvent, new_event: Event):
-    """Edits the data of all events of the given recurring event.
-    @param new_event: An event containing the new data."""
-    for event in recurring_event.event_set.all():
-        new_event.pk = event.pk
-        new_event.save()
-
-
-# Called when the user saves the recurring event form
-@transaction.atomic
-def reschedule_recurring_event(recurring_event: RecurringEvent):
-    """Reschedules all future events of the given recurring event.
-    Past events keep their date."""
-    events = recurring_event.event_set.all()
-
-    if not events:
-        # TODO Should not happen, if we build the UI correctly
-        raise ValueError("No events found for recurring event")
-    # Make sure we have a default event
-    event = events[0]
-
-    future_events_queue = [e for e in events if e.date > datetime.date.today()]
-    for date in calculate_recurrence_dates(
-        recurring_event.recurrence_rule_set.all(), recurring_event.end_date
-    ):
-        # If possible edit the date of an upcoming event
-        if future_events_queue:
-            event = future_events_queue.pop(0)
-
-        # Otherwise create a new one
-        if not future_events_queue:
-            event.pk = None
-
-        event.date = date
-        event.save()
-    # Delete all remaining events, in case there are now less events than before
-    for event in future_events_queue:
-        event.delete()
