@@ -222,6 +222,10 @@ def tomorrow():
 
 
 class RecurringEvent(models.Model):
+    """And event series that repeats on a regular basis. The events are scheduled from
+    the start_date to the end_date based on the dates defined by its RecurrenceRules.
+    """
+
     start_date = models.DateField(
         default=tomorrow,
         help_text="The first date on which this event will be held. Only future events will be rescheduled. Today's and past events won't change.",
@@ -233,6 +237,14 @@ class RecurringEvent(models.Model):
 
 
 class RecurrenceRule(models.Model):
+    """Each RecurringEvent has multiple RecurrenceRules, which define the schedule of the event series.
+    The weekday and week fields define which days of a month are affected by the rule.
+    There are three types of rules:
+    - Schedule: The event will be scheduled on the affected days.
+    - Skip: The event will be skipped on these days (assuming it's scheduled by another rule).
+    - SUL Regional: The event will be promoted to SUL Regional on these days.
+    """
+
     class Weekday(models.TextChoices):
         MONDAY = "MONDAY", "Monday"
         TUESDAY = "TUESDAY", "Tuesday"
