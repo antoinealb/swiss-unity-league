@@ -37,10 +37,8 @@ class RecurrenceScheduleTest(TestCase):
             recurring_event=recurring_event,
         )
         dates, regional_dates = calculate_recurrence_dates(recurring_event)
-        self.assertEqual(len(dates), 2)
-        self.assertEqual(len(regional_dates), 0)
-        self.assertEqual(dates[0], datetime.datetime(2024, 6, 7))
-        self.assertEqual(dates[1], datetime.datetime(2024, 6, 14))
+        self.assertEqual(dates, [datetime.date(2024, 6, 7), datetime.date(2024, 6, 14)])
+        self.assertEqual(regional_dates, [])
 
     @freeze_time("2024-06-01")
     def test_biweekly_recurrence(self):
@@ -57,10 +55,10 @@ class RecurrenceScheduleTest(TestCase):
         self.assertEqual(
             dates,
             [
-                datetime.datetime(2024, 6, 14),
-                datetime.datetime(2024, 6, 28),
-                datetime.datetime(2024, 7, 12),
-                datetime.datetime(2024, 7, 26),
+                datetime.date(2024, 6, 14),
+                datetime.date(2024, 6, 28),
+                datetime.date(2024, 7, 12),
+                datetime.date(2024, 7, 26),
             ],
         )
 
@@ -85,10 +83,10 @@ class RecurrenceScheduleTest(TestCase):
         self.assertEqual(
             dates,
             [
-                datetime.datetime(2024, 6, 3),
-                datetime.datetime(2024, 6, 28),
-                datetime.datetime(2024, 7, 1),
-                datetime.datetime(2024, 7, 26),
+                datetime.date(2024, 6, 3),
+                datetime.date(2024, 6, 28),
+                datetime.date(2024, 7, 1),
+                datetime.date(2024, 7, 26),
             ],
         )
 
@@ -114,12 +112,12 @@ class RecurrenceScheduleTest(TestCase):
         self.assertEqual(
             dates,
             [
-                datetime.datetime(2024, 6, 7),
-                datetime.datetime(2024, 6, 14),
-                datetime.datetime(2024, 6, 21),
-                datetime.datetime(2024, 7, 5),
-                datetime.datetime(2024, 7, 12),
-                datetime.datetime(2024, 7, 19),
+                datetime.date(2024, 6, 7),
+                datetime.date(2024, 6, 14),
+                datetime.date(2024, 6, 21),
+                datetime.date(2024, 7, 5),
+                datetime.date(2024, 7, 12),
+                datetime.date(2024, 7, 19),
             ],
         )
 
@@ -145,22 +143,22 @@ class RecurrenceScheduleTest(TestCase):
         self.assertEqual(
             dates,
             [
-                datetime.datetime(2024, 6, 7),
-                datetime.datetime(2024, 6, 14),
-                datetime.datetime(2024, 6, 21),
-                datetime.datetime(2024, 6, 28),
-                datetime.datetime(2024, 7, 5),
-                datetime.datetime(2024, 7, 12),
-                datetime.datetime(2024, 7, 19),
-                datetime.datetime(2024, 7, 26),
+                datetime.date(2024, 6, 7),
+                datetime.date(2024, 6, 14),
+                datetime.date(2024, 6, 21),
+                datetime.date(2024, 6, 28),
+                datetime.date(2024, 7, 5),
+                datetime.date(2024, 7, 12),
+                datetime.date(2024, 7, 19),
+                datetime.date(2024, 7, 26),
             ],
         )
 
         self.assertEqual(
             regional_dates,
             [
-                datetime.datetime(2024, 6, 7),
-                datetime.datetime(2024, 7, 5),
+                datetime.date(2024, 6, 7),
+                datetime.date(2024, 7, 5),
             ],
         )
 
@@ -181,9 +179,9 @@ class RecurrenceScheduleTest(TestCase):
         self.assertEqual(
             dates,
             [
-                datetime.datetime(2024, 5, 17),
-                datetime.datetime(2024, 5, 24),
-                datetime.datetime(2024, 5, 31),
+                datetime.date(2024, 5, 17),
+                datetime.date(2024, 5, 24),
+                datetime.date(2024, 5, 31),
             ],
         )
         self.assertEqual(regional_dates, [])

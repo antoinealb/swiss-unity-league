@@ -82,4 +82,6 @@ def calculate_recurrence_dates(
         elif rule.type == RecurrenceRule.Type.REGIONAL:
             regional_rset.rrule(_rrule)
 
-    return list(rset), list(regional_rset)
+    dates = [date.date() for date in rset]
+    regional_dates = [date.date() for date in regional_rset]
+    return dates, regional_dates
