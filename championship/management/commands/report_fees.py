@@ -26,7 +26,7 @@ from invoicing.models import fee_for_event
 
 
 class Command(BaseCommand):
-    help = "Report how many fees are paid in total per organizer "
+    help = "Report how many fees are paid in total per organizer"
 
     def add_arguments(self, parser):
         all_seasons = ",".join(s.slug for s in ALL_SEASONS_LIST)
