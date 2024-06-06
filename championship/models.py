@@ -299,9 +299,9 @@ class Event(models.Model):
         max_length=200, help_text="The name of this event, e.g. 'Christmas Modern 1k'"
     )
     organizer = models.ForeignKey(EventOrganizer, on_delete=models.PROTECT)
-    # recurring_event = models.ForeignKey(
-    #     RecurringEvent, on_delete=models.SET_NULL, null=True, blank=True
-    # )
+    recurring_event = models.ForeignKey(
+        RecurringEvent, on_delete=models.SET_NULL, null=True, blank=True
+    )
     date = models.DateField(
         help_text="The date of the event. For multi-days event, pick the first day."
     )
