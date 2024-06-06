@@ -63,21 +63,23 @@ def _get_rrule(rule: RecurrenceRule, recurring_event: RecurringEvent) -> rrule:
         )
 
 
-def calculate_recurrence_dates(recurring_event: RecurringEvent):
-    """Returns a list of dates from the given recurrence rules.
-    Starts from today and ends at the given end_date."""
+def calculate_recurrence_dates(
+    recurring_event: RecurringEvent,
+) -> tuple[list[datetime.date], list[datetime.date]]:
+    """Returns two lists of dates as a tuple based on the given recurrence rules between
+    the start_date and end_date of the recurring event.
+    - The first list contains all scheduled dates.
+    - The second list contains all dates, where the event is SUL Regional."""
     rset = rruleset()
     regional_rset = rruleset()
 
     for rule in recurring_event.recurrencerule_set.all():
-
+        _rrule = _get_rrule(rule, recurring_event)
         if rule.type == RecurrenceRule.Type.SCHEDULE:
-            rset.rrule(_get_rrule(rule, recurring_event))
+            rset.rrule(_rrule)
         elif rule.type == RecurrenceRule.Type.SKIP:
-            rset.exrule(_get_rrule(rule, recurring_event))
+            rset.exrule(_rrule)
         elif rule.type == RecurrenceRule.Type.REGIONAL:
-            rrule = _get_rrule(rule, recurring_event)
-            regional_rset.rrule(rrule)
-            rset.exrule(rrule)
+            regional_rset.rrule(_rrule)
 
     return list(rset), list(regional_rset)
