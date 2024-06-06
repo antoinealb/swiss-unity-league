@@ -253,7 +253,7 @@ class RecurrenceRule(models.Model):
     class Type(models.TextChoices):
         SCHEDULE = "SCHEDULE", "Schedule"
         SKIP = "SKIP", "Skip"
-        REGIONAL = "REGIONAL", "SUL Regional"
+        REGIONAL = "REGIONAL", "Promote to SUL Regional"
 
     recurring_event = models.ForeignKey(RecurringEvent, on_delete=models.CASCADE)
     type = models.CharField(
