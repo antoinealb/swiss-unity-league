@@ -14,6 +14,7 @@
 
 import datetime
 
+from django.forms import ValidationError
 from django.test import TestCase
 
 from freezegun import freeze_time
@@ -21,6 +22,21 @@ from freezegun import freeze_time
 from championship.factories import RecurrenceRuleFactory, RecurringEventFactory
 from championship.models import RecurrenceRule
 from championship.views.recurring_events import calculate_recurrence_dates
+
+
+class RecurringEventModelTest(TestCase):
+
+    def test_end_date_deep_in_future_throw_validation_error(self):
+        # We only allow recurring events to be scheduled for up to a year.
+        event = RecurringEventFactory(
+            end_date=datetime.date.today() + datetime.timedelta(days=365),
+        )
+        event.full_clean()
+        with self.assertRaises(ValidationError):
+            event = RecurringEventFactory(
+                end_date=datetime.date.today() + datetime.timedelta(days=366),
+            )
+            event.full_clean()
 
 
 class RecurrenceScheduleTest(TestCase):

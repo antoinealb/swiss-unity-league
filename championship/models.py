@@ -230,10 +230,17 @@ class RecurringEvent(models.Model):
         default=tomorrow,
         help_text="The first date on which this event will be held. Only future events will be rescheduled. Today's and past events won't change.",
     )
-    # TODO Make sure the end_date is max 1 year from now. We can make the end_date optional in the future, so that it scheduls indefinitely.
     end_date = models.DateField(
         help_text="The last date on which this event series will be held. Can be up to 1 year in the future.",
     )
+
+    def clean(self):
+        super().clean()
+        one_year_from_now = datetime.date.today() + datetime.timedelta(days=365)
+        if self.end_date > one_year_from_now:
+            raise ValidationError(
+                {"end_date": "End date must be within 1 year from today."}
+            )
 
 
 class RecurrenceRule(models.Model):
