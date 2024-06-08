@@ -93,46 +93,49 @@ def calculate_recurrence_dates(
 
 @transaction.atomic
 def reschedule(recurring_event: RecurringEvent):
-    """Reschedules all future events of the given recurring event.
-    Today's and past events stay the same."""
-    events = recurring_event.event_set.all()
+    """
+    Reschedules all future events of the given RecurringEvent, based on it's RecurrenceRules.
+    Today's and past events stay the same.
+    """
+    events_to_reschedule = list(
+        recurring_event.event_set.filter(date__gt=datetime.date.today())
+    )
 
-    if not events:
+    if events_to_reschedule:
+        default_event = events_to_reschedule[0]
+    else:
+        default_event = recurring_event.event_set.first()
+
+    if not default_event:
         raise ValueError(
-            "Rescheduling a recurring event requires at least one event that's linked to it."
+            "Rescheduling a recurring event requires at least one event linked to it."
         )
 
-    # Make sure we have a default event we can copy from
-    event = events[0]
-
-    # If any of the rules is a regional rule, then the event is normally a regular event
-    if any(
+    regional_rule_exists = any(
         rule.type == RecurrenceRule.Type.REGIONAL
         for rule in recurring_event.recurrencerule_set.all()
-    ):
-        default_category = Event.Category.REGULAR
-    else:
-        default_category = event.category
+    )
 
-    future_events_queue = [e for e in events if e.date > datetime.date.today()]
     all_dates, regional_dates = calculate_recurrence_dates(recurring_event)
     for date in all_dates:
-        # If possible edit the date of a previously scheduled event, that is in the future
-        if future_events_queue:
-            event = future_events_queue.pop(0)
+        # If possible reschedule an upcoming event, otherwise make a copy of the default_event
+        if events_to_reschedule:
+            event = events_to_reschedule.pop(0)
         else:
-            # Otherwise create a new event
+            event = default_event
             event.pk = None
 
         event.date = date
 
-        if date in regional_dates:
-            event.category = Event.Category.REGIONAL
-        else:
-            event.category = default_category
+        # If a regional rule exists, we need to set the category accordingly
+        if regional_rule_exists:
+            if date in regional_dates:
+                event.category = Event.Category.REGIONAL
+            else:
+                event.category = Event.Category.REGULAR
 
         event.save()
 
-    # Delete all events that can't be rescheduled, because there are now less events scheduled
-    for event in future_events_queue:
+    # Delete any events that could not be rescheduled due to fewer scheduled events
+    for event in events_to_reschedule:
         event.delete()
