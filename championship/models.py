@@ -217,6 +217,84 @@ class EventManager(models.Manager):
         return initial_qs.filter(id__in=valid_event_ids)
 
 
+def tomorrow():
+    return datetime.date.today() + datetime.timedelta(days=1)
+
+
+class RecurringEvent(models.Model):
+    """And event series that repeats on a regular basis. The events are scheduled from
+    the start_date to the end_date based on the dates defined by its RecurrenceRules.
+    """
+
+    start_date = models.DateField(
+        default=tomorrow,
+        help_text="The first date on which this event will be held. Only future events will be rescheduled. Today's and past events won't change.",
+    )
+    end_date = models.DateField(
+        help_text="The last date on which this event series will be held. Can be up to 1 year in the future.",
+    )
+
+    def clean(self):
+        super().clean()
+        one_year_from_now = datetime.date.today() + datetime.timedelta(days=365)
+        if self.end_date > one_year_from_now:
+            raise ValidationError(
+                {"end_date": "End date must be within 1 year from today."}
+            )
+
+
+class RecurrenceRule(models.Model):
+    """Each RecurringEvent has multiple RecurrenceRules, which define the schedule of the event series.
+    The weekday and week fields define which days of a month are affected by the rule.
+    There are three types of rules:
+    - Schedule: The event will be scheduled on the affected days.
+    - Skip: The event will be skipped on these days (assuming it's scheduled by another rule).
+    - SUL Regional: The event will be promoted to SUL Regional on these days.
+    """
+
+    class Weekday(models.TextChoices):
+        MONDAY = "MONDAY", "Monday"
+        TUESDAY = "TUESDAY", "Tuesday"
+        WEDNESDAY = "WEDNESDAY", "Wednesday"
+        THURSDAY = "THURSDAY", "Thursday"
+        FRIDAY = "FRIDAY", "Friday"
+        SATURDAY = "SATURDAY", "Saturday"
+        SUNDAY = "SUNDAY", "Sunday"
+
+    class Week(models.TextChoices):
+        FIRST = "FIRST_WEEK", "First week of the month"
+        SECOND = "SECOND_WEEK", "Second week of the month"
+        SECOND_LAST = "SECOND_LAST_WEEK", "Second to last week of the month"
+        LAST = "LAST_WEEK", "Last week of the month"
+        EVERY = "EVERY_WEEK", "Every week"
+        EVERY_OTHER = "EVERY_OTHER_WEEK", "Every other week"
+
+    class Type(models.TextChoices):
+        SCHEDULE = "SCHEDULE", "Schedule"
+        SKIP = "SKIP", "Skip"
+        REGIONAL = "REGIONAL", "Promote to SUL Regional"
+
+    recurring_event = models.ForeignKey(RecurringEvent, on_delete=models.CASCADE)
+    type = models.CharField(
+        max_length=10,
+        choices=Type.choices,
+        default=Type.SCHEDULE,
+        help_text="Select 'Schedule' to run the event on each of those days. Chose 'Skip' to skip the event on some days. Chose 'SUL Regional' to make the event SUL Regional on these days.",
+    )
+    weekday = models.CharField(
+        max_length=10,
+        choices=Weekday.choices,
+        default=Weekday.FRIDAY,
+        help_text="The weekday your event will take place.",
+    )
+    week = models.CharField(
+        max_length=20,
+        choices=Week.choices,
+        default=Week.FIRST,
+        help_text="Which week of the month your event will take place.",
+    )
+
+
 def event_image_validator(image):
     if image.size > 1.5 * 1024 * 1024:
         raise ValidationError("Image file too large ( > 1.5MB )")
@@ -240,6 +318,9 @@ class Event(models.Model):
         max_length=200, help_text="The name of this event, e.g. 'Christmas Modern 1k'"
     )
     organizer = models.ForeignKey(EventOrganizer, on_delete=models.PROTECT)
+    recurring_event = models.ForeignKey(
+        RecurringEvent, on_delete=models.SET_NULL, null=True, blank=True
+    )
     date = models.DateField(
         help_text="The date of the event. For multi-days event, pick the first day."
     )

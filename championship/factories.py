@@ -163,3 +163,34 @@ class SpecialRewardFactory(DjangoModelFactory):
         model = SpecialReward
 
     result = factory.SubFactory(EventPlayerResultFactory)
+
+
+class RecurringEventFactory(DjangoModelFactory):
+    class Meta:
+        model = RecurringEvent
+
+    end_date = factory.Faker(
+        "date_between", start_date=SEASON_2023.start_date, end_date=SEASON_2023.end_date
+    )
+
+
+class RecurrenceRuleFactory(DjangoModelFactory):
+    class Meta:
+        model = RecurrenceRule
+
+    weekday = factory.Faker(
+        "random_element",
+        elements=RecurrenceRule.Weekday.values,
+    )
+
+    week = factory.Faker(
+        "random_element",
+        elements=RecurrenceRule.Week.values,
+    )
+
+    type = factory.Faker(
+        "random_element",
+        elements=RecurrenceRule.Type.values,
+    )
+
+    recurring_event = factory.SubFactory(RecurringEventFactory)
