@@ -85,20 +85,22 @@ def calculate_recurrence_dates(
             regional_rset.rrule(_rrule)
             rset.exrule(_rrule)
 
-    dates = [date.date() for date in rset]
+    other_dates = [date.date() for date in rset]
     regional_dates = [date.date() for date in regional_rset]
-    return dates, regional_dates
+    all_dates = sorted(set(other_dates + regional_dates))
+    return all_dates, regional_dates
 
 
 @transaction.atomic
 def reschedule(recurring_event: RecurringEvent):
     """Reschedules all future events of the given recurring event.
-    Past events keep their date."""
+    Today's and past events stay the same."""
     events = recurring_event.event_set.all()
 
     if not events:
-        # Should not happen, if we build the UI correctly
-        raise ValueError("No events found for recurring event")
+        raise ValueError(
+            "Rescheduling a recurring event requires at least one event that's linked to it."
+        )
 
     # Make sure we have a default event we can copy from
     event = events[0]
@@ -113,14 +115,13 @@ def reschedule(recurring_event: RecurringEvent):
         default_category = event.category
 
     future_events_queue = [e for e in events if e.date > datetime.date.today()]
-    other_dates, regional_dates = calculate_recurrence_dates(recurring_event)
-    all_dates = sorted(set(other_dates + regional_dates))
+    all_dates, regional_dates = calculate_recurrence_dates(recurring_event)
     for date in all_dates:
-        # If possible edit the date of an upcoming event
+        # If possible edit the date of a previously scheduled event, that is in the future
         if future_events_queue:
             event = future_events_queue.pop(0)
         else:
-            # Otherwise create a new one
+            # Otherwise create a new event
             event.pk = None
 
         event.date = date
@@ -132,6 +133,6 @@ def reschedule(recurring_event: RecurringEvent):
 
         event.save()
 
-    # Delete all remaining events, in case there are now less events than before
+    # Delete all events that can't be rescheduled, because there are now less events scheduled
     for event in future_events_queue:
         event.delete()

@@ -158,14 +158,16 @@ class RecurrenceScheduleTest(TestCase):
             type=RecurrenceRule.Type.REGIONAL,
             recurring_event=recurring_event,
         )
-        other_dates, regional_dates = calculate_recurrence_dates(recurring_event)
+        dates, regional_dates = calculate_recurrence_dates(recurring_event)
 
         self.assertEqual(
-            other_dates,
+            dates,
             [
+                datetime.date(2024, 6, 7),
                 datetime.date(2024, 6, 14),
                 datetime.date(2024, 6, 21),
                 datetime.date(2024, 6, 28),
+                datetime.date(2024, 7, 5),
                 datetime.date(2024, 7, 12),
                 datetime.date(2024, 7, 19),
                 datetime.date(2024, 7, 26),
