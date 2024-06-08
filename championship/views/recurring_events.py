@@ -43,6 +43,13 @@ def _get_rrule(rule: RecurrenceRule, recurring_event: RecurringEvent) -> rrule:
     end_date = recurring_event.end_date
     weekday = WEEKDAY_MAP[rule.weekday]
 
+    tomorrow = datetime.date.today() + datetime.timedelta(days=1)
+    start_date = (
+        recurring_event.start_date
+        if recurring_event.start_date > tomorrow
+        else tomorrow
+    )
+
     if rule.week == RecurrenceRule.Week.EVERY:
         return rrule(WEEKLY, byweekday=weekday, dtstart=start_date, until=end_date)
     elif rule.week == RecurrenceRule.Week.EVERY_OTHER:
@@ -85,3 +92,41 @@ def calculate_recurrence_dates(
     dates = [date.date() for date in rset]
     regional_dates = [date.date() for date in regional_rset]
     return dates, regional_dates
+
+
+@transaction.atomic
+def reschedule(recurring_event: RecurringEvent):
+    """Reschedules all future events of the given recurring event.
+    Past events keep their date."""
+    events = recurring_event.event_set.all()
+
+    if not events:
+        # Should not happen, if we build the UI correctly
+        raise ValueError("No events found for recurring event")
+
+    # Make sure we have a default event we can copy from
+    event = events[0]
+    original_category = event.category
+
+    future_events_queue = [e for e in events if e.date > datetime.date.today()]
+    dates, regional_dates = calculate_recurrence_dates(recurring_event)
+    for date in dates:
+        # If possible edit the date of an upcoming event
+        if future_events_queue:
+            event = future_events_queue.pop(0)
+        else:
+            # Otherwise create a new one
+            event.pk = None
+
+        event.date = date
+
+        if date in regional_dates:
+            event.category = Event.Category.REGIONAL
+        else:
+            event.category = original_category
+
+        event.save()
+
+    # Delete all remaining events, in case there are now less events than before
+    for event in future_events_queue:
+        event.delete()
