@@ -83,6 +83,7 @@ def calculate_recurrence_dates(
             rset.exrule(_rrule)
         elif rule.type == RecurrenceRule.Type.REGIONAL:
             regional_rset.rrule(_rrule)
+            rset.exrule(_rrule)
 
     dates = [date.date() for date in rset]
     regional_dates = [date.date() for date in regional_rset]
@@ -112,8 +113,9 @@ def reschedule(recurring_event: RecurringEvent):
         default_category = event.category
 
     future_events_queue = [e for e in events if e.date > datetime.date.today()]
-    dates, regional_dates = calculate_recurrence_dates(recurring_event)
-    for date in dates:
+    other_dates, regional_dates = calculate_recurrence_dates(recurring_event)
+    all_dates = sorted(set(other_dates + regional_dates))
+    for date in all_dates:
         # If possible edit the date of an upcoming event
         if future_events_queue:
             event = future_events_queue.pop(0)

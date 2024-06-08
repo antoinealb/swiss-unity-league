@@ -158,16 +158,14 @@ class RecurrenceScheduleTest(TestCase):
             type=RecurrenceRule.Type.REGIONAL,
             recurring_event=recurring_event,
         )
-        dates, regional_dates = calculate_recurrence_dates(recurring_event)
+        other_dates, regional_dates = calculate_recurrence_dates(recurring_event)
 
         self.assertEqual(
-            dates,
+            other_dates,
             [
-                datetime.date(2024, 6, 7),
                 datetime.date(2024, 6, 14),
                 datetime.date(2024, 6, 21),
                 datetime.date(2024, 6, 28),
-                datetime.date(2024, 7, 5),
                 datetime.date(2024, 7, 12),
                 datetime.date(2024, 7, 19),
                 datetime.date(2024, 7, 26),
@@ -226,7 +224,7 @@ class RecurrenceEventCreationTest(TestCase):
         self.assertEqual(
             dates,
             [
-                # todays event should remain
+                # today's event should remain
                 initial_event.date,
                 datetime.date(2024, 6, 5),
                 datetime.date(2024, 6, 12),
@@ -416,13 +414,13 @@ class RecurrenceEventCreationTest(TestCase):
             recurring_event = RecurringEventFactory(
                 end_date=datetime.date.today() + datetime.timedelta(days=30),
             )
-            RecurrenceRuleFactory(
+            regular_rule = RecurrenceRuleFactory(
                 weekday=RecurrenceRule.Weekday.FRIDAY,
                 week=RecurrenceRule.Week.EVERY,
                 type=RecurrenceRule.Type.SCHEDULE,
                 recurring_event=recurring_event,
             )
-            RecurrenceRuleFactory(
+            regional_rule = RecurrenceRuleFactory(
                 weekday=RecurrenceRule.Weekday.FRIDAY,
                 week=RecurrenceRule.Week.FIRST,
                 type=RecurrenceRule.Type.REGIONAL,
@@ -455,11 +453,16 @@ class RecurrenceEventCreationTest(TestCase):
                     Event.Category.REGULAR,
                 ],
             )
-        with freeze_time("2024-06-07"):
-            # a week later the TO reschedules the event with 2 more weeks
+        with freeze_time("2024-06-14"):
+            # two weeks later the TO reschedules the event to Wednesday
             recurring_event.end_date = datetime.date.today() + datetime.timedelta(
-                days=37
+                days=30
             )
+            regular_rule.weekday = RecurrenceRule.Weekday.WEDNESDAY
+            regular_rule.save()
+            regional_rule.weekday = RecurrenceRule.Weekday.WEDNESDAY
+            regional_rule.week = RecurrenceRule.Week.SECOND
+            regional_rule.save()
             recurring_event.save()
             reschedule(recurring_event)
             events = Event.objects.all()
@@ -470,10 +473,10 @@ class RecurrenceEventCreationTest(TestCase):
                 [
                     datetime.date(2024, 6, 7),
                     datetime.date(2024, 6, 14),
-                    datetime.date(2024, 6, 21),
-                    datetime.date(2024, 6, 28),
-                    datetime.date(2024, 7, 5),
-                    datetime.date(2024, 7, 12),
+                    datetime.date(2024, 6, 19),
+                    datetime.date(2024, 6, 26),
+                    datetime.date(2024, 7, 3),
+                    datetime.date(2024, 7, 10),
                 ],
             )
             self.assertEqual(
@@ -483,7 +486,44 @@ class RecurrenceEventCreationTest(TestCase):
                     Event.Category.REGULAR,
                     Event.Category.REGULAR,
                     Event.Category.REGULAR,
-                    Event.Category.REGIONAL,
                     Event.Category.REGULAR,
+                    Event.Category.REGIONAL,
                 ],
             )
+
+    @freeze_time("2024-06-01")
+    def test_schedule_with_regional_rule_only(self):
+        """In case the TO decides to schedule a monthly Regional event without any Regular events in the
+        series, they might only create a Regional rule."""
+        recurring_event = RecurringEventFactory(
+            end_date=datetime.date.today() + datetime.timedelta(days=60),
+        )
+        RecurrenceRuleFactory(
+            weekday=RecurrenceRule.Weekday.FRIDAY,
+            week=RecurrenceRule.Week.FIRST,
+            type=RecurrenceRule.Type.REGIONAL,
+            recurring_event=recurring_event,
+        )
+        EventFactory(
+            recurring_event=recurring_event,
+            category=Event.Category.REGULAR,
+            date=datetime.date.today() + datetime.timedelta(days=1),
+        )
+        reschedule(recurring_event)
+        events = Event.objects.all()
+        dates = [event.date for event in events]
+        self.assertEqual(
+            dates,
+            [
+                datetime.date(2024, 6, 7),
+                datetime.date(2024, 7, 5),
+            ],
+        )
+        categories = [event.category for event in events]
+        self.assertEqual(
+            categories,
+            [
+                Event.Category.REGIONAL,
+                Event.Category.REGIONAL,
+            ],
+        )
