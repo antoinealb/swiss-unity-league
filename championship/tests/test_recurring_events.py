@@ -206,6 +206,11 @@ class RecurrenceScheduleTest(TestCase):
 
 class RecurrenceEventCreationTest(TestCase):
 
+    def test_recurring_event_without_linked_event_throws_error(self):
+        recurring_event = RecurringEventFactory()
+        with self.assertRaises(ValueError):
+            reschedule(recurring_event)
+
     @freeze_time("2024-06-01")
     def test_create_series_from_event_today(self):
         recurring_event = RecurringEventFactory(
