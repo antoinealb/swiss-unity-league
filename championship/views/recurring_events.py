@@ -39,16 +39,11 @@ WEEK_OF_MONTH_MAP = {
 
 
 def _get_rrule(rule: RecurrenceRule, recurring_event: RecurringEvent) -> rrule:
-    start_date = recurring_event.start_date
+    tomorrow = datetime.date.today() + datetime.timedelta(days=1)
+    # Make sure only future dates are considered
+    start_date = max(recurring_event.start_date, tomorrow)
     end_date = recurring_event.end_date
     weekday = WEEKDAY_MAP[rule.weekday]
-
-    tomorrow = datetime.date.today() + datetime.timedelta(days=1)
-    start_date = (
-        recurring_event.start_date
-        if recurring_event.start_date > tomorrow
-        else tomorrow
-    )
 
     if rule.week == RecurrenceRule.Week.EVERY:
         return rrule(WEEKLY, byweekday=weekday, dtstart=start_date, until=end_date)
@@ -106,7 +101,15 @@ def reschedule(recurring_event: RecurringEvent):
 
     # Make sure we have a default event we can copy from
     event = events[0]
-    original_category = event.category
+
+    # If any of the rules is a regional rule, then the event is normally a regular event
+    if any(
+        rule.type == RecurrenceRule.Type.REGIONAL
+        for rule in recurring_event.recurrencerule_set.all()
+    ):
+        default_category = Event.Category.REGULAR
+    else:
+        default_category = event.category
 
     future_events_queue = [e for e in events if e.date > datetime.date.today()]
     dates, regional_dates = calculate_recurrence_dates(recurring_event)
@@ -123,7 +126,7 @@ def reschedule(recurring_event: RecurringEvent):
         if date in regional_dates:
             event.category = Event.Category.REGIONAL
         else:
-            event.category = original_category
+            event.category = default_category
 
         event.save()
 

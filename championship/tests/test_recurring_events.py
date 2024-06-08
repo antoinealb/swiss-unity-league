@@ -410,3 +410,80 @@ class RecurrenceEventCreationTest(TestCase):
                 Event.Category.REGULAR,
             ],
         )
+
+    def test_reschedule_regional(self):
+        with freeze_time("2024-06-01"):
+            recurring_event = RecurringEventFactory(
+                end_date=datetime.date.today() + datetime.timedelta(days=30),
+            )
+            RecurrenceRuleFactory(
+                weekday=RecurrenceRule.Weekday.FRIDAY,
+                week=RecurrenceRule.Week.EVERY,
+                type=RecurrenceRule.Type.SCHEDULE,
+                recurring_event=recurring_event,
+            )
+            RecurrenceRuleFactory(
+                weekday=RecurrenceRule.Weekday.FRIDAY,
+                week=RecurrenceRule.Week.FIRST,
+                type=RecurrenceRule.Type.REGIONAL,
+                recurring_event=recurring_event,
+            )
+            EventFactory(
+                recurring_event=recurring_event,
+                category=Event.Category.REGULAR,
+                date=datetime.date.today() + datetime.timedelta(days=1),
+            )
+            reschedule(recurring_event)
+            events = Event.objects.all()
+            dates = [event.date for event in events]
+            self.assertEqual(
+                dates,
+                [
+                    datetime.date(2024, 6, 7),
+                    datetime.date(2024, 6, 14),
+                    datetime.date(2024, 6, 21),
+                    datetime.date(2024, 6, 28),
+                ],
+            )
+            categories = [event.category for event in events]
+            self.assertEqual(
+                categories,
+                [
+                    Event.Category.REGIONAL,
+                    Event.Category.REGULAR,
+                    Event.Category.REGULAR,
+                    Event.Category.REGULAR,
+                ],
+            )
+        with freeze_time("2024-06-07"):
+            # a week later the TO reschedules the event with 2 more weeks
+            recurring_event.end_date = datetime.date.today() + datetime.timedelta(
+                days=37
+            )
+            recurring_event.save()
+            reschedule(recurring_event)
+            events = Event.objects.all()
+            dates = [event.date for event in events]
+            categories = [event.category for event in events]
+            self.assertEqual(
+                dates,
+                [
+                    datetime.date(2024, 6, 7),
+                    datetime.date(2024, 6, 14),
+                    datetime.date(2024, 6, 21),
+                    datetime.date(2024, 6, 28),
+                    datetime.date(2024, 7, 5),
+                    datetime.date(2024, 7, 12),
+                ],
+            )
+            self.assertEqual(
+                categories,
+                [
+                    Event.Category.REGIONAL,
+                    Event.Category.REGULAR,
+                    Event.Category.REGULAR,
+                    Event.Category.REGULAR,
+                    Event.Category.REGIONAL,
+                    Event.Category.REGULAR,
+                ],
+            )
