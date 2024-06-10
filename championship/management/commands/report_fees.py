@@ -44,6 +44,8 @@ class Command(BaseCommand):
         total = 0
         season = find_season_by_slug(season)
 
+        fee_per_organizer = {}
+
         for e in (
             Event.objects.exclude(category=Event.Category.REGULAR)
             .annotate(results_count=Count("eventplayerresult"))
@@ -56,8 +58,18 @@ class Command(BaseCommand):
             .order_by("organizer__name", "date")
         ):
             fee = fee_for_event(e)
-            table.add_row((e.organizer.name, str(e), fee))
+            table.add_row((e.organizer.name, str(e)[:100], fee))
             total += fee
+            fee_per_organizer[e.organizer] = fee_per_organizer.get(e.organizer, 0) + fee
 
         table.add_row(("Total", "", total))
         print(table)
+
+        fee_per_organizer_table = PrettyTable(
+            field_names=["Organizer", "Fee"], align="l"
+        )
+
+        for organizer, fee in fee_per_organizer.items():
+            fee_per_organizer_table.add_row((organizer.name, fee))
+
+        print(fee_per_organizer_table)
