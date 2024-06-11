@@ -96,6 +96,7 @@ def reschedule(recurring_event: RecurringEvent):
     """
     Reschedules all events linked to the given RecurringEvent, based on it's RecurrenceRules.
     Events with results are not rescheduled.
+    Events rescheduled in the same week keep their primary key (and thus also their URL).
     """
 
     events_to_reschedule: list[Event] = list(
@@ -127,6 +128,7 @@ def reschedule(recurring_event: RecurringEvent):
         return None
 
     for date in all_dates:
+        # Try to find an event for the same week, else create a copy
         event = find_event_for_same_week(events_to_reschedule, date)
         if not event:
             event = default_event
@@ -142,6 +144,6 @@ def reschedule(recurring_event: RecurringEvent):
 
         event.save()
 
-    # Delete any events that could not be rescheduled due to fewer scheduled events
+    # Delete any events that could not be rescheduled
     for event in events_to_reschedule:
         event.delete()
