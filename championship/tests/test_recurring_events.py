@@ -21,6 +21,7 @@ from freezegun import freeze_time
 
 from championship.factories import (
     EventFactory,
+    EventPlayerResultFactory,
     RecurrenceRuleFactory,
     RecurringEventFactory,
 )
@@ -183,7 +184,7 @@ class RecurrenceScheduleTest(TestCase):
         )
 
     @freeze_time("2024-06-01")
-    def test_past_recurrence_dates_not_calculated(self):
+    def test_past_recurrence_dates_calculated(self):
         recurring_event = RecurringEventFactory(
             start_date=datetime.date.today() - datetime.timedelta(days=15),
             end_date=datetime.date.today() + datetime.timedelta(days=7),
@@ -198,6 +199,9 @@ class RecurrenceScheduleTest(TestCase):
         self.assertEqual(
             dates,
             [
+                datetime.date(2024, 5, 17),
+                datetime.date(2024, 5, 24),
+                datetime.date(2024, 5, 31),
                 datetime.date(2024, 6, 7),
             ],
         )
@@ -212,36 +216,7 @@ class RecurrenceEventCreationTest(TestCase):
             reschedule(recurring_event)
 
     @freeze_time("2024-06-01")
-    def test_create_series_from_event_today(self):
-        recurring_event = RecurringEventFactory(
-            end_date=datetime.date.today() + datetime.timedelta(days=30),
-        )
-        RecurrenceRuleFactory(
-            weekday=RecurrenceRule.Weekday.WEDNESDAY,
-            week=RecurrenceRule.Week.EVERY,
-            type=RecurrenceRule.Type.SCHEDULE,
-            recurring_event=recurring_event,
-        )
-        initial_event = EventFactory(
-            recurring_event=recurring_event,
-            date=datetime.date.today(),
-        )
-        reschedule(recurring_event)
-        dates = [event.date for event in Event.objects.all()]
-        self.assertEqual(
-            dates,
-            [
-                # today's event should remain
-                initial_event.date,
-                datetime.date(2024, 6, 5),
-                datetime.date(2024, 6, 12),
-                datetime.date(2024, 6, 19),
-                datetime.date(2024, 6, 26),
-            ],
-        )
-
-    @freeze_time("2024-06-01")
-    def test_create_series_from_event_tomorrow(self):
+    def test_create_series(self):
         recurring_event = RecurringEventFactory(
             end_date=datetime.date.today() + datetime.timedelta(days=30),
         )
@@ -253,14 +228,43 @@ class RecurrenceEventCreationTest(TestCase):
         )
         EventFactory(
             recurring_event=recurring_event,
-            date=datetime.date.today() + datetime.timedelta(days=1),
+            date=datetime.date.today(),
         )
         reschedule(recurring_event)
         dates = [event.date for event in Event.objects.all()]
         self.assertEqual(
             dates,
             [
-                # initial event is in future and should be rescheduled
+                datetime.date(2024, 6, 5),
+                datetime.date(2024, 6, 12),
+                datetime.date(2024, 6, 19),
+                datetime.date(2024, 6, 26),
+            ],
+        )
+
+    @freeze_time("2024-06-01")
+    def test_create_series_from_event_with_results(self):
+        recurring_event = RecurringEventFactory(
+            end_date=datetime.date.today() + datetime.timedelta(days=30),
+        )
+        RecurrenceRuleFactory(
+            weekday=RecurrenceRule.Weekday.WEDNESDAY,
+            week=RecurrenceRule.Week.EVERY,
+            type=RecurrenceRule.Type.SCHEDULE,
+            recurring_event=recurring_event,
+        )
+        event = EventFactory(
+            recurring_event=recurring_event,
+            date=datetime.date.today(),
+        )
+        EventPlayerResultFactory(event=event)
+        reschedule(recurring_event)
+        dates = [event.date for event in Event.objects.all()]
+        self.assertEqual(
+            dates,
+            [
+                # event with results should remain
+                event.date,
                 datetime.date(2024, 6, 5),
                 datetime.date(2024, 6, 12),
                 datetime.date(2024, 6, 19),
@@ -295,8 +299,7 @@ class RecurrenceEventCreationTest(TestCase):
                 ],
             )
         with freeze_time("2024-06-15"):
-            # 2 weeks later we reschedule the event to Friday and move the end_date to later
-            # More future event should be scheduled
+            # 2 weeks later we reschedule the event to Friday for another month
             recurring_event.end_date = datetime.date.today() + datetime.timedelta(
                 days=30
             )
@@ -307,8 +310,8 @@ class RecurrenceEventCreationTest(TestCase):
             self.assertEqual(
                 dates,
                 [
-                    datetime.date(2024, 6, 5),
-                    datetime.date(2024, 6, 12),
+                    datetime.date(2024, 6, 7),
+                    datetime.date(2024, 6, 14),
                     datetime.date(2024, 6, 21),
                     datetime.date(2024, 6, 28),
                     datetime.date(2024, 7, 5),
@@ -344,7 +347,6 @@ class RecurrenceEventCreationTest(TestCase):
             )
         with freeze_time("2024-06-07"):
             # a week later we reschedule the event to Monday with a sooner end_date
-            # So less future events should be rescheduled
             recurring_event.end_date = datetime.date.today() + datetime.timedelta(
                 days=15
             )
@@ -355,7 +357,7 @@ class RecurrenceEventCreationTest(TestCase):
             self.assertEqual(
                 dates,
                 [
-                    datetime.date(2024, 6, 5),
+                    datetime.date(2024, 6, 3),
                     datetime.date(2024, 6, 10),
                     datetime.date(2024, 6, 17),
                 ],
@@ -378,7 +380,7 @@ class RecurrenceEventCreationTest(TestCase):
             type=RecurrenceRule.Type.REGIONAL,
             recurring_event=recurring_event,
         )
-        initial_event = EventFactory(
+        EventFactory(
             recurring_event=recurring_event,
             category=Event.Category.REGULAR,
             date=datetime.date.today(),
@@ -389,7 +391,6 @@ class RecurrenceEventCreationTest(TestCase):
         self.assertEqual(
             dates,
             [
-                initial_event.date,
                 datetime.date(2024, 6, 7),
                 datetime.date(2024, 6, 14),
                 datetime.date(2024, 6, 21),
@@ -404,7 +405,6 @@ class RecurrenceEventCreationTest(TestCase):
         self.assertEqual(
             categories,
             [
-                Event.Category.REGULAR,
                 Event.Category.REGIONAL,
                 Event.Category.REGULAR,
                 Event.Category.REGULAR,
@@ -478,8 +478,8 @@ class RecurrenceEventCreationTest(TestCase):
             self.assertEqual(
                 dates,
                 [
-                    datetime.date(2024, 6, 7),
-                    datetime.date(2024, 6, 14),
+                    datetime.date(2024, 6, 5),
+                    datetime.date(2024, 6, 12),
                     datetime.date(2024, 6, 19),
                     datetime.date(2024, 6, 26),
                     datetime.date(2024, 7, 3),
@@ -489,14 +489,52 @@ class RecurrenceEventCreationTest(TestCase):
             self.assertEqual(
                 categories,
                 [
-                    Event.Category.REGIONAL,
                     Event.Category.REGULAR,
+                    Event.Category.REGIONAL,
                     Event.Category.REGULAR,
                     Event.Category.REGULAR,
                     Event.Category.REGULAR,
                     Event.Category.REGIONAL,
                 ],
             )
+
+    def test_reschedule_preserves_pk(self):
+        """
+        The primary keys of the events should be reused if the event takes place in the same week.
+        This makes sure the links to the events are preserved.
+        """
+        with freeze_time("2024-06-01"):
+            recurring_event = RecurringEventFactory(
+                end_date=datetime.date.today() + datetime.timedelta(days=30),
+            )
+            rule = RecurrenceRuleFactory(
+                weekday=RecurrenceRule.Weekday.WEDNESDAY,
+                week=RecurrenceRule.Week.EVERY,
+                type=RecurrenceRule.Type.SCHEDULE,
+                recurring_event=recurring_event,
+            )
+            EventFactory(
+                recurring_event=recurring_event,
+                date=datetime.date.today(),
+            )
+            reschedule(recurring_event)
+            events = Event.objects.all()
+            pks = [event.pk for event in events]
+            self.assertEqual(pks, [2, 3, 4, 5])
+        with freeze_time("2024-06-15"):
+            # 2 weeks later we reschedule the event to Friday for another month
+            recurring_event.start_date = datetime.date.today()
+            recurring_event.end_date = datetime.date.today() + datetime.timedelta(
+                days=30
+            )
+            rule.weekday = RecurrenceRule.Weekday.FRIDAY
+            rule.save()
+            reschedule(recurring_event)
+            events = Event.objects.all()
+            pks = [event.pk for event in events]
+            # the primary key of the 3rd and 4th event are preserved, because they are in the same week
+            # as the newly scheduled events
+            self.assertEqual(pks, [4, 5, 6, 7])
 
     @freeze_time("2024-06-01")
     def test_schedule_with_regional_rule_only(self):
@@ -514,7 +552,7 @@ class RecurrenceEventCreationTest(TestCase):
         EventFactory(
             recurring_event=recurring_event,
             category=Event.Category.REGULAR,
-            date=datetime.date.today() + datetime.timedelta(days=1),
+            date=datetime.date.today(),
         )
         reschedule(recurring_event)
         events = Event.objects.all()
