@@ -273,6 +273,10 @@ class RecurrenceEventCreationTest(TestCase):
         )
 
     def test_reschedule_more_events(self):
+        """Test that we can reschedule more events than before.
+        - We create a series of events on Wednesdays for a month.
+        - After 2 weeks we reschedule the series to Fridays for another month.
+        """
         with freeze_time("2024-06-01"):
             recurring_event = RecurringEventFactory(
                 end_date=datetime.date.today() + datetime.timedelta(days=30),
@@ -299,7 +303,6 @@ class RecurrenceEventCreationTest(TestCase):
                 ],
             )
         with freeze_time("2024-06-15"):
-            # 2 weeks later we reschedule the event to Friday for another month
             recurring_event.end_date = datetime.date.today() + datetime.timedelta(
                 days=30
             )
@@ -320,6 +323,9 @@ class RecurrenceEventCreationTest(TestCase):
             )
 
     def test_reschedule_less_events(self):
+        """Test that we can reschedule less events than before.
+        - We create a series of events on Wednesdays for a month.
+        - After 2 weeks we reschedule the series to Mondays for another month."""
         with freeze_time("2024-06-01"):
             recurring_event = RecurringEventFactory(
                 end_date=datetime.date.today() + datetime.timedelta(days=30),
@@ -365,6 +371,10 @@ class RecurrenceEventCreationTest(TestCase):
 
     @freeze_time("2024-06-01")
     def test_schedule_monthly_regional_events(self):
+        """Test that we can create a series of events on Fridays for 2 months, where the first Friday is Regional.
+        - We do this by creating a RecurrenceRule to schedule the event for every Friday.
+        - We create another one for the first Friday of the month as Regional.
+        """
         recurring_event = RecurringEventFactory(
             end_date=datetime.date.today() + datetime.timedelta(days=60),
         )
@@ -417,6 +427,10 @@ class RecurrenceEventCreationTest(TestCase):
         )
 
     def test_reschedule_regional(self):
+        """Test that we can reschedule a series of events with Regional events.
+        - We create a series of events on Fridays for a month, where the first Friday is Regional.
+        - After 2 weeks we reschedule the series to Wednesdays for another month and move the Regional to the second week.
+        """
         with freeze_time("2024-06-01"):
             recurring_event = RecurringEventFactory(
                 end_date=datetime.date.today() + datetime.timedelta(days=30),
@@ -461,7 +475,6 @@ class RecurrenceEventCreationTest(TestCase):
                 ],
             )
         with freeze_time("2024-06-14"):
-            # two weeks later the TO reschedules the event to Wednesday
             recurring_event.end_date = datetime.date.today() + datetime.timedelta(
                 days=30
             )
@@ -502,6 +515,9 @@ class RecurrenceEventCreationTest(TestCase):
         """
         The primary keys of the events should be reused if the event takes place in the same week.
         This makes sure the links to the events are preserved.
+        - We create a series of events on Wednesdays for a month.
+        - After 2 weeks we move the series by a month and set the day to Fridays.
+        - Since the 3rd and 4th event are in the same week as the newly scheduled events, their primary keys should be preserved.
         """
         with freeze_time("2024-06-01"):
             recurring_event = RecurringEventFactory(
