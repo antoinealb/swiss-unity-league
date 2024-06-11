@@ -108,7 +108,7 @@ class TestEventResultsAPI(APITestCase):
         self.assertTrue(player.eventplayerresult_set.exists())
 
     def test_send_results_player_clean_name(self):
-        player = PlayerFactory()
+        player = PlayerFactory(name="Antoine Albertelli")
         self.client.login(**self.credentials)
         data = {
             "results": [
@@ -124,7 +124,10 @@ class TestEventResultsAPI(APITestCase):
         resp = self.client.patch(self.url, data=data, format="json")
 
         # Check that the event got associated with the player
-        self.assertTrue(player.eventplayerresult_set.exists())
+        self.assertTrue(
+            player.eventplayerresult_set.exists(),
+            f"Should have results for {player.name}",
+        )
 
     def test_upload_deletes_old_results(self):
         player = PlayerFactory()
