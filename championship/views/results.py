@@ -122,11 +122,15 @@ def clean_name(name: str) -> str:
     >>> clean_name('antoine albertelli')
     'Antoine Albertelli'
 
-
     Note lower case words are only capitalized if the word has more than 3 letters
     (Short terms like "van", ""der", "da" shouldn't be capital).
     >>> clean_name('Antoine van Albertelli')
     'Antoine van Albertelli'
+
+    # TODO: Shorter first names like Joe will not be capitalized correctly for
+    now as they are assumed to be particles, like "von", "de" or "van".
+    # >>> clean_name('joe uldry')
+    # 'Joe Uldry'
 
     >>> clean_name('Antoine J. Albertelli')
     'Antoine J. Albertelli'
