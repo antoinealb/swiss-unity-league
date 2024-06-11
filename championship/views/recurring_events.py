@@ -98,7 +98,7 @@ def reschedule(recurring_event: RecurringEvent):
     Events with results are not rescheduled.
     """
 
-    events_to_reschedule = list(
+    events_to_reschedule: list[Event] = list(
         recurring_event.event_set.annotate(
             result_cnt=Count("eventplayerresult")
         ).filter(result_cnt=0)
