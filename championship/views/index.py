@@ -59,9 +59,10 @@ class IndexView(TemplateView):
             .order_by("date")[:remaining_regionals]
             .prefetch_related("address", "organizer")
         )
-
+        # We sort by category as well, so that premier events on the same date
+        # as a regional are shown first.
         future_events = list(future_regional) + list(future_premier)
-        future_events.sort(key=lambda e: e.date)
+        future_events.sort(key=lambda e: (e.date, e.category))
         return future_events
 
     def _organizers_with_image(self):

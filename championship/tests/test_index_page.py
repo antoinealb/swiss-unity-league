@@ -59,7 +59,25 @@ class HomepageTestCase(TestCase):
         ]
         got_events = self.client.get("/").context["future_events"]
         expected_events = regionals[:2] + premiers[:3]
-        self.assertEqual(got_events, expected_events)
+        self.assertEqual(set(got_events), set(expected_events))
+
+    def test_premier_events_are_shown_first_on_given_date(self):
+        """
+        Checks that if a regianal and a premier are on the same date, the
+        premier event is listed first, as we want to promote those more.
+        """
+        event_date = datetime.date.today() + datetime.timedelta(days=7)
+        for category in [Event.Category.PREMIER, Event.Category.REGIONAL]:
+            EventFactory(date=event_date, category=category)
+
+        got_events = self.client.get("/").context["future_events"]
+        got_categories = [e.category for e in got_events]
+        want_categories = [Event.Category.PREMIER, Event.Category.REGIONAL]
+        self.assertEqual(
+            got_categories,
+            want_categories,
+            "Premier events should be listed before Regional events.",
+        )
 
     @override_settings(DEFAULT_SEASON=SEASON_2023)
     def test_shows_player_with_points(self):
