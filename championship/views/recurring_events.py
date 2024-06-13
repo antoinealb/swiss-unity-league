@@ -12,9 +12,11 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+import copy
 import datetime
 
 from django.db import transaction
+from django.db.models import Count
 
 from dateutil.rrule import FR, MO, MONTHLY, SA, SU, TH, TU, WE, WEEKLY, rrule, rruleset
 
@@ -81,7 +83,67 @@ def calculate_recurrence_dates(
             rset.exrule(_rrule)
         elif rule.type == RecurrenceRule.Type.REGIONAL:
             regional_rset.rrule(_rrule)
+            rset.exrule(_rrule)
 
-    dates = [date.date() for date in rset]
+    other_dates = [date.date() for date in rset]
     regional_dates = [date.date() for date in regional_rset]
-    return dates, regional_dates
+    all_dates = sorted(set(other_dates + regional_dates))
+    return all_dates, regional_dates
+
+
+@transaction.atomic
+def reschedule(recurring_event: RecurringEvent):
+    """
+    Reschedules all events linked to the given RecurringEvent, based on it's RecurrenceRules.
+    Events with results are not rescheduled.
+    Events rescheduled in the same week keep their primary key (and thus also their URL).
+    """
+
+    events_to_reschedule: list[Event] = list(
+        recurring_event.event_set.annotate(
+            result_cnt=Count("eventplayerresult")
+        ).filter(result_cnt=0)
+    )
+
+    if events_to_reschedule:
+        default_event = copy.deepcopy(events_to_reschedule[0])
+    else:
+        default_event = recurring_event.event_set.first()
+
+    if not default_event:
+        raise ValueError(
+            "Rescheduling a recurring event requires at least one event linked to it."
+        )
+
+    all_dates, regional_dates = calculate_recurrence_dates(recurring_event)
+
+    def find_event_for_same_week(events, given_date) -> Event | None:
+        # Compares year and week number
+        given_week = given_date.isocalendar()[:2]
+
+        for index, event in enumerate(events):
+            week_of_event = event.date.isocalendar()[:2]
+            if week_of_event == given_week:
+                return events.pop(index)
+        return None
+
+    for date in all_dates:
+        # Try to find an event for the same week, else create a copy
+        event = find_event_for_same_week(events_to_reschedule, date)
+        if not event:
+            event = default_event
+            event.pk = None
+
+        event.date = date
+
+        if regional_dates:
+            if date in regional_dates:
+                event.category = Event.Category.REGIONAL
+            else:
+                event.category = Event.Category.REGULAR
+
+        event.save()
+
+    # Delete any events that could not be rescheduled
+    for event in events_to_reschedule:
+        event.delete()
