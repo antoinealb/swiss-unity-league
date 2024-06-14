@@ -57,7 +57,11 @@
                                             <li><a class="dropdown-item" href="{% url 'admin:index' %}">Admin</a></li>
                                         {% endif %}
                                         <li><a class="dropdown-item" href="{% url 'password_change' %}">Change password</a></li>
-                                        <li><a class="dropdown-item" href="{% url 'logout' %}">Logout</a></li>
+                                        <li>
+                                            <form method="post" action="{% url 'logout' %}">
+                                                {% csrf_token %}
+                                                <button type="submit" class="dropdown-item">Logout</button>
+                                            </form>  </li>
                                     </ul>
                                 </li>
                             {% endif %}
@@ -97,10 +101,11 @@
                         <div class="float-end">
                             {% if user.is_authenticated %}
                                 Logged in as {{ user.username }},
-                                <form method="post" action="{% url 'logout' %}" style="display:inline;">
+                                <form method="post" action="{% url 'logout' %}" class="d-inline">
                                     {% csrf_token %}
-                                    <button type="submit" class="btn btn-link text-muted" style="padding: 0; border: none; background: none;">logout</button>
-                                </form>                            {% else %}
+                                    <button type="submit" class="btn btn-link text-muted p-0">logout</button>
+                                </form>
+                            {% else %}
                                 <a href="{% url 'login' %}" class="btn btn-secondary">Login</a>
                             {% endif %}
                         </div>
