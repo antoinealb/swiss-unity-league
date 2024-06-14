@@ -26,7 +26,7 @@ from championship.factories import (
     RecurringEventFactory,
 )
 from championship.models import Event, RecurrenceRule
-from championship.views.recurring_events import calculate_recurrence_dates, reschedule
+from championship.views import calculate_recurrence_dates, reschedule
 
 
 class RecurringEventModelTest(TestCase):
