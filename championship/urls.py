@@ -69,6 +69,16 @@ urlpatterns = [
     path("events/<int:pk>/copy", views.CopyEventView.as_view(), name="event_copy"),
     path("events/<int:pk>/", views.EventDetailsView.as_view(), name="event_details"),
     path(
+        "events/recurring",
+        views.RecurringEventCreateView.as_view(),
+        name="recurring_event_create",
+    ),
+    path(
+        "events/recurring/<int:pk>",
+        views.RecurringEventUpdateView.as_view(),
+        name="recurring_event_update",
+    ),
+    path(
         "epr/edit/<int:pk>/",
         views.ResultUpdateView.as_view(),
         name="epr_edit",

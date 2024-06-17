@@ -1,0 +1,83 @@
+{% extends "championship/base.html" %}
+
+{% load crispy_forms_tags %}
+
+{% block content %}
+    <h1>{% if event.pk %} Reschedule {% else %} Schedule {% endif %} Recurring Event</h1>
+    <form method="post">
+        {% csrf_token %}
+        {{ recurring_event_form|crispy }}
+        <div class="row g-3 align-items-center mb-3">
+            <div class="col-auto">
+                <h2>Recurrence Rules:</h2>
+            </div>
+            <div class="col-auto">
+                <button type="button" id="add-form-row" class="btn btn-success">Add Another Recurrence Rule</button>
+            </div>
+        </div>
+        <p>Add one or more rules that define how your event is scheduled. </p>
+        <p><i>Example: Let's say your goal is a weekly event on Friday, that is SUL Regional the first week of the month. First <b>schedule</b> an event <b>every week</b> on <b>Friday</b>. Then you can add another rule so that your event is <b>promoted to SUL Regional</b> on the <b>first week of the month</b> (also on <b>Friday</b>). </i></p>
+        {{ recurrence_rule_formset.management_form }}
+        <div id="form-container">
+            {% for form in recurrence_rule_formset %}
+                <div class="row g-3 align-items-center mb-3">
+                    <div class="col-auto d-flex align-items-center">
+                        <span class="me-2">This event is</span>
+                        {{ form.type|as_crispy_field }}
+                    </div>
+                    <div class="col-auto d-flex align-items-center">
+                        <span class="me-2">(every)</span>
+                        {{ form.week|as_crispy_field }}
+                    </div>
+                    <div class="col-auto d-flex align-items-center">
+                        <span class="me-2">on</span>
+                        {{ form.weekday|as_crispy_field }}
+                    </div>
+                    <div class="col-auto">
+                        <button type="button" class="btn btn-sm btn-danger remove-form-row">Remove</button>
+                    </div>
+                </div>
+            {% endfor %}
+        </div>
+        <button type="submit" class="btn btn-secondary">{% if event.pk %}Reschedule{% else %}Schedule{% endif %} Event</button>
+    </form>
+{% endblock %}
+
+{% block extrahead %}
+    <script>
+        document.addEventListener("DOMContentLoaded", function () {
+            var formContainer = document.getElementById("form-container");
+            var totalForms = document.getElementById("id_form-TOTAL_FORMS");
+
+            // Updates the indices of the form fields and the totalForms value after adding or removing a recurrene rule form
+            function updateFormIndices() {
+                var forms = formContainer.querySelectorAll(".row");
+                forms.forEach(function (form, index) {
+                    form.querySelectorAll("input, select").forEach(function (input) {
+                        input.name = input.name.replace(/-\d+-/, `-${index}-`);
+                        input.id = input.id.replace(/-\d+-/, `-${index}-`);
+                    });
+                });
+                totalForms.value = forms.length;
+            }
+
+            // Event listener for adding a recurrence rule form row
+            document.getElementById("add-form-row").addEventListener("click", function () {
+                if (totalForms.value < 10) {
+                    var newForm = formContainer.querySelector(".row").cloneNode(true);
+                    formContainer.appendChild(newForm);
+                    updateFormIndices();
+                }
+            });
+
+            // Event listener for removing a recurrence rule form row
+            formContainer.addEventListener("click", function (e) {
+                if (e.target && e.target.classList.contains("remove-form-row") && totalForms.value > 1) {
+                    var row = e.target.closest(".row");
+                    row.parentNode.removeChild(row);
+                    updateFormIndices();
+                }
+            });
+        });
+    </script>
+{% endblock %}

@@ -32,6 +32,8 @@ from .models import (
     EventPlayerResult,
     Player,
     PlayerAlias,
+    RecurrenceRule,
+    RecurringEvent,
 )
 
 
@@ -295,7 +297,7 @@ class SingleResultFormHelper(FormHelper):
 
 
 ResultsFormset = forms.formset_factory(
-    SingleResultForm, min_num=1, extra=32, max_num=128
+    SingleResultForm, min_num=1, extra=4, max_num=128
 )
 
 
@@ -357,3 +359,34 @@ class ResultsDeleteForm(forms.Form, SubmitButtonMixin):
     that will be shown to the user when they want to delete results for the
     event.
     """
+
+
+class RecurrenceRuleForm(forms.ModelForm):
+    class Meta:
+        model = RecurrenceRule
+        fields = ["type", "weekday", "week"]
+        help_texts = {
+            "type": None,
+            "weekday": None,
+            "week": None,
+        }
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.helper = FormHelper()
+        self.helper.form_show_labels = False
+
+
+RecurrenceRuleModelFormSet = forms.modelformset_factory(
+    RecurrenceRule, form=RecurrenceRuleForm, min_num=1, extra=0, max_num=10
+)
+
+
+class RecurringEventForm(forms.ModelForm):
+    class Meta:
+        model = RecurringEvent
+        fields = ["start_date", "end_date"]
+        widgets = {
+            "start_date": forms.DateInput(attrs={"type": "date"}),
+            "end_date": forms.DateInput(attrs={"type": "date"}),
+        }
