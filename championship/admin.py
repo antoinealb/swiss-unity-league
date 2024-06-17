@@ -106,7 +106,7 @@ admin.site.register(Event, EventAdmin)
 
 class RecurrenceRuleInline(admin.TabularInline):
     model = RecurrenceRule
-    extra = 1
+    extra = 0
 
 
 class RecurringEventAdmin(admin.ModelAdmin):
