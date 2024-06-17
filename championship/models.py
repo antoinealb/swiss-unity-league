@@ -228,7 +228,7 @@ class RecurringEvent(models.Model):
 
     start_date = models.DateField(
         default=tomorrow,
-        help_text="The first date on which this event will be held. Only future events will be rescheduled. Today's and past events won't change.",
+        help_text="The first date on which this event series will be held. Only events without results will be rescheduled.",
     )
     end_date = models.DateField(
         help_text="The last date on which this event series will be held. Can be up to 1 year in the future.",
@@ -241,6 +241,9 @@ class RecurringEvent(models.Model):
             raise ValidationError(
                 {"end_date": "End date must be within 1 year from today."}
             )
+
+    def __str__(self):
+        return f"Recurring event from {self.start_date} to {self.end_date}"
 
 
 class RecurrenceRule(models.Model):
@@ -270,16 +273,16 @@ class RecurrenceRule(models.Model):
         EVERY_OTHER = "EVERY_OTHER_WEEK", "Every other week"
 
     class Type(models.TextChoices):
-        SCHEDULE = "SCHEDULE", "Schedule"
-        SKIP = "SKIP", "Skip"
-        REGIONAL = "REGIONAL", "Promote to SUL Regional"
+        SCHEDULE = "SCHEDULE", "Scheduled"
+        SKIP = "SKIP", "Skipped"
+        REGIONAL = "REGIONAL", "Promoted to SUL Regional"
 
     recurring_event = models.ForeignKey(RecurringEvent, on_delete=models.CASCADE)
     type = models.CharField(
         max_length=10,
         choices=Type.choices,
         default=Type.SCHEDULE,
-        help_text="Select 'Schedule' to run the event on each of those days. Chose 'Skip' to skip the event on some days. Chose 'SUL Regional' to make the event SUL Regional on these days.",
+        help_text="Choose 'Scheduled' to run the event on each of those days. Choose 'Skipped' to skip the event on some days. Choose 'Promoted to SUL Regional' to make the event SUL Regional on these days.",
     )
     weekday = models.CharField(
         max_length=10,
@@ -290,9 +293,12 @@ class RecurrenceRule(models.Model):
     week = models.CharField(
         max_length=20,
         choices=Week.choices,
-        default=Week.FIRST,
+        default=Week.EVERY,
         help_text="Which week of the month your event will take place.",
     )
+
+    def __str__(self):
+        return f"{self.get_type_display()} (every) {self.get_week_display()} on {self.get_weekday_display()}"
 
 
 def event_image_validator(image):
