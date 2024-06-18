@@ -108,11 +108,24 @@ class MagicProvider(BaseProvider):
 factory.Faker.add_provider(MagicProvider)
 
 
+# To prevent that twice the same card name is generated
+# we shuffle the list of card names and keep track of the index
+random.shuffle(CARD_NAMES)
+card_index = 0
+
+
+def generate_unique_card_name():
+    global card_index
+    card_name = CARD_NAMES[card_index]
+    card_index += 1
+    return card_name
+
+
 class CardFactory(DjangoModelFactory):
     class Meta:
         model = Card
 
-    name = factory.Faker("random_element", elements=CARD_NAMES)
+    name = factory.LazyFunction(generate_unique_card_name)
     mana_cost = factory.Faker("mana_cost")
     mana_value = factory.Faker("random_int", max=18)
     type_line = factory.Faker("card_type")
