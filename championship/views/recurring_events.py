@@ -180,6 +180,7 @@ class RecurringEventFromMixin:
 
 
 class RecurringEventCreateView(LoginRequiredMixin, RecurringEventFromMixin, View):
+    """We implement a custom create view here, because we need to handle 2 forms and models at the same time."""
     template_name = "championship/recurring_event.html"
     success_url = reverse_lazy("events")
 
@@ -197,6 +198,7 @@ class RecurringEventCreateView(LoginRequiredMixin, RecurringEventFromMixin, View
 
 
 class RecurringEventUpdateView(LoginRequiredMixin, RecurringEventFromMixin, View):
+    """We implement a custom update view here, because we need to handle 2 forms and models at the same time."""
     template_name = "championship/recurring_event.html"
     success_url = reverse_lazy("events")
 
