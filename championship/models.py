@@ -228,18 +228,35 @@ class RecurringEvent(models.Model):
 
     start_date = models.DateField(
         default=tomorrow,
-        help_text="The first date on which this event series will be held. Only events without results will be rescheduled.",
+        help_text="The date of the first event of this event series. Can be in the past but only events without results will be rescheduled.",
     )
     end_date = models.DateField(
-        help_text="The last date on which this event series will be held. Can be up to 1 year in the future.",
+        help_text="The date of the last event of this event series. Can be up to 1 year in the future.",
     )
 
     def clean(self):
         super().clean()
-        one_year_from_now = datetime.date.today() + datetime.timedelta(days=365)
-        if self.end_date > one_year_from_now:
+        if self.end_date > datetime.date.today() + datetime.timedelta(days=365):
             raise ValidationError(
                 {"end_date": "End date must be within 1 year from today."}
+            )
+        if self.start_date > self.end_date:
+            raise ValidationError(
+                {"start_date": "Start date must be before the end date."}
+            )
+
+        original_start_date = (
+            RecurringEvent.objects.get(pk=self.pk).start_date if self.pk else None
+        )
+        # Allow leaving the start_date the same. Otherwise it can be maximum 1 year in the past.
+        if (
+            original_start_date != self.start_date
+            and self.start_date < datetime.date.today() - datetime.timedelta(days=365)
+        ):
+            raise ValidationError(
+                {
+                    "start_date": "Start date can't be more than 1 year in the past, unless it stays the same."
+                }
             )
 
     def __str__(self):

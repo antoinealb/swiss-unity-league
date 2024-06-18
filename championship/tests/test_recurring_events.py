@@ -33,9 +33,10 @@ from championship.views import calculate_recurrence_dates, reschedule
 
 class RecurringEventModelTest(TestCase):
 
-    def test_end_date_deep_in_future_throw_validation_error(self):
+    def test_end_date_one_year_in_future_throw_validation_error(self):
         # We only allow recurring events to be scheduled for up to a year.
         event = RecurringEventFactory(
+            start_date=datetime.date.today(),
             end_date=datetime.date.today() + datetime.timedelta(days=365),
         )
         event.full_clean()
@@ -43,6 +44,31 @@ class RecurringEventModelTest(TestCase):
             event = RecurringEventFactory(
                 end_date=datetime.date.today() + datetime.timedelta(days=366),
             )
+            event.full_clean()
+
+    def test_end_date_before_start_date_throw_validation_error(self):
+        event = RecurringEventFactory(
+            start_date=datetime.date.today(),
+            end_date=datetime.date.today(),
+        )
+        event.full_clean()
+        with self.assertRaises(ValidationError):
+            event = RecurringEventFactory(
+                start_date=datetime.date.today() + datetime.timedelta(days=1),
+                end_date=datetime.date.today(),
+            )
+            event.full_clean()
+
+    def test_start_date_older_one_year_throw_validation_error(self):
+        event = RecurringEventFactory(
+            start_date=datetime.date.today() - datetime.timedelta(days=366),
+            end_date=datetime.date.today(),
+        )
+        # Allow leaving start_date the same
+        event.full_clean()
+        with self.assertRaises(ValidationError):
+            # But not changing it to a date older than a year
+            event.start_date = datetime.date.today() - datetime.timedelta(days=367)
             event.full_clean()
 
 
