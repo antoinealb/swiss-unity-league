@@ -228,19 +228,39 @@ class RecurringEvent(models.Model):
 
     start_date = models.DateField(
         default=tomorrow,
-        help_text="The first date on which this event will be held. Only future events will be rescheduled. Today's and past events won't change.",
+        help_text="The date of the first event of this event series. Can be in the past but only events without results will be rescheduled.",
     )
     end_date = models.DateField(
-        help_text="The last date on which this event series will be held. Can be up to 1 year in the future.",
+        help_text="The date of the last event of this event series. Can be up to 1 year in the future.",
     )
 
     def clean(self):
         super().clean()
-        one_year_from_now = datetime.date.today() + datetime.timedelta(days=365)
-        if self.end_date > one_year_from_now:
+        if self.end_date > datetime.date.today() + datetime.timedelta(days=365):
             raise ValidationError(
                 {"end_date": "End date must be within 1 year from today."}
             )
+        if self.start_date > self.end_date:
+            raise ValidationError(
+                {"start_date": "Start date must be before the end date."}
+            )
+
+        original_start_date = (
+            RecurringEvent.objects.get(pk=self.pk).start_date if self.pk else None
+        )
+        # Allow leaving the start_date the same. Otherwise it can be maximum 1 year in the past.
+        if (
+            original_start_date != self.start_date
+            and self.start_date < datetime.date.today() - datetime.timedelta(days=365)
+        ):
+            raise ValidationError(
+                {
+                    "start_date": "Start date can't be more than 1 year in the past, unless it stays the same."
+                }
+            )
+
+    def __str__(self):
+        return f"Recurring event from {self.start_date} to {self.end_date}"
 
 
 class RecurrenceRule(models.Model):
@@ -270,16 +290,16 @@ class RecurrenceRule(models.Model):
         EVERY_OTHER = "EVERY_OTHER_WEEK", "Every other week"
 
     class Type(models.TextChoices):
-        SCHEDULE = "SCHEDULE", "Schedule"
-        SKIP = "SKIP", "Skip"
-        REGIONAL = "REGIONAL", "Promote to SUL Regional"
+        SCHEDULE = "SCHEDULE", "Scheduled"
+        SKIP = "SKIP", "Skipped"
+        REGIONAL = "REGIONAL", "Promoted to SUL Regional"
 
     recurring_event = models.ForeignKey(RecurringEvent, on_delete=models.CASCADE)
     type = models.CharField(
         max_length=10,
         choices=Type.choices,
         default=Type.SCHEDULE,
-        help_text="Select 'Schedule' to run the event on each of those days. Chose 'Skip' to skip the event on some days. Chose 'SUL Regional' to make the event SUL Regional on these days.",
+        help_text="Choose 'Scheduled' to run the event on each of those days. Choose 'Skipped' to skip the event on some days. Choose 'Promoted to SUL Regional' to make the event SUL Regional on these days.",
     )
     weekday = models.CharField(
         max_length=10,
@@ -290,9 +310,12 @@ class RecurrenceRule(models.Model):
     week = models.CharField(
         max_length=20,
         choices=Week.choices,
-        default=Week.FIRST,
+        default=Week.EVERY,
         help_text="Which week of the month your event will take place.",
     )
+
+    def __str__(self):
+        return f"{self.get_type_display()} (every) {self.get_week_display()} on {self.get_weekday_display()}"
 
 
 def event_image_validator(image):

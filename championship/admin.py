@@ -104,6 +104,19 @@ class EventAdmin(admin.ModelAdmin):
 admin.site.register(Event, EventAdmin)
 
 
+class RecurrenceRuleInline(admin.TabularInline):
+    model = RecurrenceRule
+    extra = 0
+
+
+class RecurringEventAdmin(admin.ModelAdmin):
+    list_display = ("start_date", "end_date")
+    inlines = [RecurrenceRuleInline]
+
+
+admin.site.register(RecurringEvent, RecurringEventAdmin)
+
+
 class PlayerMergeForm(forms.Form):
     player_to_keep = forms.ModelChoiceField(
         queryset=Player.objects.all(),

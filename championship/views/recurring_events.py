@@ -15,11 +15,18 @@
 import copy
 import datetime
 
+from django.contrib import messages
+from django.contrib.auth.mixins import LoginRequiredMixin
 from django.db import transaction
 from django.db.models import Count
+from django.shortcuts import redirect, render
+from django.urls import reverse_lazy
+from django.views import View
+from django.views.generic.edit import CreateView
 
 from dateutil.rrule import FR, MO, MONTHLY, SA, SU, TH, TU, WE, WEEKLY, rrule, rruleset
 
+from championship.forms import RecurrenceRuleModelFormSet, RecurringEventForm
 from championship.models import Event, RecurrenceRule, RecurringEvent
 
 WEEKDAY_MAP = {
@@ -147,3 +154,72 @@ def reschedule(recurring_event: RecurringEvent):
     # Delete any events that could not be rescheduled
     for event in events_to_reschedule:
         event.delete()
+
+
+class RecurringEventFromMixin:
+    """Used to handle the rendering and saving of the combined forms for RecurringEvent and RecurrenceRule."""
+
+    def render_forms(self, recurring_event_form, recurrence_rule_formset):
+        return render(
+            self.request,
+            self.template_name,
+            {
+                "recurring_event_form": recurring_event_form,
+                "recurrence_rule_formset": recurrence_rule_formset,
+            },
+        )
+
+    def save_forms(self, recurring_event_form, recurrence_rule_formset):
+        recurring_event = recurring_event_form.save()
+        recurring_event.recurrencerule_set.all().delete()
+        for form in recurrence_rule_formset:
+            rule = form.save(commit=False)
+            rule.recurring_event = recurring_event
+            rule.save()
+        return recurring_event
+
+
+class RecurringEventCreateView(LoginRequiredMixin, RecurringEventFromMixin, View):
+    """We implement a custom create view here, because we need to handle 2 forms and models at the same time."""
+
+    template_name = "championship/recurring_event.html"
+    success_url = reverse_lazy("events")
+
+    def get(self, request, *args, **kwargs):
+        return self.render_forms(RecurringEventForm(), RecurrenceRuleModelFormSet())
+
+    def post(self, request, *args, **kwargs):
+        recurring_event_form = RecurringEventForm(request.POST)
+        recurrence_rule_formset = RecurrenceRuleModelFormSet(request.POST)
+        if recurring_event_form.is_valid() and recurrence_rule_formset.is_valid():
+            self.save_forms(recurring_event_form, recurrence_rule_formset)
+            messages.success(request, "Recurring event successfully created.")
+            return redirect(self.success_url)
+        return self.render_forms(recurring_event_form, recurrence_rule_formset)
+
+
+class RecurringEventUpdateView(LoginRequiredMixin, RecurringEventFromMixin, View):
+    """We implement a custom update view here, because we need to handle 2 forms and models at the same time."""
+
+    template_name = "championship/recurring_event.html"
+    success_url = reverse_lazy("events")
+
+    def get(self, request, *args, **kwargs):
+        recurring_event = RecurringEvent.objects.get(pk=kwargs["pk"])
+        recurring_event_form = RecurringEventForm(instance=recurring_event)
+        recurrence_rule_formset = RecurrenceRuleModelFormSet(
+            queryset=recurring_event.recurrencerule_set.all()
+        )
+        return self.render_forms(recurring_event_form, recurrence_rule_formset)
+
+    def post(self, request, *args, **kwargs):
+        recurring_event = RecurringEvent.objects.get(pk=kwargs["pk"])
+        recurring_event_form = RecurringEventForm(
+            request.POST, instance=recurring_event
+        )
+        recurrence_rule_formset = RecurrenceRuleModelFormSet(request.POST)
+        if recurring_event_form.is_valid() and recurrence_rule_formset.is_valid():
+            self.save_forms(recurring_event_form, recurrence_rule_formset)
+            messages.success(request, "Recurring event successfully rescheduled.")
+            return redirect(self.success_url)
+        return self.render_forms(recurring_event_form, recurrence_rule_formset)

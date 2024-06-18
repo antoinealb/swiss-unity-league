@@ -15,7 +15,8 @@
 import datetime
 
 from django.forms import ValidationError
-from django.test import TestCase
+from django.test import Client, TestCase
+from django.urls import reverse
 
 from freezegun import freeze_time
 
@@ -24,16 +25,18 @@ from championship.factories import (
     EventPlayerResultFactory,
     RecurrenceRuleFactory,
     RecurringEventFactory,
+    UserFactory,
 )
-from championship.models import Event, RecurrenceRule
-from championship.views.recurring_events import calculate_recurrence_dates, reschedule
+from championship.models import Event, RecurrenceRule, RecurringEvent
+from championship.views import calculate_recurrence_dates, reschedule
 
 
 class RecurringEventModelTest(TestCase):
 
-    def test_end_date_deep_in_future_throw_validation_error(self):
+    def test_end_date_one_year_in_future_throw_validation_error(self):
         # We only allow recurring events to be scheduled for up to a year.
         event = RecurringEventFactory(
+            start_date=datetime.date.today(),
             end_date=datetime.date.today() + datetime.timedelta(days=365),
         )
         event.full_clean()
@@ -41,6 +44,31 @@ class RecurringEventModelTest(TestCase):
             event = RecurringEventFactory(
                 end_date=datetime.date.today() + datetime.timedelta(days=366),
             )
+            event.full_clean()
+
+    def test_end_date_before_start_date_throw_validation_error(self):
+        event = RecurringEventFactory(
+            start_date=datetime.date.today(),
+            end_date=datetime.date.today(),
+        )
+        event.full_clean()
+        with self.assertRaises(ValidationError):
+            event = RecurringEventFactory(
+                start_date=datetime.date.today() + datetime.timedelta(days=1),
+                end_date=datetime.date.today(),
+            )
+            event.full_clean()
+
+    def test_start_date_older_one_year_throw_validation_error(self):
+        event = RecurringEventFactory(
+            start_date=datetime.date.today() - datetime.timedelta(days=366),
+            end_date=datetime.date.today(),
+        )
+        # Allow leaving start_date the same
+        event.full_clean()
+        with self.assertRaises(ValidationError):
+            # But not changing it to a date older than a year
+            event.start_date = datetime.date.today() - datetime.timedelta(days=367)
             event.full_clean()
 
 
@@ -588,3 +616,72 @@ class RecurrenceEventCreationTest(TestCase):
                 Event.Category.REGIONAL,
             ],
         )
+
+
+class RecurringEventViewTest(TestCase):
+    def setUp(self):
+        self.client = Client()
+        self.client.force_login(UserFactory())
+        self.data = {
+            "start_date": "2024-06-01",
+            "end_date": "2024-06-30",
+            "form-TOTAL_FORMS": 1,
+            "form-INITIAL_FORMS": 0,
+            "form-MIN_NUM_FORMS": 1,
+            "form-MAX_NUM_FORMS": 10,
+            "form-0-weekday": RecurrenceRule.Weekday.FRIDAY,
+            "form-0-week": RecurrenceRule.Week.EVERY,
+            "form-0-type": RecurrenceRule.Type.SCHEDULE,
+        }
+
+    def test_get_create_recurring_event(self):
+        response = self.client.get(reverse("recurring_event_create"))
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, RecurrenceRule.Weekday.FRIDAY.name)
+        self.assertContains(response, RecurrenceRule.Week.EVERY.name)
+        self.assertContains(response, RecurrenceRule.Type.SCHEDULE.name)
+
+    def test_create_recurring_event(self):
+
+        response = self.client.post(reverse("recurring_event_create"), self.data)
+        self.assertEqual(response.status_code, 302)
+
+        recurring_event = RecurringEvent.objects.first()
+        self.assertEqual(recurring_event.start_date, datetime.date(2024, 6, 1))
+        self.assertEqual(recurring_event.end_date, datetime.date(2024, 6, 30))
+        self.assertEqual(recurring_event.recurrencerule_set.count(), 1)
+
+        rule = recurring_event.recurrencerule_set.first()
+        self.assertEqual(rule.weekday, RecurrenceRule.Weekday.FRIDAY)
+        self.assertEqual(rule.week, RecurrenceRule.Week.EVERY)
+        self.assertEqual(rule.type, RecurrenceRule.Type.SCHEDULE)
+        self.assertEqual(rule.recurring_event, recurring_event)
+
+    def test_get_update_recurring_event(self):
+        recurring_event = RecurringEventFactory()
+        rule = RecurrenceRuleFactory(recurring_event=recurring_event)
+        response = self.client.get(
+            reverse("recurring_event_update", args=[recurring_event.id])
+        )
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, rule.weekday)
+        self.assertContains(response, rule.week)
+        self.assertContains(response, rule.type)
+
+    def test_update_recurring_event(self):
+        recurring_event = RecurringEventFactory()
+        old_rule = RecurrenceRuleFactory(recurring_event=recurring_event)
+        response = self.client.post(
+            reverse("recurring_event_update", args=[recurring_event.id]), self.data
+        )
+        self.assertEqual(response.status_code, 302)
+
+        recurring_event.refresh_from_db()
+        self.assertEqual(recurring_event.start_date, datetime.date(2024, 6, 1))
+        self.assertEqual(recurring_event.end_date, datetime.date(2024, 6, 30))
+        self.assertEqual(recurring_event.recurrencerule_set.count(), 1)
+
+        rule = recurring_event.recurrencerule_set.first()
+        self.assertEqual(rule.weekday, RecurrenceRule.Weekday.FRIDAY)
+        self.assertEqual(rule.week, RecurrenceRule.Week.EVERY)
+        self.assertEqual(rule.type, RecurrenceRule.Type.SCHEDULE)
