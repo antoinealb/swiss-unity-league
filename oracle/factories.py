@@ -74,6 +74,13 @@ CARD_NAMES = [
 
 
 class MagicProvider(BaseProvider):
+    card_name_index = 0
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.cards = list(CARD_NAMES)
+        random.shuffle(self.cards)
+
     def mana_cost(self):
         return random.choice(
             [
@@ -104,6 +111,20 @@ class MagicProvider(BaseProvider):
             ]
         )
 
+    def card_name(self) -> str:
+        """Provide a unique magic card name.
+
+        To provide "unique-in-a-single-test" card names, we go through a
+        sequence of card names, eventually looping around. This guarantees
+        unicity in a given unit test, as long as CardFactory is called less
+        than len(CARD_NAMES) times in a single test.
+        """
+        self.card_name_index += 1
+        if self.card_name_index >= len(self.cards):
+            self.card_name_index = 0
+
+        return self.cards[self.card_name_index]
+
 
 factory.Faker.add_provider(MagicProvider)
 
@@ -112,7 +133,7 @@ class CardFactory(DjangoModelFactory):
     class Meta:
         model = Card
 
-    name = factory.Faker("random_element", elements=CARD_NAMES)
+    name = factory.Faker("card_name")
     mana_cost = factory.Faker("mana_cost")
     mana_value = factory.Faker("random_int", max=18)
     type_line = factory.Faker("card_type")
