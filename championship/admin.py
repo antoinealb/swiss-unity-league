@@ -110,7 +110,7 @@ class RecurrenceRuleInline(admin.TabularInline):
 
 
 class RecurringEventAdmin(admin.ModelAdmin):
-    list_display = ("start_date", "end_date")
+    list_display = ("name", "start_date", "end_date")
     inlines = [RecurrenceRuleInline]
 
 

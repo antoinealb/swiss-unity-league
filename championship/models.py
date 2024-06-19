@@ -226,6 +226,10 @@ class RecurringEvent(models.Model):
     the start_date to the end_date based on the dates defined by its RecurrenceRules.
     """
 
+    name = models.CharField(
+        max_length=200,
+        help_text="The name of this event series, e.g. 'Modern League Q1'",
+    )
     start_date = models.DateField(
         default=tomorrow,
         help_text="The date of the first event of this event series. Can be in the past but only events without results will be rescheduled.",

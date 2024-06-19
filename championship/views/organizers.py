@@ -32,7 +32,7 @@ from championship.forms import (
     RegistrationAddressForm,
     UserForm,
 )
-from championship.models import Address, Event, EventOrganizer
+from championship.models import Address, Event, EventOrganizer, RecurringEvent
 from championship.views.base import CustomDeleteView
 
 
@@ -61,6 +61,18 @@ class EventOrganizerDetailView(DetailView):
                 {"title": "Past Events", "list": past_events, "has_num_players": True}
             )
         context["all_events"] = all_events
+
+        if organizer.user == self.request.user:
+            # Show the organizer all of their own recurring events
+            context["user_is_organizer"] = True
+            recurring_events = RecurringEvent.objects.filter(event__organizer=organizer)
+        else:
+            # Show only active recurring events to other users
+            recurring_events = RecurringEvent.objects.filter(
+                event__organizer=organizer,
+                end_date__gte=datetime.date.today(),
+            )
+        context["recurring_events"] = recurring_events.distinct().order_by("start_date")
         return context
 
 
