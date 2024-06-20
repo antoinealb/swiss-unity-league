@@ -12,11 +12,14 @@
         <div class="col"><h3>Points</h3></div>
     </div>
 
-    {{ formset.management_form }}
+    {{ formset.management_form }}
 
-    {% for f in formset %}
-        {% crispy f %}
-    {% endfor %}
+    <div id="formset-container">
+        {% for f in formset %}
+            {% crispy f %}
+        {% endfor %}
+    </div>
+    <button type="button" id="add-more-rows" class="btn btn-success">Add More Players</button>
 
     <input type="submit" class="btn btn-secondary" value="Submit results"></input>
     </form>
@@ -27,4 +30,45 @@
         {% endfor %}
     </datalist>
 
+{% endblock %}
+
+{% block extrahead %}
+    <script>
+        document.addEventListener("DOMContentLoaded", function () {
+            const formContainer = document.getElementById("formset-container");
+            const totalForms = document.getElementById("id_form-TOTAL_FORMS");
+            const maxNumForms = parseInt(document.getElementById("id_form-MAX_NUM_FORMS").value);
+
+            // on button click add 8 more forms to the formset
+            document.getElementById("add-more-rows").addEventListener("click", function () {
+                var totalFormsInt = parseInt(totalForms.value);
+                const eightMoreRows = totalFormsInt + 8;
+
+                // stop adding forms when we added 8 or reach the maximum
+                while (totalFormsInt < eightMoreRows && totalFormsInt <= maxNumForms) {
+                    var newForm = formContainer.querySelector(".row").cloneNode(true);
+                    // Update the form so that it contains the right indices
+                    newForm.querySelectorAll("div, input").forEach(function (input) {
+                        if (input.name) {
+                            input.name = input.name.replace(/-\d+-/, `-${totalFormsInt}-`);
+                        }
+                        if (input.id) {
+                            input.id = input.id.replace(/-\d+-/, `-${totalFormsInt}-`);
+                        }
+                        if (input.value) {
+                            input.value = "";
+                        }
+                    });
+                    totalFormsInt++;
+                    formContainer.appendChild(newForm);
+                    totalForms.value = totalFormsInt;
+                }
+
+                // Hide the button if we've reached the maximum number of forms
+                if (totalFormsInt >= maxNumForms) {
+                    document.getElementById("add-more-rows").style.display = "none";
+                }
+            });
+        });
+    </script>
 {% endblock %}

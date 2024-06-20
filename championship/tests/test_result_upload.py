@@ -772,7 +772,9 @@ class ManualImportTestCase(TestCase):
         self.client.login(**self.credentials)
 
     def test_get(self):
-        self.client.get(reverse("results_create_manual"))
+        response = self.client.get(reverse("results_create_manual"))
+        # initially there should be 16 results
+        self.assertEqual(len(response.context["formset"]), 16)
 
     def test_upload_simple_result(self):
         self.client.post(reverse("results_create_manual"), self.data)
