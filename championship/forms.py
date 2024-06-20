@@ -297,7 +297,7 @@ class SingleResultFormHelper(FormHelper):
 
 
 ResultsFormset = forms.formset_factory(
-    SingleResultForm, min_num=1, extra=4, max_num=128
+    SingleResultForm, min_num=1, extra=15, max_num=128
 )
 
 
