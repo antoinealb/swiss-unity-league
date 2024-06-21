@@ -620,9 +620,8 @@ class RecurrenceEventCreationTest(TestCase):
 
 class RecurringEventViewTest(TestCase):
     def setUp(self):
-        self.client = Client()
-        self.client.force_login(UserFactory())
         self.data = {
+            "name": "Test Event Series",
             "start_date": "2024-06-01",
             "end_date": "2024-06-30",
             "form-TOTAL_FORMS": 1,
@@ -633,17 +632,34 @@ class RecurringEventViewTest(TestCase):
             "form-0-week": RecurrenceRule.Week.EVERY,
             "form-0-type": RecurrenceRule.Type.SCHEDULE,
         }
+        self.event = EventFactory()
+        self.client.force_login(self.event.organizer.user)
 
+    @freeze_time("2024-06-01")
     def test_get_create_recurring_event(self):
-        response = self.client.get(reverse("recurring_event_create"))
+        response = self.client.get(
+            reverse("recurring_event_create", args=[self.event.id])
+        )
         self.assertEqual(response.status_code, 200)
         self.assertContains(response, RecurrenceRule.Weekday.FRIDAY.name)
         self.assertContains(response, RecurrenceRule.Week.EVERY.name)
         self.assertContains(response, RecurrenceRule.Type.SCHEDULE.name)
+        self.assertContains(response, "Create Event Series")
 
+    def test_unauthorized_user_cannot_create_recurring_event(self):
+        user = UserFactory()
+        self.client.force_login(user)
+        response = self.client.get(
+            reverse("recurring_event_create", args=[self.event.id])
+        )
+        self.assertEqual(response.status_code, 403)
+
+    @freeze_time("2024-06-01")
     def test_create_recurring_event(self):
 
-        response = self.client.post(reverse("recurring_event_create"), self.data)
+        response = self.client.post(
+            reverse("recurring_event_create", args=[self.event.id]), self.data
+        )
         self.assertEqual(response.status_code, 302)
 
         recurring_event = RecurringEvent.objects.first()
@@ -657,8 +673,23 @@ class RecurringEventViewTest(TestCase):
         self.assertEqual(rule.type, RecurrenceRule.Type.SCHEDULE)
         self.assertEqual(rule.recurring_event, recurring_event)
 
+        event_dates = [event.date for event in Event.objects.all()]
+
+        self.assertEqual(
+            event_dates,
+            [
+                datetime.date(2024, 6, 7),
+                datetime.date(2024, 6, 14),
+                datetime.date(2024, 6, 21),
+                datetime.date(2024, 6, 28),
+            ],
+        )
+
+    @freeze_time("2024-06-01")
     def test_get_update_recurring_event(self):
         recurring_event = RecurringEventFactory()
+        self.event.recurring_event = recurring_event
+        self.event.save()
         rule = RecurrenceRuleFactory(recurring_event=recurring_event)
         response = self.client.get(
             reverse("recurring_event_update", args=[recurring_event.id])
@@ -667,10 +698,19 @@ class RecurringEventViewTest(TestCase):
         self.assertContains(response, rule.weekday)
         self.assertContains(response, rule.week)
         self.assertContains(response, rule.type)
+        self.assertContains(response, "Reschedule Event Series")
 
+    @freeze_time("2024-06-01")
     def test_update_recurring_event(self):
         recurring_event = RecurringEventFactory()
+        self.event.recurring_event = recurring_event
+        self.event.save()
+
         old_rule = RecurrenceRuleFactory(recurring_event=recurring_event)
+        self.data["form-TOTAL_FORMS"] = 2
+        self.data["form-1-weekday"] = RecurrenceRule.Weekday.FRIDAY
+        self.data["form-1-week"] = RecurrenceRule.Week.FIRST
+        self.data["form-1-type"] = RecurrenceRule.Type.REGIONAL
         response = self.client.post(
             reverse("recurring_event_update", args=[recurring_event.id]), self.data
         )
@@ -679,9 +719,107 @@ class RecurringEventViewTest(TestCase):
         recurring_event.refresh_from_db()
         self.assertEqual(recurring_event.start_date, datetime.date(2024, 6, 1))
         self.assertEqual(recurring_event.end_date, datetime.date(2024, 6, 30))
-        self.assertEqual(recurring_event.recurrencerule_set.count(), 1)
-
-        rule = recurring_event.recurrencerule_set.first()
+        rules = recurring_event.recurrencerule_set.all()
+        self.assertEqual(len(rules), 2)
+        rule = rules[0]
         self.assertEqual(rule.weekday, RecurrenceRule.Weekday.FRIDAY)
         self.assertEqual(rule.week, RecurrenceRule.Week.EVERY)
         self.assertEqual(rule.type, RecurrenceRule.Type.SCHEDULE)
+        rule = rules[1]
+        self.assertEqual(rule.weekday, RecurrenceRule.Weekday.FRIDAY)
+        self.assertEqual(rule.week, RecurrenceRule.Week.FIRST)
+        self.assertEqual(rule.type, RecurrenceRule.Type.REGIONAL)
+
+        with self.assertRaises(RecurrenceRule.DoesNotExist):
+            old_rule.refresh_from_db()
+
+        events = Event.objects.all()
+        event_dates = [event.date for event in events]
+        event_categories = [event.category for event in events]
+        self.assertEqual(
+            event_dates,
+            [
+                datetime.date(2024, 6, 7),
+                datetime.date(2024, 6, 14),
+                datetime.date(2024, 6, 21),
+                datetime.date(2024, 6, 28),
+            ],
+        )
+        self.assertEqual(
+            event_categories,
+            [
+                Event.Category.REGIONAL,
+                Event.Category.REGULAR,
+                Event.Category.REGULAR,
+                Event.Category.REGULAR,
+            ],
+        )
+
+    def test_unauthorized_user_cannot_update_recurring_event(self):
+        user = UserFactory()
+        self.client.force_login(user)
+        recurring_event = RecurringEventFactory()
+        self.event.recurring_event = recurring_event
+        self.event.save()
+        response = self.client.get(
+            reverse("recurring_event_update", args=[recurring_event.id])
+        )
+        self.assertEqual(response.status_code, 403)
+
+    @freeze_time("2024-06-01")
+    def test_copy_recurring_event(self):
+        # Create a recurring event every wednesday for May
+        recurring_event1 = RecurringEventFactory(
+            start_date=datetime.date(2024, 5, 1),
+            end_date=datetime.date(2024, 5, 31),
+        )
+        rule = RecurrenceRuleFactory(
+            recurring_event=recurring_event1,
+            weekday=RecurrenceRule.Weekday.WEDNESDAY,
+            week=RecurrenceRule.Week.EVERY,
+            type=RecurrenceRule.Type.SCHEDULE,
+        )
+        self.event.recurring_event = recurring_event1
+        self.event.save()
+        reschedule(recurring_event1)
+
+        # Copy the recurring event to June but this time on Fridays
+        response = self.client.post(
+            reverse("recurring_event_copy", args=[recurring_event1.id]), self.data
+        )
+        self.assertEqual(response.status_code, 302)
+        event_dates = [event.date for event in Event.objects.all()]
+        self.assertEqual(
+            event_dates,
+            [
+                datetime.date(2024, 5, 1),
+                datetime.date(2024, 5, 8),
+                datetime.date(2024, 5, 15),
+                datetime.date(2024, 5, 22),
+                datetime.date(2024, 5, 29),
+                datetime.date(2024, 6, 7),
+                datetime.date(2024, 6, 14),
+                datetime.date(2024, 6, 21),
+                datetime.date(2024, 6, 28),
+            ],
+        )
+        recurring_events = RecurringEvent.objects.all()
+        self.assertEqual(len(recurring_events), 2)
+        recurring_event1 = recurring_events[0]
+        self.assertEqual(recurring_event1.start_date, datetime.date(2024, 5, 1))
+        self.assertEqual(recurring_event1.end_date, datetime.date(2024, 5, 31))
+        recurring_event2 = recurring_events[1]
+        self.assertEqual(recurring_event2.start_date, datetime.date(2024, 6, 1))
+        self.assertEqual(recurring_event2.end_date, datetime.date(2024, 6, 30))
+        rules = RecurrenceRule.objects.all()
+        self.assertEqual(len(rules), 2)
+        rule1 = rules[0]
+        self.assertEqual(rule1.weekday, RecurrenceRule.Weekday.WEDNESDAY)
+        self.assertEqual(rule1.week, RecurrenceRule.Week.EVERY)
+        self.assertEqual(rule1.type, RecurrenceRule.Type.SCHEDULE)
+        self.assertEqual(rule1.recurring_event, recurring_event1)
+        rule2 = rules[1]
+        self.assertEqual(rule2.weekday, RecurrenceRule.Weekday.FRIDAY)
+        self.assertEqual(rule2.week, RecurrenceRule.Week.EVERY)
+        self.assertEqual(rule2.type, RecurrenceRule.Type.SCHEDULE)
+        self.assertEqual(rule2.recurring_event, recurring_event2)

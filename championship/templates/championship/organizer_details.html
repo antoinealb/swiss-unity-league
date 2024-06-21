@@ -73,7 +73,10 @@
                             <td>{{ r_event.start_date }}</td>
                             <td>{{ r_event.end_date }}</td>
                             {% if user_is_organizer %}
-                                <td><a href="{% url 'recurring_event_update' r_event.id %}" class="btn btn-secondary">Edit</a></td>
+                                <td>
+                                    <a href="{% url 'recurring_event_update' r_event.id %}" class="btn btn-secondary">Reschedule</a>
+                                    <a href="{% url 'recurring_event_copy' r_event.id %}" class="btn btn-secondary-light">Copy</a>
+                                </td>
                             {% endif %}
                         </tr>
                     {% endfor %}

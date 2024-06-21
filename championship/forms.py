@@ -385,7 +385,7 @@ RecurrenceRuleModelFormSet = forms.modelformset_factory(
 class RecurringEventForm(forms.ModelForm):
     class Meta:
         model = RecurringEvent
-        fields = ["start_date", "end_date"]
+        fields = ["name", "start_date", "end_date"]
         widgets = {
             "start_date": forms.DateInput(attrs={"type": "date"}),
             "end_date": forms.DateInput(attrs={"type": "date"}),

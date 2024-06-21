@@ -19,10 +19,10 @@ from django.contrib import messages
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.db import transaction
 from django.db.models import Count
-from django.shortcuts import redirect, render
-from django.urls import reverse_lazy
+from django.http import HttpResponseForbidden
+from django.shortcuts import get_object_or_404, redirect, render
+from django.urls import reverse, reverse_lazy
 from django.views import View
-from django.views.generic.edit import CreateView
 
 from dateutil.rrule import FR, MO, MONTHLY, SA, SU, TH, TU, WE, WEEKLY, rrule, rruleset
 
@@ -113,9 +113,9 @@ def reschedule(recurring_event: RecurringEvent):
     )
 
     if events_to_reschedule:
-        default_event = copy.deepcopy(events_to_reschedule[0])
+        default_event = copy.deepcopy(events_to_reschedule[-1])
     else:
-        default_event = recurring_event.event_set.first()
+        default_event = recurring_event.event_set.last()
 
     if not default_event:
         raise ValueError(
@@ -156,8 +156,10 @@ def reschedule(recurring_event: RecurringEvent):
         event.delete()
 
 
-class RecurringEventFromMixin:
+class RecurringEventFormMixin:
     """Used to handle the rendering and saving of the combined forms for RecurringEvent and RecurrenceRule."""
+
+    template_name = "championship/recurring_event.html"
 
     def render_forms(self, recurring_event_form, recurrence_rule_formset):
         return render(
@@ -166,60 +168,106 @@ class RecurringEventFromMixin:
             {
                 "recurring_event_form": recurring_event_form,
                 "recurrence_rule_formset": recurrence_rule_formset,
+                "leading_title": self.leading_title,
             },
         )
 
-    def save_forms(self, recurring_event_form, recurrence_rule_formset):
-        recurring_event = recurring_event_form.save()
-        recurring_event.recurrencerule_set.all().delete()
-        for form in recurrence_rule_formset:
-            rule = form.save(commit=False)
-            rule.recurring_event = recurring_event
-            rule.save()
-        return recurring_event
+    def save_forms_if_valid(
+        self, request, recurring_event_form, recurrence_rule_formset
+    ):
+        if recurring_event_form.is_valid() and recurrence_rule_formset.is_valid():
+            # Save the recurring event and link the event to it.
+            recurring_event = recurring_event_form.save()
+            self.event.recurring_event = recurring_event
+            self.event.save()
+
+            # Delete all old rules and save the new ones
+            recurring_event.recurrencerule_set.all().delete()
+            for form in recurrence_rule_formset:
+                rule = form.save(commit=False)
+                rule.recurring_event = recurring_event
+                rule.save()
+
+            reschedule(recurring_event)
+            messages.success(request, "Event series successfully scheduled.")
+            return redirect(
+                reverse(
+                    "organizer_details",
+                    args=[self.event.organizer.pk],
+                )
+            )
+        return self.render_forms(recurring_event_form, recurrence_rule_formset)
 
 
-class RecurringEventCreateView(LoginRequiredMixin, RecurringEventFromMixin, View):
+class RecurringEventCreateView(LoginRequiredMixin, RecurringEventFormMixin, View):
     """We implement a custom create view here, because we need to handle 2 forms and models at the same time."""
 
-    template_name = "championship/recurring_event.html"
-    success_url = reverse_lazy("events")
+    leading_title = "Create"
+
+    def dispatch(self, request, *args, **kwargs):
+        self.event = get_object_or_404(Event, pk=kwargs["event_id"])
+        if self.event.organizer.user != request.user:
+            return HttpResponseForbidden()
+        return super().dispatch(request, *args, **kwargs)
 
     def get(self, request, *args, **kwargs):
-        return self.render_forms(RecurringEventForm(), RecurrenceRuleModelFormSet())
+        formset = RecurrenceRuleModelFormSet()
+        # set query set to none, otherwise the formset will be prefilled with all existing rules
+        formset.queryset = RecurrenceRule.objects.none()
+        return self.render_forms(RecurringEventForm(), formset)
 
     def post(self, request, *args, **kwargs):
         recurring_event_form = RecurringEventForm(request.POST)
         recurrence_rule_formset = RecurrenceRuleModelFormSet(request.POST)
-        if recurring_event_form.is_valid() and recurrence_rule_formset.is_valid():
-            self.save_forms(recurring_event_form, recurrence_rule_formset)
-            messages.success(request, "Recurring event successfully created.")
-            return redirect(self.success_url)
-        return self.render_forms(recurring_event_form, recurrence_rule_formset)
+        return self.save_forms_if_valid(
+            request, recurring_event_form, recurrence_rule_formset
+        )
 
 
-class RecurringEventUpdateView(LoginRequiredMixin, RecurringEventFromMixin, View):
+class RecurringEventUpdateView(LoginRequiredMixin, RecurringEventFormMixin, View):
     """We implement a custom update view here, because we need to handle 2 forms and models at the same time."""
 
-    template_name = "championship/recurring_event.html"
-    success_url = reverse_lazy("events")
+    leading_title = "Reschedule"
+
+    def dispatch(self, request, *args, **kwargs):
+        self.recurring_event = get_object_or_404(RecurringEvent, pk=kwargs["pk"])
+        self.event = self.recurring_event.event_set.last()
+        if self.event.organizer.user != request.user:
+            return HttpResponseForbidden()
+        return super().dispatch(request, *args, **kwargs)
 
     def get(self, request, *args, **kwargs):
-        recurring_event = RecurringEvent.objects.get(pk=kwargs["pk"])
-        recurring_event_form = RecurringEventForm(instance=recurring_event)
+        recurring_event_form = RecurringEventForm(instance=self.recurring_event)
         recurrence_rule_formset = RecurrenceRuleModelFormSet(
-            queryset=recurring_event.recurrencerule_set.all()
+            queryset=self.recurring_event.recurrencerule_set.all()
         )
+        # We tell django there are no forms to update (no initial forms). This allows the user to define a new ruleset
+        # by adding and removing rules. In the end, we will delete all old rules and save the new ones.
+        recurrence_rule_formset.management_form.initial["INITIAL_FORMS"] = 0
         return self.render_forms(recurring_event_form, recurrence_rule_formset)
 
     def post(self, request, *args, **kwargs):
-        recurring_event = RecurringEvent.objects.get(pk=kwargs["pk"])
         recurring_event_form = RecurringEventForm(
-            request.POST, instance=recurring_event
+            request.POST, instance=self.recurring_event
         )
         recurrence_rule_formset = RecurrenceRuleModelFormSet(request.POST)
-        if recurring_event_form.is_valid() and recurrence_rule_formset.is_valid():
-            self.save_forms(recurring_event_form, recurrence_rule_formset)
-            messages.success(request, "Recurring event successfully rescheduled.")
-            return redirect(self.success_url)
-        return self.render_forms(recurring_event_form, recurrence_rule_formset)
+        return self.save_forms_if_valid(
+            request, recurring_event_form, recurrence_rule_formset
+        )
+
+
+class RecurringEventCopyView(RecurringEventUpdateView):
+    """Copies a recurring event and reschedules the events."""
+
+    leading_title = "Copy"
+
+    def post(self, request, *args, **kwargs):
+        # Create a copy of the last event
+        self.event = self.recurring_event.event_set.last()
+        self.event.pk = None
+        # Copy the recurring event, by not passing a previous instance
+        recurring_event_form = RecurringEventForm(request.POST)
+        recurrence_rule_formset = RecurrenceRuleModelFormSet(request.POST)
+        return self.save_forms_if_valid(
+            request, recurring_event_form, recurrence_rule_formset
+        )
