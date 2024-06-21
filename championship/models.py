@@ -226,6 +226,10 @@ class RecurringEvent(models.Model):
     the start_date to the end_date based on the dates defined by its RecurrenceRules.
     """
 
+    class Meta:
+        verbose_name = "Event Series"
+        verbose_name_plural = "Event Series"
+
     name = models.CharField(
         max_length=200,
         help_text="The name of this event series, e.g. 'Modern League Q1'",
@@ -264,7 +268,10 @@ class RecurringEvent(models.Model):
             )
 
     def __str__(self):
-        return f"Recurring event from {self.start_date} to {self.end_date}"
+        return f"{self.name} from {self.start_date} to {self.end_date}"
+
+    def get_delete_url(self):
+        return reverse("recurring_event_delete", args=[self.pk])
 
 
 class RecurrenceRule(models.Model):
