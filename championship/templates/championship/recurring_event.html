@@ -3,7 +3,7 @@
 {% load crispy_forms_tags %}
 
 {% block content %}
-    <h1>{% if event.pk %} Reschedule {% else %} Schedule {% endif %} Recurring Event</h1>
+    <h1>{{ leading_title }} Event Series</h1>
     <form method="post">
         {% csrf_token %}
         {{ recurring_event_form|crispy }}
@@ -39,15 +39,15 @@
                 </div>
             {% endfor %}
         </div>
-        <button type="submit" class="btn btn-secondary">{% if event.pk %}Reschedule{% else %}Schedule{% endif %} Event</button>
+        <button type="submit" class="btn btn-secondary">{{ leading_title }} Event Series</button>
     </form>
 {% endblock %}
 
 {% block extrahead %}
     <script>
         document.addEventListener("DOMContentLoaded", function () {
-            var formContainer = document.getElementById("form-container");
-            var totalForms = document.getElementById("id_form-TOTAL_FORMS");
+            const formContainer = document.getElementById("form-container");
+            const totalForms = document.getElementById("id_form-TOTAL_FORMS");
 
             // Updates the indices of the form fields and the totalForms value after adding or removing a recurrene rule form
             function updateFormIndices() {
