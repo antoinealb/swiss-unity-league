@@ -12,6 +12,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+import datetime
+
 from django.contrib.auth import get_user_model
 from django.core.exceptions import ValidationError
 from django.core.files.uploadedfile import SimpleUploadedFile
@@ -23,6 +25,7 @@ from championship.factories import (
     EventFactory,
     EventOrganizerFactory,
     EventPlayerResultFactory,
+    RecurringEventFactory,
 )
 
 User = get_user_model()
@@ -31,11 +34,7 @@ User = get_user_model()
 class EventOrganizerDetailViewTests(TestCase):
     def setUp(self):
         self.client = Client()
-        self.user = User.objects.create_user(username="testuser", password="12345")
-        self.client.login(username="testuser", password="12345")
-
-        self.organizer = EventOrganizerFactory(user=self.user)
-
+        self.organizer = EventOrganizerFactory()
         tomorrow = timezone.now() + timezone.timedelta(days=1)
         past_date = timezone.now() - timezone.timedelta(days=5)
 
@@ -81,7 +80,11 @@ class EventOrganizerDetailViewTests(TestCase):
         self.assertEqual(self.response.status_code, 404)
 
     def test_organizer_reverse(self):
+        self.client.force_login(self.organizer.user)
         edit_organizer_url = reverse("organizer_update")
+        self.response = self.client.get(
+            reverse("organizer_details", args=[self.organizer.id])
+        )
         self.assertContains(self.response, f'href="{edit_organizer_url}"')
 
     def test_image_validation_file_type(self):
@@ -111,6 +114,66 @@ class EventOrganizerDetailViewTests(TestCase):
             organizer.full_clean()
         organizer.image = valid_image
         organizer.full_clean()
+
+    def test_recurring_events_shown(self):
+        recurring_event = RecurringEventFactory(end_date=datetime.date.today())
+        self.future_event.recurring_event = recurring_event
+        self.future_event.save()
+        response = self.client.get(
+            reverse("organizer_details", args=[self.organizer.id])
+        )
+        recurring_events = response.context["recurring_events"]
+        self.assertEqual(len(recurring_events), 1)
+        self.assertEqual(recurring_events[0], recurring_event)
+        self.assertContains(response, "Active Event Series")
+
+    def test_no_table_shown_without_active_recurring_event(self):
+        self.assertNotContains(self.response, "Active Event Series")
+        recurring_event = RecurringEventFactory(
+            end_date=datetime.date.today() - timezone.timedelta(days=1)
+        )
+        self.past_event.recurring_event = recurring_event
+        self.past_event.save()
+        response = self.client.get(
+            reverse("organizer_details", args=[self.organizer.id])
+        )
+        self.assertNotContains(response, "Active Event Series")
+
+    def test_recurring_events_ordered_by_start_date(self):
+        recurring_event1 = RecurringEventFactory(
+            start_date=datetime.date.today(), end_date=datetime.date.today()
+        )
+        recurring_event2 = RecurringEventFactory(
+            start_date=datetime.date.today() + timezone.timedelta(days=1),
+            end_date=datetime.date.today(),
+        )
+        EventFactory(organizer=self.organizer, recurring_event=recurring_event1)
+        EventFactory(organizer=self.organizer, recurring_event=recurring_event2)
+        response = self.client.get(
+            reverse("organizer_details", args=[self.organizer.id])
+        )
+        recurring_events = response.context["recurring_events"]
+        self.assertEqual(len(recurring_events), 2)
+        self.assertEqual(recurring_events[0], recurring_event1)
+        self.assertEqual(recurring_events[1], recurring_event2)
+
+    def test_edit_recurring_event_only_shown_to_organizer(self):
+        recurring_event = RecurringEventFactory()
+        self.future_event.recurring_event = recurring_event
+        self.future_event.save()
+        response = self.client.get(
+            reverse("organizer_details", args=[self.organizer.id])
+        )
+        self.assertNotContains(
+            response, reverse("recurring_event_update", args=[recurring_event.id])
+        )
+        self.client.force_login(self.organizer.user)
+        response = self.client.get(
+            reverse("organizer_details", args=[self.organizer.id])
+        )
+        self.assertContains(
+            response, reverse("recurring_event_update", args=[recurring_event.id])
+        )
 
 
 class OrganizerListViewTest(TestCase):

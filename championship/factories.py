@@ -169,6 +169,7 @@ class RecurringEventFactory(DjangoModelFactory):
     class Meta:
         model = RecurringEvent
 
+    name = factory.Faker("mtg_event_name")
     end_date = factory.Faker(
         "date_between", start_date=SEASON_2023.start_date, end_date=SEASON_2023.end_date
     )
