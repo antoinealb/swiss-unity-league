@@ -206,6 +206,9 @@ class RecurringEventCreateView(LoginRequiredMixin, RecurringEventFormMixin, View
 
     def dispatch(self, request, *args, **kwargs):
         self.event = get_object_or_404(Event, pk=kwargs["event_id"])
+        # If the event is already part of a recurring event, we don't allow to create a new one
+        if self.event.recurring_event_id:
+            return HttpResponseForbidden()
         if self.event.organizer.user != request.user:
             return HttpResponseForbidden()
         return super().dispatch(request, *args, **kwargs)

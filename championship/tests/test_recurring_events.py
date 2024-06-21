@@ -766,6 +766,16 @@ class RecurringEventViewTest(TestCase):
         )
         self.assertEqual(response.status_code, 403)
 
+    def test_forbid_create_second_recurring_event(self):
+        """When an event already has a recurring event, we should not allow creating another one."""
+        recurring_event = RecurringEventFactory()
+        self.event.recurring_event = recurring_event
+        self.event.save()
+        response = self.client.post(
+            reverse("recurring_event_create", args=[self.event.id]), self.data
+        )
+        self.assertEqual(response.status_code, 403)
+
     @freeze_time("2024-06-01")
     def test_copy_recurring_event(self):
         # Create a recurring event every wednesday for May
