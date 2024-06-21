@@ -19,6 +19,7 @@ from django.contrib import messages
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.db import transaction
 from django.db.models import Count
+from django.http import HttpResponseForbidden
 from django.shortcuts import get_object_or_404, redirect, render
 from django.urls import reverse, reverse_lazy
 from django.views import View
@@ -177,11 +178,8 @@ class RecurringEventFormMixin:
         if recurring_event_form.is_valid() and recurrence_rule_formset.is_valid():
             # Save the recurring event and link the event to it.
             recurring_event = recurring_event_form.save()
-            if hasattr(self, "event"):
-                self.event.recurring_event = recurring_event
-                self.event.save()
-            else:
-                self.event = recurring_event.event_set.last()
+            self.event.recurring_event = recurring_event
+            self.event.save()
 
             # Delete all old rules and save the new ones
             recurring_event.recurrencerule_set.all().delete()
@@ -208,6 +206,8 @@ class RecurringEventCreateView(LoginRequiredMixin, RecurringEventFormMixin, View
 
     def dispatch(self, request, *args, **kwargs):
         self.event = get_object_or_404(Event, pk=kwargs["event_id"])
+        if self.event.organizer.user != request.user:
+            return HttpResponseForbidden()
         return super().dispatch(request, *args, **kwargs)
 
     def get(self, request, *args, **kwargs):
@@ -231,6 +231,9 @@ class RecurringEventUpdateView(LoginRequiredMixin, RecurringEventFormMixin, View
 
     def dispatch(self, request, *args, **kwargs):
         self.recurring_event = get_object_or_404(RecurringEvent, pk=kwargs["pk"])
+        self.event = self.recurring_event.event_set.last()
+        if self.event.organizer.user != request.user:
+            return HttpResponseForbidden()
         return super().dispatch(request, *args, **kwargs)
 
     def get(self, request, *args, **kwargs):

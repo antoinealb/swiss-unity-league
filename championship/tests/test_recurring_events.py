@@ -620,8 +620,6 @@ class RecurrenceEventCreationTest(TestCase):
 
 class RecurringEventViewTest(TestCase):
     def setUp(self):
-        self.client = Client()
-        self.client.force_login(UserFactory())
         self.data = {
             "name": "Test Event Series",
             "start_date": "2024-06-01",
@@ -635,6 +633,7 @@ class RecurringEventViewTest(TestCase):
             "form-0-type": RecurrenceRule.Type.SCHEDULE,
         }
         self.event = EventFactory()
+        self.client.force_login(self.event.organizer.user)
 
     @freeze_time("2024-06-01")
     def test_get_create_recurring_event(self):
@@ -646,6 +645,14 @@ class RecurringEventViewTest(TestCase):
         self.assertContains(response, RecurrenceRule.Week.EVERY.name)
         self.assertContains(response, RecurrenceRule.Type.SCHEDULE.name)
         self.assertContains(response, "Create Event Series")
+
+    def test_unauthorized_user_cannot_create_recurring_event(self):
+        user = UserFactory()
+        self.client.force_login(user)
+        response = self.client.get(
+            reverse("recurring_event_create", args=[self.event.id])
+        )
+        self.assertEqual(response.status_code, 403)
 
     @freeze_time("2024-06-01")
     def test_create_recurring_event(self):
@@ -681,6 +688,8 @@ class RecurringEventViewTest(TestCase):
     @freeze_time("2024-06-01")
     def test_get_update_recurring_event(self):
         recurring_event = RecurringEventFactory()
+        self.event.recurring_event = recurring_event
+        self.event.save()
         rule = RecurrenceRuleFactory(recurring_event=recurring_event)
         response = self.client.get(
             reverse("recurring_event_update", args=[recurring_event.id])
@@ -745,6 +754,17 @@ class RecurringEventViewTest(TestCase):
                 Event.Category.REGULAR,
             ],
         )
+
+    def test_unauthorized_user_cannot_update_recurring_event(self):
+        user = UserFactory()
+        self.client.force_login(user)
+        recurring_event = RecurringEventFactory()
+        self.event.recurring_event = recurring_event
+        self.event.save()
+        response = self.client.get(
+            reverse("recurring_event_update", args=[recurring_event.id])
+        )
+        self.assertEqual(response.status_code, 403)
 
     @freeze_time("2024-06-01")
     def test_copy_recurring_event(self):
