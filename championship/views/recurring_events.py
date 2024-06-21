@@ -98,6 +98,19 @@ def calculate_recurrence_dates(
     return all_dates, regional_dates
 
 
+class NoLinkedEventError(ValueError):
+    pass
+
+
+class NoDatesError(ValueError):
+    ui_message = "Between the start date and end date we cannot schedule any events based on the recurrence rules provided."
+
+    def __init__(self):
+        super().__init__(
+            "'calculate_recurrence_dates' didn't find any dates based on the given recurrence rules between the start and end dates"
+        )
+
+
 @transaction.atomic
 def reschedule(recurring_event: RecurringEvent):
     """
@@ -118,11 +131,14 @@ def reschedule(recurring_event: RecurringEvent):
         default_event = recurring_event.event_set.last()
 
     if not default_event:
-        raise ValueError(
+        raise NoLinkedEventError(
             "Rescheduling a recurring event requires at least one event linked to it."
         )
 
     all_dates, regional_dates = calculate_recurrence_dates(recurring_event)
+
+    if not all_dates:
+        raise NoDatesError()
 
     def find_event_for_same_week(events, given_date) -> Event | None:
         # Compares year and week number
@@ -187,8 +203,16 @@ class RecurringEventFormMixin:
                 rule = form.save(commit=False)
                 rule.recurring_event = recurring_event
                 rule.save()
-
-            reschedule(recurring_event)
+            try:
+                reschedule(recurring_event)
+            except NoDatesError as e:
+                # If there are no dates to schedule, we delete the recurring event and show an error message
+                recurring_event.delete()
+                messages.error(
+                    request,
+                    e.ui_message,
+                )
+                return self.render_forms(recurring_event_form, recurrence_rule_formset)
             messages.success(request, "Event series successfully scheduled.")
             return redirect(
                 reverse(

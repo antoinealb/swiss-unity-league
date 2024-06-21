@@ -29,6 +29,7 @@ from championship.factories import (
 )
 from championship.models import Event, RecurrenceRule, RecurringEvent
 from championship.views import calculate_recurrence_dates, reschedule
+from championship.views.recurring_events import NoDatesError
 
 
 class RecurringEventModelTest(TestCase):
@@ -775,6 +776,17 @@ class RecurringEventViewTest(TestCase):
             reverse("recurring_event_create", args=[self.event.id]), self.data
         )
         self.assertEqual(response.status_code, 403)
+
+    def test_create_recurring_event_without_dates(self):
+        # RecurringEvent is only 1 day long and Friday doesn't occur on that day.
+        self.data["end_date"] = "2024-06-01"
+        response = self.client.post(
+            reverse("recurring_event_create", args=[self.event.id]), self.data
+        )
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, NoDatesError.ui_message)
+        # No recurring event was created
+        self.assertEqual(RecurringEvent.objects.count(), 0)
 
     @freeze_time("2024-06-01")
     def test_copy_recurring_event(self):
