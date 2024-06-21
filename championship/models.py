@@ -384,9 +384,9 @@ class Event(models.Model):
     )
 
     class Format(models.TextChoices):
-        LEGACY = "LEGACY", "Legacy"
         LIMITED = "LIMITED", "Limited"
         MODERN = "MODERN", "Modern"
+        LEGACY = "LEGACY", "Legacy"
         PIONEER = "PIONEER", "Pioneer"
         STANDARD = "STANDARD", "Standard"
         EDH = "EDH", "Commander/EDH"
@@ -395,6 +395,7 @@ class Event(models.Model):
         OLD_SCHOOL = "OS", "Old School"
         PRE_MODERN = "PM", "Premodern"
         VINTAGE = "VINTAGE", "Vintage"
+        MULTIFORMAT = "MULTI", "Multi-Format"
 
     format = models.CharField(
         max_length=10,
