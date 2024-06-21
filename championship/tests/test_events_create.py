@@ -25,6 +25,7 @@ from championship.factories import (
     EventFactory,
     EventOrganizerFactory,
     EventPlayerResultFactory,
+    RecurringEventFactory,
 )
 from championship.models import Address, Event, EventOrganizer
 
@@ -348,3 +349,22 @@ class EventCopyTestCase(TestCase):
         initial_address = response.context["form"].initial["address"]
         self.assertNotEqual(not_default_address, self.organizer.default_address)
         self.assertEqual(not_default_address.id, initial_address)
+
+    def test_copy_event_with_recurring_event(self):
+        self.login()
+        recurring_event = RecurringEventFactory()
+        event = EventFactory(recurring_event=recurring_event)
+
+        data = {
+            "name": "Test Event",
+            "url": "https://test.example",
+            "date": "11/26/2022",
+            "format": "LEGACY",
+            "category": "PREMIER",
+        }
+
+        self.client.post(reverse("event_copy", args=[event.id]), data=data)
+        events = Event.objects.all()
+        self.assertEqual(len(events), 2)
+        self.assertEqual(events[0].recurring_event, recurring_event)
+        self.assertIsNone(events[1].recurring_event)
