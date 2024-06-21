@@ -146,3 +146,61 @@ def get_leaderboard(season) -> list[Player]:
             players_with_score.append(player)
     players_with_score.sort(key=lambda l: l.score.rank)
     return players_with_score
+
+
+def _organizer_score_cache_key(season: Season, organizer_id: int):
+    return f"compute_organizer_scoresS{season.slug}O{organizer_id}"
+
+
+@cache_function(cache_key=_organizer_score_cache_key, cache_ttl=15 * 60)
+def compute_organizer_scores(
+    season: Season, organizer_id: int
+) -> dict[int, LeaderboardScore]:
+    qps_by_player: dict[int, int] = {}
+    for result, score in get_results_with_qps(
+        EventPlayerResult.objects.filter(
+            event__date__gte=season.start_date,
+            event__date__lte=season.end_date,
+            event__organizer_id=organizer_id,
+            player__in=Player.leaderboard_objects.all(),
+        )
+        .annotate(
+            top_count=Count("event__eventplayerresult__single_elimination_result"),
+        )
+        .exclude(top_count__gt=0)
+    ):
+        try:
+            qps_by_player[result.player_id] += score.qps
+        except KeyError:
+            qps_by_player[result.player_id] = score.qps
+
+    sorted_qps = sorted(qps_by_player.items(), key=lambda x: x[1], reverse=True)
+    scores = {
+        player_id: LeaderboardScore(total_score=score, rank=i + 1)
+        for i, (player_id, score) in enumerate(sorted_qps)
+    }
+    return scores
+
+
+@receiver(post_delete, sender=EventPlayerResult)
+@receiver(pre_save, sender=EventPlayerResult)
+def invalidate_organizer_score_cache(sender, instance, **kwargs):
+    for s in SEASONS_WITH_RANKING:
+        cache.delete(_organizer_score_cache_key(s, instance.event.organizer_id))
+
+
+def get_organizer_leaderboard(season: Season, organizer_id: int) -> list[Player]:
+    """Returns a list of Player with their score.
+
+    This function returns a list of Players with an additional score property
+    (of type Score), containing all informations required to render a
+    leaderboard.
+    """
+    scores_by_player = compute_organizer_scores(season, organizer_id)
+    players_with_score = []
+    for player in Player.leaderboard_objects.all():
+        if score := scores_by_player.get(player.id):
+            player.score = score
+            players_with_score.append(player)
+    players_with_score.sort(key=lambda l: l.score.rank)
+    return players_with_score

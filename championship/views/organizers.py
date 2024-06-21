@@ -38,6 +38,8 @@ from championship.forms import (
     UserForm,
 )
 from championship.models import Address, Event, EventOrganizer, RecurringEvent
+from championship.score.generic import get_organizer_leaderboard
+from championship.season import SEASON_2024, find_season_by_date
 from championship.views.base import CustomDeleteView
 
 
@@ -66,6 +68,15 @@ class EventOrganizerDetailView(DetailView):
                 {"title": "Past Events", "list": past_events, "has_num_players": True}
             )
         context["all_events"] = all_events
+
+        # Make sure we show the final leaderboard a bit longer than the season end date
+        context["season"] = find_season_by_date(
+            datetime.date.today() - datetime.timedelta(days=40)
+        )
+
+        context["players"] = get_organizer_leaderboard(
+            season=context["season"], organizer_id=organizer.id
+        )
 
         if organizer.user == self.request.user:
             # Show the organizer all of their own recurring events
