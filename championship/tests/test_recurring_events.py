@@ -301,6 +301,46 @@ class RecurrenceEventCreationTest(TestCase):
             ],
         )
 
+    @freeze_time("2024-06-01")
+    def test_event_with_results_shouldnt_be_scheduled_twice(self):
+        """When we schedule an event series, add results to a few events and then reschedule the series,
+        the events with results should remain the same and not be duplicated/rescheduled.
+        """
+        recurring_event = RecurringEventFactory(
+            end_date=datetime.date.today() + datetime.timedelta(days=30),
+        )
+        RecurrenceRuleFactory(
+            weekday=RecurrenceRule.Weekday.WEDNESDAY,
+            week=RecurrenceRule.Week.EVERY,
+            type=RecurrenceRule.Type.SCHEDULE,
+            recurring_event=recurring_event,
+        )
+        event = EventFactory(
+            recurring_event=recurring_event,
+            date=datetime.date.today(),
+        )
+        reschedule(recurring_event)
+        events = Event.objects.all()
+        # add results to the first 3 events
+        results = [EventPlayerResultFactory(event=event) for event in events[:3]]
+        reschedule(recurring_event)
+        events = Event.objects.all()
+        dates = [event.date for event in events]
+        self.assertEqual(
+            dates,
+            [
+                datetime.date(2024, 6, 5),
+                datetime.date(2024, 6, 12),
+                datetime.date(2024, 6, 19),
+                datetime.date(2024, 6, 26),
+            ],
+        )
+        for index, result in enumerate(results):
+            event = events[index]
+            results_of_event = event.eventplayerresult_set.all()
+            self.assertEqual(len(results_of_event), 1)
+            self.assertEqual(results_of_event[0], result)
+
     def test_reschedule_more_events(self):
         """Test that we can reschedule more events than before.
         - We create a series of events on Wednesdays for a month.

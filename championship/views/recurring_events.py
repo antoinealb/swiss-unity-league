@@ -119,11 +119,12 @@ def reschedule(recurring_event: RecurringEvent):
     Events rescheduled in the same week keep their primary key (and thus also their URL).
     """
 
-    events_to_reschedule: list[Event] = list(
-        recurring_event.event_set.annotate(
-            result_cnt=Count("eventplayerresult")
-        ).filter(result_cnt=0)
+    events: list[Event] = list(
+        recurring_event.event_set.annotate(result_cnt=Count("eventplayerresult")).all()
     )
+
+    events_to_reschedule = [event for event in events if event.result_cnt == 0]
+    dates_of_events_to_keep = [event.date for event in events if event.result_cnt > 0]
 
     if events_to_reschedule:
         default_event = copy.deepcopy(events_to_reschedule[-1])
@@ -151,6 +152,9 @@ def reschedule(recurring_event: RecurringEvent):
         return None
 
     for date in all_dates:
+        # If an event we keep (with results entered) is scheduled for this date, we skip it
+        if date in dates_of_events_to_keep:
+            continue
         # Try to find an event for the same week, else create a copy
         event = find_event_for_same_week(events_to_reschedule, date)
         if not event:
