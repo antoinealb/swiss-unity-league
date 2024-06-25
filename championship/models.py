@@ -180,7 +180,7 @@ class EventOrganizer(models.Model):
         null=True,
         validators=[organizer_image_validator, validate_image_file_extension],
     )
-    user = models.OneToOneField(settings.AUTH_USER_MODEL, on_delete=models.PROTECT)
+    user = models.OneToOneField(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
     default_address = models.ForeignKey(
         Address,
         on_delete=models.SET_NULL,
