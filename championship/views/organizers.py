@@ -13,18 +13,23 @@
 # limitations under the License.
 
 import datetime
+import hashlib
 
+from django.conf import settings
 from django.contrib import messages
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.contrib.auth.models import User
+from django.core.cache import cache
 from django.db import transaction
 from django.db.models import Count
+from django.http import HttpRequest
 from django.shortcuts import get_object_or_404, render
 from django.urls import reverse_lazy
 from django.utils.text import slugify
 from django.views.generic import DetailView
 from django.views.generic.edit import CreateView, UpdateView
 from django.views.generic.list import ListView
+from rest_framework.status import HTTP_429_TOO_MANY_REQUESTS
 
 from championship.forms import (
     AddressForm,
@@ -157,12 +162,38 @@ class AddressDeleteView(CustomDeleteView):
         return address.organizer.user == request.user
 
 
+def is_registration_rate_limited(request: HttpRequest) -> bool:
+    """Check if this registration attempt should be dropped as too often."""
+    ip = request.META["REMOTE_ADDR"]
+    key = "registration" + hashlib.sha256(ip.encode()).hexdigest()
+    if cache.get(key):
+        return True
+    cache.set(key, True, settings.REGISTRATION_ATTEMPTS_MIN_INTERVAL)
+    return False
+
+
 @transaction.atomic
-def register_event_organizer(request):
+def register_event_organizer(request: HttpRequest):
     if request.method == "POST":
         user_form = UserForm(request.POST)
         organizer_form = EventOrganizerForm(request.POST, request.FILES)
         address_form = RegistrationAddressForm(request.POST)
+
+        if is_registration_rate_limited(request):
+            messages.error(
+                request,
+                "You recently requested a registration, we will come back to you soon, please be patient or retry tomorrow.",
+            )
+            return render(
+                request,
+                "registration/register_organizer.html",
+                {
+                    "user_form": user_form,
+                    "organizer_form": organizer_form,
+                    "address_form": address_form,
+                },
+                status=HTTP_429_TOO_MANY_REQUESTS,
+            )
 
         if (
             user_form.is_valid()

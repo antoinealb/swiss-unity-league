@@ -319,6 +319,9 @@ if cache_location := os.getenv("CACHE_LOCATION"):
         }
     }
 
+# Minimum interval between two organizer registration attempts from a single IP.
+REGISTRATION_ATTEMPTS_MIN_INTERVAL = datetime.timedelta(hours=8).total_seconds()
+
 # Serves static files from DB at this URl
 MEDIA_URL = "media/"
 STORAGES = {
