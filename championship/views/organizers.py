@@ -179,22 +179,6 @@ def register_event_organizer(request: HttpRequest):
         organizer_form = EventOrganizerForm(request.POST, request.FILES)
         address_form = RegistrationAddressForm(request.POST)
 
-        if is_registration_rate_limited(request):
-            messages.error(
-                request,
-                "You recently requested a registration, we will come back to you soon, please be patient or retry tomorrow.",
-            )
-            return render(
-                request,
-                "registration/register_organizer.html",
-                {
-                    "user_form": user_form,
-                    "organizer_form": organizer_form,
-                    "address_form": address_form,
-                },
-                status=HTTP_429_TOO_MANY_REQUESTS,
-            )
-
         if (
             user_form.is_valid()
             and organizer_form.is_valid()
@@ -221,6 +205,22 @@ def register_event_organizer(request: HttpRequest):
                         "organizer_form": organizer_form,
                         "address_form": address_form,
                     },
+                )
+
+            if is_registration_rate_limited(request):
+                messages.error(
+                    request,
+                    "You recently requested a registration, we will come back to you soon, please be patient or retry tomorrow.",
+                )
+                return render(
+                    request,
+                    "registration/register_organizer.html",
+                    {
+                        "user_form": user_form,
+                        "organizer_form": organizer_form,
+                        "address_form": address_form,
+                    },
+                    status=HTTP_429_TOO_MANY_REQUESTS,
                 )
 
             user.username = username

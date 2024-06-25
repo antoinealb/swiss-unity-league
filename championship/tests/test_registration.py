@@ -105,3 +105,20 @@ class OrganizerRegistrationTestCase(TestCase):
         # Second response will be rate limited
         response = self.client.post(reverse("register"), data=self.data)
         self.assertEqual(HTTP_429_TOO_MANY_REQUESTS, response.status_code)
+
+    @override_settings(
+        CACHES={"default": {"BACKEND": "django.core.cache.backends.locmem.LocMemCache"}}
+    )
+    def test_invalid_forms_do_not_eat_quota(self):
+        """Check that forms returned with an error do not eat into the quota,
+        as this leads to a user being unable to change their mistake and
+        retry.."""
+        # First, normal response for something invalid
+        self.data["email"] = "not_an_email"
+        self.client.post(reverse("register"), data=self.data)
+        self.assertFalse(User.objects.all().exists())
+
+        self.data["email"] = "an_email@gmail.com"
+        resp = self.client.post(reverse("register"), data=self.data)
+        self.assertEqual(200, resp.status_code)
+        self.assertTrue(User.objects.all().exists())
