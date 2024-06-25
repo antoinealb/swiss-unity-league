@@ -13,8 +13,9 @@
 # limitations under the License.
 
 from django.contrib.auth.models import User
-from django.test import TestCase
+from django.test import TestCase, override_settings
 from django.urls import reverse
+from rest_framework.status import HTTP_429_TOO_MANY_REQUESTS
 
 from championship.models import Address, EventOrganizer
 
@@ -89,3 +90,18 @@ class OrganizerRegistrationTestCase(TestCase):
             "An account with this name already exists. We will contact you shortly.",
         )
         self.assertFalse(User.objects.filter(email=self.data["email"]).exists())
+
+    @override_settings(
+        CACHES={"default": {"BACKEND": "django.core.cache.backends.locmem.LocMemCache"}}
+    )
+    def test_rate_limit_submission(self):
+        """Test that registrations are capped per IP.
+
+        Note that the rate limit implementation uses the cache to store its
+        state, so we need to override a functioning cache for this test.."""
+        # First, normal response
+        self.client.post(reverse("register"), data=self.data)
+
+        # Second response will be rate limited
+        response = self.client.post(reverse("register"), data=self.data)
+        self.assertEqual(HTTP_429_TOO_MANY_REQUESTS, response.status_code)
