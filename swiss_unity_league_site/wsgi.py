@@ -13,7 +13,7 @@
 # limitations under the License.
 
 """
-WSGI config for mtg_championship_site project.
+WSGI config for swiss_unity_league_site project.
 
 It exposes the WSGI callable as a module-level variable named ``application``.
 
@@ -25,6 +25,6 @@ import os
 
 from django.core.wsgi import get_wsgi_application
 
-os.environ.setdefault("DJANGO_SETTINGS_MODULE", "mtg_championship_site.settings")
+os.environ.setdefault("DJANGO_SETTINGS_MODULE", "swiss_unity_league_site.settings")
 
 application = get_wsgi_application()
