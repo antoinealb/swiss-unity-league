@@ -22,7 +22,6 @@ from parameterized import parameterized
 
 from championship.factories import EventFactory
 from championship.models import Event
-from mtg_championship_site import settings
 
 
 class EventCanChangeResults(TestCase):
