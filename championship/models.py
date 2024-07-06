@@ -227,8 +227,8 @@ class RecurringEvent(models.Model):
     """
 
     class Meta:
-        verbose_name = "Event Series"
-        verbose_name_plural = "Event Series"
+        verbose_name = "Event series"
+        verbose_name_plural = "Event series"
 
     name = models.CharField(
         max_length=200,
