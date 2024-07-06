@@ -126,9 +126,10 @@ def compute_scores(season: Season) -> dict[int, LeaderboardScore]:
 
 @receiver(post_delete, sender=EventPlayerResult)
 @receiver(pre_save, sender=EventPlayerResult)
-def invalidate_score_cache(sender, **kwargs):
+def invalidate_score_cache(sender, instance, **kwargs):
     for s in SEASONS_WITH_RANKING:
-        cache.delete(_score_cache_key(s))
+        if s.start_date <= instance.event.date <= s.end_date:
+            cache.delete(_score_cache_key(s))
 
 
 def get_leaderboard(season) -> list[Player]:
@@ -187,7 +188,8 @@ def compute_organizer_scores(
 @receiver(pre_save, sender=EventPlayerResult)
 def invalidate_organizer_score_cache(sender, instance, **kwargs):
     for s in SEASONS_WITH_RANKING:
-        cache.delete(_organizer_score_cache_key(s, instance.event.organizer))
+        if s.start_date <= instance.event.date <= s.end_date:
+            cache.delete(_organizer_score_cache_key(s, instance.event.organizer))
 
 
 def get_organizer_leaderboard(

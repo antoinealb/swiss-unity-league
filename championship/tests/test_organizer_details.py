@@ -40,8 +40,8 @@ class EventOrganizerDetailViewTests(TestCase):
     def setUp(self):
         self.client = Client()
         self.organizer = EventOrganizerFactory()
-        tomorrow = timezone.now() + timezone.timedelta(days=1)
-        past_date = timezone.now() - timezone.timedelta(days=5)
+        tomorrow = datetime.date.today() + datetime.timedelta(days=1)
+        past_date = datetime.date.today() - datetime.timedelta(days=5)
 
         self.future_event = EventFactory(organizer=self.organizer, date=tomorrow)
         self.past_event = EventFactory(organizer=self.organizer, date=past_date)
