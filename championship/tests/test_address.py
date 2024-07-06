@@ -113,7 +113,7 @@ class AddressDeleteViewTest(BaseSetupTest):
         self.client.logout()
         self.base_set_up(with_address=False, username="testuser2")
         response = self.client.post(reverse("address_delete", args=[self.address.pk]))
-        self.assertEqual(response.status_code, 302)
+        self.assertEqual(response.status_code, 403)
         self.assertTrue(Address.objects.filter(pk=self.address.pk).exists())
 
 

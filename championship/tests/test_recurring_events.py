@@ -885,3 +885,45 @@ class RecurringEventViewTest(TestCase):
         self.assertEqual(rule2.week, RecurrenceRule.Week.EVERY)
         self.assertEqual(rule2.type, RecurrenceRule.Type.SCHEDULE)
         self.assertEqual(rule2.recurring_event, recurring_event2)
+
+
+class RecurringEventDeleteViewTest(TestCase):
+
+    def setUp(self):
+        self.recurring_event = RecurringEventFactory()
+        self.event = EventFactory(recurring_event=self.recurring_event)
+        self.client.force_login(self.event.organizer.user)
+
+    def test_can_delete_own_recurring_event(self):
+        response = self.client.post(
+            reverse("recurring_event_delete", args=[self.recurring_event.id])
+        )
+        self.assertEqual(response.status_code, 302)
+
+        with self.assertRaises(RecurringEvent.DoesNotExist):
+            self.recurring_event.refresh_from_db()
+
+        with self.assertRaises(Event.DoesNotExist):
+            self.event.refresh_from_db()
+
+    def test_cannot_delete_other_recurring_event(self):
+        self.client.force_login(UserFactory())
+        response = self.client.post(
+            reverse("recurring_event_delete", args=[self.recurring_event.id])
+        )
+        self.assertEqual(response.status_code, 403)
+
+        self.recurring_event.refresh_from_db()
+        self.event.refresh_from_db()
+
+    def test_events_with_results_are_not_deleted(self):
+        EventPlayerResultFactory(event=self.event)
+        response = self.client.post(
+            reverse("recurring_event_delete", args=[self.recurring_event.id])
+        )
+        self.assertEqual(response.status_code, 302)
+
+        with self.assertRaises(RecurringEvent.DoesNotExist):
+            self.recurring_event.refresh_from_db()
+
+        self.event.refresh_from_db()

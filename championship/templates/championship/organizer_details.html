@@ -76,6 +76,7 @@
                                 <td>
                                     <a href="{% url 'recurring_event_update' r_event.id %}" class="btn btn-secondary">Reschedule</a>
                                     <a href="{% url 'recurring_event_copy' r_event.id %}" class="btn btn-secondary-light">Copy</a>
+                                    {% include 'championship/delete_confirmation.html' with object=r_event long_name=True %}
                                 </td>
                             {% endif %}
                         </tr>

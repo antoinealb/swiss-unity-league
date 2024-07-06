@@ -28,6 +28,7 @@ from dateutil.rrule import FR, MO, MONTHLY, SA, SU, TH, TU, WE, WEEKLY, rrule, r
 
 from championship.forms import RecurrenceRuleModelFormSet, RecurringEventForm
 from championship.models import Event, RecurrenceRule, RecurringEvent
+from championship.views.base import CustomDeleteView
 
 WEEKDAY_MAP = {
     "MONDAY": MO,
@@ -302,3 +303,21 @@ class RecurringEventCopyView(RecurringEventUpdateView):
         return self.save_forms_if_valid(
             request, recurring_event_form, recurrence_rule_formset
         )
+
+
+class RecurringEventDeleteView(CustomDeleteView):
+    model = RecurringEvent
+
+    def get_success_url(self):
+        return reverse("organizer_details", args=[self.event.organizer_id])
+
+    def allowed_to_delete(self, recurring_event, request):
+        self.event = recurring_event.event_set.last()
+        return self.event.organizer.user == request.user
+
+    def form_valid(self, form):
+        # Delete all events linked to the recurring event without results
+        self.object.event_set.annotate(result_cnt=Count("eventplayerresult")).filter(
+            result_cnt=0
+        ).delete()
+        return super().form_valid(form)
