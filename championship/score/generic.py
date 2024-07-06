@@ -163,10 +163,11 @@ def compute_organizer_scores(
             event__date__lte=season.end_date,
             event__organizer=organizer,
             player__in=Player.leaderboard_objects.all(),
-        )
-        .annotate(
+        ).annotate(
             top_count=Count("event__eventplayerresult__single_elimination_result"),
         )
+        # The leaderboard should show the best players that play regularly at this location.
+        # Hence we exclude events with top 8 so that the winners of these events don't rank first.
         .exclude(top_count__gt=0)
     ):
         try:
