@@ -60,11 +60,9 @@ class CustomDeleteView(LoginRequiredMixin, DeleteView):
             return HttpResponseForbidden()
         return super().dispatch(request, *args, **kwargs)
 
-    def form_valid(self, form):
-        request = self.request
+    def form_valid(self, *args, **kwargs):
         verbose_name = self.object._meta.verbose_name.lower()
         messages.success(
-            request, self.success_message.format(verbose_name=verbose_name)
+            self.request, self.success_message.format(verbose_name=verbose_name)
         )
-        self.delete(self.request)
-        return HttpResponseRedirect(self.get_success_url())
+        return super().form_valid(*args, **kwargs)
