@@ -75,7 +75,7 @@ class EventOrganizerDetailView(DetailView):
         )
 
         context["players"] = get_organizer_leaderboard(
-            season=context["season"], organizer_id=organizer.id
+            season=context["season"], organizer=organizer
         )
 
         if organizer.user == self.request.user:

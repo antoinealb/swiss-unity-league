@@ -29,7 +29,7 @@ from django.dispatch import receiver
 from prometheus_client import Gauge, Summary
 
 from championship.cache_function import cache_function
-from championship.models import Event, EventPlayerResult, Player
+from championship.models import Event, EventOrganizer, EventPlayerResult, Player
 from championship.score.season_2023 import ScoreMethod2023
 from championship.score.season_2024 import ScoreMethod2024
 from championship.score.season_all import ScoreMethodAll
@@ -148,20 +148,20 @@ def get_leaderboard(season) -> list[Player]:
     return players_with_score
 
 
-def _organizer_score_cache_key(season: Season, organizer_id: int):
-    return f"compute_organizer_scoresS{season.slug}O{organizer_id}"
+def _organizer_score_cache_key(season: Season, organizer: EventOrganizer):
+    return f"compute_organizer_scoresS{season.slug}O{organizer}"
 
 
 @cache_function(cache_key=_organizer_score_cache_key, cache_ttl=15 * 60)
 def compute_organizer_scores(
-    season: Season, organizer_id: int
+    season: Season, organizer: EventOrganizer
 ) -> dict[int, LeaderboardScore]:
     qps_by_player: dict[int, int] = {}
     for result, score in get_results_with_qps(
         EventPlayerResult.objects.filter(
             event__date__gte=season.start_date,
             event__date__lte=season.end_date,
-            event__organizer_id=organizer_id,
+            event__organizer=organizer,
             player__in=Player.leaderboard_objects.all(),
         )
         .annotate(
@@ -186,17 +186,19 @@ def compute_organizer_scores(
 @receiver(pre_save, sender=EventPlayerResult)
 def invalidate_organizer_score_cache(sender, instance, **kwargs):
     for s in SEASONS_WITH_RANKING:
-        cache.delete(_organizer_score_cache_key(s, instance.event.organizer_id))
+        cache.delete(_organizer_score_cache_key(s, instance.event.organizer))
 
 
-def get_organizer_leaderboard(season: Season, organizer_id: int) -> list[Player]:
+def get_organizer_leaderboard(
+    season: Season, organizer: EventOrganizer
+) -> list[Player]:
     """Returns a list of Player with their score.
 
     This function returns a list of Players with an additional score property
     (of type Score), containing all informations required to render a
     leaderboard.
     """
-    scores_by_player = compute_organizer_scores(season, organizer_id)
+    scores_by_player = compute_organizer_scores(season, organizer)
     players_with_score = []
     for player in Player.leaderboard_objects.all():
         if score := scores_by_player.get(player.id):
