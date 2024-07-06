@@ -153,7 +153,7 @@ def _organizer_score_cache_key(season: Season, organizer: EventOrganizer):
     return f"compute_organizer_scoresS{season.slug}O{organizer}"
 
 
-@cache_function(cache_key=_organizer_score_cache_key, cache_ttl=15 * 60)
+@cache_function(cache_key=_organizer_score_cache_key, cache_ttl=60 * 60)
 def compute_organizer_scores(
     season: Season, organizer: EventOrganizer
 ) -> dict[int, LeaderboardScore]:
