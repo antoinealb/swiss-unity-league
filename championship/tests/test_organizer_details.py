@@ -203,8 +203,8 @@ class OrganizerLeaderboardTest(TestCase):
     @parameterized.expand(SEASON_LIST)
     def test_organizer_ranking_for_season(self, season):
         with freeze_time(season.end_date + datetime.timedelta(days=1)):
-            # should work without results
             organizer = EventOrganizerFactory()
+            # Check that it's possible to fetch the organizer details even though ther are no results
             response = self.client.get(
                 reverse("organizer_details", args=[organizer.id])
             )
