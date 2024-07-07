@@ -41,12 +41,11 @@ class DecklistEntry:
 
 
 DecklistError: TypeAlias = str
+FilterOutput: TypeAlias = tuple[list[DecklistEntry], list[DecklistError]]
 
 
-def normalize_decklist(
-    entries: Iterable[DecklistEntry],
-) -> (list[DecklistEntry], list[DecklistError]):
-    qty_by_cards = dict()
+def normalize_decklist(entries: Iterable[DecklistEntry]) -> FilterOutput:
+    qty_by_cards: dict[str, int] = {}
     for e in entries:
         try:
             qty_by_cards[e.name] += e.qty
@@ -56,9 +55,7 @@ def normalize_decklist(
     return [DecklistEntry(v, k) for k, v in qty_by_cards.items()], []
 
 
-def annotate_card_attributes(
-    entries: Iterable[DecklistEntry],
-) -> (list[DecklistEntry], list[DecklistError]):
+def annotate_card_attributes(entries: Iterable[DecklistEntry]) -> FilterOutput:
     result = []
     errors = []
     for e in entries:
@@ -76,23 +73,19 @@ def annotate_card_attributes(
     return result, errors
 
 
-def parse_decklist(content: str) -> (list[DecklistEntry], list[DecklistError]):
+def parse_decklist(content: str) -> FilterOutput:
     entries = DecklistParser.deck.parse(content).unwrap()
     entries = [tuple(line) for line in entries]
     entries = [DecklistEntry(qty, card) for (qty, card) in entries]
     return entries, []
 
 
-def sort_decklist_by_mana_value(
-    entries: Iterable[DecklistEntry],
-) -> (list[DecklistEntry], list[DecklistError]):
+def sort_decklist_by_mana_value(entries: Iterable[DecklistEntry]) -> FilterOutput:
     key = lambda c: (c.mana_value is None, c.mana_value, c.name)
     return sorted(entries, key=key), []
 
 
-def sort_decklist_by_type(
-    entries: Iterable[DecklistEntry],
-) -> (list[DecklistEntry], list[DecklistError]):
+def sort_decklist_by_type(entries: Iterable[DecklistEntry]) -> FilterOutput:
     categories = [
         ["Creature"],
         ["Battle"],
@@ -124,7 +117,7 @@ def sort_decklist_by_type(
     return sorted(entries, key=key), []
 
 
-def pipe_filters(filters, entries) -> (list[DecklistEntry], list[DecklistError]):
+def pipe_filters(filters, entries) -> FilterOutput:
     result = entries
     errors = []
 

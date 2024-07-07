@@ -38,7 +38,7 @@ python-typing:
     - pip install --upgrade -r requirements.txt
     - pip install --upgrade mypy
   script:
-    - mypy --install-types --non-interactive championship invoicing
+    - mypy --install-types --non-interactive championship invoicing oracle decklists
 
 python-format:
   stage: test
