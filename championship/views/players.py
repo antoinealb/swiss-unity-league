@@ -62,6 +62,13 @@ class Performance:
         except ZeroDivisionError:
             return 0.0
 
+    @property
+    def win_ratio_without_draws(self) -> float:
+        try:
+            return self.win / (self.win + self.loss)
+        except ZeroDivisionError:
+            return 0.0
+
 
 class PlayerDetailsView(PerSeasonMixin, DetailView):
     season_view_name = "player_details_by_season"

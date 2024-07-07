@@ -218,6 +218,7 @@ class PlayerDetailsTest(TestCase):
     def test_win_ratio_computed_correctly(self):
         p = Performance(5, 3, 1)
         self.assertEqual(p.win_ratio, 5 / 9)
+        self.assertEqual(p.win_ratio_without_draws, 5 / 8)
 
     def test_get_performance_per_format(self):
         event = EventFactory(category=Event.Category.PREMIER)

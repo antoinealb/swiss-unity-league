@@ -83,7 +83,8 @@
                         <tr>
                             <th scope="col">Format</th>
                             <th scope="col">Record</th>
-                            <th scope="col">Win percentage</th>
+                            <th scope="col">Win ratio</th>
+                            <th scope="col">Win ratio (excluding draws)</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -94,6 +95,7 @@
                                 <td>{{ format }}</td>
                                 <td>{{ record.win }} - {{ record.loss }} - {{ record.draw }}</td>
                                 <td>{{ record.win_ratio|percentage }}</td>
+                                <td>{{ record.win_ratio_without_draws|percentage }}</td>
                             </tr>
                         {% endfor %}
                     </tbody>
