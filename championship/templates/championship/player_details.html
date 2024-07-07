@@ -81,9 +81,10 @@
                 <tr>
                     <th scope="col">Event</th>
                     <th scope="col">Date</th>
+                    <th scope="col">Type</th>
                     <th scope="col">SUL Points</th>
                     <th scope="col">Rank</th>
-                    <th scope="col">Type</th>
+                    <th scope="col">Record</th>
                 </tr>
             </thead>
             <tbody>
@@ -91,9 +92,10 @@
                     <tr>
                         <td><a href="{{ result.event.get_absolute_url }}">{{result.event.name }}</a></td>
                         <td>{{ result.event.date }}</td>
+                        <td>{{ result.event.get_category_display }}</td>
                         <td>{{ score.qps }}</td>
                         <td>{{ result.get_ranking_display }}</td>
-                        <td>{{ result.event.get_category_display }}</td>
+                        <td>{{ result.win_count }} - {{ result.loss_count }} - {{ result.draw_count }}</td>
                     </tr>
                 {% endfor %}
             </tbody>
