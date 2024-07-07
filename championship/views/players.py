@@ -12,6 +12,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+import dataclasses
+
 from django.shortcuts import get_object_or_404
 from django.views.generic import DetailView
 
@@ -28,6 +30,7 @@ TBODY = "tbody"
 TABLE = "table"
 QPS = "QPs"
 EVENTS = "Events"
+PERFORMANCE_PER_FORMAT = "performance_per_format"
 
 
 def add_to_table(table, column_title, row_title, value=1):
@@ -44,6 +47,20 @@ def add_to_table(table, column_title, row_title, value=1):
     new_row = [row_title] + [0] * (len(thead) - 1)
     new_row[column_index] = value
     tbody.append(new_row)
+
+
+@dataclasses.dataclass
+class Performance:
+    win: int = 0
+    loss: int = 0
+    draw: int = 0
+
+    @property
+    def win_ratio(self) -> float:
+        try:
+            return self.win / (self.win + self.loss + self.draw)
+        except ZeroDivisionError:
+            return 0.0
 
 
 class PlayerDetailsView(PerSeasonMixin, DetailView):
@@ -118,6 +135,10 @@ class PlayerDetailsView(PerSeasonMixin, DetailView):
                         row_title=result.get_ranking_display(),
                     )
 
+        context[PERFORMANCE_PER_FORMAT] = self.performance_per_format(
+            context[LAST_RESULTS]
+        )
+
         if len(qp_table[TBODY]) > 0:
             # Compute the total and add it in the last column
             for row in qp_table[TBODY]:
@@ -130,3 +151,45 @@ class PlayerDetailsView(PerSeasonMixin, DetailView):
             {"title": "Best Swiss Round Finishes", TABLE: without_top_8_table},
         ]
         return context
+
+    def performance_per_format(self, results) -> dict[str, Performance]:
+        """Returns the peformance per format, with the display name of the format as key."""
+
+        def extra_wins_for_top(result):
+            if result.single_elimination_result is None:
+                return 0
+
+            points = {
+                EventPlayerResult.SingleEliminationResult.WINNER: 3,
+                EventPlayerResult.SingleEliminationResult.FINALIST: 2,
+                EventPlayerResult.SingleEliminationResult.SEMI_FINALIST: 1,
+                EventPlayerResult.SingleEliminationResult.QUARTER_FINALIST: 0,
+            }[result.single_elimination_result]
+
+            # If we are in top4, it means we had one less match to win to get
+            # to any rank. We can ignore QUARTER_FINALIST being 0, as they
+            # would not be present in a top4 only match.
+            if result.top_count == 4:
+                points -= 1
+
+            return points
+
+        def extra_losses_for_top(result):
+            ser = result.single_elimination_result
+            if ser in (None, EventPlayerResult.SingleEliminationResult.WINNER):
+                return 0
+            return 1
+
+        perf_per_format: dict[str, Performance] = {}
+        for result, _ in results:
+            format = result.event.get_format_display()
+            try:
+                performance = perf_per_format[format]
+            except KeyError:
+                performance = Performance()
+            performance.win += result.win_count + extra_wins_for_top(result)
+            performance.loss += result.loss_count + extra_losses_for_top(result)
+            performance.draw += result.draw_count
+            perf_per_format[format] = performance
+
+        return perf_per_format

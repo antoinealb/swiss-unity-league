@@ -36,6 +36,7 @@ from championship.views import (
     TBODY,
     THEAD,
     TOP_FINISHES,
+    Performance,
 )
 
 
@@ -213,6 +214,58 @@ class PlayerDetailsTest(TestCase):
             finish[TABLE] for finish in response.context[TOP_FINISHES]
         ]
         self.assertEqual(expected_top_finishes, actual_top_finishes)
+
+    def test_win_ratio_computed_correctly(self):
+        p = Performance(5, 3, 1)
+        self.assertEqual(p.win_ratio, 5 / 9)
+
+    def test_get_performance_per_format(self):
+        event = EventFactory(category=Event.Category.PREMIER)
+        epr = EventPlayerResultFactory(
+            event=event,
+            win_count=5,
+            loss_count=2,
+            draw_count=3,
+            single_elimination_result=EventPlayerResult.SingleEliminationResult.FINALIST,
+        )
+        resp = self.get_player_details_2023(epr.player)
+        perf_per_format = resp.context["performance_per_format"]
+        got = perf_per_format[event.get_format_display()]
+
+        # we are finalist, it means we won an additional 2 and lost 1
+        want = Performance(5 + 2, 2 + 1, 3)
+        self.assertEqual(got, want)
+
+    def test_get_performance_per_format_top4(self):
+        """Checks that we compute the win ratio in events with top4 only."""
+        event = EventFactory(category=Event.Category.PREMIER)
+        eprs = [
+            EventPlayerResultFactory(
+                event=event,
+                win_count=5,
+                loss_count=2,
+                draw_count=3,
+                single_elimination_result=None,
+            )
+            for _ in range(16)
+        ]
+        results = [
+            EventPlayerResult.SingleEliminationResult.WINNER,
+            EventPlayerResult.SingleEliminationResult.FINALIST,
+            EventPlayerResult.SingleEliminationResult.SEMI_FINALIST,
+            EventPlayerResult.SingleEliminationResult.SEMI_FINALIST,
+        ]
+
+        for epr, result in zip(eprs, results):
+            epr.single_elimination_result = result
+            epr.save()
+
+        # Winner had 2 extra wins, zero extra losses
+        resp = self.get_player_details_2023(eprs[0].player)
+        perf_per_format = resp.context["performance_per_format"]
+        got = perf_per_format[event.get_format_display()]
+        want = Performance(5 + 2, 2 + 0, 3)
+        self.assertEqual(want, got)
 
 
 class PlayerDetailSeasonTestCase(TestCase):

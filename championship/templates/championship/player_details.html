@@ -1,4 +1,5 @@
 {% extends "championship/base.html" %}
+{% load custom_tags %}
 
 {% block title %}
     {{ player.name }}
@@ -70,6 +71,34 @@
                     </div>
                 {% endif %}
             {% endfor %}
+        </div>
+    </div>
+
+    <div class="container">
+        <div class="row">
+            <div class="table-responsive my-4">
+                <h3>Performance per format</h3>
+                <table class="table table-striped">
+                    <thead>
+                        <tr>
+                            <th scope="col">Format</th>
+                            <th scope="col">Record</th>
+                            <th scope="col">Win percentage</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+
+
+                        {% for format, record in performance_per_format.items %}
+                            <tr>
+                                <td>{{ format }}</td>
+                                <td>{{ record.win }} - {{ record.loss }} - {{ record.draw }}</td>
+                                <td>{{ record.win_ratio|percentage }}</td>
+                            </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
         </div>
     </div>
 
