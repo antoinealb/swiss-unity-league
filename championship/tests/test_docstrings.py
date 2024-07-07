@@ -17,6 +17,7 @@ import doctest
 import championship.views.results
 from championship import admin, views
 from championship.parsers import general_parser_functions
+from championship.templatetags import custom_tags
 
 
 def load_tests(loader, tests, ignore):
@@ -25,4 +26,5 @@ def load_tests(loader, tests, ignore):
     tests.addTests(doctest.DocTestSuite(championship.views.results))
     tests.addTests(doctest.DocTestSuite(admin))
     tests.addTests(doctest.DocTestSuite(general_parser_functions))
+    tests.addTests(doctest.DocTestSuite(custom_tags))
     return tests
