@@ -31,9 +31,24 @@ def verbose_name(model):
 
 @register.filter(name="initials")
 def initials(name):
+    """Returns a name with only their initials, aside from first name.
+
+    >>> initials("Bob Johnson")
+    'Bob J.'
+    """
     components = re.split(r"[\s-]", name)
     components = [c for c in components if c]
     # We keep the first name complete and initial the rest
     for c in components[1:]:
         name = name.replace(c, f"{c[0]}.")
     return name
+
+
+@register.filter(name="percentage")
+def percentage(value):
+    """Returns the float value formatted as a percentage, with a single digit.
+
+    >>> percentage(0.1)
+    '10.0%'
+    """
+    return "{:.1%}".format(value)
