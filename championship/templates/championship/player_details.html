@@ -92,10 +92,18 @@
 
                         {% for format, record in performance_per_format.items %}
                             <tr>
-                                <td>{{ format }}</td>
-                                <td>{{ record.win }} - {{ record.loss }} - {{ record.draw }}</td>
-                                <td>{{ record.win_ratio|percentage }}</td>
-                                <td>{{ record.win_ratio_without_draws|percentage }}</td>
+
+                                {% if format == "Overall" %}
+                                    <td><b>{{ format }}</b></td>
+                                    <td><b>{{ record }}</b></td>
+                                    <td><b>{{ record.win_ratio|percentage }}</b></td>
+                                    <td><b>{{ record.win_ratio_without_draws|percentage }}</b></td>
+                                {% else %}
+                                    <td>{{ format }}</td>
+                                    <td>{{ record }}</td>
+                                    <td>{{ record.win_ratio|percentage }}</td>
+                                    <td>{{ record.win_ratio_without_draws|percentage }}</td>
+                                {% endif %}
                             </tr>
                         {% endfor %}
                     </tbody>

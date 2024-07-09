@@ -69,6 +69,16 @@ class Performance:
         except ZeroDivisionError:
             return 0.0
 
+    def __str__(self):
+        return f"{self.win} - {self.loss} - {self.draw}"
+
+    def __add__(self, other):
+        return Performance(
+            win=self.win + other.win,
+            loss=self.loss + other.loss,
+            draw=self.draw + other.draw,
+        )
+
 
 class PlayerDetailsView(PerSeasonMixin, DetailView):
     season_view_name = "player_details_by_season"
@@ -198,5 +208,7 @@ class PlayerDetailsView(PerSeasonMixin, DetailView):
             performance.loss += result.loss_count + extra_losses_for_top(result)
             performance.draw += result.draw_count
             perf_per_format[format] = performance
+
+        perf_per_format["Overall"] = sum(perf_per_format.values(), start=Performance())
 
         return perf_per_format

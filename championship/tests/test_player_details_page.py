@@ -220,6 +220,10 @@ class PlayerDetailsTest(TestCase):
         self.assertEqual(p.win_ratio, 5 / 9)
         self.assertEqual(p.win_ratio_without_draws, 5 / 8)
 
+    def test_str_format(self):
+        p = Performance(5, 3, 1)
+        self.assertEqual(str(p), "5 - 3 - 1")
+
     def test_get_performance_per_format(self):
         event = EventFactory(category=Event.Category.PREMIER)
         epr = EventPlayerResultFactory(
@@ -235,6 +239,9 @@ class PlayerDetailsTest(TestCase):
 
         # we are finalist, it means we won an additional 2 and lost 1
         want = Performance(5 + 2, 2 + 1, 3)
+        self.assertEqual(got, want)
+
+        got = perf_per_format["Overall"]
         self.assertEqual(got, want)
 
     def test_get_performance_per_format_top4(self):
