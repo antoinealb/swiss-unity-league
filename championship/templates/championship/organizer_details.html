@@ -51,74 +51,150 @@
         </div>
     {% endif %}
 
-    {% if recurring_events %}
-        <br>
-        <h2>Active Event Series</h2>
-        <div class="table-responsive">
-            <table class="table table-striped">
-                <thead>
-                    <tr>
-                        <th scope="col">Event Series</th>
-                        <th scope="col">Start Date</th>
-                        <th scope="col">End Date</th>
-                        {% if user_is_organizer %}
-                            <th scope="col"></th>
-                        {% endif %}
-                    </tr>
-                </thead>
-                <tbody>
-                    {% for r_event in recurring_events %}
-                        <tr>
-                            <td>{{ r_event.name }}</td>
-                            <td>{{ r_event.start_date }}</td>
-                            <td>{{ r_event.end_date }}</td>
-                            {% if user_is_organizer %}
-                                <td>
-                                    <a href="{% url 'recurring_event_update' r_event.id %}" class="btn btn-secondary">Reschedule</a>
-                                    <a href="{% url 'recurring_event_copy' r_event.id %}" class="btn btn-secondary-light">Copy</a>
-                                    {% include 'championship/delete_confirmation.html' with object=r_event long_name=True %}
-                                </td>
-                            {% endif %}
-                        </tr>
-                    {% endfor %}
-                </tbody>
-            </table>
-        </div>
-    {% endif %}
 
-    {% for event_type in all_events %}
-        <br>
-        <h2>{{ event_type.title }}</h2>
-        <div class="table-responsive">
-            <table class="table table-striped">
-                <thead>
-                    <tr>
-                        <th scope="col">Event</th>
-                        <th scope="col">Date</th>
-                        <th scope="col">Type</th>
-                        {% if event_type.has_num_players %}
-                            <th scope="col">Participants</th>
-                        {% endif %}
-                    </tr>
-                </thead>
-                <tbody>
-                    {% for event in event_type.list %}
-                        <tr>
-                            <td><a href="{% url 'event_details' event.id %}">{{event.name }}</a></td>
-                            <td>{{ event.date }}</td>
-                            <td>{{ event.get_category_display }}</td>
-                            {% if event_type.has_num_players %}
-                                <td>
-                                    {% if event.num_players != 0 %}
-                                        {{ event.num_players }}
+    <div class="container mt-5">
+        <ul class="nav nav-tabs" id="myTab" role="tablist">
+            <li class="nav-item" role="presentation">
+                <a class="nav-link" id="events-tab" data-bs-toggle="tab" href="#events" role="tab" aria-controls="events" aria-selected="true">Events</a>
+            </li>
+            {% if players %}
+                <li class="nav-item" role="presentation">
+                    <a class="nav-link" id="leaderboard-tab" data-bs-toggle="tab" href="#leaderboard" role="tab" aria-controls="leaderboard" aria-selected="false">Leaderboard</a>
+                </li>
+            {% endif %}
+        </ul>
+
+        <div class="tab-content" id="myTabContent">
+            <div class="tab-pane fade" id="events" role="tabpanel" aria-labelledby="events-tab">
+                {% if recurring_events %}
+                    <br>
+                    <h2>Active Event Series</h2>
+                    <div class="table-responsive">
+                        <table class="table table-striped">
+                            <thead>
+                                <tr>
+                                    <th scope="col">Event Series</th>
+                                    <th scope="col">Start Date</th>
+                                    <th scope="col">End Date</th>
+                                    {% if user_is_organizer %}
+                                        <th scope="col"></th>
                                     {% endif %}
-                                </td>
-                            {% endif %}
-                        </tr>
-                    {% endfor %}
-                </tbody>
-            </table>
-        </div>
-    {% endfor %}
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for r_event in recurring_events %}
+                                    <tr>
+                                        <td>{{ r_event.name }}</td>
+                                        <td>{{ r_event.start_date }}</td>
+                                        <td>{{ r_event.end_date }}</td>
+                                        {% if user_is_organizer %}
+                                            <td>
+                                                <a href="{% url 'recurring_event_update' r_event.id %}" class="btn btn-secondary">Reschedule</a>
+                                                <a href="{% url 'recurring_event_copy' r_event.id %}" class="btn btn-secondary-light">Copy</a>
+                                                {% include 'championship/delete_confirmation.html' with object=r_event long_name=True %}
+                                            </td>
+                                        {% endif %}
+                                    </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                {% endif %}
 
+                {% for event_type in all_events %}
+                    <br>
+                    <h2>{{ event_type.title }}</h2>
+                    <div class="table-responsive">
+                        <table class="table table-striped">
+                            <thead>
+                                <tr>
+                                    <th scope="col">Event</th>
+                                    <th scope="col">Date</th>
+                                    <th scope="col">Type</th>
+                                    {% if event_type.has_num_players %}
+                                        <th scope="col">Participants</th>
+                                    {% endif %}
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for event in event_type.list %}
+                                    <tr>
+                                        <td><a href="{% url 'event_details' event.id %}">{{event.name }}</a></td>
+                                        <td>{{ event.date }}</td>
+                                        <td>{{ event.get_category_display }}</td>
+                                        {% if event_type.has_num_players %}
+                                            <td>
+                                                {% if event.num_players != 0 %}
+                                                    {{ event.num_players }}
+                                                {% endif %}
+                                            </td>
+                                        {% endif %}
+                                    </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                {% endfor %}
+            </div>
+
+            {% if players %}
+                <div class="tab-pane fade" id="leaderboard" role="tabpanel" aria-labelledby="leaderboard-tab">
+                    <br>
+                    <h2>Leaderboard of {{ eventorganizer.name }}</h2>
+                    <h3>{{ season.name }}</h3>
+                    <p>Here's a leaderboard of the best weekly players at {{ eventorganizer.name }}. Only events without playoffs are included.
+                        <br>
+                        Please note that this leaderboard is for informational purposes only and does not award any invitations or rewards.</p>
+                    <table class="table table-striped" aria-label="Leaderboard of {{ eventorganizer.name }}">
+                        <thead>
+                            <tr>
+                                <th scope="col">Rank</th>
+                                <th scope="col">SUL Points</th>
+                                <th scope="col">Player Name</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for player in players %}
+                                <tr>
+                                    <td aria-label="Rank">{{ player.score.rank }}</td>
+                                    <td aria-label="SUL Points">{{ player.score.total_score }}</td>
+                                    <td aria-label="Player Name"><a href="{{ player.get_absolute_url }}" title="View tournament statistics of {{ player.name }}">{{ player.name }}</a></td>
+                                </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            {% endif %}
+        </div>
+    </div>
+{% endblock %}
+
+{% block scripts %}
+    <script>
+        document.addEventListener("DOMContentLoaded", function () {
+            var hash = window.location.hash;
+            if (hash) {
+                var tab = document.querySelector('a[href="' + hash + '"]');
+                if (tab) {
+                    var tabInstance = new bootstrap.Tab(tab);
+                    tabInstance.show();
+                }
+            } else {
+                var defaultTab = document.querySelector('a[data-bs-toggle="tab"]');
+                if (defaultTab) {
+                    var tabInstance = new bootstrap.Tab(defaultTab);
+                    tabInstance.show();
+                }
+            }
+
+            var tabLinks = document.querySelectorAll('a[data-bs-toggle="tab"]');
+            tabLinks.forEach(function (tabLink) {
+                tabLink.addEventListener('shown.bs.tab', function (event) {
+                    if (event.target.getAttribute('href') !== window.location.hash) {
+                        history.pushState(null, null, event.target.getAttribute('href'));
+                    }
+                });
+            });
+        });
+    </script>
 {% endblock %}

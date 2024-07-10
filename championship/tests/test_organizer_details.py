@@ -21,12 +21,17 @@ from django.test import Client, TestCase
 from django.urls import reverse
 from django.utils import timezone
 
+from freezegun import freeze_time
+from parameterized import parameterized
+
 from championship.factories import (
     EventFactory,
     EventOrganizerFactory,
     EventPlayerResultFactory,
     RecurringEventFactory,
 )
+from championship.models import Event
+from championship.season import SEASON_LIST
 
 User = get_user_model()
 
@@ -35,8 +40,8 @@ class EventOrganizerDetailViewTests(TestCase):
     def setUp(self):
         self.client = Client()
         self.organizer = EventOrganizerFactory()
-        tomorrow = timezone.now() + timezone.timedelta(days=1)
-        past_date = timezone.now() - timezone.timedelta(days=5)
+        tomorrow = datetime.date.today() + datetime.timedelta(days=1)
+        past_date = datetime.date.today() - datetime.timedelta(days=5)
 
         self.future_event = EventFactory(organizer=self.organizer, date=tomorrow)
         self.past_event = EventFactory(organizer=self.organizer, date=past_date)
@@ -191,3 +196,33 @@ class OrganizerListViewTest(TestCase):
         self.assertContains(response, to_with_event.name)
         # Check that the city of the default address of the organizer is shown
         self.assertContains(response, to_with_event.default_address.city)
+
+
+class OrganizerLeaderboardTest(TestCase):
+
+    @parameterized.expand(SEASON_LIST)
+    def test_organizer_ranking_for_season(self, season):
+        with freeze_time(season.end_date + datetime.timedelta(days=1)):
+            organizer = EventOrganizerFactory()
+            # Check that it's possible to fetch the organizer details even though ther are no results
+            response = self.client.get(
+                reverse("organizer_details", args=[organizer.id])
+            )
+            results = [
+                EventPlayerResultFactory(
+                    event__organizer=organizer,
+                    event__category=Event.Category.REGULAR,
+                    event__date=season.start_date + datetime.timedelta(days=i),
+                    win_count=i + 1,
+                    draw_count=0,
+                    loss_count=0,
+                )
+                for i in range(3)
+            ]
+
+            response = self.client.get(
+                reverse("organizer_details", args=[organizer.id])
+            )
+            self.assertTrue("players" in response.context)
+            self.assertEqual(len(response.context["players"]), 3)
+            self.assertEqual(response.context["players"][0].score.rank, 1)
