@@ -13,8 +13,9 @@ python3 -m venv env
 env/bin/pip install -r requirements.txt
 ```
 
-this is only needed once, however, when working with the code, make sure that
-your virtual environment is correctly activated with the following command:
+> [!IMPORTANT]
+> This is only needed once, however, when working with the code, make sure that
+> your virtual environment is correctly activated with the following commands.
 
 ```shell
 # Start the dev environment with the modules you installed above
@@ -28,9 +29,10 @@ source /env/bin/activate
 ./manage.py test --exclude-tag=latex
 ```
 
-Note that here we are removing the tests that include Latex (PDF generator), as
-generating PDF is quite slow. If you are testing invoice generation, you can
-ommit `--exclude-tag` from your command.
+> [!TIP]
+> Note that here we are removing the tests that include Latex (PDF generator), as
+> generating PDF is quite slow. If you are testing invoice generation, you can
+> ommit `--exclude-tag` from your command.
 
 ### Creating the database
 
@@ -46,8 +48,11 @@ The next step is to create the database, and to apply any pending migrations.
 ./manage.py createsuperuser
 ```
 
-You might then want to create a Tournament Organizer profile for the superuser
-by going to the admin panel once your website is running.
+> [!IMPORTANT]
+> As this superuser does not have an associated Event Organizer profile, you
+> will not be able to use it for testing event creation & uploading of results.
+> To do so, create an Event Organizer profile in the admin panel and attach it
+> to the newly created superuser.
 
 ### Generating fake data
 
