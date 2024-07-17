@@ -214,6 +214,13 @@ class EventInformationSerializer(serializers.ModelSerializer):
                 single_elimination_result=result["single_elimination_result"],
             )
 
+        if (
+            instance.category == Event.Category.PREMIER
+            and len(results) < Event.MIN_PLAYERS_FOR_PREMIER
+        ):
+            # Premier events with less than Event.MIN_PLAYERS_FOR_PREMIER will be downgraded when saving the event.
+            instance.save()
+
         return res
 
 
