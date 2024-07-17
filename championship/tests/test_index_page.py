@@ -105,12 +105,29 @@ class HomepageTestCase(TestCase):
         """
         Safety check to make sure we correctly have static files.
         """
-        EventOrganizerFactory(image="leonin_league.png")
+        organizer = EventOrganizerFactory(image="leonin_league.png")
+        EventFactory(organizer=organizer, date=datetime.date.today())
         response = self.client.get("/")
         self.assertIn("organizers", response.context)
         self.assertIn(
             "media/leonin_league.png", response.context["organizers"][0].image.url
         )
+
+    def test_images_only_shows_recent_organizers(self):
+        organizer = EventOrganizerFactory(image="leonin_league.png")
+        EventFactory(organizer=organizer, date=datetime.date.today())
+
+        organizer = EventOrganizerFactory(image="GBB.png")
+        EventFactory(
+            organizer=organizer,
+            date=datetime.date.today() - datetime.timedelta(days=365),
+        )
+
+        organizer = EventOrganizerFactory(image="lotus.png")
+
+        response = self.client.get("/")
+        self.assertIn("organizers", response.context)
+        self.assertEqual(len(response.context["organizers"]), 1)
 
     def test_no_open_invoice(self):
         """Checks that by default we don't have an open invoice."""

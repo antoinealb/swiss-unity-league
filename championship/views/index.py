@@ -16,6 +16,7 @@ import datetime
 import random
 
 from django.conf import settings
+from django.db.models import Max
 from django.views.generic.base import TemplateView
 
 from championship.models import Event, EventOrganizer
@@ -68,7 +69,15 @@ class IndexView(TemplateView):
     def _organizers_with_image(self):
         # Just make sure we don't always have the pictures in the same order
         # to be fair to everyone
-        organizers = list(EventOrganizer.objects.exclude(image="").exclude(image=None))
+        organizers = list(
+            EventOrganizer.objects.exclude(image="")
+            .exclude(image=None)
+            .annotate(latest_event_date=Max("event__date"))
+            .filter(
+                latest_event_date__gt=datetime.date.today()
+                - datetime.timedelta(days=365)
+            )
+        )
         random.shuffle(organizers)
         return organizers
 
