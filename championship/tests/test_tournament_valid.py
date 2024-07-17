@@ -45,10 +45,6 @@ class CheckTournamentValidTestCase(TestCase):
     def test_get_max_rounds(self, num_players, category, expected_result):
         self.assertEqual(expected_result, get_max_rounds(num_players, category))
 
-    def test_get_max_rounds_raises_error(self):
-        with self.assertRaises(TooFewPlayersForPremierError):
-            get_max_rounds(6, Event.Category.PREMIER)
-
     def test_simulate_tournament_max_points(self):
         num_players = 8
         max_rounds = 3

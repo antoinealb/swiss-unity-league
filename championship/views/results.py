@@ -54,7 +54,6 @@ from championship.parsers import (
 from championship.parsers.general_parser_functions import parse_record, record_to_points
 from championship.parsers.parse_result import ParseResult
 from championship.tournament_valid import (
-    TooFewPlayersForPremierError,
     TooManyPointsForPlayerError,
     TooManyPointsForTop8Error,
     TooManyPointsInTotalError,
@@ -77,9 +76,6 @@ def validate_standings_and_show_error(request, standings, category):
     """
     try:
         validate_standings(standings, category)
-    except TooFewPlayersForPremierError as e:
-        messages.error(request, e.ui_error_message())
-        return True
     except (
         TooManyPointsForPlayerError,
         TooManyPointsInTotalError,
