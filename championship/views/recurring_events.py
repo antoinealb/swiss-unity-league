@@ -133,7 +133,7 @@ def reschedule(recurring_event: RecurringEvent):
     dates_of_events_to_keep = [event.date for event in events if event.result_cnt > 0]
 
     if events_to_reschedule:
-        default_event = copy.deepcopy(events_to_reschedule[-1])
+        default_event = events_to_reschedule[-1]
     else:
         default_event = recurring_event.event_set.last()
 
@@ -164,8 +164,7 @@ def reschedule(recurring_event: RecurringEvent):
         # Try to find an event for the same week, else create a copy
         event = find_event_for_same_week(events_to_reschedule, date)
         if not event:
-            event = default_event
-            event.pk = None
+            event = Event().copy_values_from(default_event)
 
         event.date = date
 
@@ -343,14 +342,11 @@ class RecurringEventUpdateAllEventView(LoginRequiredMixin, UpdateView):
 
     @transaction.atomic
     def form_valid(self, form):
-        edited_event = form.save(commit=False)
-        events = edited_event.recurring_event.event_set.annotate(
+        update = form.save(commit=False)
+        events = update.recurring_event.event_set.annotate(
             result_cnt=Count("eventplayerresult")
         ).filter(result_cnt=0)
         for event in events:
-            edited_event.date = event.date
-            edited_event.category = event.category
-            edited_event.id = event.id
-            edited_event.save()
+            event.copy_values_from(update, excluded_fields=["date", "category"]).save()
         messages.success(self.request, "Successfully updated all events")
         return HttpResponseRedirect(reverse("event_details", args=[self.object.id]))

@@ -341,6 +341,50 @@ class RecurrenceEventCreationTest(TestCase):
             self.assertEqual(len(results_of_event), 1)
             self.assertEqual(results_of_event[0], result)
 
+    def test_reschedule_doesnt_copy_admin_fields(self):
+        """Admin fields of event should not be updated when we reschedule an event."""
+        recurring_event = RecurringEventFactory(
+            start_date=datetime.date.today() - datetime.timedelta(days=7),
+            end_date=datetime.date.today() + datetime.timedelta(days=30),
+        )
+        RecurrenceRuleFactory(
+            weekday=RecurrenceRule.Weekday.WEDNESDAY,
+            week=RecurrenceRule.Week.EVERY,
+            type=RecurrenceRule.Type.SCHEDULE,
+            recurring_event=recurring_event,
+        )
+        initial_event = EventFactory(
+            recurring_event=recurring_event,
+            date=datetime.date.today(),
+            results_validation_enabled=False,
+            include_in_invoices=False,
+            edit_deadline_override=datetime.date.today(),
+        )
+        reschedule(recurring_event)
+        events = Event.objects.all()
+        for event in events:
+            # Check that only the initial_event keeps the admin fields
+            self.assertEqual(
+                event.results_validation_enabled, initial_event.pk != event.pk
+            )
+            self.assertEqual(event.include_in_invoices, initial_event.pk != event.pk)
+            self.assertEqual(
+                event.edit_deadline_override,
+                (
+                    None
+                    if initial_event.pk != event.pk
+                    else initial_event.edit_deadline_override
+                ),
+            )
+
+            # The other fields should be the same for all events
+            self.assertEqual(event.organizer, initial_event.organizer)
+            self.assertEqual(event.recurring_event, initial_event.recurring_event)
+            self.assertEqual(event.name, initial_event.name)
+            self.assertEqual(event.url, initial_event.url)
+            self.assertEqual(event.category, initial_event.category)
+            self.assertEqual(event.format, initial_event.format)
+
     def test_reschedule_more_events(self):
         """Test that we can reschedule more events than before.
         - We create a series of events on Wednesdays for a month.
@@ -1005,3 +1049,21 @@ class RecurringEventEditAllTest(TestCase):
             updated_event_without_results.category, event_without_results.category
         )
         self.assertEqual(updated_event_without_results.date, event_without_results.date)
+
+    def test_admin_fields_not_updated(self):
+        """Admin fields of event should not be updated when editing all events."""
+        self.event.results_validation_enabled = False
+        self.event.include_in_invoices = False
+        self.event.edit_deadline_override = datetime.date.today()
+        self.event.save()
+        other_event = EventFactory(recurring_event=self.recurring_event)
+        response = self.client.post(
+            self.url,
+            self.data,
+        )
+        self.assertEqual(response.status_code, 302)
+        # admin fields should not be updated
+        other_event.refresh_from_db()
+        self.assertTrue(other_event.results_validation_enabled)
+        self.assertTrue(other_event.include_in_invoices)
+        self.assertIsNone(other_event.edit_deadline_override)
