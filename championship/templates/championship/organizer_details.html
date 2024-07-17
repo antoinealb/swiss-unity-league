@@ -69,6 +69,9 @@
                 {% if recurring_events %}
                     <br>
                     <h2>Active Event Series</h2>
+                    {% if eventorganizer.user == user %}
+                        <p>To create a new event series, go to the page of an event and click "Schedule as Event Series".</p>
+                    {% endif %}
                     <div class="table-responsive">
                         <table class="table table-striped">
                             <thead>
@@ -89,7 +92,8 @@
                                         <td>{{ r_event.end_date }}</td>
                                         {% if user_is_organizer %}
                                             <td>
-                                                <a href="{% url 'recurring_event_update' r_event.id %}" class="btn btn-secondary">Reschedule</a>
+                                                <a href="{% url 'recurring_event_update' r_event.id %}" class="btn btn-secondary">Update Schedule</a>
+                                                <a href="{% url 'recurring_event_update_all' r_event.id %}" class="btn btn-secondary">Edit all Events</a>
                                                 <a href="{% url 'recurring_event_copy' r_event.id %}" class="btn btn-secondary-light">Copy</a>
                                                 {% include 'championship/delete_confirmation.html' with object=r_event long_name=True %}
                                             </td>

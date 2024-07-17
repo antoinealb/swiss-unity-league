@@ -19,6 +19,8 @@ from django.contrib import messages
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.db import transaction
 from django.db.models import Count
+from django.db.models.base import Model as Model
+from django.db.models.query import QuerySet
 from django.http import HttpResponseForbidden, HttpResponseRedirect
 from django.shortcuts import get_object_or_404, redirect, render
 from django.urls import reverse, reverse_lazy
@@ -28,6 +30,7 @@ from django.views.generic.edit import UpdateView
 from dateutil.rrule import FR, MO, MONTHLY, SA, SU, TH, TU, WE, WEEKLY, rrule, rruleset
 
 from championship.forms import (
+    EventCreateForm,
     RecurrenceRuleModelFormSet,
     RecurringEventForm,
     UpdateAllEventForm,
@@ -135,7 +138,7 @@ def reschedule(recurring_event: RecurringEvent):
     if events_to_reschedule:
         default_event = events_to_reschedule[-1]
     else:
-        default_event = recurring_event.event_set.last()
+        default_event = recurring_event.get_most_recent_event()
 
     if not default_event:
         raise NoLinkedEventError(
@@ -263,7 +266,7 @@ class RecurringEventCreateView(LoginRequiredMixin, RecurringEventFormMixin, View
 class RecurringEventUpdateView(LoginRequiredMixin, RecurringEventFormMixin, View):
     """We implement a custom update view here, because we need to handle 2 forms and models at the same time."""
 
-    leading_title = "Reschedule"
+    leading_title = "Update Schedule of"
 
     def dispatch(self, request, *args, **kwargs):
         self.recurring_event = get_object_or_404(RecurringEvent, pk=kwargs["pk"])
@@ -335,8 +338,13 @@ class RecurringEventUpdateAllEventView(LoginRequiredMixin, UpdateView):
     template_name = "championship/update_event.html"
 
     def dispatch(self, request, *args, **kwargs):
+        if not kwargs.get("pk"):
+            event = get_object_or_404(
+                RecurringEvent, pk=self.kwargs["recurring_event"]
+            ).get_most_recent_event()
+            return HttpResponseRedirect(reverse("event_update_all", args=[event.id]))
         self.event = self.get_object()
-        if self.event.organizer.user != request.user or not self.event.recurring_event:
+        if self.event.organizer.user != request.user:
             return HttpResponseForbidden()
         return super().dispatch(request, *args, **kwargs)
 
@@ -349,4 +357,6 @@ class RecurringEventUpdateAllEventView(LoginRequiredMixin, UpdateView):
         for event in events:
             event.copy_values_from(update, excluded_fields=["date", "category"]).save()
         messages.success(self.request, "Successfully updated all events")
-        return HttpResponseRedirect(reverse("event_details", args=[self.object.id]))
+        return HttpResponseRedirect(
+            reverse("organizer_details", args=[self.object.organizer.id])
+        )

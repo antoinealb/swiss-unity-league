@@ -273,6 +273,9 @@ class RecurringEvent(models.Model):
     def get_delete_url(self):
         return reverse("recurring_event_delete", args=[self.pk])
 
+    def get_most_recent_event(self):
+        return self.event_set.order_by("-date").first()
+
 
 class RecurrenceRule(models.Model):
     """Each RecurringEvent has multiple RecurrenceRules, which define the schedule of the event series.

@@ -334,12 +334,12 @@ class EventCopyTestCase(TestCase):
 
         self.assertEqual(2, Event.objects.count())
 
-    def test_button_shown(self):
+    def test_copy_button_shown(self):
         self.login()
         event = EventFactory(organizer=self.organizer)
 
         resp = self.client.get(reverse("event_details", args=[event.id]))
-        self.assertIn("Copy event", resp.content.decode())
+        self.assertContains(resp, reverse("event_copy", args=[event.id]))
 
     def test_initial_address_not_overwritten_by_default_address(self):
         self.login()
