@@ -504,7 +504,7 @@ class Event(models.Model):
         """Events can be deleted if they can still be edited or have no results."""
         return self.can_be_edited() or not self.eventplayerresult_set.exists()
 
-    def copy_values_from(self, other: "Event", excluded_fields=None):
+    def copy_values_from(self, other: "Event", excluded_fields=None) -> "Event":
         """Copy values from another event into this one, retaining the excluded fields.
         Admin-related fields (results_validation_enabled, edit_deadline_override, include_in_invoices)
         and primary key (pk) are excluded by default.
