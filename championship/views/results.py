@@ -231,6 +231,17 @@ class CreateResultsView(FormView):
                 deck_name=parse_result.deck_name if parse_result.deck_name else "",
             )
 
+        if (
+            self.event.category == Event.Category.PREMIER
+            and len(standings) < Event.MIN_PLAYERS_FOR_PREMIER
+        ):
+            # Premier events with less than Event.MIN_PLAYERS_FOR_PREMIER will be downgraded when saving the event.
+            self.event.save()
+            messages.warning(
+                self.request,
+                f"Since SUL Premier events require {Event.MIN_PLAYERS_FOR_PREMIER} players, this event was downgraded to SUL Regional.",
+            )
+
         return super().form_valid(form)
 
     def get_success_url(self):

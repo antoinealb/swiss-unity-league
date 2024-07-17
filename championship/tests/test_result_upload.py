@@ -625,16 +625,16 @@ class MtgEventUploadTest(TestCase):
         self.assertEqual(results.count(), 10)
         self.assertEqual(results[0].player.name, "Toni Marty")
 
-    def test_tournament_validation(self):
+    def test_premier_event_downgraded_to_regional(self):
         self.login()
         self.event.category = Event.Category.PREMIER
         self.event.save()
-        resp = self.client.post(reverse("results_create_mtgevent"), self.data)
-        self.assertEqual(200, resp.status_code)
-        self.assertIn(
-            "SUL Premier events require at least 17 players.", resp.content.decode()
+        resp = self.client.post(
+            reverse("results_create_mtgevent"), self.data, follow=True
         )
-        self.assertFalse(self.event.eventplayerresult_set.exists())
+        self.assertEqual(200, resp.status_code)
+        self.assertContains(resp, "this event was downgraded to SUL Regional")
+        self.assertTrue(self.event.eventplayerresult_set.exists())
 
     def test_disable_tournament_validation(self):
         """Check that we can disable event results validation in case a
