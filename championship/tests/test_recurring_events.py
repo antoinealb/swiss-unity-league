@@ -987,7 +987,7 @@ class RecurringEventEditAllTest(TestCase):
             "format": "LEGACY",
             "description": "Test Description",
         }
-        self.url = reverse("recurring_event_update_all", args=[self.recurring_event.id])
+        self.url = reverse("event_update_all", args=[self.event.id])
 
     def test_unauthorized_user_cannot_edit_all_events(self):
         user = UserFactory()

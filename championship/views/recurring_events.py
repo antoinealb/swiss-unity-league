@@ -344,7 +344,7 @@ class RecurringEventUpdateAllEventView(LoginRequiredMixin, UpdateView):
             ).get_most_recent_event()
             return HttpResponseRedirect(reverse("event_update_all", args=[event.id]))
         self.event = self.get_object()
-        if self.event.organizer.user != request.user:
+        if self.event.organizer.user != request.user or not self.event.recurring_event:
             return HttpResponseForbidden()
         return super().dispatch(request, *args, **kwargs)
 

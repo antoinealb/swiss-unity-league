@@ -140,9 +140,7 @@ class EventDetailTestCase(TestCase):
             date=datetime.date.today(),
         )
         resp = self.client.get(reverse("event_details", args=[event.id]))
-        self.assertContains(
-            resp, reverse("recurring_event_update_all", args=[event.id])
-        )
+        self.assertContains(resp, reverse("event_update_all", args=[event.id]))
 
     def test_hides_link_for_top8_if_no_results(self):
         organizer = EventOrganizerFactory(user=self.user)
