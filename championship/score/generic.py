@@ -25,6 +25,7 @@ from django.db import models
 from django.db.models import Count, F, Max
 from django.db.models.signals import post_delete, pre_save
 from django.dispatch import receiver
+from django.utils.text import slugify
 
 from prometheus_client import Gauge, Summary
 
@@ -150,7 +151,7 @@ def get_leaderboard(season) -> list[Player]:
 
 
 def _organizer_score_cache_key(season: Season, organizer: EventOrganizer):
-    return f"compute_organizer_scoresS{season.slug}O{organizer}"
+    return f"compute_organizer_scores_S{season.slug}_O{slugify(organizer.name)}"
 
 
 @cache_function(cache_key=_organizer_score_cache_key, cache_ttl=60 * 60)
