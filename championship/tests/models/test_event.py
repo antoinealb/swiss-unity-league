@@ -24,6 +24,38 @@ from championship.factories import EventFactory
 from championship.models import Event
 
 
+class EventCopyFromTest(TestCase):
+
+    def setUp(self):
+        self.event = None
+
+    def test_admin_fields_and_pk_not_copied(self):
+        event: Event = EventFactory(
+            results_validation_enabled=False,
+            include_in_invoices=False,
+            edit_deadline_override=datetime.date.today(),
+        )
+
+        copied_event = Event().copy_values_from(event)
+        self.assertIsNone(copied_event.pk)
+        self.assertTrue(copied_event.results_validation_enabled)
+        self.assertTrue(copied_event.include_in_invoices)
+        self.assertIsNone(copied_event.edit_deadline_override)
+
+        fields_not_copied = [
+            "pk",
+            "id",
+            "results_validation_enabled",
+            "include_in_invoices",
+            "edit_deadline_override",
+        ]
+        for field in event._meta.fields:
+            if field.name not in fields_not_copied:
+                self.assertEqual(
+                    getattr(copied_event, field.name), getattr(event, field.name)
+                )
+
+
 class EventCanChangeResults(TestCase):
     @parameterized.expand([(2, True), (10, True), (32, False)])
     @freeze_time("2023-10-20")

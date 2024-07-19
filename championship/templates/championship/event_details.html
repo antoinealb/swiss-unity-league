@@ -56,9 +56,12 @@
                 <p><a href="{% url 'event_copy' event.id %}" class="btn btn-secondary-light">Copy event</a></p>
                 {% if event.can_be_edited %}
                     {% if event.can_have_top8 and results %}
-                        <p><a href="{% url 'results_top8_add' event.id %}" class="btn btn-secondary">Add/Edit Playoffs Results</a></p>
+                        <p><a href="{% url 'results_top8_add' event.id %}" class="btn btn-secondary">Add/Edit playoffs results</a></p>
                     {% endif %}
                     <p><a href="{% url 'event_update' event.id %}" class="btn btn-secondary">Edit event</a></p>
+                    {% if event.recurring_event %}
+                        <p><a href="{% url 'recurring_event_update_all' event.id %}" class="btn btn-secondary">Edit all events of series</a></p>
+                    {% endif %}
                 {% endif %}
                 {% if event.can_be_deleted %}
                     <p>{% include 'championship/delete_confirmation.html' with object=event long_name=True %}</p>

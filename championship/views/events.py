@@ -121,8 +121,8 @@ class CopyEventView(LoginRequiredMixin, UpdateView):
 
     def form_valid(self, form):
         event = form.save(commit=False)
-        event.pk = None  # Force Django to create a new instance
-        event.recurring_event = None
+        # Make sure the copy is deattached from the recurring event
+        event = Event().copy_values_from(event, excluded_fields=["recurring_event"])
         event.organizer = self.request.user.eventorganizer
         event.save()
         messages.success(self.request, "Successfully created event!")

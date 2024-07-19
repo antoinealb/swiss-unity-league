@@ -19,14 +19,19 @@ from django.contrib import messages
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.db import transaction
 from django.db.models import Count
-from django.http import HttpResponseForbidden
+from django.http import HttpResponseForbidden, HttpResponseRedirect
 from django.shortcuts import get_object_or_404, redirect, render
 from django.urls import reverse, reverse_lazy
 from django.views import View
+from django.views.generic.edit import UpdateView
 
 from dateutil.rrule import FR, MO, MONTHLY, SA, SU, TH, TU, WE, WEEKLY, rrule, rruleset
 
-from championship.forms import RecurrenceRuleModelFormSet, RecurringEventForm
+from championship.forms import (
+    RecurrenceRuleModelFormSet,
+    RecurringEventForm,
+    UpdateAllEventForm,
+)
 from championship.models import Event, RecurrenceRule, RecurringEvent
 from championship.views.base import CustomDeleteView
 
@@ -128,7 +133,7 @@ def reschedule(recurring_event: RecurringEvent):
     dates_of_events_to_keep = [event.date for event in events if event.result_cnt > 0]
 
     if events_to_reschedule:
-        default_event = copy.deepcopy(events_to_reschedule[-1])
+        default_event = events_to_reschedule[-1]
     else:
         default_event = recurring_event.event_set.last()
 
@@ -159,8 +164,7 @@ def reschedule(recurring_event: RecurringEvent):
         # Try to find an event for the same week, else create a copy
         event = find_event_for_same_week(events_to_reschedule, date)
         if not event:
-            event = default_event
-            event.pk = None
+            event = Event().copy_values_from(default_event)
 
         event.date = date
 
@@ -321,3 +325,28 @@ class RecurringEventDeleteView(CustomDeleteView):
             result_cnt=0
         ).delete()
         return super().form_valid(form)
+
+
+class RecurringEventUpdateAllEventView(LoginRequiredMixin, UpdateView):
+    """This view allows the user to edit all events linked to a recurring event at once."""
+
+    model = Event
+    form_class = UpdateAllEventForm
+    template_name = "championship/update_event.html"
+
+    def dispatch(self, request, *args, **kwargs):
+        self.event = self.get_object()
+        if self.event.organizer.user != request.user or not self.event.recurring_event:
+            return HttpResponseForbidden()
+        return super().dispatch(request, *args, **kwargs)
+
+    @transaction.atomic
+    def form_valid(self, form):
+        update = form.save(commit=False)
+        events = update.recurring_event.event_set.annotate(
+            result_cnt=Count("eventplayerresult")
+        ).filter(result_cnt=0)
+        for event in events:
+            event.copy_values_from(update, excluded_fields=["date", "category"]).save()
+        messages.success(self.request, "Successfully updated all events")
+        return HttpResponseRedirect(reverse("event_details", args=[self.object.id]))

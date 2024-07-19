@@ -28,6 +28,7 @@ from championship.factories import (
     EventOrganizerFactory,
     EventPlayerResultFactory,
     RankedEventFactory,
+    RecurringEventFactory,
 )
 from championship.models import Event, EventPlayerResult
 from championship.templatetags.custom_tags import initials
@@ -129,6 +130,18 @@ class EventDetailTestCase(TestCase):
         self.assertIn(
             reverse("admin:championship_event_change", args=[event.id]),
             resp.content.decode(),
+        )
+
+    def test_shows_link_edit_all_recurring_events(self):
+        """If the event is a recurring event, we should show a link to the TO to edit all events of the series."""
+        event = EventFactory(
+            recurring_event=RecurringEventFactory(),
+            organizer=EventOrganizerFactory(user=self.user),
+            date=datetime.date.today(),
+        )
+        resp = self.client.get(reverse("event_details", args=[event.id]))
+        self.assertContains(
+            resp, reverse("recurring_event_update_all", args=[event.id])
         )
 
     def test_hides_link_for_top8_if_no_results(self):

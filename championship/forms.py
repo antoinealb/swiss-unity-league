@@ -99,6 +99,13 @@ You can copy/paste the description from a website like swissmtg.ch, and the form
         self.fields["address"].queryset = organizer.get_addresses()
 
 
+class UpdateAllEventForm(EventCreateForm):
+    """Used for the RecurringEvents to update several event at once."""
+
+    class Meta(EventCreateForm.Meta):
+        exclude = ["date", "category"]
+
+
 class EventPlayerResultForm(forms.ModelForm):
     player_name = forms.CharField(
         widget=forms.TextInput(attrs={"list": "players-datalist"})

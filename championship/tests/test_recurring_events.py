@@ -341,6 +341,50 @@ class RecurrenceEventCreationTest(TestCase):
             self.assertEqual(len(results_of_event), 1)
             self.assertEqual(results_of_event[0], result)
 
+    def test_reschedule_doesnt_copy_admin_fields(self):
+        """Admin fields of event should not be updated when we reschedule an event."""
+        recurring_event = RecurringEventFactory(
+            start_date=datetime.date.today() - datetime.timedelta(days=7),
+            end_date=datetime.date.today() + datetime.timedelta(days=30),
+        )
+        RecurrenceRuleFactory(
+            weekday=RecurrenceRule.Weekday.WEDNESDAY,
+            week=RecurrenceRule.Week.EVERY,
+            type=RecurrenceRule.Type.SCHEDULE,
+            recurring_event=recurring_event,
+        )
+        initial_event = EventFactory(
+            recurring_event=recurring_event,
+            date=datetime.date.today(),
+            results_validation_enabled=False,
+            include_in_invoices=False,
+            edit_deadline_override=datetime.date.today(),
+        )
+        reschedule(recurring_event)
+        events = Event.objects.all()
+        for event in events:
+            # Check that only the initial_event keeps the admin fields
+            self.assertEqual(
+                event.results_validation_enabled, initial_event.pk != event.pk
+            )
+            self.assertEqual(event.include_in_invoices, initial_event.pk != event.pk)
+            self.assertEqual(
+                event.edit_deadline_override,
+                (
+                    None
+                    if initial_event.pk != event.pk
+                    else initial_event.edit_deadline_override
+                ),
+            )
+
+            # The other fields should be the same for all events
+            self.assertEqual(event.organizer, initial_event.organizer)
+            self.assertEqual(event.recurring_event, initial_event.recurring_event)
+            self.assertEqual(event.name, initial_event.name)
+            self.assertEqual(event.url, initial_event.url)
+            self.assertEqual(event.category, initial_event.category)
+            self.assertEqual(event.format, initial_event.format)
+
     def test_reschedule_more_events(self):
         """Test that we can reschedule more events than before.
         - We create a series of events on Wednesdays for a month.
@@ -927,3 +971,99 @@ class RecurringEventDeleteViewTest(TestCase):
             self.recurring_event.refresh_from_db()
 
         self.event.refresh_from_db()
+
+
+class RecurringEventEditAllTest(TestCase):
+    def setUp(self):
+        self.client = Client()
+        self.recurring_event = RecurringEventFactory()
+        self.event = EventFactory(
+            recurring_event=self.recurring_event, date=datetime.date.today()
+        )
+        self.client.force_login(self.event.organizer.user)
+        self.data = {
+            "name": "Test Event",
+            "url": "https://test.example",
+            "format": "LEGACY",
+            "description": "Test Description",
+        }
+        self.url = reverse("recurring_event_update_all", args=[self.recurring_event.id])
+
+    def test_unauthorized_user_cannot_edit_all_events(self):
+        user = UserFactory()
+        self.client.force_login(user)
+        response = self.client.get(self.url)
+        self.assertEqual(response.status_code, 403)
+
+    def test_cannot_edit_all_events_without_linked_recurring_event(self):
+        self.event.recurring_event = None
+        self.event.save()
+        response = self.client.get(self.url)
+        self.assertEqual(response.status_code, 403)
+
+    def test_edit_all_events(self):
+        response = self.client.post(
+            self.url,
+            self.data,
+        )
+        self.assertEqual(response.status_code, 302)
+
+        event = Event.objects.get(pk=self.event.pk)
+        self.assertEqual(event.name, self.data["name"])
+        self.assertEqual(event.url, self.data["url"])
+        self.assertEqual(event.format, self.data["format"])
+
+        # date and category should stay the same
+        self.assertEqual(event.category, self.event.category)
+        self.assertEqual(event.date, self.event.date)
+
+    def test_not_edit_events_with_results(self):
+        """Events with results should not change when editing all events."""
+        EventPlayerResultFactory(event=self.event)
+        event_without_results = EventFactory(recurring_event=self.recurring_event)
+        response = self.client.post(
+            self.url,
+            self.data,
+        )
+        self.assertEqual(response.status_code, 302)
+
+        events = Event.objects.all()
+        self.assertEqual(len(events), 2)
+
+        # Event with results should stay the same
+        event_with_result = events[0]
+        self.assertEqual(event_with_result.name, self.event.name)
+        self.assertEqual(event_with_result.url, self.event.url)
+        self.assertEqual(event_with_result.format, self.event.format)
+        self.assertEqual(event_with_result.description, self.event.description)
+        self.assertEqual(event_with_result.category, self.event.category)
+        self.assertEqual(event_with_result.date, self.event.date)
+
+        # Event without results should be updated
+        updated_event_without_results = events[1]
+        self.assertEqual(updated_event_without_results.name, self.data["name"])
+        self.assertEqual(updated_event_without_results.url, self.data["url"])
+        self.assertEqual(updated_event_without_results.format, self.data["format"])
+        # date and category should be the same as before
+        self.assertEqual(
+            updated_event_without_results.category, event_without_results.category
+        )
+        self.assertEqual(updated_event_without_results.date, event_without_results.date)
+
+    def test_admin_fields_not_updated(self):
+        """Admin fields of event should not be updated when editing all events."""
+        self.event.results_validation_enabled = False
+        self.event.include_in_invoices = False
+        self.event.edit_deadline_override = datetime.date.today()
+        self.event.save()
+        other_event = EventFactory(recurring_event=self.recurring_event)
+        response = self.client.post(
+            self.url,
+            self.data,
+        )
+        self.assertEqual(response.status_code, 302)
+        # admin fields should not be updated
+        other_event.refresh_from_db()
+        self.assertTrue(other_event.results_validation_enabled)
+        self.assertTrue(other_event.include_in_invoices)
+        self.assertIsNone(other_event.edit_deadline_override)
