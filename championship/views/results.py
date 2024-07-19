@@ -20,6 +20,7 @@ from collections import Counter
 from typing import Iterable
 from zipfile import BadZipFile
 
+from django.conf import settings
 from django.contrib import messages
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.core.exceptions import ImproperlyConfigured
@@ -233,13 +234,13 @@ class CreateResultsView(FormView):
 
         if (
             self.event.category == Event.Category.PREMIER
-            and len(standings) < Event.MIN_PLAYERS_FOR_PREMIER
+            and len(standings) < settings.MIN_PLAYERS_FOR_PREMIER
         ):
-            # Premier events with less than Event.MIN_PLAYERS_FOR_PREMIER will be downgraded when saving the event.
+            # Premier events with less than MIN_PLAYERS_FOR_PREMIER will be downgraded when saving the event.
             self.event.save()
             messages.warning(
                 self.request,
-                f"Since SUL Premier events require {Event.MIN_PLAYERS_FOR_PREMIER} players, this event was downgraded to SUL Regional.",
+                f"Since SUL Premier events require {settings.MIN_PLAYERS_FOR_PREMIER} players, this event was downgraded to SUL Regional.",
             )
 
         return super().form_valid(form)

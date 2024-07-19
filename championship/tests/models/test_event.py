@@ -16,6 +16,7 @@ import datetime
 import re
 from datetime import date
 
+from django.conf import settings
 from django.test import TestCase
 
 from freezegun import freeze_time
@@ -73,7 +74,7 @@ class EventCanChangeResults(TestCase):
 
 
 class PremierEventDowngrade(TestCase):
-    f"""Premier events with less than {Event.MIN_PLAYERS_FOR_PREMIER} are downgraded to SUL Regional."""
+    f"""Premier events with less than {settings.MIN_PLAYERS_FOR_PREMIER} are downgraded to SUL Regional."""
 
     def setUp(self):
         self.original_name = "Original name"
@@ -92,7 +93,7 @@ class PremierEventDowngrade(TestCase):
 
         results = [
             EventPlayerResultFactory(event=event)
-            for i in range(Event.MIN_PLAYERS_FOR_PREMIER - 1)
+            for i in range(settings.MIN_PLAYERS_FOR_PREMIER - 1)
         ]
 
         event.save()
@@ -111,7 +112,7 @@ class PremierEventDowngrade(TestCase):
         )
         results = [
             EventPlayerResultFactory(event=event)
-            for i in range(Event.MIN_PLAYERS_FOR_PREMIER)
+            for i in range(settings.MIN_PLAYERS_FOR_PREMIER)
         ]
 
         event.save()

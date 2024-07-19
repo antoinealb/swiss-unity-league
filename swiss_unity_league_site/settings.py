@@ -397,3 +397,6 @@ SECURE_PROXY_SSL_HEADER = ("HTTP_X_FORWARDED_PROTO", "https")
 
 # The age of session cookies, in seconds.
 SESSION_COOKIE_AGE = datetime.timedelta(days=30).total_seconds()
+
+# Premier events require this minimum of players, otherwise they are downgraded to Regional.
+MIN_PLAYERS_FOR_PREMIER = 24

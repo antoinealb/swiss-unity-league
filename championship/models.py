@@ -506,9 +506,8 @@ class Event(models.Model):
 
     objects = EventManager()
 
-    MIN_PLAYERS_FOR_PREMIER = 24
     DOWNGRADED_TO_REGIONAL_NAME = " (Downgraded to Regional)"
-    DOWNGRADED_TO_REGIONAL_DESCRIPTION = "This event was downgraded to SUL Regional, because a minimum of 24 players is needed for SUL Premier events."
+    DOWNGRADED_TO_REGIONAL_DESCRIPTION = f"This event was downgraded to SUL Regional, because a minimum of {settings.MIN_PLAYERS_FOR_PREMIER} players is needed for SUL Premier events."
 
     def save(self, *args, **kwargs):
         self._adjust_category_before_save()
@@ -517,7 +516,7 @@ class Event(models.Model):
     def _adjust_category_before_save(self):
         f"""Handles Premier with not enough entries.
 
-        Premier events with less than {self.MIN_PLAYERS_FOR_PREMIER} players
+        Premier events with less than {settings.MIN_PLAYERS_FOR_PREMIER} players
         are downgraded to SUL Regional on save.
         """
         if not self.pk:
@@ -531,7 +530,7 @@ class Event(models.Model):
             return
 
         player_count = self.eventplayerresult_set.count()
-        if player_count >= self.MIN_PLAYERS_FOR_PREMIER:
+        if player_count >= settings.MIN_PLAYERS_FOR_PREMIER:
             return
 
         self.category = Event.Category.REGIONAL
