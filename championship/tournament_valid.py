@@ -16,8 +16,6 @@ import math
 
 from championship.models import Event
 
-REQUIRED_PLAYERS_FOR_PREMIER = 24
-
 
 def get_max_rounds(num_players, event_category):
     """
@@ -27,20 +25,11 @@ def get_max_rounds(num_players, event_category):
         num_players (int): The number of players in the tournament.
         event_category (Event.Category): The category of the event.
 
-    Raises:
-        TooFewPlayersForPremierError: If the event category is PREMIER and there are fewer than 17 players.
-
     Returns:
         int: The maximum number of rounds for the tournament.
     """
     if event_category == Event.Category.REGULAR:
         return 6
-
-    if (
-        event_category == Event.Category.PREMIER
-        and num_players < REQUIRED_PLAYERS_FOR_PREMIER
-    ):
-        raise TooFewPlayersForPremierError()
 
     max_rounds = math.ceil(math.log2(num_players))
 
@@ -102,7 +91,6 @@ def _validate_total_points(standings, category):
 
     Raises:
         TooManyPointsInTotalError: If the total points earned in the tournament exceed the maximum possible.
-        TooFewPlayersForPremierError: If the event category is PREMIER and there are fewer than 17 players.
     """
     num_players = len(standings)
     max_rounds = get_max_rounds(num_players, category)
@@ -147,7 +135,6 @@ def validate_standings(standings, category):
         TooManyPointsForPlayerError: If a player has accumulated more points than allowed for the category.
         TooManyPointsInTotalError: If the total points earned in the tournament exceed the maximum possible.
         TooManyPointsForTop8Error: If the top 8 players have accumulated more points than allowed for the category.
-        TooFewPlayersForPremierError: If the event category is PREMIER and there are fewer than 17 players.
     """
     _validate_points_per_player(standings, category)
     _validate_total_points(standings, category)
@@ -199,11 +186,3 @@ class TooManyPointsForTop8Error(StandingsValidationError):
 
     def ui_error_message(self):
         return "Your top 8 players have too many points."
-
-
-class TooFewPlayersForPremierError(StandingsValidationError):
-    def __init__(self, message=BASE_VALUE_ERROR_MESSAGE, *args, **kwargs):
-        super().__init__(message, *args, **kwargs)
-
-    def ui_error_message(self):
-        return "SUL Premier events require at least 17 players. Please downgrade your event to Regional."

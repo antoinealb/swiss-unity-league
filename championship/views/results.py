@@ -20,6 +20,7 @@ from collections import Counter
 from typing import Iterable
 from zipfile import BadZipFile
 
+from django.conf import settings
 from django.contrib import messages
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.core.exceptions import ImproperlyConfigured
@@ -54,7 +55,6 @@ from championship.parsers import (
 from championship.parsers.general_parser_functions import parse_record, record_to_points
 from championship.parsers.parse_result import ParseResult
 from championship.tournament_valid import (
-    TooFewPlayersForPremierError,
     TooManyPointsForPlayerError,
     TooManyPointsForTop8Error,
     TooManyPointsInTotalError,
@@ -77,9 +77,6 @@ def validate_standings_and_show_error(request, standings, category):
     """
     try:
         validate_standings(standings, category)
-    except TooFewPlayersForPremierError as e:
-        messages.error(request, e.ui_error_message())
-        return True
     except (
         TooManyPointsForPlayerError,
         TooManyPointsInTotalError,
@@ -233,6 +230,17 @@ class CreateResultsView(FormView):
                 draw_count=d,
                 decklist_url=parse_result.decklist_url,
                 deck_name=parse_result.deck_name if parse_result.deck_name else "",
+            )
+
+        if (
+            self.event.category == Event.Category.PREMIER
+            and len(standings) < settings.MIN_PLAYERS_FOR_PREMIER
+        ):
+            # Premier events with less than MIN_PLAYERS_FOR_PREMIER will be downgraded when saving the event.
+            self.event.save()
+            messages.warning(
+                self.request,
+                f"Since SUL Premier events require {settings.MIN_PLAYERS_FOR_PREMIER} players, this event was downgraded to SUL Regional.",
             )
 
         return super().form_valid(form)
