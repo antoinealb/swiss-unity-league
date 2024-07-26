@@ -92,34 +92,6 @@ class EventOrganizerDetailViewTests(TestCase):
         )
         self.assertContains(self.response, f'href="{edit_organizer_url}"')
 
-    def test_image_validation_file_type(self):
-        valid_image = SimpleUploadedFile(
-            "valid_image.jpg", b"file_content", content_type="image/jpeg"
-        )
-        invalid_image = SimpleUploadedFile(
-            "invalid_image.txt", b"file_content", content_type="text/plain"
-        )
-        organizer = EventOrganizerFactory()
-        organizer.image = invalid_image
-        with self.assertRaises(ValidationError):
-            organizer.full_clean()
-        organizer.image = valid_image
-        organizer.full_clean()
-
-    def test_image_validation_size(self):
-        valid_image = SimpleUploadedFile(
-            "valid_image.jpg", b"file_content", content_type="image/jpeg"
-        )
-        invalid_image = SimpleUploadedFile(
-            "invalid_image.jpg", b"a" * 501 * 1024, content_type="image/jpeg"
-        )
-        organizer = EventOrganizerFactory()
-        organizer.image = invalid_image
-        with self.assertRaises(ValidationError):
-            organizer.full_clean()
-        organizer.image = valid_image
-        organizer.full_clean()
-
     def test_recurring_events_shown(self):
         recurring_event = RecurringEventFactory(end_date=datetime.date.today())
         self.future_event.recurring_event = recurring_event
@@ -179,6 +151,37 @@ class EventOrganizerDetailViewTests(TestCase):
         self.assertContains(
             response, reverse("recurring_event_update", args=[recurring_event.id])
         )
+
+
+class OrganizerImageValidation(TestCase):
+
+    def test_image_validation_file_type(self):
+        valid_image = SimpleUploadedFile(
+            "valid_image.jpg", b"file_content", content_type="image/jpeg"
+        )
+        invalid_image = SimpleUploadedFile(
+            "invalid_image.txt", b"file_content", content_type="text/plain"
+        )
+        organizer = EventOrganizerFactory()
+        organizer.image = invalid_image
+        with self.assertRaises(ValidationError):
+            organizer.full_clean()
+        organizer.image = valid_image
+        organizer.full_clean()
+
+    def test_image_validation_size(self):
+        valid_image = SimpleUploadedFile(
+            "valid_image.jpg", b"file_content", content_type="image/jpeg"
+        )
+        invalid_image = SimpleUploadedFile(
+            "invalid_image.jpg", b"a" * 501 * 1024, content_type="image/jpeg"
+        )
+        organizer = EventOrganizerFactory()
+        organizer.image = invalid_image
+        with self.assertRaises(ValidationError):
+            organizer.full_clean()
+        organizer.image = valid_image
+        organizer.full_clean()
 
 
 class OrganizerListViewTest(TestCase):
