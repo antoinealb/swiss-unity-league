@@ -20,7 +20,7 @@ from django.contrib.humanize.templatetags.humanize import ordinal
 from django.core.exceptions import ValidationError
 from django.core.validators import validate_image_file_extension
 from django.db import models
-from django.db.models import Count
+from django.db.models import Count, QuerySet
 from django.urls import reverse
 
 from django_bleach.models import BleachField
@@ -415,6 +415,16 @@ class Event(models.Model):
         PREMIER = "PREMIER", "SUL Premier"
         OTHER = "OTHER", "Other"
 
+        @classmethod
+        def ranked_choices(cls):
+            """Used for the choice fields that only allow ranked categories to be chosen (SUL Regular, Regional, Premier)"""
+            return [(key, label) for key, label in cls.choices if key != cls.OTHER]
+
+        @classmethod
+        def ranked_values(cls):
+            """Used for testing factories that only select among ranked categories (SUL Regular, Regional, Premier)."""
+            return [key for key, _ in cls.ranked_choices()]
+
     category = models.CharField(
         max_length=10,
         choices=Category.choices,
@@ -723,3 +733,82 @@ if "auditlog" in settings.INSTALLED_APPS:
     auditlog.register(Player, m2m_fields={"events"})
     auditlog.register(Event)
     auditlog.register(EventPlayerResult)
+
+
+class OrganizerLeague(models.Model):
+    """Represents a league of events that is run by an organizer during a given time frame.
+    It stores the information of which types of events count towards the league and based
+    on it we calculate a leaderboard."""
+
+    name = models.CharField(max_length=200)
+    organizer = models.ForeignKey(EventOrganizer, on_delete=models.CASCADE)
+
+    start_date = models.DateField()
+    end_date = models.DateField()
+
+    class Format(models.TextChoices):
+        All_FORMATS = "ALL", "All Formats"
+
+    FORMAT_CHOICES = Event.Format.choices + Format.choices
+
+    format = models.CharField(
+        max_length=10,
+        choices=FORMAT_CHOICES,
+        default=Format.All_FORMATS,
+    )
+
+    category = models.CharField(
+        max_length=10,
+        choices=Event.Category.ranked_choices(),
+        default=Event.Category.REGIONAL,
+        verbose_name="Highest category",
+        help_text="Events of the selected event type and lower will be included in the league leaderboard. We recommend excluding SUL Premier events, as they dominate leaderboards.",
+    )
+
+    playoffs = models.BooleanField(
+        default=True,
+        verbose_name="Include playoffs",
+        help_text="Whether events with playoffs should be included in the league leaderboard.",
+    )
+
+    description = BleachField(
+        help_text="Describe the prize pool and other info. Supports the following HTML tags: {}".format(
+            ", ".join(settings.BLEACH_ALLOWED_TAGS)
+        ),
+        blank=True,
+        strip_tags=True,
+    )
+
+    def category_and_lower(self):
+        """We select all events of the chosen category and lower categories for the leaderboard."""
+        categories = [
+            Event.Category.REGULAR,
+            Event.Category.REGIONAL,
+            Event.Category.PREMIER,
+        ]
+        index = categories.index(self.category)
+        return categories[: index + 1]
+
+    def get_category_and_lower_display(self):
+        categories = self.category_and_lower()
+        category_names = [dict(Event.Category.ranked_choices())[c] for c in categories]
+        if len(category_names) > 1:
+            return ", ".join(category_names[:-1]) + " and " + category_names[-1]
+        return category_names[0]
+
+    def get_results(self) -> QuerySet[EventPlayerResult]:
+        q = EventPlayerResult.objects.filter(
+            event__organizer=self.organizer,
+            event__date__gte=self.start_date,
+            event__date__lte=self.end_date,
+            event__category__in=self.category_and_lower(),
+        )
+        if self.format != OrganizerLeague.Format.All_FORMATS:
+            q = q.filter(event__format=self.format)
+
+        if not self.playoffs:
+            q = q.annotate(
+                top_count=Count("event__eventplayerresult__single_elimination_result"),
+            ).exclude(top_count__gt=0)
+
+        return q

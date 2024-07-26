@@ -134,14 +134,14 @@ class Event2024Factory(EventFactory):
     )
     category = factory.Faker(
         "random_element",
-        elements=RANKED_EVENT_CATEGORIES,
+        elements=Event.Category.ranked_values(),
     )
 
 
 class RankedEventFactory(EventFactory):
     category = factory.Faker(
         "random_element",
-        elements=RANKED_EVENT_CATEGORIES,
+        elements=Event.Category.ranked_values(),
     )
 
 
@@ -195,3 +195,25 @@ class RecurrenceRuleFactory(DjangoModelFactory):
     )
 
     recurring_event = factory.SubFactory(RecurringEventFactory)
+
+
+class OrganizerLeagueFactory(DjangoModelFactory):
+    class Meta:
+        model = OrganizerLeague
+
+    name = factory.Faker("mtg_event_name")
+    organizer = factory.SubFactory(EventOrganizerFactory)
+    start_date = SEASON_2023.start_date
+    end_date = SEASON_2023.end_date
+
+    format = factory.Faker(
+        "random_element",
+        elements=Event.Format.values,
+    )
+
+    category = factory.Faker(
+        "random_element",
+        elements=Event.Category.ranked_values(),
+    )
+
+    playoffs = factory.Faker("boolean")

@@ -28,10 +28,12 @@ from championship.factories import (
     EventFactory,
     EventOrganizerFactory,
     EventPlayerResultFactory,
+    OrganizerLeagueFactory,
     RecurringEventFactory,
 )
-from championship.models import Event
+from championship.models import Event, OrganizerLeague
 from championship.season import SEASON_LIST
+from championship.views.organizers import ORGANIZER_LEAGUE_DESCRIPTION
 
 User = get_user_model()
 
@@ -226,3 +228,29 @@ class OrganizerLeaderboardTest(TestCase):
             self.assertTrue("players" in response.context)
             self.assertEqual(len(response.context["players"]), 3)
             self.assertEqual(response.context["players"][0].score.rank, 1)
+            self.assertContains(
+                response,
+                ORGANIZER_LEAGUE_DESCRIPTION.format(
+                    organizer_name=organizer.name, season_name=season.name
+                ),
+            )
+
+    def test_organizer_league_leaderboard(self):
+        league = OrganizerLeagueFactory(
+            format=OrganizerLeague.Format.All_FORMATS,
+            category=Event.Category.REGIONAL,
+            end_date=datetime.date.today(),
+        )
+        result = EventPlayerResultFactory(
+            event__organizer=league.organizer,
+            event__category=Event.Category.REGULAR,
+        )
+
+        resp = self.client.get(reverse("organizer_details", args=[league.organizer_id]))
+
+        self.assertContains(resp, league.name)
+        self.assertContains(resp, league.get_format_display())
+        self.assertContains(resp, "SUL Regular and SUL Regional")
+        if not league.playoffs:
+            self.assertContains(resp, "without playoffs")
+        self.assertContains(resp, result.player.name)
