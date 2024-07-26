@@ -18,12 +18,16 @@ import zipfile
 from typing import Iterable
 
 from django.contrib import admin
+from django.core.cache import cache
 from django.core.files.base import ContentFile
 from django.db import transaction
+from django.db.models.signals import pre_save
+from django.dispatch import receiver
 from django.http import HttpResponse
 
 from django_tex.core import compile_template_to_pdf
 
+from championship.cache_function import cache_function
 from invoicing.models import Invoice, PayeeAddress
 from invoicing.views import INVOICE_TEMPLATE, get_invoice_pdf_context
 
@@ -58,7 +62,14 @@ class InvoiceAdmin(admin.ModelAdmin):
     def event_organizer_name(self, instance: Invoice):
         return instance.event_organizer.name
 
+    @staticmethod
+    def _total_amount_cache_key(invoice: Invoice) -> str:
+        return "invoice" + invoice.reference
+
     @admin.display(description="Amount")
+    @cache_function(
+        lambda self, invoice: self._total_amount_cache_key(invoice), cache_ttl=15 * 60
+    )
     def amount(self, instance: Invoice) -> str:
         return f"{instance.total_amount} CHF"
 
@@ -116,3 +127,8 @@ class InvoiceAdmin(admin.ModelAdmin):
 
 admin.site.register(Invoice, InvoiceAdmin)
 admin.site.register(PayeeAddress)
+
+
+@receiver(pre_save, sender=Invoice)
+def invalidate_invoice_cache(sender, instance: Invoice, **kwargs):
+    cache.delete(InvoiceAdmin._total_amount_cache_key(instance))
