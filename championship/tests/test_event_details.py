@@ -265,7 +265,6 @@ class EventDetailTestCase(TestCase):
             (datetime.timedelta(0), False),
         ]
     )
-    @freeze_time("2023-10-30")
     def test_missing_results_info(self, minus_delta, missing_results_info_expected):
         event = EventFactory(
             category=Event.Category.REGULAR, date=datetime.date.today() - minus_delta
@@ -287,6 +286,9 @@ class EventDetailTestCase(TestCase):
         resp = self.client.get(reverse("event_details", args=[event.id]))
         self.assertContains(resp, "10:00 - 19:00")
         self.assertContains(resp, "Date & Time")
+
+
+class EventImageValidation(TestCase):
 
     def test_image_validation_file_type(self):
         valid_image = SimpleUploadedFile(
