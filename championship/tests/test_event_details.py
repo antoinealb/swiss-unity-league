@@ -235,6 +235,18 @@ class EventDetailTestCase(TestCase):
             reverse("recurring_event_update", args=[event.recurring_event_id]),
         )
 
+    def test_shows_event_series(self):
+        organizer = EventOrganizerFactory(user=self.user)
+        event = EventFactory(
+            organizer=organizer,
+            recurring_event=RecurringEventFactory(),
+        )
+        resp = self.client.get(reverse("event_details", args=[event.id]))
+        self.assertContains(
+            resp,
+            event.recurring_event.name,
+        )
+
     def test_shows_link_delete_results(self):
         yesterday = datetime.date.today() - datetime.timedelta(1)
         organizer = EventOrganizerFactory(user=self.user)

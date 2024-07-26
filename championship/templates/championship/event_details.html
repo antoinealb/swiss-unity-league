@@ -36,6 +36,14 @@
         </dd>
         <dt class="col-sm-3">Format</dt>
         <dd class="col-sm-9">{{ event.get_format_display }}</dd>
+        {% if event.recurring_event %}
+            <dt class="col-sm-3">Event Series</dt>
+            <dd class="col-sm-9">
+                <a href="{{ event.organizer.get_absolute_url }}">
+                    {{ event.recurring_event.name }}
+                </a>
+            </dd>
+        {% endif %}
         {% if event.url %}
             <dt class="col-sm-3">Website (tickets, pairings etc.)</dt>
             <dd class="col-sm-9">
@@ -58,7 +66,7 @@
                     {% if event.can_be_edited %}
                         <a href="{% url 'event_update' event.id %}" class="btn btn-secondary">Edit Event</a>
                         {% if event.recurring_event %}
-                            <a href="{% url 'event_update_all' event.id %}" class="btn btn-secondary">Edit All Events</a>
+                            <a href="{% url 'event_update_all' event.id %}" class="btn btn-secondary">Edit All Events of Series</a>
                         {% endif %}
                     {% endif %}
                     <a href="{% url 'event_copy' event.id %}" class="btn btn-secondary-light">Copy Event</a>
