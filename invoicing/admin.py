@@ -45,6 +45,8 @@ class InvoiceAdmin(admin.ModelAdmin):
         "sent_date",
         "payment_received_date",
     )
+    list_select_related = ["event_organizer"]
+
     exclude = ["frozen_file"]
     actions = ["download", "freeze", "unfreeze"]
 
