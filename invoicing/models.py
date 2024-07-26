@@ -51,8 +51,8 @@ def fee_for_event(event: Event) -> int:
     if season is None:
         raise ValueError(f"Unknown season for date {event.date}")
 
-    results = EventPlayerResult.objects.filter(event=event)
-    has_top8 = results.filter(single_elimination_result__gt=0).count() > 0
+    results = event.eventplayerresult_set
+    has_top8 = results.filter(single_elimination_result__gt=0).exists()
 
     fee = results.count() * FEE_PER_PLAYER[season][event.category]
 
@@ -129,7 +129,8 @@ class Invoice(models.Model):
             date__gte=self.start_date,
             date__lte=self.end_date,
             include_in_invoices=True,
-        ).exclude(category=Event.Category.REGULAR)
+            category__in=[Event.Category.PREMIER, Event.Category.REGIONAL],
+        )
 
     @property
     def reference(self) -> str:
@@ -144,7 +145,13 @@ class Invoice(models.Model):
     @property
     def total_amount(self) -> int:
         """Returns total amount of the invoice, in Swiss francs."""
-        return sum(fee_for_event(e) for e in self.events) - self.discount
+        return (
+            sum(
+                fee_for_event(e)
+                for e in self.events.prefetch_related("eventplayerresult_set")
+            )
+            - self.discount
+        )
 
     @property
     def is_paid(self) -> bool:
