@@ -199,6 +199,42 @@ class EventDetailTestCase(TestCase):
             resp.content.decode(),
         )
 
+    def test_shows_link_create_recurring_event(self):
+        organizer = EventOrganizerFactory(user=self.user)
+        event = EventFactory(
+            organizer=organizer,
+        )
+        resp = self.client.get(reverse("event_details", args=[event.id]))
+        self.assertContains(
+            resp,
+            reverse("recurring_event_create", args=[event.id]),
+        )
+        self.assertNotContains(
+            resp,
+            reverse("event_update_all", args=[event.id]),
+        )
+
+    def test_shows_link_update_recurring_event(self):
+        organizer = EventOrganizerFactory(user=self.user)
+        event = EventFactory(
+            organizer=organizer,
+            date=datetime.date.today(),
+            recurring_event=RecurringEventFactory(),
+        )
+        resp = self.client.get(reverse("event_details", args=[event.id]))
+        self.assertNotContains(
+            resp,
+            reverse("recurring_event_create", args=[event.id]),
+        )
+        self.assertContains(
+            resp,
+            reverse("event_update_all", args=[event.id]),
+        )
+        self.assertContains(
+            resp,
+            reverse("recurring_event_update", args=[event.recurring_event_id]),
+        )
+
     def test_shows_link_delete_results(self):
         yesterday = datetime.date.today() - datetime.timedelta(1)
         organizer = EventOrganizerFactory(user=self.user)
