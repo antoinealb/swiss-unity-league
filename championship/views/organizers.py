@@ -37,10 +37,18 @@ from championship.forms import (
     RegistrationAddressForm,
     UserForm,
 )
-from championship.models import Address, Event, EventOrganizer, RecurringEvent
+from championship.models import (
+    Address,
+    Event,
+    EventOrganizer,
+    OrganizerLeague,
+    RecurringEvent,
+)
 from championship.score.generic import get_organizer_leaderboard
 from championship.season import SEASON_2024, find_season_by_date
 from championship.views.base import CustomDeleteView
+
+ORGANIZER_LEAGUE_DESCRIPTION = "<p>A leaderboard with <b>the best players of {organizer_name} in {season_name}</b>.<br><br><i>Please note that this leaderboard is for informational purposes only and does not award any prizes, invitations or rewards.</i></p>"
 
 
 class EventOrganizerDetailView(DetailView):
@@ -70,13 +78,32 @@ class EventOrganizerDetailView(DetailView):
         context["all_events"] = all_events
 
         # Make sure we show the final leaderboard a bit longer than the season end date
-        context["season"] = find_season_by_date(
-            datetime.date.today() - datetime.timedelta(days=40)
-        )
+        leaderboard_offset_date = datetime.date.today() - datetime.timedelta(days=40)
 
-        context["players"] = get_organizer_leaderboard(
-            season=context["season"], organizer=organizer
-        )
+        # For now we keep things simple and just show one active leaderboard
+        league = OrganizerLeague.objects.filter(
+            start_date__lte=datetime.date.today(),
+            end_date__gte=leaderboard_offset_date,
+            organizer=organizer,
+        ).first()
+
+        # If the organizer doesn't have a league, we just show a default one based on the season.
+        if not league:
+            season = find_season_by_date(leaderboard_offset_date)
+            league = OrganizerLeague(
+                organizer=organizer,
+                name=f"Leaderboard of {organizer.name} in {season.name}",
+                description=ORGANIZER_LEAGUE_DESCRIPTION.format(
+                    organizer_name=organizer.name, season_name=season.name
+                ),
+                start_date=season.start_date,
+                end_date=season.end_date,
+                category=Event.Category.REGIONAL,
+                playoffs=False,
+            )
+
+        context["league"] = league
+        context["players"] = get_organizer_leaderboard(league=league)
 
         if organizer.user == self.request.user:
             # Show the organizer all of their own recurring events

@@ -30,7 +30,7 @@ from django.utils.text import slugify
 from prometheus_client import Gauge, Summary
 
 from championship.cache_function import cache_function
-from championship.models import Event, EventOrganizer, EventPlayerResult, Player
+from championship.models import Event, EventPlayerResult, OrganizerLeague, Player
 from championship.score.season_2023 import ScoreMethod2023
 from championship.score.season_2024 import ScoreMethod2024
 from championship.score.season_all import ScoreMethodAll
@@ -133,14 +133,15 @@ def invalidate_score_cache(sender, instance, **kwargs):
             cache.delete(_score_cache_key(s))
 
 
-def get_leaderboard(season) -> list[Player]:
+def combine_scores_with_players(
+    scores_by_player: dict[int, LeaderboardScore]
+) -> list[Player]:
     """Returns a list of Player with their score.
 
     This function returns a list of Players with an additional score property
     (of type Score), containing all informations required to render a
     leaderboard.
     """
-    scores_by_player = compute_scores(season)
     players_with_score = []
     for player in Player.leaderboard_objects.all():
         if score := scores_by_player.get(player.id):
@@ -150,28 +151,25 @@ def get_leaderboard(season) -> list[Player]:
     return players_with_score
 
 
-def _organizer_score_cache_key(season: Season, organizer: EventOrganizer):
-    return f"compute_organizer_scores_S{season.slug}_O{slugify(organizer.name)}"
+def get_leaderboard(season) -> list[Player]:
+    """Returns a list of Player with their score.
+
+    This function returns a list of Players with an additional score property
+    (of type Score), containing all informations required to render a
+    leaderboard.
+    """
+    scores_by_player = compute_scores(season)
+    return combine_scores_with_players(scores_by_player)
+
+
+def _organizer_score_cache_key(l: OrganizerLeague):
+    return f"compute_organizer_scores_o{l.organizer_id}s{l.start_date}e{l.end_date}f{l.format}c{l.category}p{l.playoffs}"
 
 
 @cache_function(cache_key=_organizer_score_cache_key, cache_ttl=60 * 60)
-def compute_organizer_scores(
-    season: Season, organizer: EventOrganizer
-) -> dict[int, LeaderboardScore]:
+def compute_organizer_scores(league: OrganizerLeague) -> dict[int, LeaderboardScore]:
     qps_by_player: dict[int, int] = {}
-    for result, score in get_results_with_qps(
-        EventPlayerResult.objects.filter(
-            event__date__gte=season.start_date,
-            event__date__lte=season.end_date,
-            event__organizer=organizer,
-            player__in=Player.leaderboard_objects.all(),
-        ).annotate(
-            top_count=Count("event__eventplayerresult__single_elimination_result"),
-        )
-        # The leaderboard should show the best players that play regularly at this location.
-        # Hence we exclude events with top 8 so that the winners of these events don't rank first.
-        .exclude(top_count__gt=0)
-    ):
+    for result, score in get_results_with_qps(league.get_results()):
         try:
             qps_by_player[result.player_id] += score.qps
         except KeyError:
@@ -188,25 +186,20 @@ def compute_organizer_scores(
 @receiver(post_delete, sender=EventPlayerResult)
 @receiver(pre_save, sender=EventPlayerResult)
 def invalidate_organizer_score_cache(sender, instance, **kwargs):
-    for s in SEASONS_WITH_RANKING:
-        if s.start_date <= instance.event.date <= s.end_date:
-            cache.delete(_organizer_score_cache_key(s, instance.event.organizer))
+    for league in OrganizerLeague.objects.filter(
+        organizer=instance.event.organizer,
+        start_date__gte=instance.event.date,
+        end_date__lte=instance.event.date,
+    ):
+        cache.delete(_organizer_score_cache_key(league))
 
 
-def get_organizer_leaderboard(
-    season: Season, organizer: EventOrganizer
-) -> list[Player]:
+def get_organizer_leaderboard(league: OrganizerLeague) -> list[Player]:
     """Returns a list of Player with their score.
 
     This function returns a list of Players with an additional score property
     (of type Score), containing all informations required to render a
     leaderboard.
     """
-    scores_by_player = compute_organizer_scores(season, organizer)
-    players_with_score = []
-    for player in Player.leaderboard_objects.all():
-        if score := scores_by_player.get(player.id):
-            player.score = score
-            players_with_score.append(player)
-    players_with_score.sort(key=lambda l: l.score.rank)
-    return players_with_score
+    scores_by_player = compute_organizer_scores(league)
+    return combine_scores_with_players(scores_by_player)

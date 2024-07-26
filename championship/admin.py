@@ -422,6 +422,24 @@ class EventOrganizerAdmin(admin.ModelAdmin):
 
 admin.site.register(EventOrganizer, EventOrganizerAdmin)
 
+
+class OrganizerLeagueAdmin(admin.ModelAdmin):
+    list_display = [
+        "name",
+        "organizer",
+        "format",
+        "category",
+        "start_date",
+        "end_date",
+    ]
+
+    def organizer(self, league):
+        return f"{league.organizer.name}"
+
+
+admin.site.register(OrganizerLeague, OrganizerLeagueAdmin)
+
+
 admin.site.site_title = "Unity League"
 
 if settings.DEBUG:

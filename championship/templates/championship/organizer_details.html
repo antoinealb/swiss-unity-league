@@ -1,4 +1,5 @@
 {% extends "championship/base.html" %}
+{% load bleach_tags %}
 
 {% block title %}
     {{ eventorganizer.name }}
@@ -47,7 +48,7 @@
     {% if eventorganizer.description %}
         <h3>About</h3>
         <div class="event_description border rounded">
-            {{eventorganizer.description|linebreaksbr }}
+            {{ eventorganizer.description }}
         </div>
     {% endif %}
 
@@ -140,12 +141,15 @@
             {% if players %}
                 <div class="tab-pane fade" id="leaderboard" role="tabpanel" aria-labelledby="leaderboard-tab">
                     <br>
-                    <h2>Leaderboard of {{ eventorganizer.name }}</h2>
-                    <h3>{{ season.name }}</h3>
-                    <p>Here's a leaderboard of the best weekly players at {{ eventorganizer.name }}. Only events without playoffs are included.
-                        <br>
-                        Please note that this leaderboard is for informational purposes only and does not award any invitations or rewards.</p>
-                    <table class="table table-striped" aria-label="Leaderboard of {{ eventorganizer.name }}">
+                    <h2>{{ league.name }}</h2>
+                    <p>From <b>{{ league.start_date }}</b> to <b>{{ league.end_date }}</b>
+                        all <b>{{ league.get_category_and_lower_display }}</b> events of <b>{{ league.organizer.name }}</b>
+                        {% if not league.playoffs %}played <b>without playoffs</b>{% endif %}
+                        in <b>{{ league.get_format_display }}</b> count for this leaderboard.</p>
+                    <div class="event_description border rounded">
+                        {{ league.description|bleach }}
+                    </div>
+                    <table class="table table-striped" aria-label="Leaderboard of {{ league.name }}">
                         <thead>
                             <tr>
                                 <th scope="col">Rank</th>
