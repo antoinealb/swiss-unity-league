@@ -783,7 +783,7 @@ class RecurringEventViewTest(TestCase):
         self.assertContains(response, rule.weekday)
         self.assertContains(response, rule.week)
         self.assertContains(response, rule.type)
-        self.assertContains(response, "Reschedule Event Series")
+        self.assertContains(response, "Update Schedule of Event Series")
 
     @freeze_time("2024-06-01")
     def test_update_recurring_event(self):
@@ -987,7 +987,7 @@ class RecurringEventEditAllTest(TestCase):
             "format": "LEGACY",
             "description": "Test Description",
         }
-        self.url = reverse("recurring_event_update_all", args=[self.recurring_event.id])
+        self.url = reverse("event_update_all", args=[self.event.id])
 
     def test_unauthorized_user_cannot_edit_all_events(self):
         user = UserFactory()
@@ -1067,3 +1067,7 @@ class RecurringEventEditAllTest(TestCase):
         self.assertTrue(other_event.results_validation_enabled)
         self.assertTrue(other_event.include_in_invoices)
         self.assertIsNone(other_event.edit_deadline_override)
+
+    def test_redirect_to_latest_event(self):
+        recurring_event = RecurringEventFactory()
+        event = EventFactory(recurring_event=recurring_event)

@@ -140,9 +140,7 @@ class EventDetailTestCase(TestCase):
             date=datetime.date.today(),
         )
         resp = self.client.get(reverse("event_details", args=[event.id]))
-        self.assertContains(
-            resp, reverse("recurring_event_update_all", args=[event.id])
-        )
+        self.assertContains(resp, reverse("event_update_all", args=[event.id]))
 
     def test_hides_link_for_top8_if_no_results(self):
         organizer = EventOrganizerFactory(user=self.user)
@@ -199,6 +197,54 @@ class EventDetailTestCase(TestCase):
         self.assertNotIn(
             reverse("results_top8_add", args=[event.id]),
             resp.content.decode(),
+        )
+
+    def test_shows_link_create_recurring_event(self):
+        organizer = EventOrganizerFactory(user=self.user)
+        event = EventFactory(
+            organizer=organizer,
+        )
+        resp = self.client.get(reverse("event_details", args=[event.id]))
+        self.assertContains(
+            resp,
+            reverse("recurring_event_create", args=[event.id]),
+        )
+        self.assertNotContains(
+            resp,
+            reverse("event_update_all", args=[event.id]),
+        )
+
+    def test_shows_link_update_recurring_event(self):
+        organizer = EventOrganizerFactory(user=self.user)
+        event = EventFactory(
+            organizer=organizer,
+            date=datetime.date.today(),
+            recurring_event=RecurringEventFactory(),
+        )
+        resp = self.client.get(reverse("event_details", args=[event.id]))
+        self.assertNotContains(
+            resp,
+            reverse("recurring_event_create", args=[event.id]),
+        )
+        self.assertContains(
+            resp,
+            reverse("event_update_all", args=[event.id]),
+        )
+        self.assertContains(
+            resp,
+            reverse("recurring_event_update", args=[event.recurring_event_id]),
+        )
+
+    def test_shows_event_series(self):
+        organizer = EventOrganizerFactory(user=self.user)
+        event = EventFactory(
+            organizer=organizer,
+            recurring_event=RecurringEventFactory(),
+        )
+        resp = self.client.get(reverse("event_details", args=[event.id]))
+        self.assertContains(
+            resp,
+            event.recurring_event.name,
         )
 
     def test_shows_link_delete_results(self):
@@ -267,7 +313,6 @@ class EventDetailTestCase(TestCase):
             (datetime.timedelta(0), False),
         ]
     )
-    @freeze_time("2023-10-30")
     def test_missing_results_info(self, minus_delta, missing_results_info_expected):
         event = EventFactory(
             category=Event.Category.REGULAR, date=datetime.date.today() - minus_delta
@@ -289,6 +334,9 @@ class EventDetailTestCase(TestCase):
         resp = self.client.get(reverse("event_details", args=[event.id]))
         self.assertContains(resp, "10:00 - 19:00")
         self.assertContains(resp, "Date & Time")
+
+
+class EventImageValidation(TestCase):
 
     def test_image_validation_file_type(self):
         valid_image = SimpleUploadedFile(

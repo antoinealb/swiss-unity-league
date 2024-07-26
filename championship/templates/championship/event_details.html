@@ -36,6 +36,14 @@
         </dd>
         <dt class="col-sm-3">Format</dt>
         <dd class="col-sm-9">{{ event.get_format_display }}</dd>
+        {% if event.recurring_event %}
+            <dt class="col-sm-3">Event Series</dt>
+            <dd class="col-sm-9">
+                <a href="{{ event.organizer.get_absolute_url }}">
+                    {{ event.recurring_event.name }}
+                </a>
+            </dd>
+        {% endif %}
         {% if event.url %}
             <dt class="col-sm-3">Website (tickets, pairings etc.)</dt>
             <dd class="col-sm-9">
@@ -53,22 +61,30 @@
         {% if event.organizer.user == user %}
             <dt class="col-sm-3">TO actions (only shown to you)</dt>
             <dd class="col-sm-9">
-                <p><a href="{% url 'event_copy' event.id %}" class="btn btn-secondary-light">Copy event</a></p>
-                {% if event.can_be_edited %}
-                    {% if event.can_have_top8 and results %}
-                        <p><a href="{% url 'results_top8_add' event.id %}" class="btn btn-secondary">Add/Edit playoffs results</a></p>
+
+                <div class="btn-group-vertical">
+                    {% if event.can_be_edited %}
+                        <a href="{% url 'event_update' event.id %}" class="btn btn-secondary">Edit Event</a>
+                        {% if event.recurring_event %}
+                            <a href="{% url 'event_update_all' event.id %}" class="btn btn-secondary">Edit All Events of Series</a>
+                        {% endif %}
                     {% endif %}
-                    <p><a href="{% url 'event_update' event.id %}" class="btn btn-secondary">Edit event</a></p>
+                    <a href="{% url 'event_copy' event.id %}" class="btn btn-secondary-light">Copy Event</a>
+                    {% if event.can_be_deleted %}
+                        {% include 'championship/delete_confirmation.html' with object=event long_name=True %}
+                    {% endif %}
                     {% if event.recurring_event %}
-                        <p><a href="{% url 'recurring_event_update_all' event.id %}" class="btn btn-secondary">Edit all events of series</a></p>
+                        <a href="{% url 'recurring_event_update' event.recurring_event_id %}" class="btn btn-secondary">Update Schedule</a>
+                    {% else %}
+                        <a href="{% url 'recurring_event_create' event.id %}" class="btn btn-secondary">Schedule as Event Series</a>
                     {% endif %}
-                {% endif %}
-                {% if event.can_be_deleted %}
-                    <p>{% include 'championship/delete_confirmation.html' with object=event long_name=True %}</p>
-                {% endif %}
-                {% if event.eventplayerresult_set.count > 0 and event.can_be_edited %}
-                    <p><a href="{% url 'event_clear_results' event.id %}" class="btn btn-danger">Delete results</a></p>
-                {% endif %}
+                    {% if event.can_be_edited and results %}
+                        {% if event.can_have_top8 %}
+                            <a href="{% url 'results_top8_add' event.id %}" class="btn btn-secondary">Add/Edit Playoffs Results</a>
+                        {% endif %}
+                        <a href="{% url 'event_clear_results' event.id %}" class="btn btn-danger">Delete results</a>
+                    {% endif %}
+                </div>
             </dd>
         {% endif %}
 

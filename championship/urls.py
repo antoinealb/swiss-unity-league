@@ -76,6 +76,11 @@ urlpatterns = [
     path(
         "events/<int:pk>/series/update/all",
         views.RecurringEventUpdateAllEventView.as_view(),
+        name="event_update_all",
+    ),
+    path(
+        "events/series/<int:recurring_event>/update/all",
+        views.RecurringEventUpdateAllEventView.as_view(),
         name="recurring_event_update_all",
     ),
     path(
