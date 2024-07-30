@@ -58,7 +58,9 @@ class ManaParser(ParserContext):
     integer = reg(r"[0-9]+") > int
     color = longest(*(lit(s) for s in "WURBG")) > Color
     letter = lit("X") | lit("Y") | lit("Z")
-    hybrid = ((color | integer) << "/" & color) > (lambda s: Hybrid(tuple(s)))
+    hybrid = ((color | integer | colorless) << "/" & color) > (
+        lambda s: Hybrid(tuple(s))
+    )
     phyrexian = (color | hybrid) << lit("/P") > Phyrexian
     snow = lit("S") > constant(Snow)
     colorless = lit("C") > constant(Colorless)

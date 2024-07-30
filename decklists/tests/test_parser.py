@@ -120,3 +120,15 @@ class ManaParserTestCase(TestCase):
         got = ManaParser.mana.parse("{2}{R} // {4}{W}").unwrap()
         want = AlternativeMana([[2, Color.RED], [4, Color.WHITE]])
         self.assertEqual(want, got)
+
+    def test_parse_hybrid_colorless(self):
+        """Parses hybrid colorless & colored mana (Ulalek, Fused Atrocity)."""
+        got = ManaParser.mana.parse("{C/W}{C/U}{C/B}{C/R}{C/G}").unwrap()
+        want = [
+            Hybrid((Colorless, Color.WHITE)),
+            Hybrid((Colorless, Color.BLUE)),
+            Hybrid((Colorless, Color.BLACK)),
+            Hybrid((Colorless, Color.RED)),
+            Hybrid((Colorless, Color.GREEN)),
+        ]
+        self.assertEqual(want, got)
