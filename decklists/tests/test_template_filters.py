@@ -54,7 +54,7 @@ class ManaRendererTestCase(TestCase):
         got = mana([Hybrid((2, Color.BLUE))])
         self.assertEqual(want, got)
 
-    def test_render_hybrid_generic(self):
+    def test_render_hybrid_colorless(self):
         want = '<i class="ms ms-cost ms-cu"></i>'
         got = mana([Hybrid((Colorless, Color.BLUE))])
         self.assertEqual(want, got)
