@@ -36,11 +36,13 @@ class Importer:
 
 
 IMPORTER_LIST = [
+    # keep-sorted start
     Importer("Aetherhub", views.AetherhubResultsView.as_view()),
+    Importer("Challonge", views.ChallongeHtmlResultsView.as_view()),
     Importer("EventLink", views.EventlinkResultsView.as_view()),
     Importer("MTGEvent", views.MtgEventResultsView.as_view()),
     Importer("Melee", views.MeleeResultsView.as_view()),
-    Importer("Challonge", views.ChallongeHtmlResultsView.as_view()),
+    # keep-sorted end
     Importer("Excel/CSV", views.ExcelCsvResultsView.as_view()),
     Importer("Manual", views.ManualResultsView.as_view()),
 ]

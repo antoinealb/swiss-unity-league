@@ -46,3 +46,7 @@ repos:
         - --license-filepath
         - .license_header.txt
         - --use-current-year
+- repo: https://github.com/google/keep-sorted
+  rev: v0.4.0
+  hooks:
+    - id: keep-sorted

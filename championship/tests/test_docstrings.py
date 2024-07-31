@@ -22,9 +22,11 @@ from championship.templatetags import custom_tags
 
 def load_tests(loader, tests, ignore):
     # Add all modules where you want doctests to be found here
-    tests.addTests(doctest.DocTestSuite(views))
-    tests.addTests(doctest.DocTestSuite(championship.views.results))
+    # keep-sorted start
     tests.addTests(doctest.DocTestSuite(admin))
-    tests.addTests(doctest.DocTestSuite(general_parser_functions))
+    tests.addTests(doctest.DocTestSuite(championship.views.results))
     tests.addTests(doctest.DocTestSuite(custom_tags))
+    tests.addTests(doctest.DocTestSuite(general_parser_functions))
+    tests.addTests(doctest.DocTestSuite(views))
+    # keep-sorted end
     return tests
