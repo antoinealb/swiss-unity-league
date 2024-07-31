@@ -57,13 +57,13 @@ Colorless = object()
 class ManaParser(ParserContext):
     integer = reg(r"[0-9]+") > int
     color = longest(*(lit(s) for s in "WURBG")) > Color
+    colorless = lit("C") > constant(Colorless)
     letter = lit("X") | lit("Y") | lit("Z")
     hybrid = ((color | integer | colorless) << "/" & color) > (
         lambda s: Hybrid(tuple(s))
     )
     phyrexian = (color | hybrid) << lit("/P") > Phyrexian
     snow = lit("S") > constant(Snow)
-    colorless = lit("C") > constant(Colorless)
     mana_inside = integer | color | letter | hybrid | phyrexian | snow | colorless
     mana_with_braces = rep1("{" >> mana_inside << "}")
     mana = mana_with_braces | (rep1sep(mana_with_braces, " // ") > AlternativeMana)
