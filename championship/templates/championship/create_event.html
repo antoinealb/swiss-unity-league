@@ -12,6 +12,7 @@
     <form method="post" enctype="multipart/form-data">
         {% csrf_token %}
         {{ form|crispy }}
-        <button type="submit" value="Submit" class="btn btn-secondary">Create Event</button>
+        <button type="submit" name="submit_type" value="create_event" class="btn btn-secondary">Create Event</button>
+        <button type="submit" name="submit_type" value="schedule_series" class="btn btn-secondary-light">Create Event and Schedule Series</button>
     </form>
 {% endblock %}

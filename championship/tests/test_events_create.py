@@ -115,6 +115,27 @@ class EventCreationTestCase(TestCase):
 
         self.assertRedirects(resp, reverse("event_details", args=[event.id]))
 
+    def test_create_event_redirects_schedule_series(self):
+        """
+        Checks we can also create an event and go to the schedule series page.
+        """
+        data = {
+            "name": "Test Event",
+            "url": "https://test.example",
+            "date": "11/26/2022",
+            "format": "LEGACY",
+            "category": "PREMIER",
+            "submit_type": "schedule_series",
+        }
+        self.login()
+        to = EventOrganizerFactory(user=self.user)
+
+        resp = self.client.post(reverse("events_create"), data=data, follow=True)
+
+        event = Event.objects.all()[0]
+
+        self.assertRedirects(resp, reverse("recurring_event_create", args=[event.id]))
+
     def test_update_event(self):
         data = {
             "name": "Test Event",

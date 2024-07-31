@@ -81,9 +81,12 @@ class CreateEventView(LoginRequiredMixin, FormView):
         event.organizer = self.request.user.eventorganizer
         event.save()
 
-        messages.success(self.request, "Succesfully created event!")
-
-        return HttpResponseRedirect(reverse("event_details", args=[event.id]))
+        messages.success(self.request, "Successfully created event!")
+        if self.request.POST.get("submit_type") == "schedule_series":
+            redirect_view_name = "recurring_event_create"
+        else:
+            redirect_view_name = "event_details"
+        return HttpResponseRedirect(reverse(redirect_view_name, args=[event.id]))
 
 
 class EventUpdateView(LoginRequiredMixin, UpdateView):
