@@ -29,7 +29,7 @@ class TopPlayersEmailViewTest(TestCase):
         self.event = RankedEventFactory()
         for i in range(3):
             player = PlayerFactory(email=f"player{i}@example.com")
-            EventPlayerResultFactory(event=self.event, points=i * 3, player=player)
+            ResultFactory(event=self.event, points=i * 3, player=player)
 
     def test_need_to_be_authorized(self):
         self.client.logout()
@@ -54,7 +54,7 @@ class TopPlayersEmailViewTest(TestCase):
 
     def test_hidden_from_leaderboard(self):
         player = PlayerFactory()
-        EventPlayerResultFactory(event=self.event, points=100, player=player)
+        ResultFactory(event=self.event, points=100, player=player)
         response = self.client.post(
             self.url, {"num_of_players": 4, "season": SEASON_2023.slug}
         )

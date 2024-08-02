@@ -26,7 +26,7 @@ from django.views.generic.base import TemplateView
 from django.views.generic.edit import FormView, UpdateView
 
 from championship.forms import EventCreateForm
-from championship.models import Event, EventPlayerResult, RecurrenceRule, RecurringEvent
+from championship.models import Event, RecurrenceRule, RecurringEvent, Result
 from championship.score import get_results_with_qps
 from championship.season import SEASON_LIST
 from championship.views.base import CustomDeleteView
@@ -41,7 +41,7 @@ class EventDetailsView(DetailView):
         context = super().get_context_data(**kwargs)
         event = context["event"]
         results = get_results_with_qps(
-            EventPlayerResult.objects.filter(event=event).select_related("player")
+            Result.objects.filter(event=event).select_related("player")
         )
 
         context["can_edit_results"] = (

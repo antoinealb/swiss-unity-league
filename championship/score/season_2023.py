@@ -14,7 +14,7 @@
 
 from dataclasses import dataclass
 
-from championship.models import Event, EventPlayerResult
+from championship.models import Event, Result
 from championship.score.types import LeaderboardScore, QualificationType
 
 
@@ -35,16 +35,16 @@ class ScoreMethod2023:
     PARTICIPATION_POINTS = 3
     POINTS_FOR_TOP = {
         Event.Category.PREMIER: {
-            EventPlayerResult.SingleEliminationResult.WINNER: 500,
-            EventPlayerResult.SingleEliminationResult.FINALIST: 300,
-            EventPlayerResult.SingleEliminationResult.SEMI_FINALIST: 200,
-            EventPlayerResult.SingleEliminationResult.QUARTER_FINALIST: 150,
+            Result.SingleEliminationResult.WINNER: 500,
+            Result.SingleEliminationResult.FINALIST: 300,
+            Result.SingleEliminationResult.SEMI_FINALIST: 200,
+            Result.SingleEliminationResult.QUARTER_FINALIST: 150,
         },
         Event.Category.REGIONAL: {
-            EventPlayerResult.SingleEliminationResult.WINNER: 100,
-            EventPlayerResult.SingleEliminationResult.FINALIST: 60,
-            EventPlayerResult.SingleEliminationResult.SEMI_FINALIST: 40,
-            EventPlayerResult.SingleEliminationResult.QUARTER_FINALIST: 30,
+            Result.SingleEliminationResult.WINNER: 100,
+            Result.SingleEliminationResult.FINALIST: 60,
+            Result.SingleEliminationResult.SEMI_FINALIST: 40,
+            Result.SingleEliminationResult.QUARTER_FINALIST: 30,
         },
     }
     POINTS_TOP_9_12 = {
@@ -61,7 +61,7 @@ class ScoreMethod2023:
     @classmethod
     def _qps_for_result(
         cls,
-        result: EventPlayerResult,
+        result: Result,
         event_size: int,
         has_top_8: bool,
     ) -> int:
@@ -85,7 +85,7 @@ class ScoreMethod2023:
                 # If we are in this case, it means the event did not play a top8,
                 # only a top4, and we still need to award points for 5th-8th.
                 points += cls.POINTS_FOR_TOP[category][
-                    EventPlayerResult.SingleEliminationResult.QUARTER_FINALIST
+                    Result.SingleEliminationResult.QUARTER_FINALIST
                 ]
 
         return points
@@ -93,7 +93,7 @@ class ScoreMethod2023:
     @classmethod
     def _byes_for_result(
         cls,
-        result: EventPlayerResult,
+        result: Result,
         event_size: int,
         has_top_8: bool,
     ) -> int:
@@ -103,7 +103,7 @@ class ScoreMethod2023:
             result.event_size > MIN_SIZE_EXTRA_BYE
             and result.event.category == Event.Category.PREMIER
             and result.single_elimination_result
-            == EventPlayerResult.SingleEliminationResult.WINNER
+            == Result.SingleEliminationResult.WINNER
         ):
             return 2
         return 0

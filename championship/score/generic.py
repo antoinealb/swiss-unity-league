@@ -30,7 +30,7 @@ from django.utils.text import slugify
 from prometheus_client import Gauge, Summary
 
 from championship.cache_function import cache_function
-from championship.models import Event, EventPlayerResult, OrganizerLeague, Player
+from championship.models import Event, OrganizerLeague, Player, Result
 from championship.score.season_2023 import ScoreMethod2023
 from championship.score.season_2024 import ScoreMethod2024
 from championship.score.season_all import ScoreMethodAll
@@ -43,7 +43,7 @@ scores_computation_time_seconds = Summary(
 )
 scores_computation_results_count = Gauge(
     "scores_computation_results_count",
-    "Number of EventPlayerResultUsed for computing the leaderboard.",
+    "Number of ResultUsed for computing the leaderboard.",
     ["season_id", "season_name"],
 )
 
@@ -56,10 +56,10 @@ SCOREMETHOD_PER_SEASON = {
 
 
 def get_results_with_qps(
-    event_player_results: models.QuerySet[EventPlayerResult],
-) -> Iterable[tuple[EventPlayerResult, Any]]:
+    event_player_results: models.QuerySet[Result],
+) -> Iterable[tuple[Result, Any]]:
     """
-    Pass a QuerySet of EventPlayerResult, and get it annotated with the following fields:
+    Pass a QuerySet of Result, and get it annotated with the following fields:
     - has_top8: True if the event has a top8
     - qps: the number of QPs the player got in this event
     - event_size: the number of players in the event
@@ -69,8 +69,8 @@ def get_results_with_qps(
     results = (
         event_player_results.select_related("event")
         .annotate(
-            event_size=Count("event__eventplayerresult"),
-            top_count=Count("event__eventplayerresult__single_elimination_result"),
+            event_size=Count("event__result"),
+            top_count=Count("event__result__single_elimination_result"),
         )
         .exclude(event__category=Event.Category.OTHER)
     )
@@ -78,7 +78,7 @@ def get_results_with_qps(
     rounds_per_event = {
         e.id: e.rounds
         for e in Event.objects.raw(
-            "select event_id as id, max(win_count + loss_count + draw_count) as rounds from championship_eventplayerresult group by event_id"
+            "select event_id as id, max(win_count + loss_count + draw_count) as rounds from championship_result group by event_id"
         )
     }
 
@@ -105,7 +105,7 @@ def compute_scores(season: Season) -> dict[int, LeaderboardScore]:
 
     count = 0
     for result, score in get_results_with_qps(
-        EventPlayerResult.objects.filter(
+        Result.objects.filter(
             event__date__gte=season.start_date,
             event__date__lte=season.end_date,
             player__in=Player.leaderboard_objects.all(),
@@ -125,8 +125,8 @@ def compute_scores(season: Season) -> dict[int, LeaderboardScore]:
     )
 
 
-@receiver(post_delete, sender=EventPlayerResult)
-@receiver(pre_save, sender=EventPlayerResult)
+@receiver(post_delete, sender=Result)
+@receiver(pre_save, sender=Result)
 def invalidate_score_cache(sender, instance, **kwargs):
     for s in SEASONS_WITH_RANKING:
         if s.start_date <= instance.event.date <= s.end_date:
@@ -183,8 +183,8 @@ def compute_organizer_scores(league: OrganizerLeague) -> dict[int, LeaderboardSc
     return scores
 
 
-@receiver(post_delete, sender=EventPlayerResult)
-@receiver(pre_save, sender=EventPlayerResult)
+@receiver(post_delete, sender=Result)
+@receiver(pre_save, sender=Result)
 def invalidate_organizer_score_cache(sender, instance, **kwargs):
     for league in OrganizerLeague.objects.filter(
         organizer=instance.event.organizer,

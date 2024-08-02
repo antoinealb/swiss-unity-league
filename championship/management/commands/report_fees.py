@@ -48,7 +48,7 @@ class Command(BaseCommand):
 
         for e in (
             Event.objects.exclude(category=Event.Category.REGULAR)
-            .annotate(results_count=Count("eventplayerresult"))
+            .annotate(results_count=Count("result"))
             .filter(
                 results_count__gt=0,
                 date__lte=season.end_date,

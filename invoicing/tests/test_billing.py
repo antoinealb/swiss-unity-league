@@ -36,31 +36,31 @@ class Billing2023TestCase(BillingTestCase):
     def test_bill_for_regional_no_top(self):
         e = EventFactory(category=Event.Category.REGIONAL)
         for _ in range(10):
-            EventPlayerResultFactory(event=e)
+            ResultFactory(event=e)
 
         self.assert_fee_for_event(20, e)
 
     def test_bill_regional_top(self):
         e = EventFactory(category=Event.Category.REGIONAL)
 
-        EventPlayerResultFactory(
+        ResultFactory(
             event=e,
-            single_elimination_result=EventPlayerResult.SingleEliminationResult.WINNER,
+            single_elimination_result=Result.SingleEliminationResult.WINNER,
         )
         for _ in range(9):
-            EventPlayerResultFactory(event=e)
+            ResultFactory(event=e)
 
         self.assert_fee_for_event(35, e)
 
     def test_bill_premier(self):
         e = EventFactory(category=Event.Category.PREMIER)
 
-        EventPlayerResultFactory(
+        ResultFactory(
             event=e,
-            single_elimination_result=EventPlayerResult.SingleEliminationResult.WINNER,
+            single_elimination_result=Result.SingleEliminationResult.WINNER,
         )
         for _ in range(9):
-            EventPlayerResultFactory(event=e)
+            ResultFactory(event=e)
 
         self.assert_fee_for_event(105, e)
 
@@ -69,31 +69,31 @@ class Billing2024FeesTestCase(BillingTestCase):
     def test_bill_for_regional_no_top(self):
         e = Event2024Factory(category=Event.Category.REGIONAL)
         for _ in range(10):
-            EventPlayerResultFactory(event=e)
+            ResultFactory(event=e)
 
         self.assert_fee_for_event(10, e)
 
     def test_bill_regional_top(self):
         e = Event2024Factory(category=Event.Category.REGIONAL)
 
-        EventPlayerResultFactory(
+        ResultFactory(
             event=e,
-            single_elimination_result=EventPlayerResult.SingleEliminationResult.WINNER,
+            single_elimination_result=Result.SingleEliminationResult.WINNER,
         )
         for _ in range(9):
-            EventPlayerResultFactory(event=e)
+            ResultFactory(event=e)
 
         self.assert_fee_for_event(30, e)
 
     def test_bill_premier(self):
         e = Event2024Factory(category=Event.Category.PREMIER)
 
-        EventPlayerResultFactory(
+        ResultFactory(
             event=e,
-            single_elimination_result=EventPlayerResult.SingleEliminationResult.WINNER,
+            single_elimination_result=Result.SingleEliminationResult.WINNER,
         )
         for _ in range(9):
-            EventPlayerResultFactory(event=e)
+            ResultFactory(event=e)
 
         self.assert_fee_for_event(120, e)
 

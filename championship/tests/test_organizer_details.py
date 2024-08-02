@@ -27,9 +27,9 @@ from parameterized import parameterized
 from championship.factories import (
     EventFactory,
     EventOrganizerFactory,
-    EventPlayerResultFactory,
     OrganizerLeagueFactory,
     RecurringEventFactory,
+    ResultFactory,
 )
 from championship.models import Event, OrganizerLeague
 from championship.season import SEASON_LIST
@@ -71,7 +71,7 @@ class EventOrganizerDetailViewTests(TestCase):
         )
 
     def test_past_events_contain_num_of_participants(self):
-        EventPlayerResultFactory(event=self.past_event)
+        ResultFactory(event=self.past_event)
         self.response = self.client.get(
             reverse("organizer_details", args=[self.organizer.id])
         )
@@ -214,7 +214,7 @@ class OrganizerLeaderboardTest(TestCase):
                 reverse("organizer_details", args=[organizer.id])
             )
             results = [
-                EventPlayerResultFactory(
+                ResultFactory(
                     event__organizer=organizer,
                     event__category=Event.Category.REGULAR,
                     event__date=season.start_date + datetime.timedelta(days=i),
@@ -244,7 +244,7 @@ class OrganizerLeaderboardTest(TestCase):
             category=Event.Category.REGIONAL,
             end_date=datetime.date.today(),
         )
-        result = EventPlayerResultFactory(
+        result = ResultFactory(
             event__organizer=league.organizer,
             event__category=Event.Category.REGULAR,
         )

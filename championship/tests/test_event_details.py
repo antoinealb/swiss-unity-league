@@ -26,11 +26,11 @@ from parameterized import parameterized
 from championship.factories import (
     EventFactory,
     EventOrganizerFactory,
-    EventPlayerResultFactory,
     RankedEventFactory,
     RecurringEventFactory,
+    ResultFactory,
 )
-from championship.models import Event, EventPlayerResult
+from championship.models import Event, Result
 from championship.templatetags.custom_tags import initials
 
 
@@ -47,7 +47,7 @@ class EventDetailTestCase(TestCase):
 
     def test_get_page(self):
         event = EventFactory(category=Event.Category.PREMIER)
-        ep = EventPlayerResultFactory(
+        ep = ResultFactory(
             points=10,
             event=event,
             ranking=1,
@@ -73,16 +73,16 @@ class EventDetailTestCase(TestCase):
         # Create 18 results with a top8
         results = (
             [
-                EventPlayerResult.SingleEliminationResult.WINNER,
-                EventPlayerResult.SingleEliminationResult.FINALIST,
+                Result.SingleEliminationResult.WINNER,
+                Result.SingleEliminationResult.FINALIST,
             ]
-            + [EventPlayerResult.SingleEliminationResult.SEMI_FINALIST] * 2
-            + [EventPlayerResult.SingleEliminationResult.QUARTER_FINALIST] * 4
+            + [Result.SingleEliminationResult.SEMI_FINALIST] * 2
+            + [Result.SingleEliminationResult.QUARTER_FINALIST] * 4
             + [None] * 10  # outside of top8
         )
 
         for i, r in enumerate(results):
-            EventPlayerResultFactory(
+            ResultFactory(
                 event=event,
                 ranking=i + 1,
                 single_elimination_result=r,
@@ -97,7 +97,7 @@ class EventDetailTestCase(TestCase):
         self.assertEqual(results[8].ranking, 9)
         self.assertEqual(
             results[0].single_elimination_result,
-            EventPlayerResult.SingleEliminationResult.WINNER,
+            Result.SingleEliminationResult.WINNER,
         )
         self.assertEqual(
             results[0].get_ranking_display(),
@@ -164,7 +164,7 @@ class EventDetailTestCase(TestCase):
             date=datetime.date.today(),
         )
         # Result is needed to show the link
-        EventPlayerResultFactory(event=event)
+        ResultFactory(event=event)
 
         resp = self.client.get(reverse("event_details", args=[event.id]))
         self.assertContains(
@@ -254,7 +254,7 @@ class EventDetailTestCase(TestCase):
             category=Event.Category.REGULAR, organizer=organizer, date=yesterday
         )
         for _ in range(3):
-            EventPlayerResultFactory(event=event)
+            ResultFactory(event=event)
         resp = self.client.get(reverse("event_details", args=[event.id]))
         self.assertIn(
             reverse("event_clear_results", args=[event.id]),
@@ -262,14 +262,14 @@ class EventDetailTestCase(TestCase):
         )
 
     def test_shows_link_to_player_details(self):
-        result = EventPlayerResultFactory()
+        result = ResultFactory()
         resp = self.client.get(reverse("event_details", args=[result.event.id]))
         self.assertIn(
             reverse("player_details", args=[result.player.id]), resp.content.decode()
         )
 
     def test_skips_links_if_hidden(self):
-        result = EventPlayerResultFactory()
+        result = ResultFactory()
         result.player.hidden_from_leaderboard = True
         result.player.save()
         resp = self.client.get(reverse("event_details", args=[result.event.id]))
@@ -282,7 +282,7 @@ class EventDetailTestCase(TestCase):
 
     def test_shows_record(self):
         event = RankedEventFactory()
-        EventPlayerResultFactory(
+        ResultFactory(
             event=event,
             win_count=3,
             loss_count=1,
@@ -293,7 +293,7 @@ class EventDetailTestCase(TestCase):
 
     def test_shows_decklists(self):
         event = RankedEventFactory()
-        epr = EventPlayerResultFactory(
+        epr = ResultFactory(
             event=event,
         )
         resp = self.client.get(reverse("event_details", args=[event.id]))

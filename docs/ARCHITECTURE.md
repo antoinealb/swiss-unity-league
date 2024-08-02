@@ -103,13 +103,13 @@ Sometimes, player will enter a tournament under a nickname, for example `YellowH
 To do so we can create player aliases which contain a nickname and point to a `Player`.
 When uploading scores, if there is a `PlayerAlias` for a given name, we will use this instead of creating a new player.
 
-## EventPlayerResult
+## Result
 
 This table is perhaps the most important one to implement the SUL.
 It contains a link between Event and Player and as such, represents how a given person performed in a given tournament.
-Computing the leaderboard consists then of iterating over all EventPlayerResult, accumulating points for players as we go.
+Computing the leaderboard consists then of iterating over all Result, accumulating points for players as we go.
 
-EventPlayerResult is used as the intermediate model for a [Django ManyToMany relationship](https://docs.djangoproject.com/en/4.0/topics/db/models/#intermediary-manytomany).
+Result is used as the intermediate model for a [Django ManyToMany relationship](https://docs.djangoproject.com/en/4.0/topics/db/models/#intermediary-manytomany).
 This makes it easy to access results both for a given player and for a given event.
 
 It contains the following fields:

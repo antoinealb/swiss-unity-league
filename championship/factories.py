@@ -145,9 +145,9 @@ class RankedEventFactory(EventFactory):
     )
 
 
-class EventPlayerResultFactory(DjangoModelFactory):
+class ResultFactory(DjangoModelFactory):
     class Meta:
-        model = EventPlayerResult
+        model = Result
 
     event = factory.SubFactory(RankedEventFactory)
     player = factory.SubFactory(PlayerFactory)
@@ -162,7 +162,7 @@ class SpecialRewardFactory(DjangoModelFactory):
     class Meta:
         model = SpecialReward
 
-    result = factory.SubFactory(EventPlayerResultFactory)
+    result = factory.SubFactory(ResultFactory)
 
 
 class RecurringEventFactory(DjangoModelFactory):

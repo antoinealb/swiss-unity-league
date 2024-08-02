@@ -17,7 +17,7 @@ import dataclasses
 from django.shortcuts import get_object_or_404
 from django.views.generic import DetailView
 
-from championship.models import Event, EventPlayerResult, Player
+from championship.models import Event, Player, Result
 from championship.score import get_results_with_qps
 from championship.season import SEASONS_WITH_RANKING
 from championship.views.base import PerSeasonMixin
@@ -93,7 +93,7 @@ class PlayerDetailsView(PerSeasonMixin, DetailView):
         context = super().get_context_data(**kwargs)
 
         results = get_results_with_qps(
-            EventPlayerResult.objects.filter(
+            Result.objects.filter(
                 player=context["player"],
                 event__date__gte=self.current_season.start_date,
                 event__date__lte=self.current_season.end_date,
@@ -177,10 +177,10 @@ class PlayerDetailsView(PerSeasonMixin, DetailView):
                 return 0
 
             points = {
-                EventPlayerResult.SingleEliminationResult.WINNER: 3,
-                EventPlayerResult.SingleEliminationResult.FINALIST: 2,
-                EventPlayerResult.SingleEliminationResult.SEMI_FINALIST: 1,
-                EventPlayerResult.SingleEliminationResult.QUARTER_FINALIST: 0,
+                Result.SingleEliminationResult.WINNER: 3,
+                Result.SingleEliminationResult.FINALIST: 2,
+                Result.SingleEliminationResult.SEMI_FINALIST: 1,
+                Result.SingleEliminationResult.QUARTER_FINALIST: 0,
             }[result.single_elimination_result]
 
             # If we are in top4, it means we had one less match to win to get
@@ -193,7 +193,7 @@ class PlayerDetailsView(PerSeasonMixin, DetailView):
 
         def extra_losses_for_top(result):
             ser = result.single_elimination_result
-            if ser in (None, EventPlayerResult.SingleEliminationResult.WINNER):
+            if ser in (None, Result.SingleEliminationResult.WINNER):
                 return 0
             return 1
 

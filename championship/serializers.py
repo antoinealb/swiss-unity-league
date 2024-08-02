@@ -23,9 +23,9 @@ from championship.models import (
     Address,
     Event,
     EventOrganizer,
-    EventPlayerResult,
     Player,
     PlayerAlias,
+    Result,
 )
 from championship.tournament_valid import StandingsValidationError, validate_standings
 from championship.views.results import clean_name
@@ -112,9 +112,9 @@ class EventSerializer(serializers.ModelSerializer):
         return static(event.get_category_icon_url())
 
 
-class EventPlayerResultSerializer(serializers.ModelSerializer):
+class ResultSerializer(serializers.ModelSerializer):
     class Meta:
-        model = EventPlayerResult
+        model = Result
         fields = [
             "player",
             "single_elimination_result",
@@ -151,14 +151,14 @@ class EventInformationSerializer(serializers.ModelSerializer):
         view_name="organizers-detail", read_only=True
     )
 
-    results = EventPlayerResultSerializer(
-        many=True, source="eventplayerresult_set", read_only=False, required=False
+    results = ResultSerializer(
+        many=True, source="result_set", read_only=False, required=False
     )
 
     def create(self, validated_data):
         # We need a custom create() because we want to attach informations from
         # the current user to the created event.
-        validated_data.pop("eventplayerresult_set", [])
+        validated_data.pop("result_set", [])
         organizer = EventOrganizer.objects.get(user=self.context["request"].user)
         addr = organizer.default_address
         # TODO: Support other addresses
@@ -168,7 +168,7 @@ class EventInformationSerializer(serializers.ModelSerializer):
 
     @transaction.atomic
     def update(self, instance, validated_data):
-        results = validated_data.pop("eventplayerresult_set", [])
+        results = validated_data.pop("result_set", [])
 
         res = super().update(instance, validated_data)
 
@@ -193,7 +193,7 @@ class EventInformationSerializer(serializers.ModelSerializer):
                 raise serializers.ValidationError(error)
 
         # Delete existing results to replace them with the new ones
-        instance.eventplayerresult_set.all().delete()
+        instance.result_set.all().delete()
 
         results.sort(key=lambda r: 3 * r["win_count"] + r["draw_count"], reverse=True)
 
@@ -204,7 +204,7 @@ class EventInformationSerializer(serializers.ModelSerializer):
             except PlayerAlias.DoesNotExist:
                 player, _ = Player.objects.get_or_create(name=name)
 
-            EventPlayerResult.objects.create(
+            Result.objects.create(
                 points=3 * result["win_count"] + result["draw_count"],
                 player=player,
                 event=instance,

@@ -22,7 +22,7 @@ from django.test import TestCase
 from freezegun import freeze_time
 from parameterized import parameterized
 
-from championship.factories import EventFactory, EventPlayerResultFactory
+from championship.factories import EventFactory, ResultFactory
 from championship.models import Event
 
 
@@ -124,7 +124,7 @@ class PremierEventDowngrade(TestCase):
         self.assertEqual(event.category, Event.Category.PREMIER)
 
         results = [
-            EventPlayerResultFactory(event=event)
+            ResultFactory(event=event)
             for i in range(settings.MIN_PLAYERS_FOR_PREMIER - 1)
         ]
 
@@ -143,8 +143,7 @@ class PremierEventDowngrade(TestCase):
             description=self.original_description,
         )
         results = [
-            EventPlayerResultFactory(event=event)
-            for i in range(settings.MIN_PLAYERS_FOR_PREMIER)
+            ResultFactory(event=event) for i in range(settings.MIN_PLAYERS_FOR_PREMIER)
         ]
 
         event.save()
@@ -161,7 +160,7 @@ class PremierEventDowngrade(TestCase):
             name=self.original_name,
             description=self.original_description,
         )
-        result = EventPlayerResultFactory(event=event)
+        result = ResultFactory(event=event)
         event.save()
         event.category = Event.Category.PREMIER
         event.save()
@@ -187,7 +186,7 @@ class PremierEventDowngrade(TestCase):
             name=self.original_name,
             description=self.original_description,
         )
-        result = EventPlayerResultFactory(event=event)
+        result = ResultFactory(event=event)
         event.save()
         remaining_chars_name = name_max_length - len(Event.DOWNGRADED_TO_REGIONAL_NAME)
         self.assertEqual(

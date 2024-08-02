@@ -23,7 +23,7 @@ from django.contrib.auth.models import User
 from django.test import LiveServerTestCase
 
 from championship.factories import EventFactory, EventOrganizerFactory
-from championship.models import Event, EventPlayerResult
+from championship.models import Event, Result
 from docs.api.create_event import create_example_event, get_api_token
 
 
@@ -55,10 +55,8 @@ class CreateEventApiExample(LiveServerTestCase):
         cmd = f"{file} --instance {instance} --username test --password test"
         subprocess.check_output(shlex.split(cmd))
 
-        self.assertEqual(7, EventPlayerResult.objects.count())
+        self.assertEqual(7, Result.objects.count())
         self.assertEqual(
-            EventPlayerResult.SingleEliminationResult.WINNER,
-            EventPlayerResult.objects.get(
-                player__name="Darth Vader"
-            ).single_elimination_result,
+            Result.SingleEliminationResult.WINNER,
+            Result.objects.get(player__name="Darth Vader").single_elimination_result,
         )

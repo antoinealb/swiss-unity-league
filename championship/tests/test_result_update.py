@@ -27,7 +27,7 @@ class ResultUpdateViewTest(TestCase):
         self.to = EventOrganizerFactory(user=self.user)
         self.player = PlayerFactory()
         self.event = EventFactory(organizer=self.to, date=datetime.date.today())
-        self.epr = EventPlayerResultFactory(event=self.event, player=self.player)
+        self.epr = ResultFactory(event=self.event, player=self.player)
         self.url = reverse("epr_edit", args=[self.epr.id])
         self.data = {
             "player_name": self.player.name,
@@ -56,7 +56,7 @@ class ResultUpdateViewTest(TestCase):
         self.assertEqual(players[0].name, "John")
 
         # Create a second result
-        EventPlayerResultFactory(player=players[0])
+        ResultFactory(player=players[0])
         self.data["player_name"] = "Fred"
         self.client.post(self.url, data=self.data)
 
@@ -96,12 +96,12 @@ class ResultUpdateViewTest(TestCase):
 
     def test_update_ranking(self):
         for i in range(9):
-            EventPlayerResultFactory(
+            ResultFactory(
                 event=self.event, ranking=i, win_count=9 - i, loss_count=0, draw_count=0
             )
         self.data["win_count"] = 10
         self.client.post(self.url, data=self.data)
-        results = EventPlayerResult.objects.filter(event=self.event).order_by("ranking")
+        results = Result.objects.filter(event=self.event).order_by("ranking")
         self.assertEqual([result.ranking for result in results], list(range(1, 11)))
         self.assertEqual(
             [result.win_count for result in results], list(range(10, 0, -1))
@@ -115,16 +115,14 @@ class UpdateRankingTest(TestCase):
         self.event = EventFactory()
         # Create results with the following win counts
         for win_count in [4, 4, 3, 3, 2, 2, 1, 1, 0, 0]:
-            EventPlayerResultFactory(
+            ResultFactory(
                 event=self.event,
                 win_count=win_count,
                 draw_count=0,
             )
 
         update_ranking_order(self.event)
-        self.results = EventPlayerResult.objects.filter(event=self.event).order_by(
-            "ranking"
-        )
+        self.results = Result.objects.filter(event=self.event).order_by("ranking")
         self.assertEqual(
             [result.ranking for result in self.results], list(range(1, 11))
         )
@@ -136,7 +134,7 @@ class UpdateRankingTest(TestCase):
 
         update_ranking_order(self.event)
         self.results[4].refresh_from_db()
-        results = EventPlayerResult.objects.filter(event=self.event).order_by("ranking")
+        results = Result.objects.filter(event=self.event).order_by("ranking")
         self.assertEqual(
             [result.win_count for result in results], [4, 4, 4, 3, 3, 2, 1, 1, 0, 0]
         )
@@ -147,7 +145,7 @@ class UpdateRankingTest(TestCase):
         self.results[7].save()
         update_ranking_order(self.event)
         self.results[7].refresh_from_db()
-        results = EventPlayerResult.objects.filter(event=self.event).order_by("ranking")
+        results = Result.objects.filter(event=self.event).order_by("ranking")
         self.assertEqual(self.results[6].ranking, 7)
 
 
@@ -159,22 +157,22 @@ class DeleteResultTest(TestCase):
         self.to = EventOrganizerFactory(user=self.user)
         self.player = PlayerFactory()
         self.event = EventFactory(organizer=self.to, date=datetime.date.today())
-        self.epr = EventPlayerResultFactory(event=self.event, player=self.player)
+        self.epr = ResultFactory(event=self.event, player=self.player)
         self.url = reverse("single_result_delete", args=[self.epr.id])
 
     def test_delete_result(self):
-        self.assertEqual(EventPlayerResult.objects.count(), 1)
+        self.assertEqual(Result.objects.count(), 1)
         response = self.client.post(self.url)
-        self.assertEqual(EventPlayerResult.objects.count(), 0)
+        self.assertEqual(Result.objects.count(), 0)
         self.assertEqual(Player.objects.count(), 0)
         # Check redirect
         self.assertEqual(response.status_code, 302)
         self.assertEqual(response.url, reverse("event_details", args=[self.event.id]))
 
     def test_delete_several_results_for_player(self):
-        EventPlayerResultFactory(player=self.player)
+        ResultFactory(player=self.player)
         self.client.post(self.url)
-        self.assertEqual(EventPlayerResult.objects.count(), 1)
+        self.assertEqual(Result.objects.count(), 1)
         self.assertEqual(Player.objects.count(), 1)
 
     def test_delete_result_forbidden(self):

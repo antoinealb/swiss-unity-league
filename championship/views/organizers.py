@@ -64,7 +64,7 @@ class EventOrganizerDetailView(DetailView):
         ).order_by("date")
         past_events = (
             Event.objects.filter(organizer=organizer, date__lt=datetime.date.today())
-            .annotate(num_players=Count("eventplayerresult"))
+            .annotate(num_players=Count("result"))
             .order_by("-date")
         )
 

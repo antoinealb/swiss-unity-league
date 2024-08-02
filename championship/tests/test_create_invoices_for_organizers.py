@@ -54,7 +54,7 @@ class CreateInvoiceForOrganizerTestCase(TestCase):
         )
 
         for _ in range(10):
-            EventPlayerResultFactory(event=event)
+            ResultFactory(event=event)
 
         return event
 

@@ -18,7 +18,7 @@ from zlib import crc32
 from django.db import models
 from django.urls import reverse
 
-from championship.models import Event, EventOrganizer, EventPlayerResult
+from championship.models import Event, EventOrganizer, Result
 from championship.season import SEASON_2023, SEASON_2024, find_season_by_date
 
 FEE_PER_PLAYER = {
@@ -51,7 +51,7 @@ def fee_for_event(event: Event) -> int:
     if season is None:
         raise ValueError(f"Unknown season for date {event.date}")
 
-    results = event.eventplayerresult_set
+    results = event.result_set
     has_top8 = results.filter(single_elimination_result__gt=0).exists()
 
     fee = results.count() * FEE_PER_PLAYER[season][event.category]
@@ -146,10 +146,7 @@ class Invoice(models.Model):
     def total_amount(self) -> int:
         """Returns total amount of the invoice, in Swiss francs."""
         return (
-            sum(
-                fee_for_event(e)
-                for e in self.events.prefetch_related("eventplayerresult_set")
-            )
+            sum(fee_for_event(e) for e in self.events.prefetch_related("result_set"))
             - self.discount
         )
 

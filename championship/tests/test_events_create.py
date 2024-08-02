@@ -24,8 +24,8 @@ from championship.factories import (
     AddressFactory,
     EventFactory,
     EventOrganizerFactory,
-    EventPlayerResultFactory,
     RecurringEventFactory,
+    ResultFactory,
 )
 from championship.models import Address, Event, EventOrganizer
 
@@ -254,7 +254,7 @@ class EventCreationTestCase(TestCase):
         )
 
         # Old event with results cannot be deleted
-        epr = EventPlayerResultFactory(event=event)
+        epr = ResultFactory(event=event)
         self.login()
         self.client.post(reverse("event_delete", args=[event.id]))
         self.assertEqual(Event.objects.count(), 1)

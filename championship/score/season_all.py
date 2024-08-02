@@ -15,7 +15,7 @@
 from dataclasses import dataclass
 from typing import Any
 
-from championship.models import Event, EventPlayerResult
+from championship.models import Event, Result
 from championship.score.types import LeaderboardScore
 
 

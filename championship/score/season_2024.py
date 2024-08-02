@@ -15,7 +15,7 @@
 import datetime
 from dataclasses import dataclass
 
-from championship.models import Count, Event, EventPlayerResult, SpecialReward
+from championship.models import Count, Event, Result, SpecialReward
 from championship.score.types import LeaderboardScore, QualificationType
 from championship.season import SEASON_2024
 
@@ -37,16 +37,16 @@ class ScoreMethod2024:
     PARTICIPATION_POINTS = 3
     POINTS_FOR_TOP = {
         Event.Category.PREMIER: {
-            EventPlayerResult.SingleEliminationResult.WINNER: 400,
-            EventPlayerResult.SingleEliminationResult.FINALIST: 240,
-            EventPlayerResult.SingleEliminationResult.SEMI_FINALIST: 160,
-            EventPlayerResult.SingleEliminationResult.QUARTER_FINALIST: 120,
+            Result.SingleEliminationResult.WINNER: 400,
+            Result.SingleEliminationResult.FINALIST: 240,
+            Result.SingleEliminationResult.SEMI_FINALIST: 160,
+            Result.SingleEliminationResult.QUARTER_FINALIST: 120,
         },
         Event.Category.REGIONAL: {
-            EventPlayerResult.SingleEliminationResult.WINNER: 100,
-            EventPlayerResult.SingleEliminationResult.FINALIST: 60,
-            EventPlayerResult.SingleEliminationResult.SEMI_FINALIST: 40,
-            EventPlayerResult.SingleEliminationResult.QUARTER_FINALIST: 30,
+            Result.SingleEliminationResult.WINNER: 100,
+            Result.SingleEliminationResult.FINALIST: 60,
+            Result.SingleEliminationResult.SEMI_FINALIST: 40,
+            Result.SingleEliminationResult.QUARTER_FINALIST: 30,
         },
     }
     POINTS_FOR_MATCHPOINT_RATE = [
@@ -76,7 +76,7 @@ class ScoreMethod2024:
     @classmethod
     def _qps_for_result(
         cls,
-        result: EventPlayerResult,
+        result: Result,
         event_size: int,
         has_top_8: bool,
         total_rounds: int,
@@ -104,7 +104,7 @@ class ScoreMethod2024:
     @classmethod
     def _byes_for_result(
         cls,
-        result: EventPlayerResult,
+        result: Result,
         event_size: int,
         has_top_8: bool,
     ) -> int:
@@ -143,14 +143,14 @@ class ScoreMethod2024:
                 date__gte=SEASON_2024.start_date,
                 date__lte=SEASON_2024.end_date,
             )
-            .annotate(result_cnt=Count("eventplayerresult"))
+            .annotate(result_cnt=Count("result"))
             .filter(result_cnt__gte=cls.MIN_PLAYERS_FOR_DIRECT_QUALIFICATION)
-            .prefetch_related("eventplayerresult_set")
+            .prefetch_related("result_set")
             .order_by("-date")
         )
         direct_qualification_reasons_by_player = {}
         for event in events:
-            for result in sorted(event.eventplayerresult_set.all()):
+            for result in sorted(event.result_set.all()):
                 if result.player_id not in direct_qualification_reasons_by_player:
                     direct_qualification_reasons_by_player[result.player_id] = (
                         cls.DIRECT_QUALIFICATION_REASON.format(

@@ -19,11 +19,11 @@ from django.test import TestCase
 from parameterized import parameterized
 
 from championship.factories import (
-    EventPlayerResultFactory,
     OrganizerLeagueFactory,
     RankedEventFactory,
+    ResultFactory,
 )
-from championship.models import Event, EventPlayerResult, OrganizerLeague
+from championship.models import Event, OrganizerLeague, Result
 
 
 class OrganizerLeagueTest(TestCase):
@@ -33,7 +33,7 @@ class OrganizerLeagueTest(TestCase):
             format=OrganizerLeague.Format.All_FORMATS,
         )
 
-        result = EventPlayerResultFactory(
+        result = ResultFactory(
             event=RankedEventFactory(
                 organizer=league.organizer,
                 category=league.category,
@@ -48,7 +48,7 @@ class OrganizerLeagueTest(TestCase):
             format=Event.Format.MODERN,
         )
 
-        result = EventPlayerResultFactory(
+        result = ResultFactory(
             event=RankedEventFactory(
                 format=league.format,
                 organizer=league.organizer,
@@ -56,7 +56,7 @@ class OrganizerLeagueTest(TestCase):
             )
         )
 
-        result_of_wrong_format = EventPlayerResultFactory(
+        result_of_wrong_format = ResultFactory(
             event=RankedEventFactory(
                 format=Event.Format.STANDARD,
                 organizer=league.organizer,
@@ -80,7 +80,7 @@ class OrganizerLeagueTest(TestCase):
         league = OrganizerLeagueFactory(category=league_category)
 
         for event_category, _ in Event.Category.choices:
-            result = EventPlayerResultFactory(
+            result = ResultFactory(
                 event=RankedEventFactory(
                     format=league.format,
                     organizer=league.organizer,
@@ -102,7 +102,7 @@ class OrganizerLeagueTest(TestCase):
             datetime.date(2024, 7, 31),
             datetime.date(2024, 8, 1),
         ]:
-            result = EventPlayerResultFactory(
+            result = ResultFactory(
                 event=RankedEventFactory(
                     organizer=league.organizer,
                     category=league.category,
@@ -130,12 +130,10 @@ class OrganizerLeagueTest(TestCase):
             organizer=league.organizer,
             category=league.category,
         )
-        for ser in [None, EventPlayerResult.SingleEliminationResult.WINNER]:
-            EventPlayerResultFactory(
-                single_elimination_result=ser, event=event_with_playoffs
-            )
+        for ser in [None, Result.SingleEliminationResult.WINNER]:
+            ResultFactory(single_elimination_result=ser, event=event_with_playoffs)
 
-        result_without_playoffs = EventPlayerResultFactory(
+        result_without_playoffs = ResultFactory(
             event=RankedEventFactory(
                 format=league.format,
                 organizer=league.organizer,

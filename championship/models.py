@@ -209,7 +209,7 @@ class EventManager(models.Manager):
             self.filter(organizer__user=user, date__lte=end_date)
             .exclude(date__lt=start_date, edit_deadline_override__isnull=True)
             .exclude(category=Event.Category.OTHER)
-            .annotate(result_cnt=Count("eventplayerresult"))
+            .annotate(result_cnt=Count("result"))
             .filter(result_cnt=0)
         )
 
@@ -487,7 +487,7 @@ class Event(models.Model):
         return self.category != Event.Category.REGULAR
 
     def can_be_edited(self) -> bool:
-        """Returns whether changing the Event or its EventPlayerResults is allowed.
+        """Returns whether changing the Event or its Results is allowed.
 
         A TO can edit the event when:
         -The event is not part of a season.
@@ -515,7 +515,7 @@ class Event(models.Model):
 
     def can_be_deleted(self) -> bool:
         """Events can be deleted if they can still be edited or have no results."""
-        return self.can_be_edited() or not self.eventplayerresult_set.exists()
+        return self.can_be_edited() or not self.result_set.exists()
 
     def copy_values_from(self, other: "Event", excluded_fields=None) -> "Event":
         """Copy values from another event into this one, retaining the excluded fields.
@@ -560,10 +560,10 @@ class Event(models.Model):
             return
 
         # We don't adjust events that don't have results yet.
-        if not self.eventplayerresult_set.exists():
+        if not self.result_set.exists():
             return
 
-        player_count = self.eventplayerresult_set.count()
+        player_count = self.result_set.count()
         if player_count >= settings.MIN_PLAYERS_FOR_PREMIER:
             return
 
@@ -597,7 +597,7 @@ class Player(models.Model):
     # See https://www.kalzumeus.com/2010/06/17/falsehoods-programmers-believe-about-names/
     # for why this was not a good idea.
     name = models.CharField(max_length=200)
-    events = models.ManyToManyField(Event, through="EventPlayerResult")
+    events = models.ManyToManyField(Event, through="Result")
     email = models.EmailField(max_length=254, blank=True)
 
     hidden_from_leaderboard = models.BooleanField(
@@ -632,7 +632,7 @@ class PlayerAlias(models.Model):
         verbose_name_plural = "player aliases"
 
 
-class EventPlayerResult(models.Model):
+class Result(models.Model):
     """
     A result for a single player in a single event.
     """
@@ -677,7 +677,7 @@ class EventPlayerResult(models.Model):
     )
 
     class Meta:
-        indexes = [models.Index(fields=["event"])]
+        indexes = [models.Index(fields=["event"], name="championship_result_event_idx")]
         verbose_name = "Result"
 
     def __str__(self):
@@ -700,10 +700,10 @@ class EventPlayerResult(models.Model):
 
     def get_ranking_display(self):
         SINGLE_ELIM_TO_RANK = {
-            EventPlayerResult.SingleEliminationResult.WINNER: "1st",
-            EventPlayerResult.SingleEliminationResult.FINALIST: "2nd",
-            EventPlayerResult.SingleEliminationResult.SEMI_FINALIST: "3rd-4th",
-            EventPlayerResult.SingleEliminationResult.QUARTER_FINALIST: "5th-8th",
+            Result.SingleEliminationResult.WINNER: "1st",
+            Result.SingleEliminationResult.FINALIST: "2nd",
+            Result.SingleEliminationResult.SEMI_FINALIST: "3rd-4th",
+            Result.SingleEliminationResult.QUARTER_FINALIST: "5th-8th",
         }
         if self.single_elimination_result:
             return SINGLE_ELIM_TO_RANK[self.single_elimination_result]
@@ -718,7 +718,7 @@ class EventPlayerResult(models.Model):
 
 
 class SpecialReward(models.Model):
-    result = models.ForeignKey(EventPlayerResult, on_delete=models.CASCADE)
+    result = models.ForeignKey(Result, on_delete=models.CASCADE)
     byes = models.PositiveIntegerField(
         help_text="Number of additional byes the player receives for this result.",
         default=0,
@@ -735,7 +735,7 @@ if "auditlog" in settings.INSTALLED_APPS:
     auditlog.register(EventOrganizer)
     auditlog.register(Player, m2m_fields={"events"})
     auditlog.register(Event)
-    auditlog.register(EventPlayerResult)
+    auditlog.register(Result)
 
 
 class OrganizerLeague(models.Model):
@@ -799,8 +799,8 @@ class OrganizerLeague(models.Model):
             return ", ".join(category_names[:-1]) + " and " + category_names[-1]
         return category_names[0]
 
-    def get_results(self) -> QuerySet[EventPlayerResult]:
-        q = EventPlayerResult.objects.filter(
+    def get_results(self) -> QuerySet[Result]:
+        q = Result.objects.filter(
             event__organizer=self.organizer,
             event__date__gte=self.start_date,
             event__date__lte=self.end_date,
@@ -811,7 +811,7 @@ class OrganizerLeague(models.Model):
 
         if not self.playoffs:
             q = q.annotate(
-                top_count=Count("event__eventplayerresult__single_elimination_result"),
+                top_count=Count("event__result__single_elimination_result"),
             ).exclude(top_count__gt=0)
 
         return q

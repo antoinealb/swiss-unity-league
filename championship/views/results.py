@@ -35,15 +35,15 @@ import requests
 
 from championship.forms import (
     AddTop8ResultsForm,
-    EventPlayerResultForm,
     FileImporterForm,
     ImporterSelectionForm,
     LinkImporterForm,
     ManualUploadMetadataForm,
+    ResultForm,
     ResultsDeleteForm,
     ResultsFormset,
 )
-from championship.models import Event, EventPlayerResult, Player, PlayerAlias
+from championship.models import Event, Player, PlayerAlias, Result
 from championship.parsers import (
     aetherhub,
     challonge,
@@ -220,7 +220,7 @@ class CreateResultsView(FormView):
             except PlayerAlias.DoesNotExist:
                 player, _ = Player.objects.get_or_create(name=name)
 
-            EventPlayerResult.objects.create(
+            Result.objects.create(
                 points=parse_result.points,
                 player=player,
                 event=self.event,
@@ -536,14 +536,14 @@ class AddTop8ResultsView(LoginRequiredMixin, FormView):
             return super().form_valid(form)
 
         FIELDS_TO_RESULTS = {
-            "winner": EventPlayerResult.SingleEliminationResult.WINNER,
-            "finalist": EventPlayerResult.SingleEliminationResult.FINALIST,
-            "semi0": EventPlayerResult.SingleEliminationResult.SEMI_FINALIST,
-            "semi1": EventPlayerResult.SingleEliminationResult.SEMI_FINALIST,
-            "quarter0": EventPlayerResult.SingleEliminationResult.QUARTER_FINALIST,
-            "quarter1": EventPlayerResult.SingleEliminationResult.QUARTER_FINALIST,
-            "quarter2": EventPlayerResult.SingleEliminationResult.QUARTER_FINALIST,
-            "quarter3": EventPlayerResult.SingleEliminationResult.QUARTER_FINALIST,
+            "winner": Result.SingleEliminationResult.WINNER,
+            "finalist": Result.SingleEliminationResult.FINALIST,
+            "semi0": Result.SingleEliminationResult.SEMI_FINALIST,
+            "semi1": Result.SingleEliminationResult.SEMI_FINALIST,
+            "quarter0": Result.SingleEliminationResult.QUARTER_FINALIST,
+            "quarter1": Result.SingleEliminationResult.QUARTER_FINALIST,
+            "quarter2": Result.SingleEliminationResult.QUARTER_FINALIST,
+            "quarter3": Result.SingleEliminationResult.QUARTER_FINALIST,
         }
 
         playoff_results_filled = [
@@ -565,7 +565,7 @@ class AddTop8ResultsView(LoginRequiredMixin, FormView):
             )
             return super().form_invalid(form)
 
-        self.event.eventplayerresult_set.update(single_elimination_result=None)
+        self.event.result_set.update(single_elimination_result=None)
         for event_player_result, single_elim_result in playoff_results_filled:
             event_player_result.single_elimination_result = single_elim_result
             event_player_result.save()
@@ -598,7 +598,7 @@ class ClearEventResultsView(LoginRequiredMixin, FormView):
         event = self.get_event()
 
         if event.can_be_edited():
-            event.eventplayerresult_set.all().delete()
+            event.result_set.all().delete()
         else:
             messages.error(self.request, "Event too old to delete results.")
 
@@ -607,7 +607,7 @@ class ClearEventResultsView(LoginRequiredMixin, FormView):
 
 def update_ranking_order(event):
     """Updates the order of the ranking after a result has been updated."""
-    results = EventPlayerResult.objects.filter(event=event)
+    results = Result.objects.filter(event=event)
     results = sorted(
         results, key=lambda r: (r.win_count, r.draw_count, -r.ranking), reverse=True
     )
@@ -631,8 +631,8 @@ class ResultUpdatePermissionMixin:
 
 
 class ResultUpdateView(ResultUpdatePermissionMixin, UpdateView):
-    model = EventPlayerResult
-    form_class = EventPlayerResultForm
+    model = Result
+    form_class = ResultForm
     template_name = "championship/update_result.html"
 
     def get_context_data(self, **kwargs):
@@ -645,7 +645,7 @@ class ResultUpdateView(ResultUpdatePermissionMixin, UpdateView):
         old_player = self.get_object().player
         form.save()
         # Delete the old player if they have no results anymore
-        results_old_player = EventPlayerResult.objects.filter(player=old_player)
+        results_old_player = Result.objects.filter(player=old_player)
         if not results_old_player:
             old_player.delete()
         update_ranking_order(form.instance.event)
@@ -656,7 +656,7 @@ class ResultUpdateView(ResultUpdatePermissionMixin, UpdateView):
 
 
 class SingleResultDeleteView(ResultUpdatePermissionMixin, CustomDeleteView):
-    model = EventPlayerResult
+    model = Result
 
     def get_success_url(self):
         return reverse("event_details", args=[self.object.event.id])
@@ -666,7 +666,7 @@ class SingleResultDeleteView(ResultUpdatePermissionMixin, CustomDeleteView):
 
         self.object = self.get_object()
         self.object.delete()
-        if not EventPlayerResult.objects.filter(player=self.object.player_id).count():
+        if not Result.objects.filter(player=self.object.player_id).count():
             self.object.player.delete()
 
         return HttpResponseRedirect(self.get_success_url())

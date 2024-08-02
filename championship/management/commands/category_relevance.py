@@ -65,7 +65,7 @@ class Command(BaseCommand):
         }
 
         for result, score in get_results_with_qps(
-            EventPlayerResult.objects.filter(
+            Result.objects.filter(
                 event__date__gte=season.start_date,
                 event__date__lte=season.end_date,
                 player__in=leaderboard,

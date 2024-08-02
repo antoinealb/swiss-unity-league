@@ -21,11 +21,7 @@ from django.core.files.base import ContentFile
 from django.test import Client, TestCase, tag
 from django.urls import reverse
 
-from championship.factories import (
-    EventFactory,
-    EventOrganizerFactory,
-    EventPlayerResultFactory,
-)
+from championship.factories import EventFactory, EventOrganizerFactory, ResultFactory
 from championship.models import Event
 from invoicing.factories import InvoiceFactory
 
@@ -91,7 +87,7 @@ class InvoiceRenderingTest(TestCase):
         )
 
         for _ in range(10):
-            EventPlayerResultFactory(event=event)
+            ResultFactory(event=event)
 
         invoice = InvoiceFactory(
             start_date=last_week, end_date=today, event_organizer=self.to

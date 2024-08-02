@@ -29,11 +29,11 @@ from .models import (
     Address,
     Event,
     EventOrganizer,
-    EventPlayerResult,
     Player,
     PlayerAlias,
     RecurrenceRule,
     RecurringEvent,
+    Result,
 )
 
 
@@ -106,13 +106,13 @@ class UpdateAllEventForm(EventCreateForm):
         exclude = ["date", "category"]
 
 
-class EventPlayerResultForm(forms.ModelForm):
+class ResultForm(forms.ModelForm):
     player_name = forms.CharField(
         widget=forms.TextInput(attrs={"list": "players-datalist"})
     )
 
     class Meta:
-        model = EventPlayerResult
+        model = Result
         fields = [
             "player_name",
             "win_count",
@@ -311,7 +311,7 @@ ResultsFormset = forms.formset_factory(
 class AddTop8ResultsForm(forms.Form, SubmitButtonMixin):
     class ResultChoiceField(forms.ModelChoiceField):
         def __init__(self, *args, **kwargs):
-            queryset = EventPlayerResult.objects.none()
+            queryset = Result.objects.none()
             super().__init__(queryset=queryset, *args, **kwargs)
 
         def label_from_instance(self, obj):
@@ -328,16 +328,14 @@ class AddTop8ResultsForm(forms.Form, SubmitButtonMixin):
 
     def __init__(self, event, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        qs = EventPlayerResult.objects.filter(event=event, ranking__lte=8).order_by(
-            "ranking"
-        )
+        qs = Result.objects.filter(event=event, ranking__lte=8).order_by("ranking")
         for f in self.fields.values():
             if isinstance(f, AddTop8ResultsForm.ResultChoiceField):
                 f.queryset = qs
 
         # Make playing the whole top8 mandatory for event above 16 players.
         # Source: MTR Appendix E
-        event_size = event.eventplayerresult_set.count()
+        event_size = event.result_set.count()
         if event_size > 16:
             for key, field in self.fields.items():
                 if key.startswith("quarter"):
@@ -345,16 +343,16 @@ class AddTop8ResultsForm(forms.Form, SubmitButtonMixin):
 
         scnt = 0
         qcnt = 0
-        for r in event.eventplayerresult_set.exclude(single_elimination_result=None):
+        for r in event.result_set.exclude(single_elimination_result=None):
             s = r.single_elimination_result
-            if s == EventPlayerResult.SingleEliminationResult.WINNER:
+            if s == Result.SingleEliminationResult.WINNER:
                 self.initial["winner"] = r
-            elif s == EventPlayerResult.SingleEliminationResult.FINALIST:
+            elif s == Result.SingleEliminationResult.FINALIST:
                 self.initial["finalist"] = r
-            elif s == EventPlayerResult.SingleEliminationResult.SEMI_FINALIST:
+            elif s == Result.SingleEliminationResult.SEMI_FINALIST:
                 self.initial[f"semi{scnt}"] = r
                 scnt += 1
-            elif s == EventPlayerResult.SingleEliminationResult.QUARTER_FINALIST:
+            elif s == Result.SingleEliminationResult.QUARTER_FINALIST:
                 self.initial[f"quarter{qcnt}"] = r
                 qcnt += 1
 

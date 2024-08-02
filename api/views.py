@@ -117,9 +117,7 @@ class EventViewSet(viewsets.ModelViewSet):
     """API endpoint showing events and allowing their creation."""
 
     serializer_class = EventInformationSerializer
-    queryset = Event.objects.all().prefetch_related(
-        "eventplayerresult_set", "eventplayerresult_set__player"
-    )
+    queryset = Event.objects.all().prefetch_related("result_set", "result_set__player")
     permission_classes = [
         IsReadonly | (IsAuthenticated & IsOwner & IsEventModificationAllowed)
     ]

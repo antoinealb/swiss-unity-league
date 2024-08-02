@@ -21,11 +21,11 @@ from parameterized import parameterized
 
 from championship.factories import (
     EventFactory,
-    EventPlayerResultFactory,
     PlayerFactory,
     RankedEventFactory,
+    ResultFactory,
 )
-from championship.models import Event, EventPlayerResult
+from championship.models import Event, Result
 from championship.season import SEASONS_WITH_RANKING
 from championship.views import (
     EVENTS,
@@ -68,7 +68,7 @@ class PlayerDetailsTest(TestCase):
         Checks that we have a score available in the events.
         """
         event = EventFactory(category=Event.Category.PREMIER)
-        ep = EventPlayerResultFactory(
+        ep = ResultFactory(
             event=event,
             win_count=3,
             draw_count=1,
@@ -92,7 +92,7 @@ class PlayerDetailsTest(TestCase):
         """
         Checks that we correctly link to events.
         """
-        ep = EventPlayerResultFactory()
+        ep = ResultFactory()
 
         response = self.get_player_details_2023(ep.player)
         wantUrl = reverse("event_details", args=[ep.event.id])
@@ -118,7 +118,7 @@ class PlayerDetailsTest(TestCase):
         """
         category = Event.Category.PREMIER
         event = EventFactory(category=category)
-        ep = EventPlayerResultFactory(event=event, ranking=1)
+        ep = ResultFactory(event=event, ranking=1)
 
         response = self.get_player_details_2023(ep.player)
         self.assertContains(
@@ -130,7 +130,7 @@ class PlayerDetailsTest(TestCase):
     def test_qp_table(self):
         player = PlayerFactory()
         event = EventFactory(category=Event.Category.PREMIER, id=1234)
-        EventPlayerResultFactory(
+        ResultFactory(
             player=player,
             event=event,
             ranking=1,
@@ -138,10 +138,10 @@ class PlayerDetailsTest(TestCase):
             win_count=3,
             loss_count=0,
             draw_count=1,
-            single_elimination_result=EventPlayerResult.SingleEliminationResult.QUARTER_FINALIST,
+            single_elimination_result=Result.SingleEliminationResult.QUARTER_FINALIST,
         )
         event = EventFactory(category=Event.Category.REGULAR, id=12345)
-        EventPlayerResultFactory(
+        ResultFactory(
             player=player,
             event=event,
             ranking=1,
@@ -168,18 +168,18 @@ class PlayerDetailsTest(TestCase):
 
     def test_top_finishes(self):
         player = PlayerFactory()
-        ser_winner = EventPlayerResult.SingleEliminationResult.WINNER
-        ser_quarter = EventPlayerResult.SingleEliminationResult.QUARTER_FINALIST
+        ser_winner = Result.SingleEliminationResult.WINNER
+        ser_quarter = Result.SingleEliminationResult.QUARTER_FINALIST
         event1 = EventFactory(category=Event.Category.PREMIER)
         event2 = EventFactory(category=Event.Category.REGIONAL)
-        EventPlayerResultFactory(
+        ResultFactory(
             points=10,
             player=player,
             event=event1,
             ranking=1,
             single_elimination_result=ser_quarter,
         )
-        EventPlayerResultFactory(
+        ResultFactory(
             points=10,
             player=player,
             event=event2,
@@ -187,7 +187,7 @@ class PlayerDetailsTest(TestCase):
             single_elimination_result=ser_winner,
         )
         event3 = EventFactory(category=Event.Category.REGIONAL)
-        EventPlayerResultFactory(points=10, player=player, event=event3, ranking=1)
+        ResultFactory(points=10, player=player, event=event3, ranking=1)
         response = self.get_player_details_2023(player)
         expected_top_finishes = [
             {
@@ -226,12 +226,12 @@ class PlayerDetailsTest(TestCase):
 
     def test_get_performance_per_format(self):
         event = EventFactory(category=Event.Category.PREMIER)
-        epr = EventPlayerResultFactory(
+        epr = ResultFactory(
             event=event,
             win_count=5,
             loss_count=2,
             draw_count=3,
-            single_elimination_result=EventPlayerResult.SingleEliminationResult.FINALIST,
+            single_elimination_result=Result.SingleEliminationResult.FINALIST,
         )
         resp = self.get_player_details_2023(epr.player)
         perf_per_format = resp.context["performance_per_format"]
@@ -248,7 +248,7 @@ class PlayerDetailsTest(TestCase):
         """Checks that we compute the win ratio in events with top4 only."""
         event = EventFactory(category=Event.Category.PREMIER)
         eprs = [
-            EventPlayerResultFactory(
+            ResultFactory(
                 event=event,
                 win_count=5,
                 loss_count=2,
@@ -258,10 +258,10 @@ class PlayerDetailsTest(TestCase):
             for _ in range(16)
         ]
         results = [
-            EventPlayerResult.SingleEliminationResult.WINNER,
-            EventPlayerResult.SingleEliminationResult.FINALIST,
-            EventPlayerResult.SingleEliminationResult.SEMI_FINALIST,
-            EventPlayerResult.SingleEliminationResult.SEMI_FINALIST,
+            Result.SingleEliminationResult.WINNER,
+            Result.SingleEliminationResult.FINALIST,
+            Result.SingleEliminationResult.SEMI_FINALIST,
+            Result.SingleEliminationResult.SEMI_FINALIST,
         ]
 
         for epr, result in zip(eprs, results):
@@ -284,7 +284,7 @@ class PlayerDetailSeasonTestCase(TestCase):
     def test_player_details_all_seasons_work(self, season):
         player = PlayerFactory()
         event = RankedEventFactory(date=season.start_date)
-        EventPlayerResultFactory(event=event, player=player)
+        ResultFactory(event=event, player=player)
         response = self.client.get(
             reverse("player_details_by_season", args=[player.id, season.slug])
         )
