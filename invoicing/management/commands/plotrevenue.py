@@ -16,7 +16,7 @@ from typing import Iterator
 
 from django.conf import settings
 from django.core.management.base import BaseCommand
-from django.db.models import Count
+from django.db.models import Count, Max
 
 import matplotlib.pyplot as plt
 from matplotlib.ticker import FormatStrFormatter
@@ -58,6 +58,19 @@ def data_points_for_season(season: Season) -> Iterator[tuple[int, int]]:
         yield days_since_start, revenue
 
 
+def plot_title():
+    date = (
+        Event.objects.filter(
+            category__in=[Event.Category.PREMIER, Event.Category.REGIONAL]
+        )
+        .annotate(result_cnt=Count("result"))
+        .exclude(result_cnt=0)
+        .aggregate(Max("date"))["date__max"]
+    )
+    date = date.strftime("%Y-%m-%d")
+    return f"Evolution of SUL revenue per season (ignoring discounts)\nas of {date}"
+
+
 class Command(BaseCommand):
     help = "Plot our revenue over time, allowing us to compare seasons."
 
@@ -86,7 +99,7 @@ class Command(BaseCommand):
 
         plt.gca().yaxis.set_major_formatter(FormatStrFormatter("%d CHF"))
 
-        plt.title("Evolution of SUL revenue per season, ignoring discounts")
+        plt.title(plot_title())
         plt.ylabel("Revenue")
         plt.xlabel("Days since season start")
         plt.legend(legends)
