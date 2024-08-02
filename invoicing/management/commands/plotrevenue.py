@@ -47,7 +47,7 @@ def data_points_for_season(season: Season) -> Iterator[tuple[int, int]]:
             date__gte=season.start_date,
             date__lte=season.end_date,
         )
-        .annotate(result_cnt=Count("eventplayerresult"))
+        .annotate(result_cnt=Count("result"))
         .exclude(result_cnt=0)
         .order_by("date")
     )

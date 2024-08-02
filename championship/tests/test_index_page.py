@@ -85,7 +85,7 @@ class HomepageTestCase(TestCase):
         Checks that the homepage contains some player information.
         """
         player = PlayerFactory()
-        EventPlayerResultFactory(
+        ResultFactory(
             player=player,
             points=1,
         )
@@ -97,7 +97,7 @@ class HomepageTestCase(TestCase):
         Checks that the homepage contains some player information.
         """
         player = PlayerFactory(hidden_from_leaderboard=True)
-        EventPlayerResultFactory(player=player, points=1)
+        ResultFactory(player=player, points=1)
         response = self.client.get("/")
         self.assertNotIn(player.name, response.content.decode())
 

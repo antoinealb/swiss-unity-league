@@ -23,12 +23,12 @@ from championship.factories import (
     AddressFactory,
     EventFactory,
     EventOrganizerFactory,
-    EventPlayerResultFactory,
     PlayerFactory,
     RankedEventFactory,
+    ResultFactory,
 )
 from championship.models import *
-from championship.serializers import EventPlayerResultSerializer, EventSerializer
+from championship.serializers import EventSerializer, ResultSerializer
 
 
 class TestEventResultsAPI(APITestCase):
@@ -44,7 +44,7 @@ class TestEventResultsAPI(APITestCase):
 
     def test_event_includes_result(self):
         for i in range(10):
-            EventPlayerResultFactory(event=self.event)
+            ResultFactory(event=self.event)
 
         resp = self.client.get(self.url).json()
         self.assertIn("results", resp)
@@ -71,9 +71,9 @@ class TestEventResultsAPI(APITestCase):
         }
         resp = self.client.patch(self.url, data=data, format="json")
         self.assertEqual(200, resp.status_code)
-        self.assertEqual(1, EventPlayerResult.objects.count())
+        self.assertEqual(1, Result.objects.count())
 
-        e = EventPlayerResult.objects.all()[0]
+        e = Result.objects.all()[0]
         self.assertEqual(e.event, self.event)
         self.assertEqual(e.player.name, "Antoine Albertelli")
         self.assertEqual(e.ranking, 1)
@@ -83,7 +83,7 @@ class TestEventResultsAPI(APITestCase):
         self.assertEqual(e.points, 11)
         self.assertEqual(
             e.single_elimination_result,
-            EventPlayerResult.SingleEliminationResult.WINNER,
+            Result.SingleEliminationResult.WINNER,
         )
 
     def test_send_results_player_alias(self):
@@ -105,7 +105,7 @@ class TestEventResultsAPI(APITestCase):
         resp = self.client.patch(self.url, data=data, format="json")
 
         # Check that the event got associated with the player
-        self.assertTrue(player.eventplayerresult_set.exists())
+        self.assertTrue(player.result_set.exists())
 
     def test_send_results_player_clean_name(self):
         player = PlayerFactory(name="Antoine Albertelli")
@@ -125,7 +125,7 @@ class TestEventResultsAPI(APITestCase):
 
         # Check that the event got associated with the player
         self.assertTrue(
-            player.eventplayerresult_set.exists(),
+            player.result_set.exists(),
             f"Should have results for {player.name}",
         )
 
@@ -149,7 +149,7 @@ class TestEventResultsAPI(APITestCase):
 
         self.event.refresh_from_db()
 
-        self.assertEqual(1, self.event.eventplayerresult_set.count())
+        self.assertEqual(1, self.event.result_set.count())
 
     def test_upload_results_failing_validation(self):
         """Checks that we cannot upload a tournament that do not passes
@@ -168,7 +168,7 @@ class TestEventResultsAPI(APITestCase):
         self.client.login(**self.credentials)
         resp = self.client.patch(self.url, data={"results": results}, format="json")
         self.assertEqual(400, resp.status_code)
-        self.assertEqual(0, self.event.eventplayerresult_set.count())
+        self.assertEqual(0, self.event.result_set.count())
         self.assertIn("message", resp.json())
 
     def test_upload_results_failing_validation_but_exemption(self):
@@ -193,7 +193,7 @@ class TestEventResultsAPI(APITestCase):
         resp = self.client.patch(self.url, data={"results": results}, format="json")
 
         self.assertEqual(200, resp.status_code)
-        self.assertEqual(24, self.event.eventplayerresult_set.count())
+        self.assertEqual(24, self.event.result_set.count())
 
     def test_upload_results_unsorted(self):
         """Checks that results are sorted according to points."""
@@ -212,7 +212,7 @@ class TestEventResultsAPI(APITestCase):
         self.client.login(**self.credentials)
         resp = self.client.patch(self.url, data={"results": results}, format="json")
 
-        results = EventPlayerResult.objects.filter(event=self.event).order_by("ranking")
+        results = Result.objects.filter(event=self.event).order_by("ranking")
         self.assertEqual(results[0].win_count, 3, "Results should have been sorted.")
         self.assertEqual(
             results[0].player.name, "Player 2", "Results should have been sorted."
@@ -243,6 +243,6 @@ class TestEventResultsAPI(APITestCase):
         }
         resp = self.client.patch(self.url, data=data, format="json")
         self.assertEqual(200, resp.status_code)
-        self.assertEqual(2, EventPlayerResult.objects.count())
+        self.assertEqual(2, Result.objects.count())
         self.event.refresh_from_db()
         self.assertEqual(self.event.category, Event.Category.REGIONAL)

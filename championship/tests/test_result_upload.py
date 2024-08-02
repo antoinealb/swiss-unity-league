@@ -24,7 +24,7 @@ from requests import HTTPError
 
 from championship.factories import *
 from championship.forms import AddTop8ResultsForm
-from championship.models import EventPlayerResult
+from championship.models import Result
 from championship.parsers.challonge import TournamentNotSwissError
 from championship.tests.parsers.utils import load_test_html
 from championship.views import clean_name
@@ -141,7 +141,7 @@ class AetherhubImportTest(TestCase):
 
         response = self.client.post(reverse("results_create_aetherhub"), self.data)
 
-        results = EventPlayerResult.objects.filter(event=self.event).order_by("id")[:]
+        results = Result.objects.filter(event=self.event).order_by("id")[:]
 
         # hardcoded spot checks from the tournament
         self.assertEqual(len(results), 30)
@@ -168,7 +168,7 @@ class AetherhubImportTest(TestCase):
 
         self.client.post(reverse("results_create_aetherhub"), self.data)
 
-        results = EventPlayerResult.objects.filter(event=self.event).order_by("id")[:]
+        results = Result.objects.filter(event=self.event).order_by("id")[:]
         self.assertEqual(results[1].player.name, "Test Player")
 
     @patch("requests.get")
@@ -190,7 +190,7 @@ class AetherhubImportTest(TestCase):
 
         # Check that a random player has indeed two events to their name
         player = Player.objects.all()[0]
-        results = EventPlayerResult.objects.filter(player=player).count()
+        results = Result.objects.filter(player=player).count()
         self.assertEqual(2, results, "Each player should have two results")
 
     @patch("requests.get")
@@ -280,7 +280,7 @@ class AetherhubImportTest(TestCase):
 
         # Then create results for the event and makes sure we don't have the
         # event listed anymore
-        EventPlayerResult.objects.create(
+        Result.objects.create(
             points=10,
             player=PlayerFactory(),
             event=self.event,
@@ -340,7 +340,7 @@ class ChallongeLinkImportTest(TestCase):
 
         response = self.post_form()
 
-        results = EventPlayerResult.objects.filter(event=self.event).order_by("id")[:]
+        results = Result.objects.filter(event=self.event).order_by("id")[:]
 
         self.assertEqual(len(results), 14)
         player_id = 1
@@ -409,7 +409,7 @@ class ChallongeHtmlImportTest(TestCase):
 
         self.post_form()
 
-        results = EventPlayerResult.objects.filter(event=self.event).order_by("id")[:]
+        results = Result.objects.filter(event=self.event).order_by("id")[:]
 
         # hardcoded spot checks from the tournament
         self.assertEqual(len(results), 14)
@@ -426,7 +426,7 @@ class ChallongeHtmlImportTest(TestCase):
         PlayerAlias.objects.create(name="Pascal Richter", true_player=orig_player)
 
         self.post_form()
-        results = EventPlayerResult.objects.filter(event=self.event).order_by("id")[:]
+        results = Result.objects.filter(event=self.event).order_by("id")[:]
         self.assertEqual(results[0].player.name, "Test Player")
 
     def test_import_garbage(self):
@@ -474,7 +474,7 @@ class EventLinkImportTestCase(TestCase):
 
         self.client.post(reverse("results_create_eventlink"), self.data)
 
-        results = EventPlayerResult.objects.filter(event=self.event).order_by("id")[:]
+        results = Result.objects.filter(event=self.event).order_by("id")[:]
 
         # hardcoded spot checks from the tournament
         self.assertEqual(len(results), 10)
@@ -491,7 +491,7 @@ class EventLinkImportTestCase(TestCase):
         PlayerAlias.objects.create(name="Jeremias Wildi", true_player=orig_player)
 
         self.client.post(reverse("results_create_eventlink"), self.data)
-        results = EventPlayerResult.objects.filter(event=self.event).order_by("id")[:]
+        results = Result.objects.filter(event=self.event).order_by("id")[:]
         self.assertEqual(results[0].player.name, "Test Player")
 
     def test_import_garbage(self):
@@ -525,7 +525,7 @@ class EventLinkImportTestCase(TestCase):
 
         # Then create results for the event and makes sure we don't have the
         # event listed anymore
-        EventPlayerResultFactory(event=self.event)
+        ResultFactory(event=self.event)
         response = self.client.get(reverse("results_create_eventlink"))
         gotChoices = _choices(response)
         self.assertEqual([], gotChoices)
@@ -576,7 +576,7 @@ class MeleeUploadTest(TestCase):
         self.login()
 
         self.client.post(reverse("results_create_melee"), self.data)
-        results = EventPlayerResult.objects.filter(event=self.event).order_by("id")[:]
+        results = Result.objects.filter(event=self.event).order_by("id")[:]
 
         self.assertEqual(len(results), 39)
         self.assertEqual(results[0].points, 29)
@@ -621,7 +621,7 @@ class MtgEventUploadTest(TestCase):
 
         self.event.refresh_from_db()
 
-        results = self.event.eventplayerresult_set.order_by("ranking")
+        results = self.event.result_set.order_by("ranking")
         self.assertEqual(results.count(), 10)
         self.assertEqual(results[0].player.name, "Toni Marty")
 
@@ -634,7 +634,7 @@ class MtgEventUploadTest(TestCase):
         )
         self.assertEqual(200, resp.status_code)
         self.assertContains(resp, "this event was downgraded to SUL Regional")
-        self.assertTrue(self.event.eventplayerresult_set.exists())
+        self.assertTrue(self.event.result_set.exists())
 
     def test_disable_tournament_validation(self):
         """Check that we can disable event results validation in case a
@@ -645,7 +645,7 @@ class MtgEventUploadTest(TestCase):
         self.event.save()
         self.client.post(reverse("results_create_mtgevent"), self.data)
         self.assertTrue(
-            self.event.eventplayerresult_set.exists(),
+            self.event.result_set.exists(),
             "Results should have been created.",
         )
 
@@ -683,7 +683,7 @@ class ExcelCsvUploadTest(TestCase):
         response = self.client.post(reverse("results_create_excelcsv"), self.data)
         self.event.refresh_from_db()
 
-        results = self.event.eventplayerresult_set.order_by("ranking")
+        results = self.event.result_set.order_by("ranking")
         self.assertEqual(results.count(), 3)
         self.assertEqual(results[0].player.name, "Jari Rentsch")
         self.assertEqual(results[0].ranking, 1)
@@ -713,7 +713,7 @@ class ExcelCsvUploadTest(TestCase):
         response = self.client.post(reverse("results_create_excelcsv"), self.data)
         self.event.refresh_from_db()
 
-        results = self.event.eventplayerresult_set.order_by("ranking")
+        results = self.event.result_set.order_by("ranking")
         self.assertEqual(results.count(), 3)
         self.assertEqual(results[0].player.name, "Player 1")
         self.assertEqual(results[0].ranking, 1)
@@ -779,7 +779,7 @@ class ManualImportTestCase(TestCase):
     def test_upload_simple_result(self):
         self.client.post(reverse("results_create_manual"), self.data)
 
-        results = EventPlayerResult.objects.filter(event=self.event).order_by("id")[:]
+        results = Result.objects.filter(event=self.event).order_by("id")[:]
         self.assertEqual(results[0].player.name, "Antoine Albertelli")
         self.assertEqual(results[0].ranking, 1)
         self.assertEqual(results[0].points, 10)
@@ -791,7 +791,7 @@ class ManualImportTestCase(TestCase):
         self.data["form-0-points"] = "3@"
         resp = self.client.post(reverse("results_create_manual"), self.data)
         self.assertContains(resp, "Score should be in the win-loss")
-        self.assertFalse(self.event.eventplayerresult_set.exists())
+        self.assertFalse(self.event.result_set.exists())
 
     def test_redirects_to_event_page(self):
         resp = self.client.post(reverse("results_create_manual"), self.data)
@@ -802,21 +802,21 @@ class ManualImportTestCase(TestCase):
         PlayerAlias.objects.create(name="Antoine Albertelli", true_player=orig_player)
 
         self.client.post(reverse("results_create_manual"), self.data)
-        results = EventPlayerResult.objects.filter(event=self.event).order_by("id")[:]
+        results = Result.objects.filter(event=self.event).order_by("id")[:]
         self.assertEqual(results[0].player.name, "Test Player")
 
     def test_import_double_space(self):
         self.data["form-0-name"] = "Antoine    Albertelli"
         self.client.post(reverse("results_create_manual"), self.data)
 
-        results = EventPlayerResult.objects.filter(event=self.event).order_by("id")[:]
+        results = Result.objects.filter(event=self.event).order_by("id")[:]
         self.assertEqual(results[0].player.name, "Antoine Albertelli")
 
     def test_import_draws(self):
         self.data["form-0-points"] = "3-0-1"
         self.client.post(reverse("results_create_manual"), self.data)
 
-        results = EventPlayerResult.objects.filter(event=self.event).order_by("id")[:]
+        results = Result.objects.filter(event=self.event).order_by("id")[:]
         self.assertEqual(results[0].points, 10)
 
     def test_import_more_than_one(self):
@@ -834,13 +834,11 @@ class ManualImportTestCase(TestCase):
             "form-MAX_NUM_FORMS": 128,
         }
         self.client.post(reverse("results_create_manual"), self.data)
-        self.assertEqual(2, EventPlayerResult.objects.filter(event=self.event).count())
+        self.assertEqual(2, Result.objects.filter(event=self.event).count())
 
         names = [
             e.player.name
-            for e in EventPlayerResult.objects.filter(event=self.event).order_by(
-                "ranking"
-            )
+            for e in Result.objects.filter(event=self.event).order_by("ranking")
         ]
         self.assertEqual(names, ["Antoine Albertelli", "Bo Bobby"])
 
@@ -866,9 +864,7 @@ class ManualImportTestCase(TestCase):
 
         names = [
             e.player.name
-            for e in EventPlayerResult.objects.filter(event=self.event).order_by(
-                "ranking"
-            )
+            for e in Result.objects.filter(event=self.event).order_by("ranking")
         ]
         self.assertEqual(names, ["Antoine", "Charles", "Bo"])
 
@@ -882,7 +878,7 @@ class ManualImportTestCase(TestCase):
             resp,
             "A SUL Regional event with 1 players should have at maximum 5 rounds.",
         )
-        self.assertFalse(self.event.eventplayerresult_set.exists())
+        self.assertFalse(self.event.result_set.exists())
 
     def test_disable_tournament_validation(self):
         """Checks that we can override tournament validation.
@@ -901,9 +897,7 @@ class ManualImportTestCase(TestCase):
 
         # And we should still have a succesful result
         self.client.post(reverse("results_create_manual"), self.data)
-        self.assertTrue(
-            self.event.eventplayerresult_set.exists(), "Should have accepted results"
-        )
+        self.assertTrue(self.event.result_set.exists(), "Should have accepted results")
 
 
 class ImportSelectorTestCase(TestCase):
@@ -959,7 +953,7 @@ class FindEventsForUpload(TestCase):
 
     def test_does_not_show_events_with_results(self):
         event = RankedEventFactory(date=datetime.date.today())
-        EventPlayerResultFactory(event=event)
+        ResultFactory(event=event)
         self.assertNotIn(
             event, Event.objects.available_for_result_upload(event.organizer.user)
         )
@@ -1010,14 +1004,14 @@ class AddTop8Results(TestCase):
             date=datetime.date.today(),
         )
 
-        self.winner = EventPlayerResultFactory(event=self.event, ranking=3)
-        self.finalist = EventPlayerResultFactory(event=self.event, ranking=5)
-        self.semi0 = EventPlayerResultFactory(event=self.event, ranking=1)
-        self.semi1 = EventPlayerResultFactory(event=self.event, ranking=4)
-        self.quarter0 = EventPlayerResultFactory(event=self.event, ranking=2)
-        self.quarter1 = EventPlayerResultFactory(event=self.event, ranking=6)
-        self.quarter2 = EventPlayerResultFactory(event=self.event, ranking=7)
-        self.quarter3 = EventPlayerResultFactory(event=self.event, ranking=8)
+        self.winner = ResultFactory(event=self.event, ranking=3)
+        self.finalist = ResultFactory(event=self.event, ranking=5)
+        self.semi0 = ResultFactory(event=self.event, ranking=1)
+        self.semi1 = ResultFactory(event=self.event, ranking=4)
+        self.quarter0 = ResultFactory(event=self.event, ranking=2)
+        self.quarter1 = ResultFactory(event=self.event, ranking=6)
+        self.quarter2 = ResultFactory(event=self.event, ranking=7)
+        self.quarter3 = ResultFactory(event=self.event, ranking=8)
 
         self.data = {
             "winner": self.winner.player.id,
@@ -1050,46 +1044,36 @@ class AddTop8Results(TestCase):
         )
 
         self.assertEqual(
-            EventPlayerResult.objects.get(id=self.winner.id).single_elimination_result,
-            EventPlayerResult.SingleEliminationResult.WINNER,
+            Result.objects.get(id=self.winner.id).single_elimination_result,
+            Result.SingleEliminationResult.WINNER,
         )
         self.assertEqual(
-            EventPlayerResult.objects.get(
-                id=self.finalist.id
-            ).single_elimination_result,
-            EventPlayerResult.SingleEliminationResult.FINALIST,
+            Result.objects.get(id=self.finalist.id).single_elimination_result,
+            Result.SingleEliminationResult.FINALIST,
         )
         self.assertEqual(
-            EventPlayerResult.objects.get(id=self.semi0.id).single_elimination_result,
-            EventPlayerResult.SingleEliminationResult.SEMI_FINALIST,
+            Result.objects.get(id=self.semi0.id).single_elimination_result,
+            Result.SingleEliminationResult.SEMI_FINALIST,
         )
         self.assertEqual(
-            EventPlayerResult.objects.get(id=self.semi1.id).single_elimination_result,
-            EventPlayerResult.SingleEliminationResult.SEMI_FINALIST,
+            Result.objects.get(id=self.semi1.id).single_elimination_result,
+            Result.SingleEliminationResult.SEMI_FINALIST,
         )
         self.assertEqual(
-            EventPlayerResult.objects.get(
-                id=self.quarter0.id
-            ).single_elimination_result,
-            EventPlayerResult.SingleEliminationResult.QUARTER_FINALIST,
+            Result.objects.get(id=self.quarter0.id).single_elimination_result,
+            Result.SingleEliminationResult.QUARTER_FINALIST,
         )
         self.assertEqual(
-            EventPlayerResult.objects.get(
-                id=self.quarter1.id
-            ).single_elimination_result,
-            EventPlayerResult.SingleEliminationResult.QUARTER_FINALIST,
+            Result.objects.get(id=self.quarter1.id).single_elimination_result,
+            Result.SingleEliminationResult.QUARTER_FINALIST,
         )
         self.assertEqual(
-            EventPlayerResult.objects.get(
-                id=self.quarter2.id
-            ).single_elimination_result,
-            EventPlayerResult.SingleEliminationResult.QUARTER_FINALIST,
+            Result.objects.get(id=self.quarter2.id).single_elimination_result,
+            Result.SingleEliminationResult.QUARTER_FINALIST,
         )
         self.assertEqual(
-            EventPlayerResult.objects.get(
-                id=self.quarter3.id
-            ).single_elimination_result,
-            EventPlayerResult.SingleEliminationResult.QUARTER_FINALIST,
+            Result.objects.get(id=self.quarter3.id).single_elimination_result,
+            Result.SingleEliminationResult.QUARTER_FINALIST,
         )
 
     def test_result_top8_not_allowed_for_other_users(self):
@@ -1113,7 +1097,7 @@ class AddTop8Results(TestCase):
         self.assertRedirects(resp, reverse("event_details", args=(self.event.id,)))
         self.assertIn("Top 8 are not allowed at SUL Regular.", resp.content.decode())
         self.assertIsNone(
-            EventPlayerResult.objects.get(id=self.winner.id).single_elimination_result
+            Result.objects.get(id=self.winner.id).single_elimination_result
         )
 
     def test_result_top8_not_allowed_for_old_events(self):
@@ -1126,7 +1110,7 @@ class AddTop8Results(TestCase):
         )
         self.assertRedirects(resp, reverse("event_details", args=(self.event.id,)))
         self.assertIsNone(
-            EventPlayerResult.objects.get(id=self.winner.id).single_elimination_result
+            Result.objects.get(id=self.winner.id).single_elimination_result
         )
 
     def test_result_top8_results_are_removed_before_upload(self):
@@ -1137,7 +1121,7 @@ class AddTop8Results(TestCase):
         )
 
         # Create a new player, make it the winner
-        new_winner = EventPlayerResultFactory(event=self.event, ranking=2)
+        new_winner = ResultFactory(event=self.event, ranking=2)
         self.data["winner"] = new_winner.id
         resp = self.client.post(
             reverse("results_top8_add", args=(self.event.id,)),
@@ -1145,8 +1129,8 @@ class AddTop8Results(TestCase):
         )
 
         # We should only have one winner and it should be the new one
-        winners = self.event.eventplayerresult_set.filter(
-            single_elimination_result=EventPlayerResult.SingleEliminationResult.WINNER
+        winners = self.event.result_set.filter(
+            single_elimination_result=Result.SingleEliminationResult.WINNER
         )
 
         self.assertEqual(1, winners.count(), "Only one WINNER should be set.")
@@ -1163,15 +1147,15 @@ class AddTop8Results(TestCase):
 
         # Check that we have one winner
         self.assertEqual(
-            EventPlayerResult.objects.get(id=self.winner.id).single_elimination_result,
-            EventPlayerResult.SingleEliminationResult.WINNER,
+            Result.objects.get(id=self.winner.id).single_elimination_result,
+            Result.SingleEliminationResult.WINNER,
         )
 
         # And that we have no quarter finalist
         self.assertEqual(
             0,
-            self.event.eventplayerresult_set.filter(
-                single_elimination_result=EventPlayerResult.SingleEliminationResult.QUARTER_FINALIST
+            self.event.result_set.filter(
+                single_elimination_result=Result.SingleEliminationResult.QUARTER_FINALIST
             ).count(),
         )
 
@@ -1182,7 +1166,7 @@ class AddTop8Results(TestCase):
         """
         event = RankedEventFactory()
         for i in range(1, 20):
-            EventPlayerResultFactory(event=event, ranking=i)
+            ResultFactory(event=event, ranking=i)
         form = AddTop8ResultsForm(event=event)
         for field in form.fields.values():
             if isinstance(field, AddTop8ResultsForm.ResultChoiceField):
@@ -1192,8 +1176,8 @@ class AddTop8Results(TestCase):
         """Test that if we have more than 17 players, we are forced to enter a
         full top8 and not only top4, as suggested in MTR Appendix E."""
         for _ in range(9):
-            EventPlayerResultFactory(event=self.event)
-        self.assertEqual(17, self.event.eventplayerresult_set.count())
+            ResultFactory(event=self.event)
+        self.assertEqual(17, self.event.result_set.count())
 
         # play only top 4, which is not allowed with 17 players
         for i in range(4):
@@ -1205,8 +1189,8 @@ class AddTop8Results(TestCase):
         )
 
         self.assertFalse(
-            self.event.eventplayerresult_set.filter(
-                single_elimination_result=EventPlayerResult.SingleEliminationResult.WINNER
+            self.event.result_set.filter(
+                single_elimination_result=Result.SingleEliminationResult.WINNER
             ).exists(),
             "Should not have a winner.",
         )
@@ -1219,8 +1203,8 @@ class AddTop8Results(TestCase):
         )
         self.assertEqual(200, resp.status_code)
         self.assertFalse(
-            self.event.eventplayerresult_set.filter(
-                single_elimination_result=EventPlayerResult.SingleEliminationResult.WINNER
+            self.event.result_set.filter(
+                single_elimination_result=Result.SingleEliminationResult.WINNER
             ).exists(),
             "Should not have a winner.",
         )
@@ -1233,8 +1217,8 @@ class AddTop8Results(TestCase):
         )
         self.assertEqual(200, resp.status_code)
         self.assertFalse(
-            self.event.eventplayerresult_set.filter(
-                single_elimination_result=EventPlayerResult.SingleEliminationResult.WINNER
+            self.event.result_set.filter(
+                single_elimination_result=Result.SingleEliminationResult.WINNER
             ).exists(),
             "Should not have a winner.",
         )

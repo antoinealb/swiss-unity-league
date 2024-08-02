@@ -43,7 +43,7 @@ class RankingTestCase(TestCase):
         In this case the player shouldn't show up in the ranking.
         """
         player_with_results = PlayerFactory()
-        EventPlayerResultFactory(player=player_with_results, points=1)
+        ResultFactory(player=player_with_results, points=1)
         player_without_results = PlayerFactory()
         response = self.get_by_slug("2023")
         self.assertContains(response, player_with_results.name)
@@ -53,7 +53,7 @@ class RankingTestCase(TestCase):
         """Checks that we hide hidden players from the leaderboard."""
         player = PlayerFactory(hidden_from_leaderboard=True)
         event = EventFactory(date=datetime.date(2023, 4, 1))
-        EventPlayerResultFactory(player=player, points=1)
+        ResultFactory(player=player, points=1)
         response = self.get_by_slug("2023")
         self.assertNotContains(response, player.name)
 
@@ -61,7 +61,7 @@ class RankingTestCase(TestCase):
         """Checks that the score properties are rendered correctly."""
         player = PlayerFactory()
         event = RankedEventFactory(date=datetime.date(2023, 4, 1))
-        EventPlayerResultFactory(player=player, points=2, event=event)
+        ResultFactory(player=player, points=2, event=event)
         response = self.get_by_slug("2023")
         self.assertContains(response, """<i class="icon-star"></i>""")
         self.assertContains(response, """<i class="icon-shield"></i>""")

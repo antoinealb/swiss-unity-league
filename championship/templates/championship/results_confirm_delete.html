@@ -10,7 +10,7 @@
         <p>Are you sure you want to delete results for "{{ event }}"?</p>
         <p>This will delete the following results:</p>
         <ol>
-            {% for r in event.eventplayerresult_set.all %}
+            {% for r in event.result_set.all %}
                 <li>{{ r.player.name}} - {{ r.points }} points</li>
             {% endfor %}
         </ol>

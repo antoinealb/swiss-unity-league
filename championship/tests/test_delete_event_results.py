@@ -18,12 +18,8 @@ from django.contrib.auth.models import User
 from django.test import Client, TestCase
 from django.urls import reverse
 
-from championship.factories import (
-    EventFactory,
-    EventOrganizerFactory,
-    EventPlayerResultFactory,
-)
-from championship.models import Event, EventOrganizer, EventPlayerResult
+from championship.factories import EventFactory, EventOrganizerFactory, ResultFactory
+from championship.models import Event, EventOrganizer, Result
 
 
 class EventClearResult(TestCase):
@@ -41,7 +37,7 @@ class EventClearResult(TestCase):
         self.event = EventFactory(organizer=self.organizer, date=yesterday)
 
         for _ in range(10):
-            EventPlayerResultFactory(event=self.event)
+            ResultFactory(event=self.event)
 
         self.login()
 
@@ -66,7 +62,7 @@ class EventClearResult(TestCase):
         )
 
         self.assertFalse(
-            EventPlayerResult.objects.filter(event=self.event).exists(),
+            Result.objects.filter(event=self.event).exists(),
             "Results should have been cleared.",
         )
 
@@ -84,7 +80,7 @@ class EventClearResult(TestCase):
         )
 
         self.assertTrue(
-            EventPlayerResult.objects.filter(event=self.event).exists(),
+            Result.objects.filter(event=self.event).exists(),
             "Results should not have been cleared.",
         )
 
@@ -100,6 +96,6 @@ class EventClearResult(TestCase):
         )
 
         self.assertTrue(
-            EventPlayerResult.objects.filter(event=self.event).exists(),
+            Result.objects.filter(event=self.event).exists(),
             "We don't allow deletion of old tournament results.",
         )

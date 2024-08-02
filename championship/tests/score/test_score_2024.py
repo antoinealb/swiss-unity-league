@@ -40,7 +40,7 @@ class TestComputeScoreFor2024(TestCase):
 
         players = [PlayerFactory() for _ in range(player_count)]
         for i, (player, pi) in enumerate(zip(players, points)):
-            EventPlayerResult.objects.create(
+            Result.objects.create(
                 player=player,
                 event=self.event,
                 points=pi,
@@ -79,7 +79,7 @@ class TestComputeScoreFor2024(TestCase):
 
     def test_ignores_players_hidden_from_leaderboard(self):
         p = PlayerFactory(hidden_from_leaderboard=True)
-        EventPlayerResultFactory(player=p)
+        ResultFactory(player=p)
         self.assertEqual(
             len(self.compute_scores()),
             0,
@@ -100,7 +100,7 @@ class TestComputeScoreFor2024(TestCase):
         self.event.date += datetime.timedelta(days=1)
         self.event.save()
         for _ in range(10):
-            EventPlayerResultFactory(event=self.event)
+            ResultFactory(event=self.event)
         scores = self.compute_scores()
         self.assertFalse(any(score.total_score > 0 for score in scores.values()))
 
@@ -110,14 +110,14 @@ class TestComputeScoreFor2024(TestCase):
         self.event.date -= datetime.timedelta(days=1)
         self.event.save()
         for _ in range(10):
-            EventPlayerResultFactory(event=self.event)
+            ResultFactory(event=self.event)
         scores = self.compute_scores()
         self.assertFalse(any(score.total_score > 0 for score in scores.values()))
 
     def test_category_other_does_not_contribute_score(self):
         self.event.category = Event.Category.OTHER
         self.event.save()
-        EventPlayerResultFactory(event=self.event)
+        ResultFactory(event=self.event)
         scores = self.compute_scores()
         self.assertEqual(
             0, len(scores), "Events with category 'OTHER' should not count."
@@ -130,7 +130,7 @@ class ScoresWithTop8TestCase(TestCase):
         self.player = PlayerFactory()
 
     def score(self, points, result):
-        ep = EventPlayerResult(
+        ep = Result(
             points=points,
             event=self.event,
             player=self.player,
@@ -145,10 +145,10 @@ class ScoresWithTop8TestCase(TestCase):
         self.event.category = Event.Category.PREMIER
         self.event.save()
         testCases = [
-            (EventPlayerResult.SingleEliminationResult.WINNER, 400),
-            (EventPlayerResult.SingleEliminationResult.FINALIST, 240),
-            (EventPlayerResult.SingleEliminationResult.SEMI_FINALIST, 160),
-            (EventPlayerResult.SingleEliminationResult.QUARTER_FINALIST, 120),
+            (Result.SingleEliminationResult.WINNER, 400),
+            (Result.SingleEliminationResult.FINALIST, 240),
+            (Result.SingleEliminationResult.SEMI_FINALIST, 160),
+            (Result.SingleEliminationResult.QUARTER_FINALIST, 120),
         ]
 
         for ranking, points in testCases:
@@ -161,10 +161,10 @@ class ScoresWithTop8TestCase(TestCase):
         self.event.category = Event.Category.REGIONAL
         self.event.save()
         testCases = [
-            (EventPlayerResult.SingleEliminationResult.WINNER, 100),
-            (EventPlayerResult.SingleEliminationResult.FINALIST, 60),
-            (EventPlayerResult.SingleEliminationResult.SEMI_FINALIST, 40),
-            (EventPlayerResult.SingleEliminationResult.QUARTER_FINALIST, 30),
+            (Result.SingleEliminationResult.WINNER, 100),
+            (Result.SingleEliminationResult.FINALIST, 60),
+            (Result.SingleEliminationResult.SEMI_FINALIST, 40),
+            (Result.SingleEliminationResult.QUARTER_FINALIST, 30),
         ]
 
         for ranking, points in testCases:
@@ -180,7 +180,7 @@ class ScoresWithMatchPointRateTestCase(TestCase):
         self.player = PlayerFactory()
 
     def score(self, points, total_rounds):
-        ep = EventPlayerResult(
+        ep = Result(
             points=points,
             event=self.event,
             player=self.player,
@@ -262,12 +262,12 @@ class ScoresWithMatchPointRateTestCase(TestCase):
                 self.assertEqual(want_score, got_score)
 
 
-class TestSortEventPlayerResults(TestCase):
+class TestSortResults(TestCase):
     def test_can_order_basic_player_results(self):
         """Checks that we get players ordered correctly."""
         e = Event2024Factory()
         for i in range(10):
-            EventPlayerResult.objects.create(
+            Result.objects.create(
                 player=PlayerFactory(),
                 ranking=10 - i,
                 points=5,
@@ -277,14 +277,14 @@ class TestSortEventPlayerResults(TestCase):
                 loss_count=0,
             )
 
-        sorted_rankings = [s.ranking for s in sorted(EventPlayerResult.objects.all())]
+        sorted_rankings = [s.ranking for s in sorted(Result.objects.all())]
         self.assertEqual(list(range(1, 11)), sorted_rankings)
 
     def test_can_order_results_based_on_single_elimination_results(self):
         e = Event2024Factory(category=Event.Category.PREMIER)
         num_players = 16
         results = [
-            EventPlayerResult.objects.create(
+            Result.objects.create(
                 player=PlayerFactory(),
                 ranking=i + 1,
                 points=3 * (num_players - i),
@@ -300,24 +300,20 @@ class TestSortEventPlayerResults(TestCase):
         inverse_top_8_results = [results[7], results[6]] + results[4:6] + results[:4]
         for i, r in enumerate(inverse_top_8_results, 1):
             if i == 1:
-                r.single_elimination_result = (
-                    EventPlayerResult.SingleEliminationResult.WINNER
-                )
+                r.single_elimination_result = Result.SingleEliminationResult.WINNER
             elif i == 2:
-                r.single_elimination_result = (
-                    EventPlayerResult.SingleEliminationResult.FINALIST
-                )
+                r.single_elimination_result = Result.SingleEliminationResult.FINALIST
             elif i <= 4:
                 r.single_elimination_result = (
-                    EventPlayerResult.SingleEliminationResult.SEMI_FINALIST
+                    Result.SingleEliminationResult.SEMI_FINALIST
                 )
             elif i <= 8:
                 r.single_elimination_result = (
-                    EventPlayerResult.SingleEliminationResult.QUARTER_FINALIST
+                    Result.SingleEliminationResult.QUARTER_FINALIST
                 )
             r.save()
 
-        sorted_rankings = sorted(EventPlayerResult.objects.all())
+        sorted_rankings = sorted(Result.objects.all())
         self.assertEqual(inverse_top_8_results, sorted_rankings[:8])
         self.assertEqual(results[8:], sorted_rankings[8:])
 
@@ -330,17 +326,17 @@ def create_test_tournament(players, category=Event.Category.PREMIER, with_top8=T
 
         if category != Event.Category.REGULAR and with_top8:
             if rank == 1:
-                ser = EventPlayerResult.SingleEliminationResult.WINNER
+                ser = Result.SingleEliminationResult.WINNER
             elif rank == 2:
-                ser = EventPlayerResult.SingleEliminationResult.FINALIST
+                ser = Result.SingleEliminationResult.FINALIST
             elif rank <= 4:
-                ser = EventPlayerResult.SingleEliminationResult.SEMI_FINALIST
+                ser = Result.SingleEliminationResult.SEMI_FINALIST
             elif rank <= 8:
-                ser = EventPlayerResult.SingleEliminationResult.QUARTER_FINALIST
+                ser = Result.SingleEliminationResult.QUARTER_FINALIST
             else:
                 ser = None
 
-        EventPlayerResultFactory(
+        ResultFactory(
             player=player,
             points=num_players - i,
             ranking=rank,
@@ -365,11 +361,10 @@ class TestScoresByes(TestCase):
     def test_reward_byes(self):
         event = Event2024Factory()
         top_4_results_with_byes = [
-            EventPlayerResultFactory(event=event, points=1000, ranking=i + 1)
-            for i in range(4)
+            ResultFactory(event=event, points=1000, ranking=i + 1) for i in range(4)
         ]
 
-        result5 = EventPlayerResultFactory(
+        result5 = ResultFactory(
             points=0,
             ranking=1,
             event=event,
@@ -430,7 +425,7 @@ class TestScoresQualified(TestCase):
         # Create lots of points for all players except one
         event = Event2024Factory(category=Event.Category.REGIONAL)
         [
-            EventPlayerResultFactory(player=player, points=1000, event=event)
+            ResultFactory(player=player, points=1000, event=event)
             for player in players[1:]
         ]
 
@@ -447,7 +442,7 @@ class TestScoresQualified(TestCase):
 
     def test_reward_qualifications(self):
         event = Event2024Factory()
-        result = EventPlayerResultFactory(
+        result = ResultFactory(
             points=3,
             ranking=5,
             event=event,
@@ -473,14 +468,14 @@ class TestQualificationReason(TestCase):
 
     @freeze_time("2024-10-31")
     def test_leaderboard_qual_reason_during_season(self):
-        EventPlayerResultFactory(event=Event2024Factory())
+        ResultFactory(event=Event2024Factory())
         direct_score = list(self.compute_scores().values())[0]
         want_reason = "This place qualifies for the SUL Invitational tournament at the end of the Season"
         self.assertEqual(want_reason, direct_score.qualification_reason)
 
     @freeze_time("2024-11-08")
     def test_leaderboard_qual_reason_after_season(self):
-        EventPlayerResultFactory(event=Event2024Factory())
+        ResultFactory(event=Event2024Factory())
         direct_score = list(self.compute_scores().values())[0]
         want_reason = "Qualified for SUL Invitational tournament"
         self.assertEqual(want_reason, direct_score.qualification_reason)
@@ -494,7 +489,7 @@ class TestPlayerDetails2024(TestCase):
 
     def test_player_details_extra_points_edge_case(self):
         # Make sure we have a tournament with many rounds
-        EventPlayerResultFactory(
+        ResultFactory(
             player=self.player,
             ranking=1,
             points=10,
@@ -504,16 +499,16 @@ class TestPlayerDetails2024(TestCase):
         )
 
         # Make sure the event is with top 8
-        EventPlayerResultFactory(
+        ResultFactory(
             event=self.event,
-            single_elimination_result=EventPlayerResult.SingleEliminationResult.QUARTER_FINALIST,
+            single_elimination_result=Result.SingleEliminationResult.QUARTER_FINALIST,
             win_count=6,
             loss_count=0,
             draw_count=0,
         )
 
         # Create a player outside of top 8 with 65%+ match point rate
-        EventPlayerResultFactory(
+        ResultFactory(
             player=self.player,
             event=self.event,
             ranking=1,

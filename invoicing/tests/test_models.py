@@ -50,7 +50,7 @@ class InvoiceHelpersTest(TestCase):
         e = EventFactory(organizer=o, category=Event.Category.REGIONAL)
         # No top8, 10 players = 20 CHF
         for _ in range(10):
-            EventPlayerResultFactory(event=e)
+            ResultFactory(event=e)
 
         i = InvoiceFactory(
             event_organizer=o,
@@ -104,7 +104,7 @@ class FindEventsTest(TestCase):
         )
 
         for _ in range(10):
-            EventPlayerResultFactory(event=event)
+            ResultFactory(event=event)
 
         invoice = InvoiceFactory(
             event_organizer=event.organizer,

@@ -29,8 +29,8 @@ from championship.factories import (
     AddressFactory,
     EventFactory,
     EventOrganizerFactory,
-    EventPlayerResultFactory,
     RankedEventFactory,
+    ResultFactory,
 )
 from championship.models import *
 
@@ -89,7 +89,7 @@ class TestEventListAPI(APITestCase):
             date=yesterday, organizer=self.organizer
         )
         for _ in range(8):
-            EventPlayerResultFactory(event=event_with_results)
+            ResultFactory(event=event_with_results)
 
         self.login()
         resp = self.client.get(reverse("events-need-results")).json()
@@ -158,7 +158,7 @@ class TestEventCreate(APITestCase):
         """
         e = RankedEventFactory(organizer=self.organizer, date=datetime.date(2023, 1, 1))
         for _ in range(10):
-            EventPlayerResultFactory(event=e)
+            ResultFactory(event=e)
 
         self.login()
         resp = self.client.delete(reverse("events-detail", args=[e.id]))

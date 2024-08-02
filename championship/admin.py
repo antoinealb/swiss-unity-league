@@ -42,7 +42,7 @@ class SpecialRewardInline(admin.TabularInline):
 
 
 class ResultInline(admin.TabularInline):
-    model = EventPlayerResult
+    model = Result
     extra = 0
     ordering = ("-event__date", "-points")
     fields = [
@@ -67,7 +67,7 @@ class PlayerAliasInline(admin.TabularInline):
     ordering = ("name",)
 
 
-class EventPlayerResultAdmin(admin.ModelAdmin):
+class ResultAdmin(admin.ModelAdmin):
     fields = [
         "player",
         "event",
@@ -84,7 +84,7 @@ class EventPlayerResultAdmin(admin.ModelAdmin):
     inlines = [SpecialRewardInline]
 
 
-admin.site.register(EventPlayerResult, EventPlayerResultAdmin)
+admin.site.register(Result, ResultAdmin)
 
 
 class EventAdmin(admin.ModelAdmin):
@@ -278,7 +278,7 @@ class PlayerAdmin(admin.ModelAdmin):
 
                 # First, take all the results and attribute them back to the
                 # original player.
-                for e in EventPlayerResult.objects.filter(player=player):
+                for e in Result.objects.filter(player=player):
                     e.player = original_player
                     e.save()
 
@@ -302,7 +302,7 @@ class PlayerAdmin(admin.ModelAdmin):
                 "admin:championship_player_changelist",
             )
 
-        results = EventPlayerResult.objects.filter(player__in=players)
+        results = Result.objects.filter(player__in=players)
         form = PlayerMergeForm(queryset)
         return render(
             request,
@@ -410,7 +410,7 @@ class EventOrganizerAdmin(admin.ModelAdmin):
     def last_event_with_results(self, instance):
         event = (
             Event.objects.filter(organizer=instance)
-            .annotate(result_cnt=Count("eventplayerresult"))
+            .annotate(result_cnt=Count("result"))
             .exclude(result_cnt=0)
             .order_by("-date")
         )

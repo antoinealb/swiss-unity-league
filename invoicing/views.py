@@ -31,10 +31,10 @@ def get_invoice_pdf_context(invoice: Invoice):
     context = {}
     events = invoice.events.annotate(
         top8_cnt=Count(
-            "eventplayerresult",
-            filter=Q(eventplayerresult__single_elimination_result__gt=0),
+            "result",
+            filter=Q(result__single_elimination_result__gt=0),
         ),
-        event_size=Count("eventplayerresult"),
+        event_size=Count("result"),
     ).order_by("date")[:]
 
     for e in events:

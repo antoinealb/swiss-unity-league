@@ -129,7 +129,7 @@ def reschedule(recurring_event: RecurringEvent):
     """
 
     events: list[Event] = list(
-        recurring_event.event_set.annotate(result_cnt=Count("eventplayerresult")).all()
+        recurring_event.event_set.annotate(result_cnt=Count("result")).all()
     )
 
     events_to_reschedule = [event for event in events if event.result_cnt == 0]
@@ -324,7 +324,7 @@ class RecurringEventDeleteView(CustomDeleteView):
 
     def form_valid(self, form):
         # Delete all events linked to the recurring event without results
-        self.object.event_set.annotate(result_cnt=Count("eventplayerresult")).filter(
+        self.object.event_set.annotate(result_cnt=Count("result")).filter(
             result_cnt=0
         ).delete()
         return super().form_valid(form)
@@ -352,7 +352,7 @@ class RecurringEventUpdateAllEventView(LoginRequiredMixin, UpdateView):
     def form_valid(self, form):
         update = form.save(commit=False)
         events = update.recurring_event.event_set.annotate(
-            result_cnt=Count("eventplayerresult")
+            result_cnt=Count("result")
         ).filter(result_cnt=0)
         for event in events:
             event.copy_values_from(update, excluded_fields=["date", "category"]).save()

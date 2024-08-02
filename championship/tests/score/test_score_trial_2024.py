@@ -33,19 +33,19 @@ class TestScoresOutOfTrialSeason(TestCase):
         event = Event2024Factory(
             date=SUL_TRIAL_2024.start_date - datetime.timedelta(days=1)
         )
-        EventPlayerResultFactory(event=event)
+        ResultFactory(event=event)
         event = Event2024Factory(
             date=SUL_TRIAL_2024.end_date + datetime.timedelta(days=1)
         )
-        EventPlayerResultFactory(event=event)
+        ResultFactory(event=event)
         got_scores = self.compute_scores()
         self.assertEqual({}, got_scores)
 
     def test_events_in_season_contribute_score(self):
         event = Event2024Factory(date=SUL_TRIAL_2024.start_date)
-        EventPlayerResultFactory(event=event)
+        ResultFactory(event=event)
         event = Event2024Factory(date=SUL_TRIAL_2024.end_date)
-        EventPlayerResultFactory(event=event)
+        ResultFactory(event=event)
         got_scores = self.compute_scores()
         self.assertEqual(2, len(got_scores))
 
@@ -58,17 +58,17 @@ def create_test_tournament(players, category=Event.Category.PREMIER, with_top8=T
 
         if category != Event.Category.REGULAR and with_top8:
             if rank == 1:
-                ser = EventPlayerResult.SingleEliminationResult.WINNER
+                ser = Result.SingleEliminationResult.WINNER
             elif rank == 2:
-                ser = EventPlayerResult.SingleEliminationResult.FINALIST
+                ser = Result.SingleEliminationResult.FINALIST
             elif rank <= 4:
-                ser = EventPlayerResult.SingleEliminationResult.SEMI_FINALIST
+                ser = Result.SingleEliminationResult.SEMI_FINALIST
             elif rank <= 8:
-                ser = EventPlayerResult.SingleEliminationResult.QUARTER_FINALIST
+                ser = Result.SingleEliminationResult.QUARTER_FINALIST
             else:
                 ser = None
 
-        EventPlayerResultFactory(
+        ResultFactory(
             player=player,
             points=num_players - i,
             ranking=rank,

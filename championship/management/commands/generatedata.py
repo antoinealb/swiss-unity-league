@@ -50,7 +50,7 @@ class Command(BaseCommand):
     @transaction.atomic
     def handle(self, players_count, organizers_count, events_count, *args, **kwargs):
         logging.info("Deleting old data...")
-        models = [EventPlayerResult, Player, Event, EventOrganizer]
+        models = [Result, Player, Event, EventOrganizer]
         for m in models:
             m.objects.all().delete()
 
@@ -73,7 +73,7 @@ class Command(BaseCommand):
                 else:
                     points = 3
                     w, l = 1, 3
-                EventPlayerResult.objects.create(
+                Result.objects.create(
                     points=points,
                     player=p,
                     event=event,

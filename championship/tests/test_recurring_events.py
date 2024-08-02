@@ -22,9 +22,9 @@ from freezegun import freeze_time
 
 from championship.factories import (
     EventFactory,
-    EventPlayerResultFactory,
     RecurrenceRuleFactory,
     RecurringEventFactory,
+    ResultFactory,
     UserFactory,
 )
 from championship.models import Event, RecurrenceRule, RecurringEvent
@@ -286,7 +286,7 @@ class RecurrenceEventCreationTest(TestCase):
             recurring_event=recurring_event,
             date=datetime.date.today(),
         )
-        EventPlayerResultFactory(event=event)
+        ResultFactory(event=event)
         reschedule(recurring_event)
         dates = [event.date for event in Event.objects.all()]
         self.assertEqual(
@@ -322,7 +322,7 @@ class RecurrenceEventCreationTest(TestCase):
         reschedule(recurring_event)
         events = Event.objects.all()
         # add results to the first 3 events
-        results = [EventPlayerResultFactory(event=event) for event in events[:3]]
+        results = [ResultFactory(event=event) for event in events[:3]]
         reschedule(recurring_event)
         events = Event.objects.all()
         dates = [event.date for event in events]
@@ -337,7 +337,7 @@ class RecurrenceEventCreationTest(TestCase):
         )
         for index, result in enumerate(results):
             event = events[index]
-            results_of_event = event.eventplayerresult_set.all()
+            results_of_event = event.result_set.all()
             self.assertEqual(len(results_of_event), 1)
             self.assertEqual(results_of_event[0], result)
 
@@ -961,7 +961,7 @@ class RecurringEventDeleteViewTest(TestCase):
         self.event.refresh_from_db()
 
     def test_events_with_results_are_not_deleted(self):
-        EventPlayerResultFactory(event=self.event)
+        ResultFactory(event=self.event)
         response = self.client.post(
             reverse("recurring_event_delete", args=[self.recurring_event.id])
         )
@@ -1019,7 +1019,7 @@ class RecurringEventEditAllTest(TestCase):
 
     def test_not_edit_events_with_results(self):
         """Events with results should not change when editing all events."""
-        EventPlayerResultFactory(event=self.event)
+        ResultFactory(event=self.event)
         event_without_results = EventFactory(recurring_event=self.recurring_event)
         response = self.client.post(
             self.url,
