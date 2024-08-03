@@ -56,6 +56,9 @@
                                         {% if user.is_staff %}
                                             <li><a class="dropdown-item" href="{% url 'admin:index' %}">Admin</a></li>
                                         {% endif %}
+                                        {% if perms.invoicing.view_invoice %}
+                                            <li><a class="dropdown-item" href="{% url 'invoice_report' %}">Finance dashboard</a></li>
+                                        {% endif %}
                                         <li><a class="dropdown-item" href="{% url 'password_change' %}">Change password</a></li>
                                         <li>
                                             <form method="post" action="{% url 'logout' %}">

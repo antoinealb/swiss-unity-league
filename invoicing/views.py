@@ -12,14 +12,29 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+import base64
+import datetime
+import io
+from collections.abc import Iterator
+
 from django.conf import settings
-from django.contrib.auth.mixins import LoginRequiredMixin
+from django.contrib.auth.mixins import LoginRequiredMixin, PermissionRequiredMixin
 from django.db.models import Count, Q
 from django.http import Http404
 from django.shortcuts import redirect
-from django.views.generic import DetailView, ListView
+from django.template.defaultfilters import date
+from django.views.generic import DetailView, ListView, TemplateView
 
+import matplotlib
+
+matplotlib.use("Agg")
+
+import matplotlib.pyplot as plt
 from django_tex.shortcuts import render_to_pdf
+from matplotlib.ticker import FormatStrFormatter
+
+from championship.models import Event
+from championship.season import SEASON_LIST, Season
 
 from .models import Invoice, fee_for_event
 
@@ -83,3 +98,68 @@ class InvoiceList(LoginRequiredMixin, ListView):
 
     def get_queryset(self):
         return Invoice.objects.filter(event_organizer__user=self.request.user)
+
+
+class Report(PermissionRequiredMixin, TemplateView):
+    template_name = "invoicing/report.html"
+    permission_required = "invoicing.view_invoice"
+
+    def data_points_for_season(self, season: Season) -> Iterator[tuple[int, int]]:
+        events = (
+            Event.objects.filter(
+                category__in=[Event.Category.PREMIER, Event.Category.REGIONAL],
+                date__gte=season.start_date,
+                date__lte=season.end_date,
+            )
+            .annotate(result_cnt=Count("result"))
+            .exclude(result_cnt=0)
+            .order_by("date")
+        )
+
+        revenue = 0
+        for event in events:
+            days_since_start = (event.date - season.start_date).days
+            revenue += fee_for_event(event)
+            yield days_since_start, revenue
+
+    def plot_revenue(self) -> bytes:
+        """Plots the revenue of the SUL over time
+
+        Returns:
+            The plot's content in PNG bytes.
+        """
+        plt.figure()
+        legends = []
+        for s in sorted(SEASON_LIST, key=lambda s: s.start_date):
+            data = list(self.data_points_for_season(s))
+
+            if not data:
+                continue
+
+            legends.append(s.name)
+            x, y = list(zip(*data))
+            plt.plot(x, y, "-")
+
+        plt.gca().yaxis.set_major_formatter(FormatStrFormatter("%d CHF"))
+
+        today = date(datetime.date.today())
+        plt.title(
+            f"Evolution of SUL revenue per season\n(as of {today}, ignoring discounts)"
+        )
+        plt.ylabel("Revenue")
+        plt.xlabel("Days since season start")
+        plt.legend(legends)
+
+        plt.tight_layout()
+        output = io.BytesIO()
+        plt.savefig(output, format="png")
+        return output.getvalue()
+
+    def encode_image(self, image: bytes, format_mime: str = "image/png") -> str:
+        encoded_image = base64.b64encode(image).decode()
+        return f"data:{format_mime};charset=utf-8;base64,{encoded_image}"
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context["revenue_plot"] = self.encode_image(self.plot_revenue())
+        return context

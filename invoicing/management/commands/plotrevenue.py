@@ -40,7 +40,6 @@ def discount_for_season(season: Season) -> int:
 
 
 def data_points_for_season(season: Season) -> Iterator[tuple[int, int]]:
-    revenue = 0  # -discount_for_season(season)
     events = (
         Event.objects.filter(
             category__in=[Event.Category.PREMIER, Event.Category.REGIONAL],
@@ -52,6 +51,7 @@ def data_points_for_season(season: Season) -> Iterator[tuple[int, int]]:
         .order_by("date")
     )
 
+    revenue = 0
     for event in events:
         days_since_start = (event.date - season.start_date).days
         revenue += fee_for_event(event)
