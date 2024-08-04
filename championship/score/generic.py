@@ -75,10 +75,12 @@ def get_results_with_qps(
         .exclude(event__category=Event.Category.OTHER)
     )
 
+    # Calculate the number of rounds by taking the sum of win/draw/loss. We
+    # take the Max to account for players dropping early.
     rounds_per_event = {
-        e.id: e.rounds
-        for e in Event.objects.raw(
-            "select event_id as id, max(win_count + loss_count + draw_count) as rounds from championship_result group by event_id"
+        row["event"]: row["rounds"]
+        for row in Result.objects.values("event").annotate(
+            rounds=Max(F("win_count") + F("draw_count") + F("loss_count"))
         )
     }
 
