@@ -114,6 +114,7 @@ class Report(PermissionRequiredMixin, TemplateView):
             .annotate(result_cnt=Count("result"))
             .exclude(result_cnt=0)
             .order_by("date")
+            .prefetch_related("result_set")
         )
 
         revenue = 0

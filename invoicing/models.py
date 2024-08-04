@@ -52,7 +52,15 @@ def fee_for_event(event: Event) -> int:
         raise ValueError(f"Unknown season for date {event.date}")
 
     results = event.result_set
-    has_top8 = results.filter(single_elimination_result__gt=0).exists()
+
+    # This could be done in the DB but results in one query per event. Doing
+    # this like this with a prefetch_related in the parent is faster.
+    for r in results.all():
+        if r.single_elimination_result:
+            has_top8 = True
+            break
+    else:
+        has_top8 = False
 
     fee = results.count() * FEE_PER_PLAYER[season][event.category]
 
