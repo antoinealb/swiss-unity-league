@@ -14,16 +14,10 @@
 
 import datetime
 
-from django.db.models import Count
 from django.http import Http404
 from rest_framework import viewsets
 from rest_framework.decorators import action
-from rest_framework.permissions import (
-    SAFE_METHODS,
-    BasePermission,
-    IsAuthenticated,
-    IsAuthenticatedOrReadOnly,
-)
+from rest_framework.permissions import SAFE_METHODS, BasePermission, IsAuthenticated
 from rest_framework.response import Response
 
 from championship.models import Event, EventOrganizer

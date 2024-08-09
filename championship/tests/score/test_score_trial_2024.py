@@ -16,12 +16,12 @@ import datetime
 
 from django.test import TestCase
 
-from championship.factories import *
-from championship.models import *
+from championship.factories import Event2024Factory, PlayerFactory, ResultFactory
+from championship.models import Event, Result
 from championship.score import compute_scores
 from championship.score.trial_2024 import ScoreMethodTrial2024
 from championship.score.types import QualificationType
-from championship.season import SEASON_2024, SUL_TRIAL_2024
+from championship.season import SUL_TRIAL_2024
 
 
 class TestScoresOutOfTrialSeason(TestCase):

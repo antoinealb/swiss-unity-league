@@ -13,7 +13,6 @@
 # limitations under the License.
 
 from django.core import files
-from django.core.exceptions import ObjectDoesNotExist
 from django.core.files.storage import Storage
 from django.urls import reverse
 
@@ -25,7 +24,7 @@ class DatabaseFileStorage(Storage):
         return File.objects.filter(filename=name).exists()
 
     def _save(self, name: str, content: files.File) -> str:
-        f = File.objects.create(filename=name, content=content.read())
+        File.objects.create(filename=name, content=content.read())
         return name
 
     def _open(self, name, mode="rb"):

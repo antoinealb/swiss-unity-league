@@ -14,7 +14,6 @@
 
 from typing import Iterator
 
-from django.conf import settings
 from django.core.management.base import BaseCommand
 from django.db.models import Count, Max
 
@@ -22,13 +21,7 @@ import matplotlib.pyplot as plt
 from matplotlib.ticker import FormatStrFormatter
 
 from championship.models import Event
-from championship.season import (
-    ALL_SEASONS_LIST,
-    SEASON_2023,
-    SEASON_2024,
-    Season,
-    find_season_by_slug,
-)
+from championship.season import ALL_SEASONS_LIST, SEASON_2023, SEASON_2024, Season
 from invoicing.models import Invoice, fee_for_event
 
 

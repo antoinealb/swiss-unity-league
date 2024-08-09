@@ -17,7 +17,15 @@ from django.test import TestCase
 from parameterized import parameterized
 
 from championship.models import Event
-from championship.tournament_valid import *
+from championship.tournament_valid import (
+    TooManyPointsForPlayerError,
+    TooManyPointsForTop8Error,
+    TooManyPointsInTotalError,
+    get_max_round_error_message,
+    get_max_rounds,
+    simulate_tournament_max_points,
+    validate_standings,
+)
 
 
 class CheckTournamentValidTestCase(TestCase):

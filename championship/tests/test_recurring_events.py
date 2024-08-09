@@ -879,7 +879,7 @@ class RecurringEventViewTest(TestCase):
             start_date=datetime.date(2024, 5, 1),
             end_date=datetime.date(2024, 5, 31),
         )
-        rule = RecurrenceRuleFactory(
+        RecurrenceRuleFactory(
             recurring_event=recurring_event1,
             weekday=RecurrenceRule.Weekday.WEDNESDAY,
             week=RecurrenceRule.Week.EVERY,
@@ -1067,7 +1067,3 @@ class RecurringEventEditAllTest(TestCase):
         self.assertTrue(other_event.results_validation_enabled)
         self.assertTrue(other_event.include_in_invoices)
         self.assertIsNone(other_event.edit_deadline_override)
-
-    def test_redirect_to_latest_event(self):
-        recurring_event = RecurringEventFactory()
-        event = EventFactory(recurring_event=recurring_event)

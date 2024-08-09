@@ -14,16 +14,10 @@
 
 import datetime
 
-from django.conf import settings
-from django.contrib.auth.models import User
-from django.core.exceptions import ValidationError
-from django.db.models import Count, F
 from django.test import TestCase
 
-from faker import Faker
-
-from championship.factories import *
-from championship.models import *
+from championship.factories import EventFactory, PlayerFactory, ResultFactory
+from championship.models import Event, Result
 from championship.score import compute_scores
 from championship.score.season_2023 import ScoreMethod2023
 from championship.score.types import QualificationType

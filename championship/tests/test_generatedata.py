@@ -15,7 +15,7 @@
 from django.core.management import call_command
 from django.test import TestCase
 
-from championship.models import *
+from championship.models import Player
 
 
 class GenerateFakeDataTest(TestCase):

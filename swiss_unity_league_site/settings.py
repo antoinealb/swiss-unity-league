@@ -28,14 +28,14 @@ import datetime
 import logging
 import os
 import sys
-from datetime import date
 from pathlib import Path
 
 from django.contrib.messages import constants as messages
 
+import cid.locals
 from prometheus_client import Info
 
-from championship.season import SEASON_2023, SEASON_2024
+from championship.season import SEASON_2024
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -280,8 +280,6 @@ CID_GENERATE = True
 
 # Include the correlation ID in the audit log. Useful to identify operations
 # that all stem from the same place, such as one "merge players" operation.
-import cid.locals
-
 AUDITLOG_CID_GETTER = cid.locals.get_cid
 
 BLEACH_ALLOWED_TAGS = [

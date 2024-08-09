@@ -160,7 +160,6 @@ class EventInformationSerializer(serializers.ModelSerializer):
         # the current user to the created event.
         validated_data.pop("result_set", [])
         organizer = EventOrganizer.objects.get(user=self.context["request"].user)
-        addr = organizer.default_address
         # TODO: Support other addresses
         return Event.objects.create(
             organizer=organizer, address=organizer.default_address, **validated_data

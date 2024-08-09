@@ -19,7 +19,7 @@ from django.core.management.base import BaseCommand
 
 from prettytable import PrettyTable
 
-from championship.models import *
+from championship.models import Player
 
 
 def similar(a, b):

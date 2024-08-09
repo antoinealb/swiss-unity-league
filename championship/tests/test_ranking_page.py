@@ -14,11 +14,17 @@
 
 import datetime
 
+from django.shortcuts import reverse
 from django.test import Client, TestCase
 
 from parameterized import parameterized
 
-from championship.factories import *
+from championship.factories import (
+    EventFactory,
+    PlayerFactory,
+    RankedEventFactory,
+    ResultFactory,
+)
 from championship.season import SEASONS_WITH_RANKING
 
 
@@ -52,7 +58,7 @@ class RankingTestCase(TestCase):
     def test_ranking_for_player_hidden(self):
         """Checks that we hide hidden players from the leaderboard."""
         player = PlayerFactory(hidden_from_leaderboard=True)
-        event = EventFactory(date=datetime.date(2023, 4, 1))
+        EventFactory(date=datetime.date(2023, 4, 1))
         ResultFactory(player=player, points=1)
         response = self.get_by_slug("2023")
         self.assertNotContains(response, player.name)

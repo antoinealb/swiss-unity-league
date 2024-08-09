@@ -16,8 +16,8 @@ from django.contrib.auth.models import Permission, User
 from django.test import Client, TestCase
 from django.urls import reverse
 
-from championship.factories import *
-from championship.models import *
+from championship.factories import PlayerFactory
+from championship.models import Player, PlayerAlias
 
 
 class PlayerMergeActionTest(TestCase):

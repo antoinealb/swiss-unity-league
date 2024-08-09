@@ -16,7 +16,11 @@ from bs4 import BeautifulSoup
 
 from championship.parsers.parse_result import ParseResult
 
-from .general_parser_functions import *
+from .general_parser_functions import (
+    find_index_containing_substring,
+    parse_record,
+    record_to_points,
+)
 
 
 def _standings(soup):

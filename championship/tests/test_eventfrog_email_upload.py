@@ -12,7 +12,6 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-import os
 
 from django.contrib.auth.models import User
 from django.test import Client, TestCase

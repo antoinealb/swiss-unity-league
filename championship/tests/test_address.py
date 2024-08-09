@@ -16,7 +16,7 @@ from django.contrib.auth.models import User
 from django.test import Client, TestCase
 from django.urls import reverse
 
-from championship.factories import AddressFactory, EventFactory, EventOrganizerFactory
+from championship.factories import AddressFactory, EventOrganizerFactory
 from championship.models import Address
 
 

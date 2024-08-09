@@ -12,7 +12,6 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-import copy
 import datetime
 
 from django.contrib import messages
@@ -20,17 +19,15 @@ from django.contrib.auth.mixins import LoginRequiredMixin
 from django.db import transaction
 from django.db.models import Count
 from django.db.models.base import Model as Model
-from django.db.models.query import QuerySet
 from django.http import HttpResponseForbidden, HttpResponseRedirect
 from django.shortcuts import get_object_or_404, redirect, render
-from django.urls import reverse, reverse_lazy
+from django.urls import reverse
 from django.views import View
 from django.views.generic.edit import UpdateView
 
 from dateutil.rrule import FR, MO, MONTHLY, SA, SU, TH, TU, WE, WEEKLY, rrule, rruleset
 
 from championship.forms import (
-    EventCreateForm,
     RecurrenceRuleModelFormSet,
     RecurringEventForm,
     UpdateAllEventForm,

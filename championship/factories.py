@@ -21,7 +21,17 @@ import factory
 from factory.django import DjangoModelFactory
 from faker.providers import BaseProvider
 
-from .models import *
+from .models import (
+    Address,
+    Event,
+    EventOrganizer,
+    OrganizerLeague,
+    Player,
+    RecurrenceRule,
+    RecurringEvent,
+    Result,
+    SpecialReward,
+)
 from .season import SEASON_2023, SEASON_2024
 
 
@@ -77,7 +87,7 @@ class EventOrganizerFactory(DjangoModelFactory):
             # Simple build, do nothing.
             return
 
-        if extracted == None:
+        if extracted is None:
             # Create 3 new random addresses.
             addresses = AddressFactory.create_batch(3, organizer=self)
             for address in addresses:

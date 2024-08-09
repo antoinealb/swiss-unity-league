@@ -14,15 +14,21 @@
 
 import datetime
 
+from django.shortcuts import reverse
 from django.test import Client, TestCase
 
 from freezegun import freeze_time
 
-from championship.factories import *
-from championship.models import *
+from championship.factories import (
+    Event2024Factory,
+    PlayerFactory,
+    ResultFactory,
+    SpecialRewardFactory,
+)
+from championship.models import Event, Result
 from championship.score import compute_scores
 from championship.score.season_2024 import ScoreMethod2024
-from championship.score.types import LeaderboardScore, QualificationType
+from championship.score.types import QualificationType
 from championship.season import SEASON_2024
 
 
@@ -360,9 +366,8 @@ class TestScoresByes(TestCase):
 
     def test_reward_byes(self):
         event = Event2024Factory()
-        top_4_results_with_byes = [
-            ResultFactory(event=event, points=1000, ranking=i + 1) for i in range(4)
-        ]
+        for i in range(4):
+            ResultFactory(event=event, points=1000, ranking=i + 1)
 
         result5 = ResultFactory(
             points=0,

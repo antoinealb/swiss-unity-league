@@ -15,7 +15,7 @@
 from django.conf import settings
 from django.contrib import messages
 from django.contrib.auth.mixins import LoginRequiredMixin
-from django.http import Http404, HttpResponseForbidden, HttpResponseRedirect
+from django.http import Http404, HttpResponseForbidden
 from django.views.generic.edit import DeleteView
 
 from championship.season import SEASON_LIST, find_season_by_slug

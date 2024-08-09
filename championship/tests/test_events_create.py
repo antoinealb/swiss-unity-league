@@ -17,17 +17,17 @@ import datetime
 from django.contrib.auth.models import User
 from django.test import Client, TestCase
 from django.urls import reverse
+from rest_framework.status import HTTP_200_OK
 
 from parameterized import parameterized
 
 from championship.factories import (
-    AddressFactory,
     EventFactory,
     EventOrganizerFactory,
     RecurringEventFactory,
     ResultFactory,
 )
-from championship.models import Address, Event, EventOrganizer
+from championship.models import Address, Event
 
 
 class EventCreationTestCase(TestCase):
@@ -66,7 +66,7 @@ class EventCreationTestCase(TestCase):
 
     def test_link_shown_when_authenticated(self):
         self.login()
-        to = EventOrganizerFactory(user=self.user)
+        EventOrganizerFactory(user=self.user)
         response = self.client.get("/")
         self.assertIn(
             reverse("events_create"),
@@ -83,7 +83,7 @@ class EventCreationTestCase(TestCase):
             "category": "PREMIER",
         }
         self.login()
-        to = EventOrganizerFactory(user=self.user)
+        EventOrganizerFactory(user=self.user)
 
         self.client.post(reverse("events_create"), data=data)
 
@@ -107,7 +107,7 @@ class EventCreationTestCase(TestCase):
             "category": "PREMIER",
         }
         self.login()
-        to = EventOrganizerFactory(user=self.user)
+        EventOrganizerFactory(user=self.user)
 
         resp = self.client.post(reverse("events_create"), data=data, follow=True)
 
@@ -128,7 +128,7 @@ class EventCreationTestCase(TestCase):
             "submit_type": "schedule_series",
         }
         self.login()
-        to = EventOrganizerFactory(user=self.user)
+        EventOrganizerFactory(user=self.user)
 
         resp = self.client.post(reverse("events_create"), data=data, follow=True)
 
@@ -167,7 +167,7 @@ class EventCreationTestCase(TestCase):
         event = EventFactory(organizer=other_to, date=datetime.date.today())
 
         # Try to change an event ran by the other TO
-        to = EventOrganizerFactory(user=self.user)
+        EventOrganizerFactory(user=self.user)
         self.login()
         data = {
             "name": "Test Event",
@@ -237,6 +237,7 @@ class EventCreationTestCase(TestCase):
 
         self.login()
         resp = self.client.get(reverse("event_delete", args=[event.id]))
+        self.assertEqual(resp.status_code, HTTP_200_OK)
 
     def test_delete_event(self):
         to = EventOrganizerFactory(user=self.user)
@@ -265,7 +266,7 @@ class EventCreationTestCase(TestCase):
         self.assertEqual(Event.objects.count(), 0)
 
     def test_delete_event_for_another_to(self):
-        to = EventOrganizerFactory(user=self.user)
+        EventOrganizerFactory(user=self.user)
         event = EventFactory()  # created for another to
 
         self.login()
@@ -282,7 +283,7 @@ class EventCreationTestCase(TestCase):
 
     def test_create_event_form_without_any_address(self):
         self.login()
-        to = EventOrganizerFactory(user=self.user)
+        EventOrganizerFactory(user=self.user)
         Address.objects.all().delete()
         self.client.get(reverse("events_create"))
 

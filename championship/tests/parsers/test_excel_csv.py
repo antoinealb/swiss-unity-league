@@ -17,7 +17,16 @@ from unittest import TestCase
 import pandas as pd
 from parameterized import parameterized
 
-from championship.parsers.excel_csv_parser import *
+from championship.parsers.excel_csv_parser import (
+    MATCH_POINTS,
+    PLAYER_NAME,
+    RECORD,
+    InvalidMatchPointsError,
+    InvalidRecordError,
+    PlayerNameNotFound,
+    RecordOrMatchPointsNotFound,
+    parse_standings_page,
+)
 
 
 class ExcelCsvStandingParser(TestCase):

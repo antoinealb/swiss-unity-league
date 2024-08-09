@@ -53,7 +53,7 @@ def _standings(df: pd.DataFrame):
                 name_points_tuple_list.append(
                     (row[PLAYER_NAME], int(row[MATCH_POINTS]))
                 )
-            except:
+            except Exception:
                 raise InvalidMatchPointsError(row[PLAYER_NAME], row[MATCH_POINTS])
         match_points_list = [points for _, points in name_points_tuple_list]
         num_rounds = estimate_rounds(match_points_list)

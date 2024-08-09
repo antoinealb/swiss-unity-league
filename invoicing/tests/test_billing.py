@@ -16,8 +16,8 @@ import datetime
 
 from django.test import TestCase
 
-from championship.factories import *
-from championship.models import *
+from championship.factories import Event2024Factory, EventFactory, ResultFactory
+from championship.models import Event, Result
 from invoicing.models import fee_for_event
 
 

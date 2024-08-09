@@ -14,14 +14,7 @@
 
 from django.contrib.auth.models import User
 from django.urls import reverse
-from rest_framework.status import (
-    HTTP_200_OK,
-    HTTP_201_CREATED,
-    HTTP_204_NO_CONTENT,
-    HTTP_400_BAD_REQUEST,
-    HTTP_401_UNAUTHORIZED,
-    HTTP_403_FORBIDDEN,
-)
+from rest_framework.status import HTTP_200_OK
 from rest_framework.test import APITestCase
 
 

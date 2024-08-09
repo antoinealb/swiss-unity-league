@@ -16,7 +16,12 @@ import datetime
 
 from django.test import TestCase
 
-from championship.factories import *
+from championship.factories import (
+    Event2024Factory,
+    EventFactory,
+    EventOrganizerFactory,
+    ResultFactory,
+)
 from championship.models import Event, EventOrganizer
 from invoicing.factories import InvoiceFactory
 from invoicing.models import Invoice

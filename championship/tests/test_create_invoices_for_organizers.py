@@ -18,8 +18,8 @@ from django.contrib.auth.models import User
 from django.test import Client, TestCase
 from django.urls import reverse
 
-from championship.factories import *
-from championship.models import *
+from championship.factories import EventFactory, EventOrganizerFactory, ResultFactory
+from championship.models import Event, EventOrganizer
 from invoicing.factories import PayeeAddressFactory
 from invoicing.models import Invoice
 
@@ -40,7 +40,7 @@ class CreateInvoiceForOrganizerTestCase(TestCase):
             "_selected_action": [o.pk for o in organizers],
         }
 
-        response = self.client.post(
+        self.client.post(
             reverse("admin:championship_eventorganizer_changelist"), data, follow=True
         )
 

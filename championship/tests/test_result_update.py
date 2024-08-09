@@ -12,10 +12,19 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+import datetime
+
+from django.contrib.auth.models import User
 from django.test import Client, TestCase
 from django.urls import reverse
 
-from championship.factories import *
+from championship.factories import (
+    EventFactory,
+    EventOrganizerFactory,
+    PlayerFactory,
+    ResultFactory,
+)
+from championship.models import Player, PlayerAlias, Result
 from championship.views import update_ranking_order
 
 

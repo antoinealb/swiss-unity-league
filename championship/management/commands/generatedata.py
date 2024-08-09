@@ -12,6 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+import datetime
 import logging
 import random
 
@@ -20,8 +21,8 @@ from django.db import transaction
 
 import factory
 
-from championship.factories import *
-from championship.models import *
+from championship.factories import EventFactory, EventOrganizerFactory, PlayerFactory
+from championship.models import Event, EventOrganizer, Player, Result
 
 
 class Command(BaseCommand):

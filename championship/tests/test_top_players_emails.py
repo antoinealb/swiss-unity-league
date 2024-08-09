@@ -12,10 +12,12 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+from django.contrib.auth.models import User
 from django.test import Client, TestCase
 from django.urls import reverse
 
-from championship.factories import *
+from championship.factories import PlayerFactory, RankedEventFactory, ResultFactory
+from championship.season import SEASON_2023
 
 
 class TopPlayersEmailViewTest(TestCase):

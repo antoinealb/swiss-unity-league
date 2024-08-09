@@ -15,10 +15,17 @@
 import datetime
 
 from django.contrib.auth.models import User
+from django.shortcuts import reverse
 from django.test import Client, TestCase, override_settings
 
-from championship.factories import *
-from championship.models import Event
+from championship.factories import (
+    EventFactory,
+    EventOrganizerFactory,
+    PlayerFactory,
+    ResultFactory,
+)
+from championship.models import Address, Event
+from championship.season import SEASON_2023
 from invoicing.factories import InvoiceFactory
 
 
@@ -140,7 +147,7 @@ class HomepageTestCase(TestCase):
         credentials = dict(username="test", password="test")
         user = User.objects.create_user(**credentials)
         organizer = EventOrganizerFactory(user=user)
-        invoice = InvoiceFactory(event_organizer=organizer)
+        InvoiceFactory(event_organizer=organizer)
 
         self.client.login(**credentials)
         response = self.client.get("/")

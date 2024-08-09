@@ -17,7 +17,6 @@ from django.urls import reverse
 from rest_framework.test import APITestCase
 
 from championship.factories import EventFactory, EventOrganizerFactory
-from championship.models import *
 
 
 class TestEventListAPI(APITestCase):

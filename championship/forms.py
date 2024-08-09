@@ -16,11 +16,10 @@ from django import forms
 from django.contrib.auth.forms import UserCreationForm
 from django.contrib.auth.models import User
 from django.core.validators import ValidationError
-from django.db.models import Count, TextChoices
 
 import bleach
 from crispy_forms.helper import FormHelper
-from crispy_forms.layout import Div, Field, Layout, Submit
+from crispy_forms.layout import Div, Field, Submit
 from tinymce.widgets import TinyMCE
 
 from championship.parsers.general_parser_functions import parse_record
