@@ -16,19 +16,16 @@ import datetime
 
 from django.contrib.auth.models import User
 from django.urls import reverse
-from rest_framework.status import *
+from rest_framework.status import HTTP_200_OK, HTTP_400_BAD_REQUEST
 from rest_framework.test import APITestCase
 
 from championship.factories import (
-    AddressFactory,
-    EventFactory,
     EventOrganizerFactory,
     PlayerFactory,
     RankedEventFactory,
     ResultFactory,
 )
-from championship.models import *
-from championship.serializers import EventSerializer, ResultSerializer
+from championship.models import Event, PlayerAlias, Result
 
 
 class TestEventResultsAPI(APITestCase):
@@ -70,7 +67,7 @@ class TestEventResultsAPI(APITestCase):
             ],
         }
         resp = self.client.patch(self.url, data=data, format="json")
-        self.assertEqual(200, resp.status_code)
+        self.assertEqual(HTTP_200_OK, resp.status_code)
         self.assertEqual(1, Result.objects.count())
 
         e = Result.objects.all()[0]
@@ -102,7 +99,7 @@ class TestEventResultsAPI(APITestCase):
                 }
             ],
         }
-        resp = self.client.patch(self.url, data=data, format="json")
+        self.client.patch(self.url, data=data, format="json")
 
         # Check that the event got associated with the player
         self.assertTrue(player.result_set.exists())
@@ -121,7 +118,7 @@ class TestEventResultsAPI(APITestCase):
                 }
             ],
         }
-        resp = self.client.patch(self.url, data=data, format="json")
+        self.client.patch(self.url, data=data, format="json")
 
         # Check that the event got associated with the player
         self.assertTrue(
@@ -167,7 +164,7 @@ class TestEventResultsAPI(APITestCase):
         ]
         self.client.login(**self.credentials)
         resp = self.client.patch(self.url, data={"results": results}, format="json")
-        self.assertEqual(400, resp.status_code)
+        self.assertEqual(HTTP_400_BAD_REQUEST, resp.status_code)
         self.assertEqual(0, self.event.result_set.count())
         self.assertIn("message", resp.json())
 
@@ -192,7 +189,7 @@ class TestEventResultsAPI(APITestCase):
         self.client.login(**self.credentials)
         resp = self.client.patch(self.url, data={"results": results}, format="json")
 
-        self.assertEqual(200, resp.status_code)
+        self.assertEqual(HTTP_200_OK, resp.status_code)
         self.assertEqual(24, self.event.result_set.count())
 
     def test_upload_results_unsorted(self):
@@ -210,7 +207,7 @@ class TestEventResultsAPI(APITestCase):
         ]
 
         self.client.login(**self.credentials)
-        resp = self.client.patch(self.url, data={"results": results}, format="json")
+        self.client.patch(self.url, data={"results": results}, format="json")
 
         results = Result.objects.filter(event=self.event).order_by("ranking")
         self.assertEqual(results[0].win_count, 3, "Results should have been sorted.")
@@ -242,7 +239,7 @@ class TestEventResultsAPI(APITestCase):
             ],
         }
         resp = self.client.patch(self.url, data=data, format="json")
-        self.assertEqual(200, resp.status_code)
+        self.assertEqual(HTTP_200_OK, resp.status_code)
         self.assertEqual(2, Result.objects.count())
         self.event.refresh_from_db()
         self.assertEqual(self.event.category, Event.Category.REGIONAL)

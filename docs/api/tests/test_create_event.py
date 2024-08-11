@@ -24,7 +24,6 @@ from django.test import LiveServerTestCase
 
 from championship.factories import EventFactory, EventOrganizerFactory
 from championship.models import Event, Result
-from docs.api.create_event import create_example_event, get_api_token
 
 
 class CreateEventApiExample(LiveServerTestCase):

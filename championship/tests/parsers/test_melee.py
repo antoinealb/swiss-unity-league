@@ -31,5 +31,4 @@ class EventlinkStandingParser(TestCase):
             ParseResult("Jari Rentsch", 29, (9, 3, 2)),
             ParseResult("Christian Rothen", 28, (9, 4, 1)),
         ]
-        l = len(want)
-        self.assertEqual(want, self.results[:l])
+        self.assertEqual(want, self.results[: len(want)])

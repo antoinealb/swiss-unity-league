@@ -12,15 +12,13 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-import collections
-import itertools
 
+from django.conf import settings
 from django.core.management.base import BaseCommand
-from django.db.models import Count
 
 from prettytable import PrettyTable
 
-from championship.models import *
+from championship.models import Event, Result
 from championship.score.generic import get_leaderboard, get_results_with_qps
 from championship.season import ALL_SEASONS_LIST, find_season_by_slug
 

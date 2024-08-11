@@ -13,15 +13,13 @@
 # limitations under the License.
 
 import datetime
-import logging
 import warnings
 
 from django import forms
 from django.conf import settings
 from django.contrib import admin, messages
-from django.core.validators import ValidationError, validate_email
 from django.db import transaction
-from django.db.models import Q
+from django.db.models import Count, Q
 from django.http import HttpResponseRedirect
 from django.shortcuts import redirect, render
 from django.urls import path, reverse
@@ -33,7 +31,17 @@ from championship.score import get_leaderboard
 from championship.season import SEASONS_WITH_RANKING, find_season_by_slug
 from invoicing.models import Invoice, PayeeAddress
 
-from .models import *
+from .models import (
+    Event,
+    EventOrganizer,
+    OrganizerLeague,
+    Player,
+    PlayerAlias,
+    RecurrenceRule,
+    RecurringEvent,
+    Result,
+    SpecialReward,
+)
 
 
 class SpecialRewardInline(admin.TabularInline):

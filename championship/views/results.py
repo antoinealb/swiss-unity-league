@@ -375,7 +375,7 @@ class CreateHTMLParserResultsView(CreateFileParserResultsView):
         try:
             text = "".join(s.decode() for s in self.request.FILES["standings"].chunks())
             return self.extract_standings_from_page(text)
-        except Exception as e:
+        except Exception:
             logging.exception("Could not parse page")
             messages.error(self.request, self.error_text)
 

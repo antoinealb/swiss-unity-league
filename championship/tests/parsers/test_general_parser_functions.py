@@ -16,7 +16,15 @@ import unittest
 
 from parameterized import parameterized
 
-from championship.parsers.general_parser_functions import *
+from championship.parsers.general_parser_functions import (
+    estimate_rounds,
+    find_index_containing_substring,
+    find_index_of_nth_integer,
+    find_non_numeric_index,
+    find_record_index,
+    parse_record,
+    record_to_points,
+)
 
 
 class TestParseRecord(unittest.TestCase):

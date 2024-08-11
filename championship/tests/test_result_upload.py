@@ -12,6 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+import datetime
 from unittest.mock import MagicMock, patch
 
 from django.contrib.auth.models import User
@@ -22,9 +23,14 @@ from django.urls import reverse
 from parameterized import parameterized
 from requests import HTTPError
 
-from championship.factories import *
+from championship.factories import (
+    EventOrganizerFactory,
+    PlayerFactory,
+    RankedEventFactory,
+    ResultFactory,
+)
 from championship.forms import AddTop8ResultsForm
-from championship.models import Result
+from championship.models import Event, Player, PlayerAlias, Result
 from championship.parsers.challonge import TournamentNotSwissError
 from championship.tests.parsers.utils import load_test_html
 from championship.views import clean_name
@@ -139,7 +145,7 @@ class AetherhubImportTest(TestCase):
         self.login()
         self.mock_response(requests_get)
 
-        response = self.client.post(reverse("results_create_aetherhub"), self.data)
+        self.client.post(reverse("results_create_aetherhub"), self.data)
 
         results = Result.objects.filter(event=self.event).order_by("id")[:]
 
@@ -203,7 +209,7 @@ class AetherhubImportTest(TestCase):
 
         # This player in the mock result contains too many space between name
         # and first name
-        player = Player.objects.get(name="Pavel Malach")
+        Player.objects.get(name="Pavel Malach")
 
     @patch("requests.get")
     def test_redirects_after_reply(self, requests_get):
@@ -338,7 +344,7 @@ class ChallongeLinkImportTest(TestCase):
         self.login()
         self.mock_response(requests_get)
 
-        response = self.post_form()
+        self.post_form()
 
         results = Result.objects.filter(event=self.event).order_by("id")[:]
 
@@ -680,7 +686,7 @@ class ExcelCsvUploadTest(TestCase):
             "event": self.event.id,
         }
 
-        response = self.client.post(reverse("results_create_excelcsv"), self.data)
+        self.client.post(reverse("results_create_excelcsv"), self.data)
         self.event.refresh_from_db()
 
         results = self.event.result_set.order_by("ranking")
@@ -710,7 +716,7 @@ class ExcelCsvUploadTest(TestCase):
             "standings": standings,
             "event": self.event.id,
         }
-        response = self.client.post(reverse("results_create_excelcsv"), self.data)
+        self.client.post(reverse("results_create_excelcsv"), self.data)
         self.event.refresh_from_db()
 
         results = self.event.result_set.order_by("ranking")
@@ -1115,7 +1121,7 @@ class AddTop8Results(TestCase):
 
     def test_result_top8_results_are_removed_before_upload(self):
         # first, post with initial data
-        resp = self.client.post(
+        self.client.post(
             reverse("results_top8_add", args=(self.event.id,)),
             data=self.data,
         )
@@ -1123,7 +1129,7 @@ class AddTop8Results(TestCase):
         # Create a new player, make it the winner
         new_winner = ResultFactory(event=self.event, ranking=2)
         self.data["winner"] = new_winner.id
-        resp = self.client.post(
+        self.client.post(
             reverse("results_top8_add", args=(self.event.id,)),
             data=self.data,
         )

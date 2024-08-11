@@ -19,13 +19,11 @@ The code in this file is mostly season-independent.
 
 from typing import Any, Iterable
 
-from django.conf import settings
 from django.core.cache import cache
 from django.db import models
 from django.db.models import Count, F, Max
 from django.db.models.signals import post_delete, pre_save
 from django.dispatch import receiver
-from django.utils.text import slugify
 
 from prometheus_client import Gauge, Summary
 
@@ -36,7 +34,14 @@ from championship.score.season_2024 import ScoreMethod2024
 from championship.score.season_all import ScoreMethodAll
 from championship.score.trial_2024 import ScoreMethodTrial2024
 from championship.score.types import LeaderboardScore
-from championship.season import *
+from championship.season import (
+    SEASON_2023,
+    SEASON_2024,
+    SEASON_ALL,
+    SEASONS_WITH_RANKING,
+    SUL_TRIAL_2024,
+    Season,
+)
 
 scores_computation_time_seconds = Summary(
     "scores_computation_time_seconds", "Time spent to compute scores of all players"

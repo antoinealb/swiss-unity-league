@@ -20,7 +20,6 @@ Simple example for the API of unityleague.ch, showing how to create an event.
 import argparse
 import enum
 import getpass
-import json
 
 import requests
 

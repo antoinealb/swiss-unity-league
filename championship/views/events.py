@@ -17,8 +17,6 @@ from typing import Any
 
 from django.contrib import messages
 from django.contrib.auth.mixins import LoginRequiredMixin
-from django.db import transaction
-from django.db.models import F
 from django.http import HttpResponseForbidden, HttpResponseRedirect
 from django.urls import reverse
 from django.views.generic import DetailView
@@ -26,7 +24,7 @@ from django.views.generic.base import TemplateView
 from django.views.generic.edit import FormView, UpdateView
 
 from championship.forms import EventCreateForm
-from championship.models import Event, RecurrenceRule, RecurringEvent, Result
+from championship.models import Event, Result
 from championship.score import get_results_with_qps
 from championship.season import SEASON_LIST
 from championship.views.base import CustomDeleteView

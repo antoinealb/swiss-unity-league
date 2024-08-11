@@ -123,10 +123,8 @@ class PremierEventDowngrade(TestCase):
         self.assertEqual(event.description, self.original_description)
         self.assertEqual(event.category, Event.Category.PREMIER)
 
-        results = [
+        for i in range(settings.MIN_PLAYERS_FOR_PREMIER - 1):
             ResultFactory(event=event)
-            for i in range(settings.MIN_PLAYERS_FOR_PREMIER - 1)
-        ]
 
         event.save()
         self.assertEqual(
@@ -142,9 +140,9 @@ class PremierEventDowngrade(TestCase):
             name=self.original_name,
             description=self.original_description,
         )
-        results = [
-            ResultFactory(event=event) for i in range(settings.MIN_PLAYERS_FOR_PREMIER)
-        ]
+
+        for i in range(settings.MIN_PLAYERS_FOR_PREMIER):
+            ResultFactory(event=event)
 
         event.save()
         self.assertEqual(event.name, self.original_name)
@@ -160,7 +158,7 @@ class PremierEventDowngrade(TestCase):
             name=self.original_name,
             description=self.original_description,
         )
-        result = ResultFactory(event=event)
+        ResultFactory(event=event)
         event.save()
         event.category = Event.Category.PREMIER
         event.save()
@@ -186,7 +184,7 @@ class PremierEventDowngrade(TestCase):
             name=self.original_name,
             description=self.original_description,
         )
-        result = ResultFactory(event=event)
+        ResultFactory(event=event)
         event.save()
         remaining_chars_name = name_max_length - len(Event.DOWNGRADED_TO_REGIONAL_NAME)
         self.assertEqual(

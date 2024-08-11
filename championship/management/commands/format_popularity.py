@@ -12,22 +12,19 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-import itertools
 
 from django.core.management.base import BaseCommand
 from django.db.models import Count
 
 from prettytable import PrettyTable
 
-from championship.models import *
+from championship.models import Event
 
 
 class Command(BaseCommand):
     help = "Report on number of player and events by format"
 
     def handle(self, *args, **kwargs):
-        players_by_format = []
-
         table = PrettyTable(field_names=["Format", "Registrations Count"], align="l")
         for entry in (
             Event.objects.all()

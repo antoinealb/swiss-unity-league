@@ -32,7 +32,7 @@ from championship.factories import (
     RankedEventFactory,
     ResultFactory,
 )
-from championship.models import *
+from championship.models import Event
 
 
 class TestEventListAPI(APITestCase):
@@ -80,7 +80,7 @@ class TestEventListAPI(APITestCase):
         # Just provide two events, we don't want to test the full logic of
         # Event.available_for_result_upload here.
         too_old = datetime.date(2023, 1, 1)
-        event_too_old = RankedEventFactory(date=too_old, organizer=self.organizer)
+        RankedEventFactory(date=too_old, organizer=self.organizer)
 
         yesterday = datetime.date.today() - datetime.timedelta()
         event_good = RankedEventFactory(date=yesterday, organizer=self.organizer)
@@ -129,7 +129,7 @@ class TestEventCreate(APITestCase):
         self.organizer.save()
 
         self.login()
-        resp = self.client.post(reverse("events-list"), data=self.data)
+        self.client.post(reverse("events-list"), data=self.data)
         self.assertEqual(Event.objects.all()[0].address, addr)
 
     def test_non_logged_in(self):

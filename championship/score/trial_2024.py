@@ -12,12 +12,9 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from dataclasses import dataclass
 
-from championship.models import Count, Event
 from championship.score.season_2024 import ScoreMethod2024
 from championship.score.types import LeaderboardScore, QualificationType
-from championship.season import SEASON_2024, SUL_TRIAL_2024
 
 
 class ScoreMethodTrial2024(ScoreMethod2024):

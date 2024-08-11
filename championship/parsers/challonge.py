@@ -18,7 +18,14 @@ from bs4 import BeautifulSoup
 
 from championship.parsers.parse_result import ParseResult
 
-from .general_parser_functions import *
+from .general_parser_functions import (
+    find_index_containing_substring,
+    find_index_of_nth_integer,
+    find_non_numeric_index,
+    find_record_index,
+    parse_record,
+    record_to_points,
+)
 
 
 def _remove_brackets(text):
@@ -92,7 +99,7 @@ def clean_url(url):
     https = "https://"
     try:
         url_start, path = url.split(challonge)
-    except:
+    except Exception:
         raise ValueError("No challonge.com URL")
     for tourney_id in path.split("/"):
         if 7 <= len(tourney_id) <= 9:

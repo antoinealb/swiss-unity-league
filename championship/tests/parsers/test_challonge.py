@@ -15,7 +15,6 @@
 from unittest import TestCase
 
 from championship.parsers import challonge
-from championship.parsers.general_parser_functions import *
 
 from .utils import load_test_html
 

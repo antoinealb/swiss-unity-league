@@ -19,7 +19,7 @@ from django.test import Client, TestCase
 from django.urls import reverse
 
 from championship.factories import EventFactory, EventOrganizerFactory, ResultFactory
-from championship.models import Event, EventOrganizer, Result
+from championship.models import Result
 
 
 class EventClearResult(TestCase):

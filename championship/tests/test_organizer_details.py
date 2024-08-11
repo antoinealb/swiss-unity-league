@@ -213,7 +213,7 @@ class OrganizerLeaderboardTest(TestCase):
             response = self.client.get(
                 reverse("organizer_details", args=[organizer.id])
             )
-            results = [
+            for i in range(3):
                 ResultFactory(
                     event__organizer=organizer,
                     event__category=Event.Category.REGULAR,
@@ -222,8 +222,6 @@ class OrganizerLeaderboardTest(TestCase):
                     draw_count=0,
                     loss_count=0,
                 )
-                for i in range(3)
-            ]
 
             response = self.client.get(
                 reverse("organizer_details", args=[organizer.id])

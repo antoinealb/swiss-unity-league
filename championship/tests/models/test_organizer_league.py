@@ -56,7 +56,7 @@ class OrganizerLeagueTest(TestCase):
             )
         )
 
-        result_of_wrong_format = ResultFactory(
+        ResultFactory(
             event=RankedEventFactory(
                 format=Event.Format.STANDARD,
                 organizer=league.organizer,
@@ -80,7 +80,7 @@ class OrganizerLeagueTest(TestCase):
         league = OrganizerLeagueFactory(category=league_category)
 
         for event_category, _ in Event.Category.choices:
-            result = ResultFactory(
+            ResultFactory(
                 event=RankedEventFactory(
                     format=league.format,
                     organizer=league.organizer,
@@ -102,7 +102,7 @@ class OrganizerLeagueTest(TestCase):
             datetime.date(2024, 7, 31),
             datetime.date(2024, 8, 1),
         ]:
-            result = ResultFactory(
+            ResultFactory(
                 event=RankedEventFactory(
                     organizer=league.organizer,
                     category=league.category,
