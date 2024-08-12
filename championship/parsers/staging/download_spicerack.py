@@ -51,6 +51,9 @@ def parse_args():
         default=logging.INFO,
     )
     parser.add_argument("--output", "-o", type=argparse.FileType("w"), default="-")
+    parser.add_argument(
+        "--top8", help="Correct for top8 in results", action="store_true"
+    )
 
     return parser.parse_args()
 
@@ -140,15 +143,21 @@ def get_playoff_correction(event: int) -> dict[Name, Result]:
     return correction
 
 
-def get_corrected_standings(event: int) -> Iterable[tuple[Name, Result]]:
+def get_corrected_standings(
+    event: int, correct_standings: bool
+) -> Iterable[tuple[Name, Result]]:
     last_round_id = get_last_swiss_standings_id(event)
     logging.debug("Last Swiss standings ID appears to be %d", last_round_id)
 
     standings = list(get_standings(last_round_id))
     logging.info("Extracted %d players", len(standings))
 
-    correction = get_playoff_correction(event)
-    logging.debug("top8 correction: %s", correction)
+    if correct_standings:
+        correction = get_playoff_correction(event)
+        logging.debug("top8 correction: %s", correction)
+    else:
+        logging.info("Not correcting for top8")
+        correction = dict()
 
     for name, (w, l, d) in standings:
         try:
@@ -166,7 +175,7 @@ def main():
     args = parse_args()
     logging.basicConfig(level=args.verbose)
 
-    standings = get_corrected_standings(args.id)
+    standings = get_corrected_standings(args.id, args.top8)
 
     writer = csv.DictWriter(args.output, ["PLAYER_NAME", "RECORD"])
     writer.writeheader()
