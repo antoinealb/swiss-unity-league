@@ -129,16 +129,16 @@ def get_playoff_correction(event: int) -> dict[Name, Result]:
 
     logging.debug("Extracted %d standings for correction", len(standings))
 
-    standings = iter(standings)
+    standings_iter = iter(standings)
 
-    correction[next(standings)] = (-3, 0, 0)
-    correction[next(standings)] = (-2, -1, 0)
+    correction[next(standings_iter)] = (-3, 0, 0)
+    correction[next(standings_iter)] = (-2, -1, 0)
 
     for _ in range(2):
-        correction[next(standings)] = (-1, -1, 0)
+        correction[next(standings_iter)] = (-1, -1, 0)
 
     for _ in range(4):
-        correction[next(standings)] = (0, -1, 0)
+        correction[next(standings_iter)] = (0, -1, 0)
 
     return correction
 
