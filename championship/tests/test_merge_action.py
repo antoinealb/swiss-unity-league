@@ -18,6 +18,7 @@ from django.urls import reverse
 
 from championship.factories import PlayerFactory
 from championship.models import Player, PlayerAlias
+from decklists.factories import DecklistFactory
 
 
 class PlayerMergeActionTest(TestCase):
@@ -90,3 +91,23 @@ class PlayerMergeActionTest(TestCase):
         mergeToPlayer.refresh_from_db()
         self.assertEqual(Player.objects.count(), 1)
         self.assertEqual(mergeToPlayer.email, EXAMPLE_EMAIL)
+
+    def test_merge_player_decklists(self):
+        mergeToPlayer = PlayerFactory()
+        decklist = DecklistFactory()
+
+        data = {
+            "action": "merge_players",
+            "_selected_action": [
+                mergeToPlayer.pk,
+                decklist.player.pk,
+            ],
+            "player_to_keep": mergeToPlayer.pk,
+        }
+        self.client.post(
+            reverse("admin:championship_player_changelist"), data, follow=True
+        )
+
+        decklist.refresh_from_db()
+
+        self.assertEqual(decklist.player, mergeToPlayer)
