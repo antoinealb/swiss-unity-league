@@ -29,6 +29,7 @@ import openpyxl
 from championship import views
 from championship.score import get_leaderboard
 from championship.season import SEASONS_WITH_RANKING, find_season_by_slug
+from decklists.models import Decklist
 from invoicing.models import Invoice, PayeeAddress
 
 from .models import (
@@ -289,6 +290,11 @@ class PlayerAdmin(admin.ModelAdmin):
                 for e in Result.objects.filter(player=player):
                     e.player = original_player
                     e.save()
+
+                # Then do the same for decklists
+                for d in Decklist.objects.filter(player=player):
+                    d.player = original_player
+                    d.save()
 
                 # Then, create an alias for the player
                 PlayerAlias.objects.create(
