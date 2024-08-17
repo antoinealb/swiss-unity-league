@@ -271,6 +271,11 @@ except FileNotFoundError:
 
 build_info.info({"commit_sha": commit_hash})
 
+debug_settings = Info(
+    "debug_settings", "Information about whether we are running in debug mode."
+)
+debug_settings.info({"debug": str(DEBUG).lower()})
+
 # Maximum age for an event to enter result in (effetively disables backfill).
 EVENT_MAX_AGE_FOR_RESULT_ENTRY = datetime.timedelta(days=31)
 
