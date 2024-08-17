@@ -142,10 +142,12 @@ TEMPLATES = [
         "APP_DIRS": True,
         "OPTIONS": {
             "context_processors": [
-                "django.template.context_processors.debug",
-                "django.template.context_processors.request",
+                # keep-sorted start
                 "django.contrib.auth.context_processors.auth",
                 "django.contrib.messages.context_processors.messages",
+                "django.template.context_processors.request",
+                "swiss_unity_league_site.context_processors.debug",
+                # keep-sorted end
             ],
         },
     },
