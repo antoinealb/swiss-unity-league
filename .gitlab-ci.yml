@@ -65,7 +65,7 @@ build-docker:
     entrypoint: [""]
   artifacts:
     paths:
-      - "*.tar"
+      - "*.tar.gz"
     expire_in: '1 day'
   script:
     - echo $CI_COMMIT_SHORT_SHA > commit_sha.txt
@@ -75,6 +75,7 @@ build-docker:
       --destination antoinealb/league:latest
       --no-push
       --tar-path league.tar
+    - gzip league.tar
 
 restart-service:
   stage: rollout
@@ -84,7 +85,7 @@ restart-service:
   tags:
     - infra
   script:
-    - sudo docker load --input league.tar
+    - sudo docker load --input league.tar.gz
 
     - sudo /bin/systemctl restart league_playground.service
     - sleep 30
