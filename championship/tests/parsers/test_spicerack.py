@@ -18,21 +18,21 @@ from parameterized import parameterized
 
 from championship.parsers import spicerack
 
-from .utils import load_test_html
+from .utils import load_test_json
 
 
 class SpicerackStandingsParser(TestCase):
 
     def test_get_rounds(self):
-        self.text = load_test_html("spicerack/get_all_rounds.json")
-        round = spicerack.parse_rounds_json(self.text)
+        self.json = load_test_json("spicerack/get_all_rounds.json")
+        round = spicerack.parse_rounds_json(self.json)
         self.assertEqual(round["id"], 691)
         self.assertEqual(round["round_number"], 5)
 
     def test_parse_standings(self):
-        self.text = load_test_html("spicerack/include_all_standings.json")
+        self.json = load_test_json("spicerack/include_all_standings.json")
         total_rounds = 5
-        self.results = spicerack.parse_standings_json(self.text, total_rounds)
+        self.results = spicerack.parse_standings_json(self.json, total_rounds)
         want_standings = [
             ("Filipe Sousa", 11, (3, 0, 2), None),
             (

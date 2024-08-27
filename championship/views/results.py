@@ -513,11 +513,11 @@ class SpicerackResultsView(CreateLinkParserResultsView):
             return
         try:
             response = requests.get(
-                f"https://hydra.spicerack.gg/api/magic-events/{event_id.group(1)}/get_all_rounds/"
+                f"https://hydra.spicerack.gg/api/magic-events/{event_id}/get_all_rounds/"
             )
             response.raise_for_status()
 
-            round = spicerack.parse_rounds_json(response.content.decode())
+            round = spicerack.parse_rounds_json(response.json())
             round_id = round["id"]
 
             response = requests.get(
@@ -526,7 +526,7 @@ class SpicerackResultsView(CreateLinkParserResultsView):
             response.raise_for_status()
 
             return spicerack.parse_standings_json(
-                response.content.decode(), round["round_number"]
+                response.json(), round["round_number"]
             )
         except Exception as e:
             logging.exception("Could not fetch standings")

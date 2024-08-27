@@ -18,8 +18,7 @@ from json import loads
 from championship.parsers.parse_result import ParseResult
 
 
-def parse_rounds_json(unparsed_json):
-    phases_json = loads(unparsed_json)
+def parse_rounds_json(phases_json):
     for phase in reversed(phases_json):
         if phase["round_type"] == "SWISS":
             if phase["status"] != "COMPLETE":
@@ -28,8 +27,8 @@ def parse_rounds_json(unparsed_json):
     raise ValueError("No Swiss phase/round found")
 
 
-def _standings(soup, total_rounds):
-    for standing in soup:
+def _standings(standings_json, total_rounds):
+    for standing in standings_json:
         points = standing["points"]
         matches_drawn = points % 3
         matches_won = points // 3
@@ -41,8 +40,7 @@ def _standings(soup, total_rounds):
         )
 
 
-def parse_standings_json(unparsed_json, total_rounds):
-    round_json = loads(unparsed_json)
+def parse_standings_json(round_json, total_rounds):
     if round_json["status"] != "COMPLETE":
         raise ValueError("Round is not complete")
     standings = list(_standings(round_json["standings"], total_rounds))
@@ -51,6 +49,5 @@ def parse_standings_json(unparsed_json, total_rounds):
 
 def extract_event_id_from_url(url):
     url_re = r"https://www\.spicerack\.gg/[a-zA-Z/]+/(\d+)(?:/[a-zA-Z/]*)?"
-    event_id = re.match(url_re, url)
-    if event_id:
-        return event_id.group(1)
+    if match := re.match(url_re, url):
+        return match.group(1)

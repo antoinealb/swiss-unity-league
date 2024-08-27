@@ -32,7 +32,7 @@ from championship.factories import (
 from championship.forms import AddTop8ResultsForm
 from championship.models import Event, Player, PlayerAlias, Result
 from championship.parsers.challonge import TournamentNotSwissError
-from championship.tests.parsers.utils import load_test_html
+from championship.tests.parsers.utils import load_test_html, load_test_json
 from championship.views import clean_name
 
 
@@ -336,10 +336,10 @@ class SpicerackLinkImportTest(TestCase):
 
     def mock_response(self, requests_get):
         resp1 = MagicMock()
-        resp1.content = load_test_html("spicerack/get_all_rounds.json").encode()
+        resp1.json.return_value = load_test_json("spicerack/get_all_rounds.json")
 
         resp2 = MagicMock()
-        resp2.content = load_test_html("spicerack/include_all_standings.json").encode()
+        resp2.json.return_value = load_test_json("spicerack/include_all_standings.json")
         requests_get.side_effect = [resp1, resp2]
 
     @patch("requests.get")
@@ -366,7 +366,7 @@ class SpicerackLinkImportTest(TestCase):
         resp = self.post_form()
 
         self.assertEqual(resp.status_code, 200)
-        self.assertIn("Wrong url format.", resp.content.decode())
+        self.assertContains(resp, "Wrong url format.")
 
 
 class ChallongeLinkImportTest(TestCase):

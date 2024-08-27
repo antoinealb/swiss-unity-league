@@ -12,6 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+import json
 import os.path
 
 
@@ -20,3 +21,9 @@ def load_test_html(filename):
     with open(path) as f:
         text = f.read()
     return text
+
+
+def load_test_json(filename):
+    path = os.path.join(os.path.dirname(__file__), filename)
+    with open(path) as f:
+        return json.load(f)
