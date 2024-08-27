@@ -1,0 +1,134 @@
+[
+    {
+        "id": 272,
+        "rounds": [
+            {
+                "id": 687,
+                "round_number": 1,
+                "final_round_in_event": false,
+                "use_old_pairings": false,
+                "astrolabe_url": null,
+                "pairings_status": "GENERATED",
+                "standings_status": "GENERATED",
+                "round_type": "PLAY_VS_OPPONENT",
+                "status": "COMPLETE",
+                "tournament_phase": 272
+            },
+            {
+                "id": 688,
+                "round_number": 2,
+                "final_round_in_event": false,
+                "use_old_pairings": false,
+                "astrolabe_url": null,
+                "pairings_status": "GENERATED",
+                "standings_status": "GENERATED",
+                "round_type": "PLAY_VS_OPPONENT",
+                "status": "COMPLETE",
+                "tournament_phase": 272
+            },
+            {
+                "id": 689,
+                "round_number": 3,
+                "final_round_in_event": false,
+                "use_old_pairings": false,
+                "astrolabe_url": null,
+                "pairings_status": "GENERATED",
+                "standings_status": "GENERATED",
+                "round_type": "PLAY_VS_OPPONENT",
+                "status": "COMPLETE",
+                "tournament_phase": 272
+            },
+            {
+                "id": 690,
+                "round_number": 4,
+                "final_round_in_event": false,
+                "use_old_pairings": false,
+                "astrolabe_url": null,
+                "pairings_status": "GENERATED",
+                "standings_status": "GENERATED",
+                "round_type": "PLAY_VS_OPPONENT",
+                "status": "COMPLETE",
+                "tournament_phase": 272
+            },
+            {
+                "id": 691,
+                "round_number": 5,
+                "final_round_in_event": false,
+                "use_old_pairings": false,
+                "astrolabe_url": null,
+                "pairings_status": "GENERATED",
+                "standings_status": "GENERATED",
+                "round_type": "PLAY_VS_OPPONENT",
+                "status": "COMPLETE",
+                "tournament_phase": 272
+            }
+        ],
+        "order_in_phases": 1,
+        "rank_required_to_enter_phase": null,
+        "points_required_to_enter_phase": null,
+        "power_pair_last_round": true,
+        "start_with_player_meeting": false,
+        "start_with_draft": false,
+        "finish_with_static_top_8_bracket": true,
+        "draft_is_play_in_pod": false,
+        "number_of_rounds": 5,
+        "use_recommended_number_of_swiss_rounds": true,
+        "round_type": "SWISS",
+        "status": "COMPLETE",
+        "event": 1182690
+    },
+    {
+        "id": 273,
+        "rounds": [
+            {
+                "id": 692,
+                "round_number": 6,
+                "final_round_in_event": false,
+                "use_old_pairings": false,
+                "astrolabe_url": null,
+                "pairings_status": "GENERATED",
+                "standings_status": "GENERATED",
+                "round_type": "PLAY_VS_OPPONENT",
+                "status": "COMPLETE",
+                "tournament_phase": 273
+            },
+            {
+                "id": 693,
+                "round_number": 7,
+                "final_round_in_event": false,
+                "use_old_pairings": false,
+                "astrolabe_url": null,
+                "pairings_status": "GENERATED",
+                "standings_status": "GENERATED",
+                "round_type": "PLAY_VS_OPPONENT",
+                "status": "COMPLETE",
+                "tournament_phase": 273
+            },
+            {
+                "id": 694,
+                "round_number": 8,
+                "final_round_in_event": false,
+                "use_old_pairings": false,
+                "astrolabe_url": null,
+                "pairings_status": "GENERATED",
+                "standings_status": "GENERATED",
+                "round_type": "PLAY_VS_OPPONENT",
+                "status": "COMPLETE",
+                "tournament_phase": 273
+            }
+        ],
+        "order_in_phases": 2,
+        "rank_required_to_enter_phase": 8,
+        "points_required_to_enter_phase": null,
+        "power_pair_last_round": false,
+        "start_with_player_meeting": false,
+        "start_with_draft": false,
+        "finish_with_static_top_8_bracket": false,
+        "draft_is_play_in_pod": false,
+        "number_of_rounds": null,
+        "use_recommended_number_of_swiss_rounds": false,
+        "round_type": "RANKED_SINGLE_ELIMINATION",
+        "status": "COMPLETE",
+        "event": 1182690
+    }
+]
