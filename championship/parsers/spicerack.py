@@ -12,11 +12,9 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+import re
 from json import loads
 
-from bs4 import BeautifulSoup
-
-from championship.parsers.general_parser_functions import parse_record
 from championship.parsers.parse_result import ParseResult
 
 
@@ -49,3 +47,10 @@ def parse_standings_json(unparsed_json, total_rounds):
         raise ValueError("Round is not complete")
     standings = list(_standings(round_json["standings"], total_rounds))
     return standings
+
+
+def extract_event_id_from_url(url):
+    url_re = r"https://www\.spicerack\.gg/[a-zA-Z/]+/(\d+)(?:/[a-zA-Z/]*)?"
+    event_id = re.match(url_re, url)
+    if event_id:
+        return event_id.group(1)

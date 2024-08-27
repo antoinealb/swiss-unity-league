@@ -311,6 +311,64 @@ class AetherhubImportTest(TestCase):
         self.assertEqual([self.event], gotChoices)
 
 
+class SpicerackLinkImportTest(TestCase):
+    def setUp(self):
+        self.client = Client()
+        self.credentials = dict(username="test", password="test")
+        self.user = User.objects.create_user(**self.credentials)
+        self.organizer = EventOrganizerFactory(user=self.user)
+        self.event = RankedEventFactory(
+            organizer=self.organizer,
+            date=datetime.date.today(),
+            category=Event.Category.REGULAR,
+        )
+
+        self.data = {
+            "url": "https://www.spicerack.gg/admin/events/1182690#setup",
+            "event": self.event.id,
+        }
+
+    def login(self):
+        self.client.login(**self.credentials)
+
+    def post_form(self):
+        return self.client.post(reverse("results_create_spicerack"), self.data)
+
+    def mock_response(self, requests_get):
+        resp1 = MagicMock()
+        resp1.content = load_test_html("spicerack/get_all_rounds.json").encode()
+
+        resp2 = MagicMock()
+        resp2.content = load_test_html("spicerack/include_all_standings.json").encode()
+        requests_get.side_effect = [resp1, resp2]
+
+    @patch("requests.get")
+    def test_imports_result_for_correct_tourney(self, requests_get):
+        self.login()
+        self.mock_response(requests_get)
+
+        self.post_form()
+
+        results = Result.objects.filter(event=self.event).order_by("id")[:]
+
+        self.assertEqual(len(results), 17)
+        player_id = 1
+        self.assertEqual(results[player_id].points, 11)
+        self.assertEqual(results[player_id].draw_count, 2)
+        self.assertEqual(results[player_id].loss_count, 0)
+        self.assertEqual(results[player_id].win_count, 3)
+        self.assertEqual(results[player_id].ranking, 2)
+
+    def test_correctly_handles_wrong_url(self):
+        self.login()
+        self.data["url"] = "https://wrongsite.com/Tourney/RoundTourney/13923"
+
+        resp = self.post_form()
+
+        self.assertEqual(resp.status_code, 200)
+        self.assertIn("Wrong url format.", resp.content.decode())
+
+
 class ChallongeLinkImportTest(TestCase):
     def setUp(self):
         self.client = Client()

@@ -14,6 +14,8 @@
 
 from unittest import TestCase
 
+from parameterized import parameterized
+
 from championship.parsers import spicerack
 
 from .utils import load_test_html
@@ -50,3 +52,14 @@ class SpicerackStandingsParser(TestCase):
             (pr.name, pr.points, pr.record, pr.decklist_url) for pr in self.results[:3]
         ]
         self.assertEqual(want_standings, got_result)
+
+    @parameterized.expand(
+        [
+            "https://www.spicerack.gg/admin/events/1182690#setup",
+            "https://www.spicerack.gg/admin/events/1182690#tournament",
+            "https://www.spicerack.gg/events/1182690",
+            "https://www.spicerack.gg/events/1182690/tournament",
+        ]
+    )
+    def test_extract_event_id_from_url(self, url):
+        self.assertEqual(spicerack.extract_event_id_from_url(url), "1182690", url)
