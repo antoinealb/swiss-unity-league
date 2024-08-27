@@ -13,7 +13,6 @@
 # limitations under the License.
 
 import re
-from json import loads
 
 from championship.parsers.parse_result import ParseResult
 
