@@ -42,6 +42,7 @@ IMPORTER_LIST = [
     Importer("EventLink", views.EventlinkResultsView.as_view()),
     Importer("MTGEvent", views.MtgEventResultsView.as_view()),
     Importer("Melee", views.MeleeResultsView.as_view()),
+    Importer("Spicerack", views.SpicerackResultsView.as_view()),
     # keep-sorted end
     Importer("Excel/CSV", views.ExcelCsvResultsView.as_view()),
     Importer("Manual", views.ManualResultsView.as_view()),

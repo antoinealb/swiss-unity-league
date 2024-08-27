@@ -1,0 +1,473 @@
+{
+    "id": 691,
+    "standings": [
+        {
+            "id": 19550,
+            "user_event_status": {
+                "matches_won": 3,
+                "matches_drawn": 2,
+                "matches_lost": 1,
+                "total_match_points": 11
+            },
+            "player": {
+                "id": 5165,
+                "first_name": "Filipe",
+                "last_name": "Sousa",
+                "best_identifier": "Filipe Sousa",
+                "initials": "FS",
+                "expo_push_token": null,
+                "pronouns": null,
+                "is_staff": false,
+                "has_used_app": false
+            },
+            "points": 11,
+            "opponent_match_win_percentage": 0.6133333333333333,
+            "opponent_game_win_percentage": 0.5556610056610056,
+            "player_game_win_percentage": 0.5333333333333333,
+            "name_to_use": "Filipe Sousa",
+            "rank": 1,
+            "tournament_round": 691
+        },
+        {
+            "id": 19555,
+            "user_event_status": {
+                "matches_won": 6,
+                "matches_drawn": 2,
+                "matches_lost": 0,
+                "total_match_points": 20
+            },
+            "player": {
+                "id": 5910,
+                "first_name": "Eloi",
+                "last_name": "Benvenuti",
+                "best_identifier": "Eloi Benvenuti",
+                "initials": "EB",
+                "expo_push_token": "ExponentPushToken[f08EDmK3mF3jjaISctXu9Q]",
+                "pronouns": "He/Him",
+                "is_staff": false,
+                "has_used_app": true
+            },
+            "points": 11,
+            "opponent_match_win_percentage": 0.5993333333333333,
+            "opponent_game_win_percentage": 0.5367692307692307,
+            "player_game_win_percentage": 0.5714285714285714,
+            "name_to_use": "Eloi Benvenuti",
+            "rank": 2,
+            "tournament_round": 691
+        },
+        {
+            "id": 19549,
+            "user_event_status": {
+                "matches_won": 3,
+                "matches_drawn": 1,
+                "matches_lost": 2,
+                "total_match_points": 10
+            },
+            "player": {
+                "id": 7891,
+                "first_name": "Xavier",
+                "last_name": "Boraley",
+                "best_identifier": "Xavier Boraley",
+                "initials": "XB",
+                "expo_push_token": "ExponentPushToken[oVHUNiAH0pfERq1tgdoHgg]",
+                "pronouns": "He/Him",
+                "is_staff": false,
+                "has_used_app": true
+            },
+            "points": 10,
+            "opponent_match_win_percentage": 0.5993333333333333,
+            "opponent_game_win_percentage": 0.510029304029304,
+            "player_game_win_percentage": 0.5384615384615384,
+            "name_to_use": "Xavier Boraley",
+            "rank": 3,
+            "tournament_round": 691
+        },
+        {
+            "id": 19545,
+            "user_event_status": {
+                "matches_won": 5,
+                "matches_drawn": 1,
+                "matches_lost": 2,
+                "total_match_points": 16
+            },
+            "player": {
+                "id": 5883,
+                "first_name": "Tobias",
+                "last_name": "Grütter",
+                "best_identifier": "Tobias Grütter",
+                "initials": "TG",
+                "expo_push_token": "ExponentPushToken[koIWazFPxiqId8ciJ08xl6]",
+                "pronouns": "He/Him",
+                "is_staff": false,
+                "has_used_app": true
+            },
+            "points": 10,
+            "opponent_match_win_percentage": 0.5726666666666667,
+            "opponent_game_win_percentage": 0.4925079365079365,
+            "player_game_win_percentage": 0.6153846153846154,
+            "name_to_use": "Tobias Grütter",
+            "rank": 4,
+            "tournament_round": 691
+        },
+        {
+            "id": 19554,
+            "user_event_status": {
+                "matches_won": 3,
+                "matches_drawn": 1,
+                "matches_lost": 2,
+                "total_match_points": 10
+            },
+            "player": {
+                "id": 5839,
+                "first_name": "Daniel",
+                "last_name": "Hliva",
+                "best_identifier": "Daniel Hliva",
+                "initials": "DH",
+                "expo_push_token": null,
+                "pronouns": "Prefer not to say",
+                "is_staff": false,
+                "has_used_app": true
+            },
+            "points": 10,
+            "opponent_match_win_percentage": 0.5466666666666666,
+            "opponent_game_win_percentage": 0.5273504273504275,
+            "player_game_win_percentage": 0.5833333333333334,
+            "name_to_use": "Daniel Hliva",
+            "rank": 5,
+            "tournament_round": 691
+        },
+        {
+            "id": 19559,
+            "user_event_status": {
+                "matches_won": 4,
+                "matches_drawn": 1,
+                "matches_lost": 2,
+                "total_match_points": 13
+            },
+            "player": {
+                "id": 4659,
+                "first_name": "Jari",
+                "last_name": "Rentsch",
+                "best_identifier": "Jari Rentsch",
+                "initials": "JR",
+                "expo_push_token": "ExponentPushToken[eYh59vHR7SxHZslJZ8Xvi2]",
+                "pronouns": "He/Him",
+                "is_staff": true,
+                "has_used_app": true
+            },
+            "points": 10,
+            "opponent_match_win_percentage": 0.4653333333333333,
+            "opponent_game_win_percentage": 0.45993939393939387,
+            "player_game_win_percentage": 0.6153846153846154,
+            "name_to_use": "Jari Rentsch",
+            "rank": 6,
+            "tournament_round": 691
+        },
+        {
+            "id": 19551,
+            "user_event_status": {
+                "matches_won": 3,
+                "matches_drawn": 0,
+                "matches_lost": 3,
+                "total_match_points": 9
+            },
+            "player": {
+                "id": 5968,
+                "first_name": "Mike",
+                "last_name": "Delez",
+                "best_identifier": "Mike Delez",
+                "initials": "MD",
+                "expo_push_token": "ExponentPushToken[03g6oNDbwKpdBaEVPwfLeG]",
+                "pronouns": null,
+                "is_staff": false,
+                "has_used_app": true
+            },
+            "points": 9,
+            "opponent_match_win_percentage": 0.5491666666666667,
+            "opponent_game_win_percentage": 0.5087820512820512,
+            "player_game_win_percentage": 0.6153846153846154,
+            "name_to_use": "Mike Delez",
+            "rank": 7,
+            "tournament_round": 691
+        },
+        {
+            "id": 19552,
+            "user_event_status": {
+                "matches_won": 4,
+                "matches_drawn": 0,
+                "matches_lost": 3,
+                "total_match_points": 12
+            },
+            "player": {
+                "id": 7894,
+                "first_name": "Thomas",
+                "last_name": "Vaucher",
+                "best_identifier": "Thomas Vaucher",
+                "initials": "TV",
+                "expo_push_token": null,
+                "pronouns": null,
+                "is_staff": false,
+                "has_used_app": false
+            },
+            "points": 9,
+            "opponent_match_win_percentage": 0.5326666666666666,
+            "opponent_game_win_percentage": 0.49743589743589745,
+            "player_game_win_percentage": 0.5,
+            "name_to_use": "Thomas Vaucher",
+            "rank": 8,
+            "tournament_round": 691
+        },
+        {
+            "id": 19556,
+            "user_event_status": {
+                "matches_won": 3,
+                "matches_drawn": 0,
+                "matches_lost": 2,
+                "total_match_points": 9
+            },
+            "player": {
+                "id": 5962,
+                "first_name": "Adrien",
+                "last_name": "Potheau",
+                "best_identifier": "Adrien Potheau",
+                "initials": "AP",
+                "expo_push_token": "ExponentPushToken[OpTOCNL3xqn1irXdLg3bTk]",
+                "pronouns": "He/Him",
+                "is_staff": false,
+                "has_used_app": true
+            },
+            "points": 9,
+            "opponent_match_win_percentage": 0.5325,
+            "opponent_game_win_percentage": 0.4816239316239316,
+            "player_game_win_percentage": 0.6363636363636364,
+            "name_to_use": "Adrien Potheau",
+            "rank": 9,
+            "tournament_round": 691
+        },
+        {
+            "id": 19543,
+            "user_event_status": {
+                "matches_won": 3,
+                "matches_drawn": 0,
+                "matches_lost": 2,
+                "total_match_points": 9
+            },
+            "player": {
+                "id": 5930,
+                "first_name": "Antoine",
+                "last_name": "Renaud-Goud",
+                "best_identifier": "Antoine Renaud-Goud",
+                "initials": "AR",
+                "expo_push_token": null,
+                "pronouns": "They/Them",
+                "is_staff": false,
+                "has_used_app": true
+            },
+            "points": 9,
+            "opponent_match_win_percentage": 0.4786666666666667,
+            "opponent_game_win_percentage": 0.46233699633699626,
+            "player_game_win_percentage": 0.6666666666666666,
+            "name_to_use": "Antoine Renaud-Goud",
+            "rank": 10,
+            "tournament_round": 691
+        },
+        {
+            "id": 19557,
+            "user_event_status": {
+                "matches_won": 2,
+                "matches_drawn": 0,
+                "matches_lost": 3,
+                "total_match_points": 6
+            },
+            "player": {
+                "id": 5956,
+                "first_name": "Demian",
+                "last_name": "Coca",
+                "best_identifier": "Demian Coca",
+                "initials": "DC",
+                "expo_push_token": "ExponentPushToken[7kqL5wDUoCOfHadDmPS-bI]",
+                "pronouns": "He/Him",
+                "is_staff": false,
+                "has_used_app": true
+            },
+            "points": 6,
+            "opponent_match_win_percentage": 0.546,
+            "opponent_game_win_percentage": 0.48805128205128206,
+            "player_game_win_percentage": 0.4166666666666667,
+            "name_to_use": "Demian Coca",
+            "rank": 11,
+            "tournament_round": 691
+        },
+        {
+            "id": 19544,
+            "user_event_status": {
+                "matches_won": 2,
+                "matches_drawn": 0,
+                "matches_lost": 3,
+                "total_match_points": 6
+            },
+            "player": {
+                "id": 5946,
+                "first_name": "Anushanth",
+                "last_name": "Selvam",
+                "best_identifier": "Anushanth Selvam",
+                "initials": "AS",
+                "expo_push_token": null,
+                "pronouns": null,
+                "is_staff": false,
+                "has_used_app": true
+            },
+            "points": 6,
+            "opponent_match_win_percentage": 0.5186666666666666,
+            "opponent_game_win_percentage": 0.49901631701631705,
+            "player_game_win_percentage": 0.4444444444444444,
+            "name_to_use": "Anushanth Selvam",
+            "rank": 12,
+            "tournament_round": 691
+        },
+        {
+            "id": 19553,
+            "user_event_status": {
+                "matches_won": 2,
+                "matches_drawn": 0,
+                "matches_lost": 3,
+                "total_match_points": 6
+            },
+            "player": {
+                "id": 5926,
+                "first_name": "Samuel",
+                "last_name": "Mottaz",
+                "best_identifier": "Samuel Mottaz",
+                "initials": "SM",
+                "expo_push_token": null,
+                "pronouns": "He/Him",
+                "is_staff": false,
+                "has_used_app": true
+            },
+            "points": 6,
+            "opponent_match_win_percentage": 0.4653333333333333,
+            "opponent_game_win_percentage": 0.4653333333333333,
+            "player_game_win_percentage": 0.46153846153846156,
+            "name_to_use": "Samuel Mottaz",
+            "rank": 13,
+            "tournament_round": 691
+        },
+        {
+            "id": 19558,
+            "user_event_status": {
+                "matches_won": 1,
+                "matches_drawn": 1,
+                "matches_lost": 3,
+                "total_match_points": 4
+            },
+            "player": {
+                "id": 7895,
+                "first_name": "Tobias",
+                "last_name": "R",
+                "best_identifier": "Tobias R",
+                "initials": "TR",
+                "expo_push_token": "ExponentPushToken[c8jEOcHzmWsbpQf3nFLcf4]",
+                "pronouns": null,
+                "is_staff": false,
+                "has_used_app": true
+            },
+            "points": 4,
+            "opponent_match_win_percentage": 0.5593333333333333,
+            "opponent_game_win_percentage": 0.5496829836829836,
+            "player_game_win_percentage": 0.3333333333333333,
+            "name_to_use": "Tobias R",
+            "rank": 14,
+            "tournament_round": 691
+        },
+        {
+            "id": 19546,
+            "user_event_status": {
+                "matches_won": 1,
+                "matches_drawn": 1,
+                "matches_lost": 3,
+                "total_match_points": 4
+            },
+            "player": {
+                "id": 5990,
+                "first_name": "Thibaud",
+                "last_name": "Zemp",
+                "best_identifier": "Thibaud Zemp",
+                "initials": "TZ",
+                "expo_push_token": "ExponentPushToken[pj5n2vJ8kKPWQM5cc44L5c]",
+                "pronouns": null,
+                "is_staff": false,
+                "has_used_app": true
+            },
+            "points": 4,
+            "opponent_match_win_percentage": 0.4325,
+            "opponent_game_win_percentage": 0.45245726495726496,
+            "player_game_win_percentage": 0.33,
+            "name_to_use": "Thibaud Zemp",
+            "rank": 15,
+            "tournament_round": 691
+        },
+        {
+            "id": 19548,
+            "user_event_status": {
+                "matches_won": 1,
+                "matches_drawn": 0,
+                "matches_lost": 4,
+                "total_match_points": 3
+            },
+            "player": {
+                "id": 7899,
+                "first_name": "von Arx",
+                "last_name": "Christoph",
+                "best_identifier": "von Arx Christoph",
+                "initials": "VAC",
+                "expo_push_token": null,
+                "pronouns": null,
+                "is_staff": false,
+                "has_used_app": false
+            },
+            "points": 3,
+            "opponent_match_win_percentage": 0.5833333333333333,
+            "opponent_game_win_percentage": 0.5705128205128205,
+            "player_game_win_percentage": 0.33,
+            "name_to_use": "von Arx Christoph",
+            "rank": 16,
+            "tournament_round": 691
+        },
+        {
+            "id": 19547,
+            "user_event_status": {
+                "matches_won": 0,
+                "matches_drawn": 0,
+                "matches_lost": 4,
+                "total_match_points": 0
+            },
+            "player": {
+                "id": 7892,
+                "first_name": "Severin",
+                "last_name": "Hekele",
+                "best_identifier": "Severin Hekele",
+                "initials": "SH",
+                "expo_push_token": null,
+                "pronouns": null,
+                "is_staff": false,
+                "has_used_app": true
+            },
+            "points": 0,
+            "opponent_match_win_percentage": 0.5499999999999999,
+            "opponent_game_win_percentage": 0.5231990231990231,
+            "player_game_win_percentage": 0.33,
+            "name_to_use": "Severin Hekele",
+            "rank": 17,
+            "tournament_round": 691
+        }
+    ],
+    "round_number": 5,
+    "final_round_in_event": false,
+    "use_old_pairings": false,
+    "astrolabe_url": null,
+    "pairings_status": "GENERATED",
+    "standings_status": "GENERATED",
+    "round_type": "PLAY_VS_OPPONENT",
+    "status": "COMPLETE",
+    "tournament_phase": 272
+}

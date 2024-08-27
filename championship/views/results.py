@@ -51,6 +51,7 @@ from championship.parsers import (
     excel_csv_parser,
     melee,
     mtgevent,
+    spicerack,
 )
 from championship.parsers.general_parser_functions import parse_record, record_to_points
 from championship.parsers.parse_result import ParseResult
@@ -495,6 +496,44 @@ class MeleeResultsView(CreateFileParserResultsView):
     def get_results(self, form):
         text = "".join(s.decode() for s in self.request.FILES["standings"].chunks())
         return melee.parse_standings(text)
+
+
+class SpicerackResultsView(CreateLinkParserResultsView):
+    help_text = "Link to your tournament. Make sure that all Swiss rounds are finished."
+    placeholder = "https://spicerack.gg/admin/events/1234567890"
+
+    def extract_standings_from_page(self, text):
+        return
+
+    def get_results(self, form):
+        url = form.cleaned_data["url"]
+        event_id = spicerack.extract_event_id_from_url(url)
+        if not event_id:
+            messages.error(self.request, "Wrong url format.")
+            return
+        try:
+            response = requests.get(
+                f"https://hydra.spicerack.gg/api/magic-events/{event_id}/get_all_rounds/"
+            )
+            response.raise_for_status()
+
+            round = spicerack.parse_rounds_json(response.json())
+            round_id = round["id"]
+
+            response = requests.get(
+                f"https://hydra.spicerack.gg/api/tournament-rounds/{round_id}/include_all_standings/"
+            )
+            response.raise_for_status()
+
+            return spicerack.parse_standings_json(
+                response.json(), round["round_number"]
+            )
+        except Exception as e:
+            logging.exception("Could not fetch standings")
+            message = "Could not fetch standings."
+            if hasattr(e, "ui_error_message"):
+                message = e.ui_error_message
+            messages.error(self.request, message)
 
 
 class ChooseUploaderView(LoginRequiredMixin, FormView):
