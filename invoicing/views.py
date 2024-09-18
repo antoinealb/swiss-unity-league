@@ -150,6 +150,7 @@ class Report(PermissionRequiredMixin, TemplateView):
         plt.ylabel("Revenue")
         plt.xlabel("Days since season start")
         plt.legend(legends)
+        plt.grid()
 
         plt.tight_layout()
         output = io.BytesIO()
