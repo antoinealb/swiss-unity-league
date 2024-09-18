@@ -36,7 +36,7 @@ from matplotlib.ticker import FormatStrFormatter
 from championship.models import Event
 from championship.season import SEASON_LIST, Season
 
-from .models import Invoice, fee_for_event
+from .models import DiscountType, Invoice, fee_for_event
 
 INVOICE_TEMPLATE = "invoicing/invoice.tex"
 
@@ -117,11 +117,32 @@ class Report(PermissionRequiredMixin, TemplateView):
             .prefetch_related("result_set")
         )
 
+        discounts = dict(self.map_discounts_to_event(season))
+
         revenue = 0
         for event in events:
             days_since_start = (event.date - season.start_date).days
             revenue += fee_for_event(event)
+            revenue -= discounts.get(event, 0)
             yield days_since_start, revenue
+
+    def map_discounts_to_event(self, season: Season) -> Iterator[tuple[Event, int]]:
+        invoices = Invoice.objects.filter(
+            start_date__gte=season.start_date,
+            end_date__lte=season.end_date,
+            discount__gt=0,
+        ).exclude(discount_type=DiscountType.PAYMENT)
+
+        for invoice in invoices:
+            # Take the invoice's first event, putting priority on Premier
+            event = Event.objects.filter(
+                organizer=invoice.event_organizer,
+                date__gte=invoice.start_date,
+                date__lte=invoice.end_date,
+                category__in=(Event.Category.PREMIER, Event.Category.REGIONAL),
+            ).earliest("category", "date")
+
+            yield event, invoice.discount
 
     def plot_revenue(self) -> bytes:
         """Plots the revenue of the SUL over time
@@ -144,12 +165,11 @@ class Report(PermissionRequiredMixin, TemplateView):
         plt.gca().yaxis.set_major_formatter(FormatStrFormatter("%d CHF"))
 
         today = date(datetime.date.today())
-        plt.title(
-            f"Evolution of SUL revenue per season\n(as of {today}, ignoring discounts)"
-        )
+        plt.title(f"Evolution of SUL revenue per season\n(as of {today})")
         plt.ylabel("Revenue")
         plt.xlabel("Days since season start")
         plt.legend(legends)
+        plt.grid()
 
         plt.tight_layout()
         output = io.BytesIO()

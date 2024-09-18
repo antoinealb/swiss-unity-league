@@ -85,6 +85,11 @@ class PayeeAddress(models.Model):
         return f"{self.name} {addr}"
 
 
+class DiscountType(models.TextChoices):
+    COURTESY = "COURTESY", "Courtesy / Sponsorship"
+    PAYMENT = "PAYMENT", "Virtual payment through a discount"
+
+
 class Invoice(models.Model):
     """All the information required for a single invoice.
 
@@ -101,6 +106,13 @@ class Invoice(models.Model):
     start_date = models.DateField(help_text="Start of the invoicing period")
     end_date = models.DateField(help_text="End of invoicing period")
     discount = models.IntegerField(help_text="Flat discount in CHF", default=0)
+    discount_type = models.CharField(
+        max_length=10,
+        choices=DiscountType.choices,
+        help_text="The reason for awarding a discount to this invoice.",
+        blank=True,
+        null=True,
+    )
     payment_received_date = models.DateField(null=True, blank=True)
     sent_date = models.DateField(
         null=True,

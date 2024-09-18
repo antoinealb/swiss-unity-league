@@ -24,6 +24,7 @@ from parameterized import parameterized
 from championship.factories import EventFactory, ResultFactory
 from championship.models import Event
 from championship.season import SEASON_2024, SEASON_LIST
+from invoicing.factories import InvoiceFactory
 from invoicing.models import fee_for_event
 from invoicing.views import Report
 
@@ -80,6 +81,74 @@ class ReportRenderingTest(TestCase):
         price_per_event = fee_for_event(Event.objects.all()[0])
 
         want = [(i, price_per_event * i) for i in range(1, 10)]
+        got = list(Report().data_points_for_season(SEASON_2024))
+        self.assertEqual(want, got)
+
+    @parameterized.expand(
+        [
+            (Event.Category.PREMIER,),
+            (Event.Category.REGIONAL,),
+        ]
+    )
+    def test_map_event_discount_takes_first_event_always(self, category):
+        invoice = InvoiceFactory(
+            start_date=SEASON_2024.start_date,
+            end_date=SEASON_2024.end_date,
+            discount=100,
+        )
+        dates = [
+            SEASON_2024.start_date + datetime.timedelta(days=i) for i in range(1, 10)
+        ]
+        events = [
+            EventFactory(
+                date=date, category=category, organizer=invoice.event_organizer
+            )
+            for date in dates
+        ]
+        discounts = list(Report().map_discounts_to_event(SEASON_2024))
+        want = [(events[0], 100)]
+        self.assertEqual(want, discounts)
+
+    def test_map_event_discount_prefers_premier(self):
+        """When we have both a Premier and a Regional in the invoicing period,
+        we would like the discount to be considered on the premier."""
+        invoice = InvoiceFactory(
+            start_date=SEASON_2024.start_date,
+            end_date=SEASON_2024.end_date,
+            discount=100,
+        )
+        EventFactory(
+            date=invoice.start_date,
+            category=Event.Category.REGIONAL,
+            organizer=invoice.event_organizer,
+        )
+        want_event = EventFactory(
+            date=invoice.end_date,
+            category=Event.Category.PREMIER,
+            organizer=invoice.event_organizer,
+        )
+
+        discounts = list(Report().map_discounts_to_event(SEASON_2024))
+        want = [(want_event, 100)]
+        self.assertEqual(want, discounts)
+
+    def test_discount_is_applied_to_data_points(self):
+        """Checks that the discount is taken into account in the plot."""
+        invoice = InvoiceFactory(
+            start_date=SEASON_2024.start_date,
+            end_date=SEASON_2024.end_date,
+            discount=100,
+        )
+        event = EventFactory(
+            date=invoice.start_date,
+            category=Event.Category.REGIONAL,
+            organizer=invoice.event_organizer,
+        )
+
+        for _ in range(10):
+            ResultFactory(event=event, single_elimination_result=None)
+
+        want = [(0, fee_for_event(event) - invoice.discount)]
         got = list(Report().data_points_for_season(SEASON_2024))
         self.assertEqual(want, got)
 
