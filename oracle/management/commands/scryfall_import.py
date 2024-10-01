@@ -45,6 +45,12 @@ class Command(BaseCommand):
             help="Oracle file downloaded from https://scryfall.com/docs/api/bulk-data",
             type=argparse.FileType(),
         )
+        parser.add_argument(
+            "--image-quality",
+            help="Image quality to keep for cards.",
+            choices=["small", "normal", "large", "png", "art_crop", "border_crop"],
+            default="normal",
+        )
 
     def load_data(self, path):
         if path:
@@ -66,7 +72,15 @@ class Command(BaseCommand):
 
         return data.json()
 
-    def handle(self, scryfall_dump, *args, **kwargs):
+    def _image_uri(self, entry, image_quality: str):
+        try:
+            return entry["image_uris"][image_quality]
+        except KeyError:
+            # Double sided cards have images attached to card faces rather than
+            # cards themselves.
+            return entry["card_faces"][0]["image_uris"][image_quality]
+
+    def handle(self, scryfall_dump, image_quality, *args, **kwargs):
         data = self.load_data(scryfall_dump)
 
         Card.objects.all().delete()
@@ -77,6 +91,7 @@ class Command(BaseCommand):
                 name=entry["name"],
                 mana_cost=entry.get("mana_cost", ""),
                 scryfall_uri=entry["scryfall_uri"],
+                image_uri=self._image_uri(entry, image_quality),
                 mana_value=int(entry.get("cmc", 0)),
                 type_line=entry["type_line"],
             )

@@ -24,6 +24,7 @@ class Card(models.Model):
     scryfall_uri = models.CharField(max_length=128)
     mana_value = models.IntegerField()
     type_line = models.CharField(max_length=128)
+    image_uri = models.CharField(max_length=255)
 
     def __str__(self):
         return self.name

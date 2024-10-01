@@ -37,6 +37,10 @@ class LoadTestCase(TestCase):
         self.assertEqual(card.mana_cost, "{3}")
         self.assertEqual(card.mana_value, 3)
         self.assertEqual(card.type_line, "Artifact")
+        self.assertEqual(
+            card.image_uri,
+            "https://cards.scryfall.io/normal/front/8/6/86bf43b1-8d4e-4759-bb2d-0b2e03ba7012.jpg?1562242171",
+        )
 
     def test_load_data_related_card(self):
         """
