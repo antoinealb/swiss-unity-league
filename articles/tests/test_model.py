@@ -12,6 +12,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+import datetime
+
 from django.test import TestCase
 
 from articles.factories import ArticleFactory
@@ -28,3 +30,22 @@ class ArticleTest(TestCase):
     def test_title_is_slugified(self):
         a = ArticleFactory(title="Hello World")
         self.assertEqual("hello-world", a.slug)
+
+    def test_url(self):
+        a = ArticleFactory(
+            publication_time=datetime.date(2023, 1, 1), title="Hello World"
+        )
+        want = "/articles/2023/1/1/hello-world/"
+        self.assertEqual(want, a.get_absolute_url())
+
+    def test_url_unpublished(self):
+        a = ArticleFactory(title="Hello World")
+        want = "/articles/preview/1/hello-world/"
+        self.assertEqual(want, a.get_absolute_url())
+
+    def test_url_not_published_yet(self):
+        a = ArticleFactory(
+            title="Hello World", publication_time=datetime.date(2050, 1, 1)
+        )
+        want = "/articles/preview/1/hello-world/"
+        self.assertEqual(want, a.get_absolute_url())

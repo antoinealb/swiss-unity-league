@@ -14,6 +14,8 @@
 
 from django.conf import settings
 from django.db import models
+from django.urls import reverse
+from django.utils import timezone
 from django.utils.text import slugify
 
 from django_bleach.models import BleachField
@@ -43,3 +45,23 @@ class Article(models.Model):
     def save(self, *args, **kwargs):
         self.slug = slugify(self.title)
         super().save(*args, **kwargs)
+
+    def get_absolute_url(self):
+        if self.publication_time and self.publication_time <= timezone.now().date():
+            return reverse(
+                "article-details",
+                args=[
+                    self.publication_time.year,
+                    self.publication_time.month,
+                    self.publication_time.day,
+                    self.slug,
+                ],
+            )
+
+        return reverse(
+            "article-preview",
+            args=[
+                self.id,
+                self.slug,
+            ],
+        )

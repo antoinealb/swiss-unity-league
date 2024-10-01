@@ -43,4 +43,5 @@ urlpatterns = [
     path("hijack/", include("hijack.urls")),
     path("tinymce/", include("tinymce.urls")),
     path("media/", include("file_storage_db.urls")),
+    path("articles/", include("articles.urls")),
 ]
