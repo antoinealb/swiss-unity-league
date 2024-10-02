@@ -38,6 +38,7 @@ class DecklistEntry:
     mana_value: int | None = None
     type_line: str | None = None
     scryfall_uri: str | None = None
+    image_uri: str | None = None
 
 
 DecklistError: TypeAlias = str
@@ -66,6 +67,7 @@ def annotate_card_attributes(entries: Iterable[DecklistEntry]) -> FilterOutput:
             e.mana_value = card.mana_value
             e.type_line = card.type_line
             e.scryfall_uri = card.scryfall_uri
+            e.image_uri = card.image_uri
         except Card.DoesNotExist:
             errors.append(f"Unknown card '{e.name}'")
 
