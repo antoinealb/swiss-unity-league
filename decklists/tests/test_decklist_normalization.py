@@ -48,6 +48,7 @@ class ListProcessing(TestCase):
                 mana_cost=c.mana_cost,
                 mana_value=c.mana_value,
                 scryfall_uri=c.scryfall_uri,
+                image_uri=c.image_uri,
                 type_line=c.type_line,
             )
         ]

@@ -3,7 +3,7 @@
     {% for entry in content %}
         <li>{{ entry.qty }}
             {% if entry.scryfall_uri %}
-                <a href="{{ entry.scryfall_uri }}">{{ entry.name }}</a>
+                <a href="#" data-bs-toggle="modal" data-bs-target="#cardModal" data-card-image="{{ entry.image_uri }}" data-card-url="{{ entry.scryfall_uri }}" data-card-name="{{ entry.name }}">{{ entry.name }}</a>
             {% else %}
                 {{ entry.name }}
             {% endif %} {{ entry.mana_cost|mana }}</li>

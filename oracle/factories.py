@@ -138,3 +138,4 @@ class CardFactory(DjangoModelFactory):
     mana_value = factory.Faker("random_int", max=18)
     type_line = factory.Faker("card_type")
     scryfall_uri = factory.Faker("uri")
+    image_uri = factory.Faker("uri")
