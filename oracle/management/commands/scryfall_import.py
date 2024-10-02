@@ -49,7 +49,7 @@ class Command(BaseCommand):
             "--image-quality",
             help="Image quality to keep for cards.",
             choices=["small", "normal", "large", "png", "art_crop", "border_crop"],
-            default="normal",
+            default="png",
         )
 
     def load_data(self, path):

@@ -31,7 +31,7 @@ class LoadTestCase(TestCase):
 
     def test_load_data(self):
         f = os.path.join(os.path.dirname(__file__), "testdata.json")
-        call_command("scryfall_import", scryfall_dump=f)
+        call_command("scryfall_import", scryfall_dump=f, image_quality="normal")
         card = Card.objects.get(oracle_id="0004ebd0-dfd6-4276-b4a6-de0003e94237")
         self.assertEqual(card.name, "Static Orb")
         self.assertEqual(card.mana_cost, "{3}")
