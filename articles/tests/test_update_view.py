@@ -105,3 +105,21 @@ class ArticleCreateTestCase(TestCase):
         self.assertEqual(article.author, self.user)
 
         self.assertRedirects(resp, article.get_absolute_url())
+
+
+class MenuTestCase(TestCase):
+    """Checks whether we correctly display menu items to the user."""
+
+    def setUp(self):
+        self.url = reverse("article-create")
+        self.user = UserFactory()
+        self.user.user_permissions.add(Permission.objects.get(codename="add_article"))
+
+    def test_anonymous_user_does_not_get_shown_create_men(self):
+        resp = self.client.get("/")
+        self.assertNotIn(reverse("article-create"), resp.content.decode())
+
+    def test_authorized_user(self):
+        self.client.force_login(self.user)
+        resp = self.client.get("/")
+        self.assertIn(reverse("article-create"), resp.content.decode())

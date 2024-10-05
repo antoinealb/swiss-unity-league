@@ -50,14 +50,21 @@
                                             <li><a class="dropdown-item" href="{% url 'events_create' %}">Create new event</a></li>
                                             <li><a class="dropdown-item" href="{% url 'results_create' %}">Upload results</a></li>
                                             <li><a class="dropdown-item" href="{% url 'organizer_details' user.eventorganizer.pk %}">My Events</a></li>
+                                            <div class="dropdown-divider"></div>
                                             <li><a class="dropdown-item" href="{% url 'organizer_update' %}">My Profile</a></li>
                                             <li><a class="dropdown-item" href="{% url 'invoice_list' %}">My invoices</a></li>
+                                            <div class="dropdown-divider"></div>
+                                        {% endif %}
+                                        {% if perms.articles.add_article %}
+                                            <li><a class="dropdown-item" href="{% url 'article-create' %}">Create new article</a></li>
+                                            <div class="dropdown-divider"></div>
                                         {% endif %}
                                         {% if user.is_staff %}
                                             <li><a class="dropdown-item" href="{% url 'admin:index' %}">Admin</a></li>
                                         {% endif %}
                                         {% if perms.invoicing.view_invoice %}
                                             <li><a class="dropdown-item" href="{% url 'invoice_report' %}">Finance dashboard</a></li>
+                                            <div class="dropdown-divider"></div>
                                         {% endif %}
                                         <li><a class="dropdown-item" href="{% url 'password_change' %}">Change password</a></li>
                                         <li>
