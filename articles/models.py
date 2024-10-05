@@ -21,6 +21,12 @@ from django.utils.text import slugify
 from django_bleach.models import BleachField
 
 
+class ArticleManager(models.Manager):
+    def published(self):
+        today = timezone.now().date()
+        return self.filter(publication_time__lte=today)
+
+
 class Article(models.Model):
     author = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.PROTECT)
     last_changed = models.DateTimeField(auto_now=True)
@@ -66,3 +72,5 @@ class Article(models.Model):
                 self.slug,
             ],
         )
+
+    objects = ArticleManager()
