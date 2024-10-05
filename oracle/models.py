@@ -18,6 +18,9 @@ from django.db import models
 
 
 class Card(models.Model):
+    class Meta:
+        indexes = [models.Index(fields=["name"])]
+
     oracle_id = models.UUIDField(primary_key=True, default=uuid.uuid4)
     name = models.CharField(max_length=128)
     mana_cost = models.CharField(max_length=64, blank=True)
@@ -31,15 +34,22 @@ class Card(models.Model):
 
 
 class AlternateName(models.Model):
+    class Meta:
+        indexes = [models.Index(fields=["name"])]
+
     name = models.CharField(max_length=128)
     card = models.ForeignKey(Card, on_delete=models.CASCADE)
 
 
-def get_card_by_name(name: str) -> Card:
+def get_card_by_name(name: str, exact_match=False) -> Card:
+    if exact_match:
+        filter = {"name": name}
+    else:
+        filter = {"name__iexact": name}
     try:
-        return Card.objects.get(name__iexact=name)
+        return Card.objects.get(**filter)
     except Card.DoesNotExist as e:
         try:
-            return AlternateName.objects.get(name__iexact=name).card
+            return AlternateName.objects.get(**filter).card
         except AlternateName.DoesNotExist:
             raise e
