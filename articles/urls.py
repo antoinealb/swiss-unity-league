@@ -14,7 +14,12 @@
 
 from django.urls import path
 
-from articles.views import ArticlePreviewView, ArticleView
+from articles.views import (
+    ArticleAddView,
+    ArticlePreviewView,
+    ArticleUpdateView,
+    ArticleView,
+)
 
 urlpatterns = [
     path(
@@ -26,5 +31,15 @@ urlpatterns = [
         "preview/<int:pk>/<slug:slug>/",
         ArticlePreviewView.as_view(),
         name="article-preview",
+    ),
+    path(
+        "edit/<int:pk>/<slug:slug>/",
+        ArticleUpdateView.as_view(),
+        name="article-update",
+    ),
+    path(
+        "create/",
+        ArticleAddView.as_view(),
+        name="article-create",
     ),
 ]

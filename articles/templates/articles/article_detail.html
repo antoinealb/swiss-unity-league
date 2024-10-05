@@ -8,6 +8,10 @@
 {% block content %}
     <h1>{{ article.title }}
         <small class="text-muted">by {{ article.author.first_name }} {{ article.author.last_name }}</small>
+
+        {% if perms.articles.change_article %}
+            <a href="{% url 'article-update' article.id article.slug %}" class="btn btn-secondary">Edit</a>
+        {% endif %}
     </h1>
     <p>Published on {{ article.publication_time.date }}</p>
 
