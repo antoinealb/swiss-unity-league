@@ -1,4 +1,5 @@
 {% extends "championship/base.html" %}
+{% load article %}
 
 {% block title %}
     {{ article.title }}
@@ -10,5 +11,8 @@
     </h1>
     <p>Published on {{ article.publication_time.date }}</p>
 
-    {{ article.content }}
+
+    {{ article.content|article_tags }}
+
+    {% include "decklists/card_modal.html" %}
 {% endblock %}
