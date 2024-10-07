@@ -16,12 +16,14 @@ from django.urls import path
 
 from articles.views import (
     ArticleAddView,
+    ArticleArchiveView,
     ArticlePreviewView,
     ArticleUpdateView,
     ArticleView,
 )
 
 urlpatterns = [
+    path("", ArticleArchiveView.as_view(), name="article-list"),
     path(
         "<int:year>/<int:month>/<int:day>/<slug:slug>/",
         ArticleView.as_view(),

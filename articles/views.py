@@ -14,11 +14,17 @@
 
 from django.contrib.auth.mixins import PermissionRequiredMixin
 from django.views.generic import DetailView
-from django.views.generic.dates import DateDetailView
+from django.views.generic.dates import ArchiveIndexView, DateDetailView
 from django.views.generic.edit import CreateView, UpdateView
 
 from articles.forms import ArticleUpdateForm
 from articles.models import Article
+
+
+class ArticleArchiveView(ArchiveIndexView):
+    model = Article
+    date_field = "publication_time"
+    context_object_name = "articles"
 
 
 class ArticleView(DateDetailView):
