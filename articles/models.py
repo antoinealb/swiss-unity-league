@@ -33,10 +33,11 @@ class Article(models.Model):
     slug = models.SlugField()
     content = BleachField(
         help_text="The article's content. Supports the following HTML tags: {}".format(
-            ", ".join(settings.BLEACH_ALLOWED_TAGS)
+            ", ".join(settings.BLEACH_ALLOWED_TAGS_ARTICLE)
         ),
         blank=True,
         strip_tags=True,
+        allowed_tags=settings.BLEACH_ALLOWED_TAGS_ARTICLE,
     )
 
     def __str__(self):

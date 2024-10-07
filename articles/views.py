@@ -12,9 +12,12 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+from django.contrib.auth.mixins import PermissionRequiredMixin
 from django.views.generic import DetailView
 from django.views.generic.dates import DateDetailView
+from django.views.generic.edit import CreateView, UpdateView
 
+from articles.forms import ArticleUpdateForm
 from articles.models import Article
 
 
@@ -29,3 +32,25 @@ class ArticleView(DateDetailView):
 class ArticlePreviewView(DetailView):
     model = Article
     query_pk_and_slug = True
+
+
+class ArticleUpdateView(PermissionRequiredMixin, UpdateView):
+    permission_required = "articles.change_article"
+    model = Article
+    query_pk_and_slug = True
+    template_name = "articles/update_article.html"
+    form_class = ArticleUpdateForm
+
+
+class ArticleAddView(PermissionRequiredMixin, CreateView):
+    permission_required = "articles.add_article"
+    template_name = "articles/update_article.html"
+    model = Article
+    form_class = ArticleUpdateForm
+
+    def form_valid(self, form: ArticleUpdateForm):
+        # We assume the author is the person creating the article for the first
+        # time. If it is ever needed to change this, it can be done through the
+        # admin panel.
+        form.instance.author = self.request.user
+        return super().form_valid(form)

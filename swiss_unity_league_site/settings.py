@@ -303,6 +303,8 @@ BLEACH_ALLOWED_TAGS = [
     "br",
 ]
 
+BLEACH_ALLOWED_TAGS_ARTICLE = BLEACH_ALLOWED_TAGS + ["h2", "h3", "h4"]
+
 DATE_FORMAT = "D, d.m.Y"
 # Localization overrides date format, so we need to disable it.
 USE_L10N = False

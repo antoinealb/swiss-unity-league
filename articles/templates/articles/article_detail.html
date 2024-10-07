@@ -1,4 +1,5 @@
 {% extends "championship/base.html" %}
+{% load article %}
 
 {% block title %}
     {{ article.title }}
@@ -7,8 +8,15 @@
 {% block content %}
     <h1>{{ article.title }}
         <small class="text-muted">by {{ article.author.first_name }} {{ article.author.last_name }}</small>
-    </h1>
-    <p>Published on {{ article.publication_time.date }}</p>
 
-    {{ article.content }}
+        {% if perms.articles.change_article %}
+            <a href="{% url 'article-update' article.id article.slug %}" class="btn btn-secondary">Edit</a>
+        {% endif %}
+    </h1>
+    <p>Published on {{ article.publication_time }}</p>
+
+
+    {{ article.content|article_tags }}
+
+    {% include "decklists/card_modal.html" %}
 {% endblock %}
