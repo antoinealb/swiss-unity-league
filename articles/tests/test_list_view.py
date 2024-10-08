@@ -43,3 +43,15 @@ class ArticleArchiveTest(TestCase):
         resp = self.client.get(reverse("article-list"))
         want_url = reverse("article-details", args=[2011, 1, 1, a.slug])
         self.assertIn(want_url, resp.content.decode())
+
+    def test_link_is_included_in_home_page_if_articles(self):
+        ArticleFactory(publication_time=datetime.date(2011, 1, 1))
+        want_url = reverse("article-list")
+        resp = self.client.get("/")
+        self.assertIn(want_url, resp.content.decode())
+
+    def test_no_article_no_link(self):
+        ArticleFactory(publication_time=datetime.date(2050, 1, 1))
+        want_url = reverse("article-list")
+        resp = self.client.get("/")
+        self.assertNotIn(want_url, resp.content.decode())
