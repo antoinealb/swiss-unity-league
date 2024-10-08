@@ -12,8 +12,10 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+import datetime
+
 from django.contrib.auth.mixins import PermissionRequiredMixin
-from django.views.generic import DetailView
+from django.views.generic import DetailView, ListView
 from django.views.generic.dates import ArchiveIndexView, DateDetailView
 from django.views.generic.edit import CreateView, UpdateView
 
@@ -60,3 +62,19 @@ class ArticleAddView(PermissionRequiredMixin, CreateView):
         # admin panel.
         form.instance.author = self.request.user
         return super().form_valid(form)
+
+
+class ArticleDraftView(PermissionRequiredMixin, ListView):
+    permission_required = "articles.add_article"
+    model = Article
+    template_name = "articles/article_draft.html"
+    context_object_name = "articles"
+    ordering = "-last_changed"
+
+    def get_queryset(self):
+        return (
+            super()
+            .get_queryset()
+            .filter(author=self.request.user)
+            .exclude(publication_time__lte=datetime.date.today())
+        )

@@ -62,6 +62,7 @@
                                         {% endif %}
                                         {% if perms.articles.add_article %}
                                             <li><a class="dropdown-item" href="{% url 'article-create' %}">Create new article</a></li>
+                                            <li><a class="dropdown-item" href="{% url 'article-drafts' %}">My article drafts</a></li>
                                             <div class="dropdown-divider"></div>
                                         {% endif %}
                                         {% if user.is_staff %}
