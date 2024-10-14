@@ -105,3 +105,55 @@ class ArticleCreateTestCase(TestCase):
         self.assertEqual(article.author, self.user)
 
         self.assertRedirects(resp, article.get_absolute_url())
+
+
+class MenuTestCase(TestCase):
+    """Checks whether we correctly display menu items to the user."""
+
+    def setUp(self):
+        self.url = reverse("article-create")
+        self.user = UserFactory()
+        self.user.user_permissions.add(Permission.objects.get(codename="add_article"))
+
+    def test_anonymous_user_does_not_get_shown_create_men(self):
+        resp = self.client.get("/")
+        self.assertNotIn(reverse("article-create"), resp.content.decode())
+
+    def test_authorized_user(self):
+        self.client.force_login(self.user)
+        resp = self.client.get("/")
+        self.assertIn(reverse("article-create"), resp.content.decode())
+
+
+class ArticleDraftTest(TestCase):
+    def test_list_article_draft(self):
+        article = ArticleFactory()
+        # Another article by same author, but not a draft anymore
+        ArticleFactory(
+            author=article.author, publication_time=datetime.date(2020, 1, 1)
+        )
+        ArticleFactory()  # another author
+
+        article.author.user_permissions.add(
+            Permission.objects.get(codename="add_article")
+        )
+        self.client.force_login(article.author)
+        resp = self.client.get(reverse("article-drafts"))
+        self.assertEqual(HTTP_200_OK, resp.status_code)
+        self.assertEqual([article], list(resp.context["articles"]))
+
+    def test_permission_denied(self):
+        u = UserFactory()
+        self.client.force_login(u)
+
+        resp = self.client.get(reverse("article-drafts"))
+        self.assertEqual(HTTP_403_FORBIDDEN, resp.status_code)
+
+    def test_in_menu(self):
+        u = UserFactory()
+        u.user_permissions.add(Permission.objects.get(codename="add_article"))
+        want_url = reverse("article-drafts")
+        self.assertNotIn(want_url, self.client.get("/").content.decode())
+
+        self.client.force_login(u)
+        self.assertIn(want_url, self.client.get("/").content.decode())

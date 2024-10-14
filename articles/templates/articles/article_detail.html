@@ -13,7 +13,9 @@
             <a href="{% url 'article-update' article.id article.slug %}" class="btn btn-secondary">Edit</a>
         {% endif %}
     </h1>
-    <p>Published on {{ article.publication_time }}</p>
+    {% if article.publication_time %}
+        <p>Published on {{ article.publication_time }}</p>
+    {% endif %}
 
 
     {{ article.content|article_tags }}

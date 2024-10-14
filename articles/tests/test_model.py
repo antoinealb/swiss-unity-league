@@ -17,6 +17,7 @@ import datetime
 from django.test import TestCase
 
 from articles.factories import ArticleFactory
+from articles.models import Article
 
 
 class ArticleTest(TestCase):
@@ -49,3 +50,19 @@ class ArticleTest(TestCase):
         )
         want = "/articles/preview/1/hello-world/"
         self.assertEqual(want, a.get_absolute_url())
+
+
+class ArticleObjectManagerTestCase(TestCase):
+    def test_non_yet_published(self):
+        ArticleFactory(publication_time=datetime.date(2050, 1, 1))
+        self.assertFalse(Article.objects.published().exists())
+
+    def test_non_published(self):
+        ArticleFactory(publication_time=None)
+        self.assertFalse(Article.objects.published().exists())
+        self.assertTrue(Article.objects.non_published().exists())
+
+    def test_published(self):
+        ArticleFactory(publication_time=datetime.date(2010, 1, 1))
+        self.assertTrue(Article.objects.published().exists())
+        self.assertFalse(Article.objects.non_published().exists())

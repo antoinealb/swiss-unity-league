@@ -1,0 +1,16 @@
+{% extends 'championship/base.html' %}
+
+{% block title %}My drafts{% endblock %}
+
+{% block content %}
+    <h1>My drafts</h1>
+
+    <ul>
+        {% for article in articles %}
+            <li><a href="{% url 'article-update' article.id article.slug %}">
+                {{article.title}}
+            </a>
+            </li>
+        {% endfor %}
+    </ul>
+{% endblock %}
