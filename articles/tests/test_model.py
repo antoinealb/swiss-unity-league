@@ -60,7 +60,9 @@ class ArticleObjectManagerTestCase(TestCase):
     def test_non_published(self):
         ArticleFactory(publication_time=None)
         self.assertFalse(Article.objects.published().exists())
+        self.assertTrue(Article.objects.non_published().exists())
 
     def test_published(self):
         ArticleFactory(publication_time=datetime.date(2010, 1, 1))
         self.assertTrue(Article.objects.published().exists())
+        self.assertFalse(Article.objects.non_published().exists())

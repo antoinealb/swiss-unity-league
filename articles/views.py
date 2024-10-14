@@ -12,7 +12,6 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-import datetime
 
 from django.contrib.auth.mixins import PermissionRequiredMixin
 from django.views.generic import DetailView, ListView
@@ -72,9 +71,4 @@ class ArticleDraftView(PermissionRequiredMixin, ListView):
     ordering = "-last_changed"
 
     def get_queryset(self):
-        return (
-            super()
-            .get_queryset()
-            .filter(author=self.request.user)
-            .exclude(publication_time__lte=datetime.date.today())
-        )
+        return Article.objects.non_published().filter(author=self.request.user)

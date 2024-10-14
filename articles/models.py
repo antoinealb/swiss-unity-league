@@ -26,6 +26,10 @@ class ArticleManager(models.Manager):
         today = timezone.now().date()
         return self.filter(publication_time__lte=today)
 
+    def non_published(self):
+        today = timezone.now().date()
+        return self.exclude(publication_time__lte=today)
+
 
 class Article(models.Model):
     author = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.PROTECT)
