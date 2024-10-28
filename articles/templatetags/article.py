@@ -16,7 +16,9 @@ from django import template
 from django.template.loader import get_template
 from django.utils.safestring import mark_safe
 
-from articles.parser import CardTag, extract_tags
+from articles.parser import CardTag, DecklistTag, extract_tags
+from decklists.models import Decklist
+from decklists.views import parse_section
 from oracle.models import get_card_by_name
 
 register = template.Library()
@@ -26,13 +28,38 @@ register = template.Library()
 def process_article_args(text: str):
     result = []
     card_template = get_template("decklists/card_modal_instance.html")
+    decklist_section_template = get_template("articles/decklist.html")
 
     for chunk in extract_tags(text):
         if isinstance(chunk, str):
             result.append(chunk)
         elif isinstance(chunk, CardTag):
-            card = get_card_by_name(chunk.card_name, exact_match=True)
+            card = get_card_by_name(chunk.card_name)
             rendered = card_template.render(context={"card": card})
             result.append(mark_safe(rendered))
+        elif isinstance(chunk, DecklistTag):
+            try:
+                decklist = Decklist.objects.get(id=chunk.uid)
+                mainboard, errors_mb = parse_section(decklist.mainboard)
+                sideboard, errors_sb = parse_section(decklist.sideboard)
+                errors = errors_mb + errors_sb
+                player = decklist.player
+                archetype = decklist.archetype
+            except Decklist.DoesNotExist:
+                errors = [f"Unknown decklist {chunk.uid}"]
+                mainboard = []
+                sideboard = []
+                player = None
+                archetype = None
+            rendered = decklist_section_template.render(
+                context={
+                    "mainboard": mainboard,
+                    "sideboard": sideboard,
+                    "errors": errors,
+                    "player": player,
+                    "archetype": archetype,
+                }
+            )
+            result.append(rendered)
 
     return "".join(result)

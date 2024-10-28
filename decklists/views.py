@@ -130,6 +130,22 @@ def pipe_filters(filters, entries) -> FilterOutput:
     return result, errors
 
 
+def parse_section(section_text: str, sort_by_type: bool = True) -> FilterOutput:
+    if sort_by_type:
+        sort_fn = sort_decklist_by_type
+    else:
+        sort_fn = sort_decklist_by_mana_value
+
+    all_filters = [
+        parse_decklist,
+        normalize_decklist,
+        annotate_card_attributes,
+        sort_fn,
+    ]
+
+    return pipe_filters(all_filters, section_text)
+
+
 class DecklistView(DetailView):
     model = Decklist
     template_name = "decklists/decklist_details.html"
@@ -140,23 +156,13 @@ class DecklistView(DetailView):
 
         # For players we show the list by types, but for TOs / Judges, only
         # sorted by mana value for deck checks.
-        if self.request.user.is_anonymous:
-            sort_fn = sort_decklist_by_type
-        else:
-            sort_fn = sort_decklist_by_mana_value
+        sort_decklist_by_type = self.request.user.is_anonymous
 
-        all_filters = [
-            parse_decklist,
-            normalize_decklist,
-            annotate_card_attributes,
-            sort_fn,
-        ]
-
-        mainboard, errors_main = pipe_filters(
-            all_filters, context["decklist"].mainboard
+        mainboard, errors_main = parse_section(
+            context["decklist"].mainboard, sort_by_type=sort_decklist_by_type
         )
-        sideboard, errors_side = pipe_filters(
-            all_filters, context["decklist"].sideboard
+        sideboard, errors_side = parse_section(
+            context["decklist"].sideboard, sort_by_type=sort_decklist_by_type
         )
 
         context["mainboard"] = mainboard

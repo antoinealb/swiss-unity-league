@@ -5,6 +5,10 @@
     {{ article.title }}
 {% endblock %}
 
+{% block extrahead %}
+    <link href="//cdn.jsdelivr.net/npm/mana-font@latest/css/mana.min.css" rel="stylesheet" type="text/css" />
+{% endblock %}
+
 {% block content %}
     <h1>{{ article.title }}
         <small class="text-muted">by {{ article.author.first_name }} {{ article.author.last_name }}</small>

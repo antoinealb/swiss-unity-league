@@ -16,7 +16,7 @@ from unittest import TestCase
 
 from parsita import Success
 
-from articles.parser import ArticleTagParser, CardTag, extract_tags
+from articles.parser import ArticleTagParser, CardTag, DecklistTag, extract_tags
 
 
 class ParserTest(TestCase):
@@ -29,7 +29,7 @@ class ParserTest(TestCase):
         self.assertIsInstance(res, Success)
 
     def test_parse_card_name_wrapped(self):
-        res = ArticleTagParser.card_tag.parse("[[Fatal Push]]")
+        res = ArticleTagParser.tag.parse("[[Fatal Push]]")
         self.assertIsInstance(res, Success)
 
     def test_parse_multiobject(self):
@@ -41,5 +41,17 @@ class ParserTest(TestCase):
     def test_parse_wrapped_text(self):
         article = """As shown, [[Fatal Push]] is OP."""
         want = ["As shown, ", CardTag("Fatal Push"), " is OP."]
+        got = list(extract_tags(article))
+        self.assertEqual(want, got)
+
+    def test_parse_wrapped_decklist(self):
+        article = """Good decklist![[https://unityleague.ch/decklists/ff521f2e-085c-4cc0-901b-600ec9a71dab/]]"""
+        want = ["Good decklist!", DecklistTag("ff521f2e-085c-4cc0-901b-600ec9a71dab")]
+        got = list(extract_tags(article))
+        self.assertEqual(want, got)
+
+    def test_parse_http_decklist(self):
+        article = """[[http://unityleague.ch/decklists/ff521f2e-085c-4cc0-901b-600ec9a71dab/]]"""
+        want = [DecklistTag("ff521f2e-085c-4cc0-901b-600ec9a71dab")]
         got = list(extract_tags(article))
         self.assertEqual(want, got)
