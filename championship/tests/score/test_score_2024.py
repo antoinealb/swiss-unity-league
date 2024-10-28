@@ -324,8 +324,10 @@ class TestSortResults(TestCase):
         self.assertEqual(results[8:], sorted_rankings[8:])
 
 
-def create_test_tournament(players, category=Event.Category.PREMIER, with_top8=True):
-    event = Event2024Factory(category=category)
+def create_test_tournament(
+    players, category=Event.Category.PREMIER, with_top8=True, **kwargs
+):
+    event = Event2024Factory(category=category, **kwargs)
     num_players = len(players)
     for i, player in enumerate(players):
         rank = i + 1
@@ -422,6 +424,21 @@ class TestScoresQualified(TestCase):
         create_test_tournament(players)
         create_test_tournament(players)
         self.assert_qualifications(num_players, num_direct=2)
+
+    def test_trickle_down_to_second_in_second_event(self):
+        """Checks that the invite trickles down to the second place on the second event."""
+        num_players = 50
+        winner = PlayerFactory()
+        event1_players = [winner] + [PlayerFactory() for _ in range(num_players)]
+        event2_players = [winner] + [PlayerFactory() for _ in range(num_players)]
+        create_test_tournament(event1_players, date=datetime.date(2024, 1, 1))
+        create_test_tournament(event2_players, date=datetime.date(2024, 2, 1))
+
+        scores = self.compute_scores()
+
+        self.assertEqual(
+            scores[event2_players[1].id].qualification_type, QualificationType.DIRECT
+        )
 
     def test_direct_qualification_outside_top_leaderboard(self):
         num_players = 60
