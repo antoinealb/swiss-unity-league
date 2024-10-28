@@ -32,7 +32,7 @@ from .models import (
     Result,
     SpecialReward,
 )
-from .season import SEASON_2023, SEASON_2024
+from .season import SEASON_2023, SEASON_2024, SEASON_2025
 
 
 class MagicProvider(BaseProvider):
@@ -136,22 +136,26 @@ class EventFactory(DjangoModelFactory):
     )
 
 
-class Event2024Factory(EventFactory):
+class RankedEventFactory(EventFactory):
+    category = factory.Faker(
+        "random_element",
+        elements=Event.Category.ranked_values(),
+    )
+
+
+class Event2024Factory(RankedEventFactory):
     date = factory.Faker(
         "date_between",
         start_date=SEASON_2024.start_date,
         end_date=SEASON_2024.end_date,
     )
-    category = factory.Faker(
-        "random_element",
-        elements=Event.Category.ranked_values(),
-    )
 
 
-class RankedEventFactory(EventFactory):
-    category = factory.Faker(
-        "random_element",
-        elements=Event.Category.ranked_values(),
+class Event2025Factory(RankedEventFactory):
+    date = factory.Faker(
+        "date_between",
+        start_date=SEASON_2025.start_date,
+        end_date=SEASON_2025.end_date,
     )
 
 

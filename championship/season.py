@@ -43,6 +43,13 @@ SEASON_2024 = Season(
     slug="2024",
 )
 
+SEASON_2025 = Season(
+    start_date=datetime.date(2024, 11, 1),
+    end_date=datetime.date(2025, 10, 31),
+    name="Season 2025",
+    slug="2025",
+)
+
 SUL_TRIAL_2024 = Season(
     start_date=SEASON_2024.start_date,
     end_date=datetime.date(2024, 4, 30),
@@ -61,6 +68,9 @@ SEASON_ALL = Season(
     slug="all",
 )
 
+# TODO: Enable 2025 by moving it into SEASON_LIST
+INVISIBLE_SEASONS = [SEASON_2025]
+
 ALL_SEASONS_LIST = SEASON_AND_TRIAL_LIST + [SEASON_ALL]
 
 SEASONS_WITH_INFO = SEASON_LIST
@@ -68,14 +78,14 @@ SEASONS_WITH_RANKING = ALL_SEASONS_LIST
 
 
 def find_season_by_slug(slug: str) -> Season:
-    for s in ALL_SEASONS_LIST:
+    for s in ALL_SEASONS_LIST + INVISIBLE_SEASONS:
         if s.slug == slug:
             return s
     raise KeyError(f"Unknown season slug '{slug}'")
 
 
 def find_season_by_date(date: datetime.date) -> Season | None:
-    for season in SEASON_LIST:
+    for season in SEASON_LIST + INVISIBLE_SEASONS:
         if season.start_date <= date <= season.end_date:
             return season
     return None

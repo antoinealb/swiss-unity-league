@@ -16,7 +16,12 @@ import datetime
 
 from django.test import TestCase
 
-from championship.factories import Event2024Factory, EventFactory, ResultFactory
+from championship.factories import (
+    Event2024Factory,
+    Event2025Factory,
+    EventFactory,
+    ResultFactory,
+)
 from championship.models import Event, Result
 from invoicing.models import fee_for_event
 
@@ -96,6 +101,38 @@ class Billing2024FeesTestCase(BillingTestCase):
             ResultFactory(event=e)
 
         self.assert_fee_for_event(120, e)
+
+
+class Billing2025FeesTestCase(BillingTestCase):
+    def test_bill_for_regional_no_top(self):
+        e = Event2025Factory(category=Event.Category.REGIONAL)
+        for _ in range(10):
+            ResultFactory(event=e)
+        self.assert_fee_for_event(10, e)
+
+    def test_bill_regional_top(self):
+        e = Event2025Factory(category=Event.Category.REGIONAL)
+
+        ResultFactory(
+            event=e,
+            single_elimination_result=Result.SingleEliminationResult.WINNER,
+        )
+        for _ in range(9):
+            ResultFactory(event=e)
+
+        self.assert_fee_for_event(30, e)
+
+    def test_bill_premier(self):
+        e = Event2025Factory(category=Event.Category.PREMIER)
+
+        ResultFactory(
+            event=e,
+            single_elimination_result=Result.SingleEliminationResult.WINNER,
+        )
+        for _ in range(9):
+            ResultFactory(event=e)
+
+        self.assert_fee_for_event(200, e)
 
 
 class BillingNoSeasonRaisesRuntimeError(BillingTestCase):

@@ -19,7 +19,12 @@ from django.db import models
 from django.urls import reverse
 
 from championship.models import Event, EventOrganizer
-from championship.season import SEASON_2023, SEASON_2024, find_season_by_date
+from championship.season import (
+    SEASON_2023,
+    SEASON_2024,
+    SEASON_2025,
+    find_season_by_date,
+)
 
 FEE_PER_PLAYER = {
     SEASON_2023: {
@@ -32,6 +37,12 @@ FEE_PER_PLAYER = {
         Event.Category.REGIONAL: 1,
         Event.Category.PREMIER: 2,
     },
+    SEASON_2025: {
+        Event.Category.REGULAR: 0,
+        Event.Category.REGIONAL: 1,
+        # in 2025, Premier events have a flat fee only (nothing per-player)
+        Event.Category.PREMIER: 0,
+    },
 }
 
 TOP8_FEE = {
@@ -42,6 +53,10 @@ TOP8_FEE = {
     SEASON_2024: {
         Event.Category.REGIONAL: 20,
         Event.Category.PREMIER: 100,
+    },
+    SEASON_2025: {
+        Event.Category.REGIONAL: 20,
+        Event.Category.PREMIER: 200,
     },
 }
 
