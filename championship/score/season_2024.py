@@ -146,7 +146,7 @@ class ScoreMethod2024:
             .annotate(result_cnt=Count("result"))
             .filter(result_cnt__gte=cls.MIN_PLAYERS_FOR_DIRECT_QUALIFICATION)
             .prefetch_related("result_set")
-            .order_by("-date")
+            .order_by("date")
         )
         direct_qualification_reasons_by_player = {}
         for event in events:
