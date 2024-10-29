@@ -12,14 +12,16 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from unittest import TestCase
+from django.test import TestCase
+from django.utils.html import escape
 
 from articles.templatetags.article import process_article_args
+from decklists.factories import DecklistFactory
 from oracle.factories import CardFactory
 
 
 class ArticleRenderingTestCase(TestCase):
-    databases = ["oracle"]
+    databases = ["oracle", "default"]
 
     def test_no_special_content(self):
         want = "<h1>Hello</h1>"
@@ -27,13 +29,44 @@ class ArticleRenderingTestCase(TestCase):
 
         self.assertEqual(want, got)
 
-    def test_single_card(self):
+    def setUp(self):
         CardFactory(
             name="Daze",
             scryfall_uri="https://scryfall.com/1234",
             image_uri="https://scryfall.com/img",
         )
-        got = process_article_args("[[Daze]]")
-        want = """<a href="#" data-bs-toggle="modal" data-bs-target="#cardModal" data-card-image="https://scryfall.com/img" data-card-url="https://scryfall.com/1234" data-card-name="Daze">Daze</a>"""
+        CardFactory(
+            name="Fry",
+            scryfall_uri="https://scryfall.com/5678",
+            image_uri="https://scryfall.com/img",
+        )
 
-        self.assertEqual(want.rstrip(), got.rstrip())
+        self.daze_html = """<a href="#" data-bs-toggle="modal" data-bs-target="#cardModal" data-card-image="https://scryfall.com/img" data-card-url="https://scryfall.com/1234" data-card-name="Daze">Daze</a>"""
+        self.fry_html = """<a href="#" data-bs-toggle="modal" data-bs-target="#cardModal" data-card-image="https://scryfall.com/img" data-card-url="https://scryfall.com/5678" data-card-name="Fry">Fry</a>"""
+
+    def test_single_card(self):
+        got = process_article_args("[[Daze]]")
+        self.assertEqual(self.daze_html, got.rstrip())
+
+    def test_decklist(self):
+        decklist = DecklistFactory(
+            id="ff521f2e-085c-4cc0-901b-600ec9a71dab",
+            mainboard="4 Daze",
+            sideboard="4 Fry",
+        )
+        article = """
+        [[https://unityleague.ch/decklists/ff521f2e-085c-4cc0-901b-600ec9a71dab/]]
+        """
+        got = process_article_args(article)
+        self.assertIn(self.daze_html, got)
+        self.assertIn(self.fry_html, got)
+        self.assertIn(decklist.player.name, got)
+        self.assertIn(escape(decklist.archetype), got)
+
+    def test_unknown_decklist(self):
+        article = """
+        [[https://unityleague.ch/decklists/ff521f2e-085c-4cc0-901b-600ec9a71dab/]]
+        """
+        got = process_article_args(article)
+        want = "Unknown decklist"
+        self.assertIn(want, got)

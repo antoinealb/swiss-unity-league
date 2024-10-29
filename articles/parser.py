@@ -16,7 +16,7 @@ import dataclasses
 from collections.abc import Iterator
 from typing import Union
 
-from parsita import ParserContext, lit, reg, rep1
+from parsita import ParserContext, lit, opt, reg, rep1
 
 
 @dataclasses.dataclass
@@ -24,17 +24,27 @@ class CardTag:
     card_name: str
 
 
+@dataclasses.dataclass
+class DecklistTag:
+    uid: str
+
+
 ParsedText = Union[CardTag, str]
 
 
 class ArticleTagParser(ParserContext):  # type: ignore
     card = reg(r"[^\[\]\r\n]*") > (lambda s: s.rstrip())
-    card_tag = (lit("[[") >> card << lit("]]")) > CardTag
     opening_tag = lit("[[")
+    closing_tag = lit("]]")
+    protocol = lit("http") | lit("https")
+    uuid = reg(r"[0-9a-f\-]+")
+    decklist = protocol >> lit("://unityleague.ch/decklists/") >> uuid << opt(lit("/"))
+    tag_content = (decklist > DecklistTag) | (card > CardTag)
+    tag = opening_tag >> tag_content << closing_tag
 
     # Text is defined as anything that is not a square bracket
     text = rep1(reg(r"[^\[]")) > (lambda s: "".join(s))
-    article = rep1(text | card_tag)
+    article = rep1(text | tag)
 
 
 def extract_tags(text: str) -> Iterator[ParsedText]:
