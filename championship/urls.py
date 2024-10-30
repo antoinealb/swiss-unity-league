@@ -12,17 +12,30 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from django.urls import path
+from django.urls import include, path
+from rest_framework import routers
 
 from championship import ical_feeds
 from championship.importers import IMPORTER_LIST
 
 from . import views
 
+# Define a private API router for the event view
+api_router = routers.DefaultRouter()
+api_router.register(
+    r"future-events", views.FutureEventViewSet, basename="future-events"
+)
+api_router.register(
+    r"past-events/(?P<slug>[a-z0-9]+)",
+    views.PastEventViewSet,
+    basename="past-events",
+)
+
 urlpatterns = [
     path(parser.to_url(), parser.view, name=parser.view_name)
     for parser in IMPORTER_LIST
 ] + [
+    path("events-api/", include(api_router.urls)),
     # Add a temporary url so we can test the challonge link parser again in a few months
     path(
         "results/create/challongelink",
