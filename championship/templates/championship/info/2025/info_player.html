@@ -1,0 +1,251 @@
+{% extends "championship/info/base_info_player.html" %}
+
+{% load static %}
+
+{% block info %}
+    <h2>SUL Championship 2025</h2>
+    <h3>2.5K Prize Pool</h3>
+    <ul>
+        <li>1st: 600 CHF</li>
+        <li>2nd: 400 CHF</li>
+        <li>3rd/4th: 250 CHF</li>
+        <li>5th-8th: 150 CHF</li>
+        <li>9th-12th 100 CHF</li>
+    </ul>
+    <p>Prizes are awarded as store credit, allowing each player to select their preferred participating store to redeem it.</p>
+    <h3>How to Qualify</h3>
+    <p>The 2025 season of the SUL will run from the 1st of November 2024 to the 31th of
+        October 2025. During that time, all participating Magic: the Gathering tournaments in and around Switzerland will award SUL Points.</p>
+    <p>Players can qualify in the following ways:</p>
+    <ul>
+        <li>At the end of the season, the <strong>top 36 players</strong> on the leaderboard (with the most SUL Points) qualify for the Championship.</li>
+        <li>The <strong>winner* of each SUL Premier event</strong> receives a direct invite for the Championship.</li>
+        <li>The <strong>Top 4* of each SUL Invitational</strong> receive a direct invite for the Championship.</li>
+    </ul>
+    <i><p>*If a player already has a direct invite from a previous tournament, it will be passed on to the next player in the standings of the tournament.</p></i>
+    <p>Location: to be announced</p>
+    <p>Date: to be announced</p>
+    <p>Entry: Free, but only qualified players can participate.</p>
+    <p>REL: Competitive</p>
+    <p>Decklists: Open decklist for Modern, closed decklist for Draft</p>
+    <p>Timed draft: According to <a href="https://blogs.magicjudges.org/rules/mtr-appendix-b/">MTR</a>, with 25 minutes for deck registration and construction.</p>
+    <h4>Schedule</h4>
+    <ul>
+        <li>Day 1:
+            <ul>
+                <li>Start: 10:00</li>
+                <li>1 Round of Modern / Bye</li>
+                <li>3 Rounds of Draft</li>
+                <li>4 Rounds of Modern</li>
+            </ul>
+        </li>
+        <li>Day 2:
+            <ul>
+                <li>Start: 10:00</li>
+                <li>3 Rounds of Draft</li>
+                <li>2 Rounds of Modern</li>
+                <li>Top8 Modern</li>
+                <li>Finals Modern (Best of 5)</li>
+            </ul>
+        </li>
+    </ul>
+    <h2>How to Participate</h2>
+    <p>Tell your local tournament organizer (TO) about our league and show them the <a href="{% url 'info_organizer' %}">Guide for Organizers</a> page! Your local events will then be registered for the league, so you can start collecting SUL Points.</p>
+    <h2>SUL Points</h2>
+    <p>Players can earn SUL Points at all tournaments
+        participating in the league. Points are awarded in the following three
+        ways:</p>
+    <ul>
+        <li><b>Match Points:</b> A player receives SUL Points <b>equal
+            to the match points</b> they earned during the Swiss rounds of
+            the tournament <b>plus 3 points</b>. (E.g., a record of 3-1-1 in Swiss rounds is 10 match points,
+            which awards 13 SUL Points).</li>
+        <li><b>Playoffs:</b> If the event has playoffs (top 4/8), then the best-performing players receive extra SUL Points.</li>
+    </ul>
+    <p>Each type of tournament has a different <b>multiplier</b> and the SUL points earned for <b>match points</b> will be multiplied by this value.</p>
+    <h3>Tournament Types</h3>
+    <p>There are 3 types of tournaments (SUL Regular, Regional, and Premier).
+        Your local tournament organizer will assign one of these 3 types to each
+        tournament they organize, which changes the amount of points it awards.</p>
+    <div>
+        <img src="{% static 'types/logos/regular.png' %}" class="float-end float-md-start  ms-3 ms-md-0 me-md-3 sul-type-logo-size">
+        <h4>SUL Regular</h4>
+        <p>All normal events (weekly, FNM, Prerelease) at your local store or
+            association are SUL Regular events. SUL Regular has a multiplier of 1x.</p>
+    </div>
+    <div class="clearfix"></div>
+    <div class="pt-3">
+        <img src="{% static 'types/logos/regional.png' %}" class="float-end float-md-start  ms-3 ms-md-0 me-md-3 sul-type-logo-size">
+        <h4>SUL Regional</h4>
+        <p>SUL Regional events are medium-sized events for which people travel
+            all around your canton to attend them.<br>
+            SUL Regional events can be held on a monthly basis. SUL Regional has a multiplier of 4x.</p>
+    </div>
+    <div class="clearfix"></div>
+    <div class="pt-3">
+        <img src="{% static 'types/logos/premier.png' %}" class="float-end float-md-start  ms-3 ms-md-0 me-md-3 sul-type-logo-size">
+        <h4>SUL Premier</h4>
+        <p>SUL Premier events are high stakes tournaments, for which people
+            travel all around Switzerland. To make those events feel special and
+            exciting, your local tournament organizer can only host a limited amount per year. SUL Premier has a multiplier of 6x.
+        </p>
+    </div>
+    <div class="clearfix"></div>
+    <div class="row py-3">
+        <div class="col-md-6 align-items-center mx-auto table-responsive">
+            <table class="table table-striped border border-2">
+                <thead>
+                    <tr class="header">
+                        <th>Tournament Type</th>
+                        <th>Multiplier</th>
+                        <th>Events per organizer</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>Regular</td>
+                        <td>1x</td>
+                        <td>Unlimited</td>
+                    </tr>
+                    <tr>
+                        <td>Regional</td>
+                        <td>4x</td>
+                        <td>For each format 1 per month (+1 for each weekly series)</td>
+                    </tr>
+                    <tr>
+                        <td>Premier</td>
+                        <td>6x</td>
+                        <td>1-2 per year</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+    <h3>SUL Points for Playoffs</h3>
+    <p>Events with playoffs award additional SUL Points according to the schema below.
+        For SUL Premier events, running a top 8 is mandatory.
+        For SUL Regional events, the tournament organizer can decide if they wish to run their
+        event with playoffs or not (top 4 or top 8 depends on the number of players).</p>
+    <div class="row py-3">
+        <div class="col-md-6 align-items-center mx-auto table-responsive">
+            <table class="table table-striped border border-2">
+                <thead>
+                    <tr>
+                        <th rowspan="2">Place</th>
+                        <th colspan="4">SUL Points</th>
+                        <tr>
+                            <th>Regional</th>
+                            <th>Premier</th>
+                            <th>Team Regional</th>
+                            <th>Team Premier</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>1st</td>
+                            <td>100</td>
+                            <td>400</td>
+                            <td>60</td>
+                            <td>240</td>
+                        </tr>
+                        <tr>
+                            <td>2nd</td>
+                            <td>60</td>
+                            <td>240</td>
+                            <td>35</td>
+                            <td>140</td>
+                        </tr>
+                        <tr>
+                            <td>3rd/4th</td>
+                            <td>40</td>
+                            <td>160</td>
+                            <td>20</td>
+                            <td>80</td>
+                        </tr>
+                        <tr>
+                            <td>5th-8th*</td>
+                            <td>30</td>
+                            <td>120</td>
+                            <td></td>
+                            <td></td>
+                        </tr>
+                        <tr>
+                            <td>70% match-win percentage**</td>
+                            <td>20</td>
+                            <td>60</td>
+                            <td></td>
+                            <td></td>
+                        </tr>
+                        <tr>
+                            <td>65% match-win percentage**</td>
+                            <td>10</td>
+                            <td>30</td>
+                            <td></td>
+                            <td></td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <i><p>*Only awarded if the event has a top 8.
+            <br>**Only awarded to players not reaching the playoffs. The match-win percentage is calculated according to the <a href="https://blogs.magicjudges.org/rules/mtr-appendix-c/"><u>MTR</u></a></p>
+        </i>
+        <p><i>Example: Chandra plays a SUL Premier event (multiplier 6x) at her local gaming
+            store with 51 participants. During the 5 Swiss rounds, she
+            manages to get 4 wins, 1 loss, and 1 draw (13 match points).
+            She places 9th in the overall ranking. Therefore, she receives 78 points
+            (6x13) for the match points, 18 points (6x3) just for participating.
+            Additionally, she receives 60 points for reaching a greater match-win percentage than 70% (13/18 = 72%).
+            With this event, she earns a grand total of 156 SUL Points.
+        </i></p>
+        <h2>SUL Invitationals</h2>
+        <p>
+            Twice per year the best 80 players of the SUL Leaderboard qualify for the SUL Invitational tournament. The top 4 players of each SUL Invitational will be invited to the SUL Championship.
+            More info will follow.
+        </p>
+        <div class="row py-3">
+            <div class="col-md-6 align-items-center mx-auto table-responsive">
+                <table class="table table-striped border border-2">
+                    <thead>
+                        <tr>
+                            <th>Date of SUL Invitational</th>
+                            <th>Qualification Season</th>
+                            <th>Format</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>April 2025</td>
+                            <td>November 2024 - March 2025</td>
+                            <td>Modern</td>
+                        </tr>
+                        <tr>
+                            <td>September 2025</td>
+                            <td>April 2025 - September 2025</td>
+                            <td>Limited</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+        <h2>Byes</h2>
+        <p>The best performing players at the league are awarded byes (free wins
+            in the first rounds) for the Championship at the end of the
+            year. A player can have 1 bye maximum.
+            Players can earn byes in the following ways:</p>
+        <ul>
+            <li>The winner of each Invitational held during the season will be awarded 1 bye.</li>
+            <li>The top 4 players on the leaderboard (with the most SUL Points) will be awarded 1 bye.</li>
+            <li>If there's an additional bye in the first round of the Championship, then it will be awarded to the player ranked 5th on the leaderboard.</li>
+        </ul>
+        <h2>Responsibility of Players</h2>
+        <p>Players are responsible to verify that their results were uploaded correctly. If
+            you notice that your SUL Points are incorrect, please contact your
+            local tournament organizer or the <a href="mailto:leoninleague@gmail.com">SUL admins</a>.
+        </p>
+        <h2>How do we finance this?</h2>
+        <p>In addition to sponsorships, tournament organizers will pay
+            fees for the Regional and Premier events they organize.
+            For detailed information, see <a href="{% url 'info_organizer' %}"> Guide for Organizers</a>!</p>
+{% endblock %}
