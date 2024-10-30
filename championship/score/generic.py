@@ -31,12 +31,14 @@ from championship.cache_function import cache_function
 from championship.models import Event, OrganizerLeague, Player, Result
 from championship.score.season_2023 import ScoreMethod2023
 from championship.score.season_2024 import ScoreMethod2024
+from championship.score.season_2025 import ScoreMethod2025
 from championship.score.season_all import ScoreMethodAll
 from championship.score.trial_2024 import ScoreMethodTrial2024
 from championship.score.types import LeaderboardScore
 from championship.season import (
     SEASON_2023,
     SEASON_2024,
+    SEASON_2025,
     SEASON_ALL,
     SEASONS_WITH_RANKING,
     SUL_TRIAL_2024,
@@ -57,6 +59,7 @@ SCOREMETHOD_PER_SEASON = {
     SEASON_2024: ScoreMethod2024,
     SUL_TRIAL_2024: ScoreMethodTrial2024,
     SEASON_ALL: ScoreMethodAll,
+    SEASON_2025: ScoreMethod2025,
 }
 
 

@@ -1,4 +1,4 @@
-# Copyright 2024 Leonin League
+# Copyright 2025 Leonin League
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -15,19 +15,19 @@
 import datetime
 from dataclasses import dataclass
 
-from championship.models import Count, Event, Result, SpecialReward
+from championship.models import Event, Result, SpecialReward
 from championship.score.types import LeaderboardScore, QualificationType
-from championship.season import SEASON_2024
+from championship.season import SEASON_2025
 
 
-class ScoreMethod2024:
+class ScoreMethod2025:
     @dataclass
     class Score:
         qps: int
         byes: int
 
-        def __add__(self, o: "ScoreMethod2024.Score") -> "ScoreMethod2024.Score":
-            return ScoreMethod2024.Score(qps=self.qps + o.qps, byes=self.byes + o.byes)
+        def __add__(self, o: "ScoreMethod2025.Score") -> "ScoreMethod2025.Score":
+            return ScoreMethod2025.Score(qps=self.qps + o.qps, byes=self.byes + o.byes)
 
     MULT = {
         Event.Category.REGULAR: 1,
@@ -67,8 +67,7 @@ class ScoreMethod2024:
             },
         ),
     ]
-    TOTAL_QUALIFICATION_SLOTS = 40
-    MIN_PLAYERS_FOR_DIRECT_QUALIFICATION = 40
+    LEADERBOARD_QUALIFICATION_RANK = 36
     DIRECT_QUALIFICATION_REASON = template = (
         "Direct qualification for {ranking} place at '{event_name}'"
     )
@@ -109,6 +108,7 @@ class ScoreMethod2024:
         has_top_8: bool,
     ) -> int:
         """Returns how many byes a given result gives."""
+        # TODO The winner and finalist of the SUL Trial in March receive 1 bye
         return 0
 
     @classmethod
@@ -134,34 +134,20 @@ class ScoreMethod2024:
         Returns a dict of (player_id: Score)
 
         """
-        # Premier events with 40 or more players award a direct qualification to the winner of the event.
-        # If that player is already qualified, then the invite is passed to the next player in the standings of the event.
-        events = (
+        premier_events = (
             Event.objects.filter(
                 category=Event.Category.PREMIER,
-                date__gte=SEASON_2024.start_date,
-                date__lte=SEASON_2024.end_date,
+                date__gte=SEASON_2025.start_date,
+                date__lte=SEASON_2025.end_date,
             )
-            .annotate(result_cnt=Count("result"))
-            .filter(result_cnt__gte=cls.MIN_PLAYERS_FOR_DIRECT_QUALIFICATION)
             .prefetch_related("result_set")
             .order_by("date")
         )
         direct_qualification_reasons_by_player = {}
-        for event in events:
-            for result in sorted(event.result_set.all()):
-                if result.player_id not in direct_qualification_reasons_by_player:
-                    direct_qualification_reasons_by_player[result.player_id] = (
-                        cls.DIRECT_QUALIFICATION_REASON.format(
-                            ranking=result.get_ranking_display(), event_name=event.name
-                        )
-                    )
-                    break
-
         rewards = SpecialReward.objects.filter(
-            result__event__date__gte=SEASON_2024.start_date,
-            result__event__date__lte=SEASON_2024.end_date,
-        ).select_related("result", "result__event")
+            result__event__date__gte=SEASON_2025.start_date,
+            result__event__date__lte=SEASON_2025.end_date,
+        ).all()
         for reward in rewards:
             if reward.direct_invite:
                 direct_qualification_reasons_by_player[reward.result.player_id] = (
@@ -170,15 +156,28 @@ class ScoreMethod2024:
                         event_name=reward.result.event.name,
                     )
                 )
+        for premier_event in premier_events:
+            remaining_invites = 1
+            for result in sorted(premier_event.result_set.all()):
+                if (
+                    result.player_id not in direct_qualification_reasons_by_player
+                    and remaining_invites > 0
+                ):
+                    direct_qualification_reasons_by_player[result.player_id] = (
+                        cls.DIRECT_QUALIFICATION_REASON.format(
+                            ranking=result.get_ranking_display(),
+                            event_name=premier_event.name,
+                        )
+                    )
+                    remaining_invites -= 1
+                    if remaining_invites == 0:
+                        break
 
-        if SEASON_2024.can_enter_results(datetime.date.today()):
-            leaderboard_reason = "This place qualifies for the SUL Invitational tournament at the end of the Season"
+        if SEASON_2025.can_enter_results(datetime.date.today()):
+            leaderboard_reason = "This place qualifies for the SUL Championship tournament at the end of the Season"
         else:
-            leaderboard_reason = "Qualified for SUL Invitational tournament"
+            leaderboard_reason = "Qualified for SUL Championship tournament"
 
-        num_leaderboard_qualifications = cls.TOTAL_QUALIFICATION_SLOTS - len(
-            direct_qualification_reasons_by_player
-        )
         sorted_scores = sorted(
             scores_by_player.items(), key=lambda x: x[1].qps, reverse=True
         )
@@ -202,10 +201,9 @@ class ScoreMethod2024:
                 scores[player_id].qualification_reason = (
                     direct_qualification_reasons_by_player[player_id]
                 )
-            elif num_leaderboard_qualifications > 0:
+            elif rank <= cls.LEADERBOARD_QUALIFICATION_RANK:
                 scores[player_id].qualification_type = QualificationType.LEADERBOARD
                 scores[player_id].qualification_reason = leaderboard_reason
-                num_leaderboard_qualifications -= 1
 
         return scores
 
