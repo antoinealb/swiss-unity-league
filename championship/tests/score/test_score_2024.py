@@ -541,7 +541,7 @@ class TestPlayerDetails2024(TestCase):
         )
 
         response = self.client.get(
-            reverse("player_details_by_season", args=[self.player.id, "2023"])
+            reverse("player_details_by_season", args=[self.player.id, "2024"])
         )
 
         # Player should get 30 extra points
