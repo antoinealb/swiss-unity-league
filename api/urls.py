@@ -19,16 +19,8 @@ from rest_framework.authtoken.views import obtain_auth_token
 from api import views
 
 api_router = routers.DefaultRouter()
-api_router.register(
-    r"future-events", views.FutureEventViewSet, basename="future-events"
-)
-api_router.register(r"formats", views.ListFormats, basename="formats")
-api_router.register(
-    r"past-events/(?P<slug>[a-z0-9]+)",
-    views.PastEventViewSet,
-    basename="past-events",
-)
 api_router.register(r"events", views.EventViewSet, basename="events")
+api_router.register(r"formats", views.ListFormats, basename="formats")
 api_router.register(r"organizers", views.OrganizersViewSet, basename="organizers")
 
 urlpatterns = [

@@ -17,16 +17,18 @@ from typing import Any
 
 from django.contrib import messages
 from django.contrib.auth.mixins import LoginRequiredMixin
-from django.http import HttpResponseForbidden, HttpResponseRedirect
+from django.http import Http404, HttpResponseForbidden, HttpResponseRedirect
 from django.urls import reverse
 from django.views.generic import DetailView
 from django.views.generic.base import TemplateView
 from django.views.generic.edit import FormView, UpdateView
+from rest_framework import viewsets
 
 from championship.forms import EventCreateForm
 from championship.models import Event, Result
 from championship.score import get_results_with_qps
-from championship.season import SEASON_LIST
+from championship.season import SEASON_LIST, find_season_by_slug
+from championship.serializers import EventSerializer
 from championship.views.base import CustomDeleteView
 
 
@@ -152,3 +154,43 @@ class FutureEventView(TemplateView):
         ]
         context["season_urls"] = [future_events] + past_events_each_season
         return context
+
+
+class FutureEventViewSet(viewsets.ReadOnlyModelViewSet):
+    """API endpoint for the upcoming events page, showing future events."""
+
+    serializer_class = EventSerializer
+
+    def get_queryset(self):
+        """Returns all Events in the future."""
+
+        # This needs to be a function (get_queryset) instead of an attribute as
+        # otherwise the today means "when the app was started.
+        qs = Event.objects.filter(date__gte=datetime.date.today())
+        qs = qs.select_related("organizer", "address", "organizer__default_address")
+        return qs.order_by("date")
+
+
+class PastEventViewSet(viewsets.ReadOnlyModelViewSet):
+    """API endpoint for the upcoming events page, showing past events."""
+
+    serializer_class = EventSerializer
+
+    def get_queryset(self):
+        """Returns all Events in the past."""
+
+        self.slug = self.kwargs.get("slug")
+        try:
+            self.current_season = find_season_by_slug(self.slug)
+        except KeyError:
+            raise Http404(f"Unknown season {self.slug}")
+
+        # This needs to be a function (get_queryset) instead of an attribute as
+        # otherwise the today means "when the app was started.
+        qs = Event.objects.filter(date__lt=datetime.date.today())
+        qs = qs.filter(
+            date__gte=self.current_season.start_date,
+            date__lte=self.current_season.end_date,
+        )
+        qs = qs.select_related("organizer", "address", "organizer__default_address")
+        return qs.order_by("-date")
