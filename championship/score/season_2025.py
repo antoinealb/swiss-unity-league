@@ -108,7 +108,6 @@ class ScoreMethod2025:
         has_top_8: bool,
     ) -> int:
         """Returns how many byes a given result gives."""
-        # TODO The winner and finalist of the SUL Trial in March receive 1 bye
         return 0
 
     @classmethod
@@ -157,21 +156,15 @@ class ScoreMethod2025:
                     )
                 )
         for premier_event in premier_events:
-            remaining_invites = 1
             for result in sorted(premier_event.result_set.all()):
-                if (
-                    result.player_id not in direct_qualification_reasons_by_player
-                    and remaining_invites > 0
-                ):
+                if result.player_id not in direct_qualification_reasons_by_player:
                     direct_qualification_reasons_by_player[result.player_id] = (
                         cls.DIRECT_QUALIFICATION_REASON.format(
                             ranking=result.get_ranking_display(),
                             event_name=premier_event.name,
                         )
                     )
-                    remaining_invites -= 1
-                    if remaining_invites == 0:
-                        break
+                    break
 
         if SEASON_2025.can_enter_results(datetime.date.today()):
             leaderboard_reason = "This place qualifies for the SUL Championship tournament at the end of the Season"
