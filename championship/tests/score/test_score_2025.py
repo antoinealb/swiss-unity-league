@@ -1,4 +1,4 @@
-# Copyright 2024 Leonin League
+# Copyright 2025 Leonin League
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -20,24 +20,24 @@ from django.test import Client, TestCase
 from freezegun import freeze_time
 
 from championship.factories import (
-    Event2024Factory,
+    Event2025Factory,
     PlayerFactory,
     ResultFactory,
     SpecialRewardFactory,
 )
 from championship.models import Event, Result
 from championship.score import compute_scores
-from championship.score.season_2024 import ScoreMethod2024
+from championship.score.season_2025 import ScoreMethod2025
 from championship.score.types import QualificationType
-from championship.season import SEASON_2024
+from championship.season import SEASON_2025
 
 
-class TestComputeScoreFor2024(TestCase):
+class TestComputeScoreFor2025(TestCase):
     def setUp(self):
-        self.event = Event2024Factory()
+        self.event = Event2025Factory()
 
     def compute_scores(self):
-        return compute_scores(SEASON_2024)
+        return compute_scores(SEASON_2025)
 
     def _test_compute_score(self, category, points, want_score):
         player_count = len(points)
@@ -102,7 +102,7 @@ class TestComputeScoreFor2024(TestCase):
 
     def test_ignore_events_outside_of_the_season_date(self):
         """Checks that events past the end of seasons don't contribute score."""
-        self.event.date = SEASON_2024.end_date
+        self.event.date = SEASON_2025.end_date
         self.event.date += datetime.timedelta(days=1)
         self.event.save()
         for _ in range(10):
@@ -112,7 +112,7 @@ class TestComputeScoreFor2024(TestCase):
 
     def test_ignore_events_before_the_season_date(self):
         """Checks that events past the end of seasons don't contribute score."""
-        self.event.date = SEASON_2024.start_date
+        self.event.date = SEASON_2025.start_date
         self.event.date -= datetime.timedelta(days=1)
         self.event.save()
         for _ in range(10):
@@ -132,7 +132,7 @@ class TestComputeScoreFor2024(TestCase):
 
 class ScoresWithTop8TestCase(TestCase):
     def setUp(self):
-        self.event = Event2024Factory()
+        self.event = Event2025Factory()
         self.player = PlayerFactory()
 
     def score(self, points, result):
@@ -143,7 +143,7 @@ class ScoresWithTop8TestCase(TestCase):
             single_elimination_result=result,
             ranking=1,
         )
-        return ScoreMethod2024._qps_for_result(
+        return ScoreMethod2025._qps_for_result(
             ep, event_size=32, has_top_8=True, total_rounds=6
         )
 
@@ -182,7 +182,7 @@ class ScoresWithTop8TestCase(TestCase):
 
 class ScoresWithMatchPointRateTestCase(TestCase):
     def setUp(self):
-        self.event = Event2024Factory()
+        self.event = Event2025Factory()
         self.player = PlayerFactory()
 
     def score(self, points, total_rounds):
@@ -193,7 +193,7 @@ class ScoresWithMatchPointRateTestCase(TestCase):
             single_elimination_result=None,
             ranking=1,
         )
-        return ScoreMethod2024._qps_for_result(
+        return ScoreMethod2025._qps_for_result(
             ep, event_size=32, has_top_8=True, total_rounds=total_rounds
         )
 
@@ -271,7 +271,7 @@ class ScoresWithMatchPointRateTestCase(TestCase):
 class TestSortResults(TestCase):
     def test_can_order_basic_player_results(self):
         """Checks that we get players ordered correctly."""
-        e = Event2024Factory()
+        e = Event2025Factory()
         for i in range(10):
             Result.objects.create(
                 player=PlayerFactory(),
@@ -287,7 +287,7 @@ class TestSortResults(TestCase):
         self.assertEqual(list(range(1, 11)), sorted_rankings)
 
     def test_can_order_results_based_on_single_elimination_results(self):
-        e = Event2024Factory(category=Event.Category.PREMIER)
+        e = Event2025Factory(category=Event.Category.PREMIER)
         num_players = 16
         results = [
             Result.objects.create(
@@ -327,7 +327,7 @@ class TestSortResults(TestCase):
 def create_test_tournament(
     players, category=Event.Category.PREMIER, with_top8=True, **kwargs
 ):
-    event = Event2024Factory(category=category, **kwargs)
+    event = Event2025Factory(category=category, **kwargs)
     num_players = len(players)
     for i, player in enumerate(players):
         rank = i + 1
@@ -356,7 +356,7 @@ def create_test_tournament(
 
 class TestScoresByes(TestCase):
     def compute_scores(self):
-        return compute_scores(SEASON_2024)
+        return compute_scores(SEASON_2025)
 
     def test_top_byes(self):
         num_players = 50
@@ -367,7 +367,7 @@ class TestScoresByes(TestCase):
         self.assertEqual(want_byes, byes)
 
     def test_reward_byes(self):
-        event = Event2024Factory()
+        event = Event2025Factory()
         for i in range(4):
             ResultFactory(event=event, points=1000, ranking=i + 1)
 
@@ -387,10 +387,12 @@ class TestScoresByes(TestCase):
 
 class TestScoresQualified(TestCase):
     def setUp(self):
-        self.num_qualified = ScoreMethod2024.TOTAL_QUALIFICATION_SLOTS
+        self.num_leaderboard_qualifications = (
+            ScoreMethod2025.LEADERBOARD_QUALIFICATION_RANK
+        )
 
     def compute_scores(self):
-        return compute_scores(SEASON_2024)
+        return compute_scores(SEASON_2025)
 
     def assert_qualifications(self, num_players, num_direct=0):
         got_qualified = [s.qualification_type for s in self.compute_scores().values()]
@@ -403,18 +405,30 @@ class TestScoresQualified(TestCase):
 
     def test_top_leaderboard_qualified(self):
         num_players = 50
-        players = [PlayerFactory() for _ in range(num_players)]
-
+        players = PlayerFactory.create_batch(num_players)
         create_test_tournament(players, category=Event.Category.REGIONAL)
-        self.assert_qualifications(num_players)
+        got_qualified = [s.qualification_type for s in self.compute_scores().values()]
+        want_qualified = [
+            QualificationType.LEADERBOARD
+        ] * self.num_leaderboard_qualifications + [QualificationType.NONE] * (
+            num_players - self.num_leaderboard_qualifications
+        )
+        self.assertEqual(want_qualified, got_qualified)
 
     def test_direct_qualification(self):
         num_players = 50
-        players = [PlayerFactory() for _ in range(num_players)]
-
+        players = PlayerFactory.create_batch(num_players)
         # Create premier event with 40 or more players, so that the winner gets a direct qualification
-        create_test_tournament(players)
-        self.assert_qualifications(num_players, num_direct=1)
+        create_test_tournament(players, category=Event.Category.PREMIER)
+        got_qualified = [s.qualification_type for s in self.compute_scores().values()]
+        want_qualified = (
+            [QualificationType.DIRECT]
+            + [QualificationType.LEADERBOARD]
+            * (self.num_leaderboard_qualifications - 1)
+            + [QualificationType.NONE]
+            * (num_players - self.num_leaderboard_qualifications)
+        )
+        self.assertEqual(want_qualified, got_qualified)
 
     def test_player_multiple_direct_qualifications(self):
         num_players = 50
@@ -423,7 +437,15 @@ class TestScoresQualified(TestCase):
         # Let the same player win both Premier events, and the invite should be passed to the next player
         create_test_tournament(players)
         create_test_tournament(players)
-        self.assert_qualifications(num_players, num_direct=2)
+        got_qualified = [s.qualification_type for s in self.compute_scores().values()]
+        want_qualified = (
+            [QualificationType.DIRECT] * 2
+            + [QualificationType.LEADERBOARD]
+            * (self.num_leaderboard_qualifications - 2)
+            + [QualificationType.NONE]
+            * (num_players - self.num_leaderboard_qualifications)
+        )
+        self.assertEqual(want_qualified, got_qualified)
 
     def test_trickle_down_to_second_in_second_event(self):
         """Checks that the invite trickles down to the second place on the second event."""
@@ -431,8 +453,8 @@ class TestScoresQualified(TestCase):
         winner = PlayerFactory()
         event1_players = [winner] + [PlayerFactory() for _ in range(num_players)]
         event2_players = [winner] + [PlayerFactory() for _ in range(num_players)]
-        create_test_tournament(event1_players, date=datetime.date(2024, 1, 1))
-        create_test_tournament(event2_players, date=datetime.date(2024, 2, 1))
+        create_test_tournament(event1_players, date=datetime.date(2025, 1, 1))
+        create_test_tournament(event2_players, date=datetime.date(2025, 2, 1))
 
         scores = self.compute_scores()
 
@@ -445,25 +467,28 @@ class TestScoresQualified(TestCase):
         players = [PlayerFactory() for _ in range(num_players)]
 
         # Create lots of points for all players except one
-        event = Event2024Factory(category=Event.Category.REGIONAL)
+        event = Event2025Factory(category=Event.Category.REGIONAL)
         [
             ResultFactory(player=player, points=1000, event=event)
             for player in players[1:]
         ]
 
         # Create a premier event where the player with no previous results/points wins
-        create_test_tournament(players)
+        create_test_tournament(players, category=Event.Category.PREMIER)
         got_qualified = [s.qualification_type for s in self.compute_scores().values()]
         # The last ranked player should get the direct inivte and the other invites go to the top players
         want_qualified = (
-            [QualificationType.LEADERBOARD] * (self.num_qualified - 1)
-            + [QualificationType.NONE] * (num_players - self.num_qualified)
+            [QualificationType.LEADERBOARD] * (self.num_leaderboard_qualifications)
+            + [QualificationType.NONE]
+            * (num_players - self.num_leaderboard_qualifications - 1)
             + [QualificationType.DIRECT]
         )
         self.assertEqual(want_qualified, got_qualified)
 
-    def test_reward_qualifications(self):
-        event = Event2024Factory()
+    def test_special_reward_qualifications(self):
+        event = Event2025Factory(
+            category=Event.Category.PREMIER,
+        )
         result = ResultFactory(
             points=3,
             ranking=5,
@@ -474,43 +499,76 @@ class TestScoresQualified(TestCase):
         want_qualifications = [QualificationType.DIRECT]
         self.assertEqual(want_qualifications, qualifications)
 
+    def test_2nd_invite_after_special_reward_qualification_should_pass_down(self):
+        # Player gets special direct invite
+        result = ResultFactory(
+            points=3,
+            ranking=5,
+            event__date=datetime.date(2025, 1, 1),
+        )
+        SpecialRewardFactory(direct_invite=True, result=result)
+        # Later the player gets a second direct invite from premier win, that is passed down
+        event = Event2025Factory(
+            category=Event.Category.PREMIER,
+            date=datetime.date(2025, 2, 1),
+        )
+        ResultFactory(ranking=1, points=3, event=event, player=result.player)
+        ResultFactory(ranking=2, points=3, event=event)
+        qualifications = [s.qualification_type for s in self.compute_scores().values()]
+        want_qualifications = [QualificationType.DIRECT, QualificationType.DIRECT]
+        self.assertEqual(want_qualifications, qualifications)
+        expected_reasons = [
+            f"Direct qualification for 5th place at '{result.event.name}'",
+            f"Direct qualification for 2nd place at '{event.name}'",
+        ]
+        qlf_reasons = [s.qualification_reason for s in self.compute_scores().values()]
+        self.assertEqual(expected_reasons, qlf_reasons)
+
 
 class TestQualificationReason(TestCase):
     def compute_scores(self):
-        return compute_scores(SEASON_2024)
+        return compute_scores(SEASON_2025)
 
     def test_direct_qualification_reason(self):
-        num_players = 40
-        players = [PlayerFactory() for _ in range(num_players)]
-
-        event = create_test_tournament(players)
+        event = Event2025Factory(
+            category=Event.Category.PREMIER,
+        )
+        ResultFactory(ranking=1, event=event)
         direct_score = list(self.compute_scores().values())[0]
         want_reason = f"Direct qualification for 1st place at '{event.name}'"
         self.assertEqual(want_reason, direct_score.qualification_reason)
 
-    @freeze_time("2024-10-31")
+    @freeze_time("2025-10-31")
     def test_leaderboard_qual_reason_during_season(self):
-        ResultFactory(event=Event2024Factory())
+        ResultFactory(
+            event=Event2025Factory(
+                category=Event.Category.REGIONAL,
+            )
+        )
         direct_score = list(self.compute_scores().values())[0]
-        want_reason = "This place qualifies for the SUL Invitational tournament at the end of the Season"
+        want_reason = "This place qualifies for the SUL Championship tournament at the end of the Season"
         self.assertEqual(want_reason, direct_score.qualification_reason)
 
-    @freeze_time("2024-11-08")
+    @freeze_time("2025-11-08")
     def test_leaderboard_qual_reason_after_season(self):
-        ResultFactory(event=Event2024Factory())
+        ResultFactory(
+            event=Event2025Factory(
+                category=Event.Category.REGIONAL,
+            )
+        )
         direct_score = list(self.compute_scores().values())[0]
-        want_reason = "Qualified for SUL Invitational tournament"
+        want_reason = "Qualified for SUL Championship tournament"
         self.assertEqual(want_reason, direct_score.qualification_reason)
 
 
-class TestPlayerDetails2024(TestCase):
+class TestPlayerDetails2025(TestCase):
     def setUp(self):
         self.client = Client()
         self.player = PlayerFactory()
-        self.event = Event2024Factory(category=Event.Category.PREMIER)
+        self.event = Event2025Factory(category=Event.Category.PREMIER)
 
-    def test_player_details_extra_points_edge_case(self):
-        # Make sure we have a tournament with many rounds
+    def test_extra_points_awarded_outside_top_8(self):
+        # Make the player already played an event with many rounds
         ResultFactory(
             player=self.player,
             ranking=1,
@@ -539,9 +597,8 @@ class TestPlayerDetails2024(TestCase):
             loss_count=0,
             draw_count=0,
         )
-
         response = self.client.get(
-            reverse("player_details_by_season", args=[self.player.id, "2024"])
+            reverse("player_details_by_season", args=[self.player.id, "2025"])
         )
 
         # Player should get 30 extra points
@@ -549,9 +606,9 @@ class TestPlayerDetails2024(TestCase):
         self.assertContains(response, f"<td>{expected_qps}</td>")
 
 
-class TestScore2024(TestCase):
+class TestScore2025(TestCase):
     def test_add(self):
-        s1 = ScoreMethod2024.Score(qps=1, byes=1)
-        s2 = ScoreMethod2024.Score(qps=2, byes=1)
+        s1 = ScoreMethod2025.Score(qps=1, byes=1)
+        s2 = ScoreMethod2025.Score(qps=2, byes=1)
         r = s1 + s2
-        self.assertEqual(ScoreMethod2024.Score(qps=3, byes=2), r)
+        self.assertEqual(ScoreMethod2025.Score(qps=3, byes=2), r)
