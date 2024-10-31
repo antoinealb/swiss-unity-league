@@ -116,11 +116,11 @@ class ScoreMethod2025:
     ) -> dict[int, LeaderboardScore]:
         """Implements the last step of score processing.
 
-        This function takes a list of (player_id, score) tuples and turns it
-        into a sequence of Score objects, checking the maximum number of byes
+        This function takes a dictionary of player_id to Score mappings and turns it
+        into a dictionary of player_id to LeaderboardScore mappings, checking the maximum number of byes
         and deciding who is qualified and not.
 
-        Returns a dict of (player_id: Score)
+        Returns a dictionary of player_id to LeaderboardScore.
 
         """
         premier_events = (
