@@ -68,7 +68,7 @@ class ScoreMethod2025:
         ),
     ]
     LEADERBOARD_QUALIFICATION_RANK = 36
-    DIRECT_QUALIFICATION_REASON = template = (
+    DIRECT_QUALIFICATION_REASON = (
         "Direct qualification for {ranking} place at '{event_name}'"
     )
 

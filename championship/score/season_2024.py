@@ -69,7 +69,7 @@ class ScoreMethod2024:
     ]
     TOTAL_QUALIFICATION_SLOTS = 40
     MIN_PLAYERS_FOR_DIRECT_QUALIFICATION = 40
-    DIRECT_QUALIFICATION_REASON = template = (
+    DIRECT_QUALIFICATION_REASON = (
         "Direct qualification for {ranking} place at '{event_name}'"
     )
 
