@@ -77,9 +77,9 @@ class ScoreMethodInvitationalSpring2025(ScoreMethod2025):
                         break
 
         if cls.SEASON.can_enter_results(datetime.date.today()):
-            leaderboard_reason = "At the end of the season this place qualifies for the SUL Invitational tournament"
+            leaderboard_reason = "At the end of the season this place qualifies for the SUL Invitational Spring 2025"
         else:
-            leaderboard_reason = "Qualified the SUL Invitational tournament"
+            leaderboard_reason = "Qualified for the SUL Invitational Spring 2025"
 
         sorted_scores = sorted(
             scores_by_player.items(), key=lambda x: x[1].qps, reverse=True
