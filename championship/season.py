@@ -57,6 +57,13 @@ SUL_TRIAL_2024 = Season(
     slug="sul-trial-2024",
 )
 
+INVITATIONAL_SPRING_2025 = Season(
+    start_date=SEASON_2025.start_date,
+    end_date=datetime.date(2025, 4, 30),
+    name="Invitational Spring 2025",
+    slug="invitational-spring-2025",
+)
+
 SEASON_LIST = [SEASON_2024, SEASON_2023]
 
 SEASON_AND_TRIAL_LIST = [SEASON_2024, SUL_TRIAL_2024, SEASON_2023]
@@ -68,7 +75,7 @@ SEASON_ALL = Season(
     slug="all",
 )
 
-INVISIBLE_SEASONS = [SEASON_2025]  # type: ignore
+INVISIBLE_SEASONS = [SEASON_2025, INVITATIONAL_SPRING_2025]  # type: ignore
 ALL_SEASONS_LIST = SEASON_AND_TRIAL_LIST + [SEASON_ALL]
 
 SEASONS_WITH_INFO = SEASON_LIST
