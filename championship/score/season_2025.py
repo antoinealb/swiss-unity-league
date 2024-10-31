@@ -101,16 +101,6 @@ class ScoreMethod2025:
         return points
 
     @classmethod
-    def _byes_for_result(
-        cls,
-        result: Result,
-        event_size: int,
-        has_top_8: bool,
-    ) -> int:
-        """Returns how many byes a given result gives."""
-        return 0
-
-    @classmethod
     def _byes_for_rank(cls, rank: int) -> int:
         if rank <= 4:
             return 1
@@ -203,5 +193,4 @@ class ScoreMethod2025:
     @classmethod
     def score_for_result(cls, result, event_size, has_top8, total_rounds) -> Score:
         qps = cls._qps_for_result(result, event_size, has_top8, total_rounds)
-        byes = cls._byes_for_result(result, event_size, has_top8)
-        return cls.Score(qps=qps, byes=byes)
+        return cls.Score(qps=qps, byes=0)
