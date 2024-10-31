@@ -142,6 +142,54 @@ class RankedEventFactory(EventFactory):
         elements=Event.Category.ranked_values(),
     )
 
+    @factory.post_generation
+    def players(self, create, players, **kwargs):
+        if not create or players is None:
+            return
+
+        if isinstance(players, int):
+            players = PlayerFactory.create_batch(players)
+
+        num_players = len(players)
+        for i, player in enumerate(players):
+            rank = i + 1
+
+            ResultFactory(
+                player=player,
+                points=num_players - i,
+                ranking=rank,
+                event=self,
+            )
+        return self
+
+    @factory.post_generation
+    def with_tops(self, create, with_tops, **kwargs):
+        if not create or with_tops is None:
+            return
+
+        if with_tops not in [4, 8]:
+            raise ValueError("with_tops must be 4 or 8")
+
+        if self.result_set.count() < with_tops:
+            raise ValueError(f"Not enough players to have a top {with_tops}")
+
+        results = self.result_set.order_by("ranking").all()
+        for rank in range(1, with_tops + 1):
+            if rank == 1:
+                ser = Result.SingleEliminationResult.WINNER
+            elif rank == 2:
+                ser = Result.SingleEliminationResult.FINALIST
+            elif rank <= 4:
+                ser = Result.SingleEliminationResult.SEMI_FINALIST
+            elif rank <= 8:
+                ser = Result.SingleEliminationResult.QUARTER_FINALIST
+            else:
+                ser = None
+            result = results[rank - 1]
+            result.single_elimination_result = ser
+            result.save()
+        return self
+
 
 class Event2024Factory(RankedEventFactory):
     date = factory.Faker(
