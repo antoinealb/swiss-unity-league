@@ -23,6 +23,7 @@ from django.db import models
 from django.db.models import Count, QuerySet
 from django.urls import reverse
 
+from dateutil.relativedelta import relativedelta
 from django_bleach.models import BleachField
 
 from championship.season import Season, find_season_by_date
@@ -613,6 +614,65 @@ class Player(models.Model):
 
     def get_absolute_url(self):
         return reverse("player_details", args=[self.id])
+
+
+def player_image_validator(image):
+    if image.size > 1.5 * 1024 * 1024:
+        raise ValidationError("Image file too large ( > 1.5MB )")
+
+
+class PlayerProfile(models.Model):
+    """
+    Represents a player's profile used to display more info about them.
+    """
+
+    class Pronouns(models.TextChoices):
+        HE_HIM = "HE_HIM", "He/Him"
+        SHE_HER = "SHE_HER", "She/Her"
+        THEY_THEM = "THEY_THEM", "They/Them"
+        CUSTOM = "CUSTOM", "Custom"
+
+    player = models.ForeignKey(Player, on_delete=models.CASCADE)
+    pronouns = models.CharField(
+        max_length=20,
+        choices=Pronouns.choices,
+        default=Pronouns.HE_HIM,
+    )
+    custom_pronouns = models.CharField(max_length=20, blank=True)
+    date_of_birth = models.DateField(
+        blank=True, null=True, help_text="Note we will only show your age."
+    )
+    hometown = models.CharField(
+        max_length=200, blank=True, help_text="Where do you currently live?"
+    )
+    occupation = models.CharField(
+        max_length=200, blank=True, help_text="What's your job title?"
+    )
+    bio = models.TextField(
+        blank=True,
+        help_text="Some more info about you: other hobbies/interests, favorite cards/decks, fun facts, jokes, ...",
+    )
+    image = models.ImageField(
+        verbose_name="Portrait photo of yourself",
+        upload_to="player_profile",
+        help_text="Preferably in portrait orientation. Maximum size: 1.5MB. Supported formats: JPEG, PNG, WEBP.",
+        blank=True,
+        null=True,
+        validators=[player_image_validator, validate_image_file_extension],
+    )
+
+    def age(self):
+        if not self.date_of_birth:
+            return None
+        return relativedelta(datetime.date.today(), self.date_of_birth).years
+
+    def get_pronouns(self):
+        if self.pronouns == self.Pronouns.CUSTOM:
+            return self.custom_pronouns
+        return self.get_pronouns_display()
+
+    def get_absolute_url(self):
+        return self.player.get_absolute_url()
 
 
 class PlayerAlias(models.Model):

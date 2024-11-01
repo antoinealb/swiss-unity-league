@@ -9,56 +9,66 @@
 
     <div class="container">
         <div class="row">
-            <div class="col-lg-2 col-6 mb-4">
-                <img class="img-fluid" src="https://img.chmedia.ch/2023/01/26/396899a9-3e35-4bbd-8327-c75b078579a9.jpeg?width=480&height=640&fit=bounds&quality=75&auto=webp&crop=2697,3596,x705,y376" alt="{{ player.name }}">
-            </div>
-            <div class="col-lg-4 col-6">
-
-                <h1 class="d-inline me-2">{{ player.name }}</h1>
-                <p class="d-inline">He/Him</p>
-                <p>Age: <b>32</b></p>
-                <p>Hometown: <b>Aarau</b></p>
-                <p>Occupation: <b>Pianist</b></p>
-                <p> Demian Coca is the reigning SUL Player of the Year with 6 Premier and 5 Regional top 8 finshes. <br>
-                    Besides playing Magic, Demian Coca is a Swiss composer and pianist, leading the jazz orchestra Constelar and president of Jazzclub Aarau.
-                </p>
-            </div>
-
-            <div class="col-lg-6 col-12">
-                <div class="table-responsive">
-                    <h2>Accomplishments</h2>
-                    <table class="table table-striped">
-                        <thead>
-                            <tr>
-                                <th scope="col">Event</th>
-                                <th scope="col">Date</th>
-                                <th scope="col">Type</th>
-                                <th scope="col">Rank</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            {% for result, score in accomplishments %}
-                                <tr>
-                                    <td><a href="{{ result.event.get_absolute_url }}">{{result.event.name }}</a></td>
-                                    <td>{{ result.event.date }}</td>
-                                    <td>{{ result.event.get_category_display }}</td>
-                                    <td>{{ result.get_ranking_display }}</td>
-                                </tr>
-                            {% endfor %}
-                        </tbody>
-                    </table>
+            {% if profile.image %}
+                <div class="col-lg-2 col-6 mb-4">
+                    <img class="img-fluid" src="{{ profile.image.url }}" alt="{{ player.name }}">
                 </div>
+            {% endif %}
+            <div class="{% if profile %}col-lg-4{% else %}col-lg-6{% endif %} col-6">
+                <h1 class="d-inline me-2">{{ player.name }}</h1>
+                {% if profile.get_pronouns %}
+                    <p class="d-inline">{{ profile.get_pronouns }}</p>
+                {% endif %}
+                {% if profile.age %}
+                    <p>Age: <b>{{ profile.age }}</b></p>
+                {% endif %}
+                {% if profile.hometown %}
+                    <p>Hometown: <b>{{ profile.hometown }}</b></p>
+                {% endif %}
+                <p>Favorite Organizer: <b>{{ local_organizer_name }}</b></p>
+                {% if profile.occupation %}
+                    <p>Occupation: <b>{{ profile.occupation }}</b></p>
+                {% endif %}
+                {% if profile.bio %}
+                    <p>{{ profile.bio|linebreaksbr }}</p>
+                {% endif %}
             </div>
+
+            {% if accomplishments %}
+                <div class="col-lg-6 col-12">
+                    <div class="table-responsive">
+                        <h2>Accomplishments</h2>
+                        <table class="table table-striped">
+                            <thead>
+                                <tr>
+                                    <th scope="col">Event</th>
+                                    <th scope="col">Date</th>
+                                    <th scope="col">Type</th>
+                                    <th scope="col">Rank</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for result, score in accomplishments %}
+                                    <tr>
+                                        <td><a href="{{ result.event.get_absolute_url }}">{{result.event.name }}</a></td>
+                                        <td>{{ result.event.date }}</td>
+                                        <td>{{ result.event.get_category_display }}</td>
+                                        <td>{{ result.get_ranking_display }}</td>
+                                    </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            {% endif %}
         </div>
     </div>
 
-
+    <h2 class="mt-2">Achievements in {{ current_season.name }}</h2>
+    {% include 'championship/components/season_dropdown.html' with pk=player.id %}
     {% if user.is_staff %}
         <a class="btn btn-warning my-2" href="{% url 'admin:championship_player_change' player.id %}">Edit in admin</a>
     {% endif %}
-    <h2 class="mt-2">Achievements in {{ current_season.name }}</h2>
-    {% include 'championship/components/season_dropdown.html' with pk=player.id %}
-
     <div class="container">
         <div class="row">
             <div class="col-lg-6 p-0 pe-lg-5 my-4">

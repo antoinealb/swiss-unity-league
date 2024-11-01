@@ -12,6 +12,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+import datetime
+
 from django.contrib.auth.models import User
 from django.test import Client, TestCase
 from django.urls import reverse
@@ -22,10 +24,11 @@ from parameterized import parameterized
 from championship.factories import (
     EventFactory,
     PlayerFactory,
+    PlayerProfileFactory,
     RankedEventFactory,
     ResultFactory,
 )
-from championship.models import Event, Result
+from championship.models import Event, PlayerProfile, Result
 from championship.season import SEASONS_WITH_RANKING
 from championship.views import (
     EVENTS,
@@ -275,3 +278,70 @@ class PlayerDetailSeasonTestCase(TestCase):
             reverse("player_details_by_season", args=[player.id, season.slug])
         )
         self.assertContains(response, event.name)
+
+
+class PlayerDetailsProfileTest(TestCase):
+    """
+    Tests for the player profile on the player's details page
+    """
+
+    def setUp(self):
+        self.client = Client()
+
+    def get_player_details_2023(self, player):
+        url = reverse("player_details_by_season", args=[player.id, "2023"])
+        return self.client.get(url)
+
+    def test_player_profile_shown(self):
+        self.profile = PlayerProfileFactory()
+        ResultFactory(
+            player=self.profile.player,
+        )
+        response = self.get_player_details_2023(self.profile.player)
+        self.assertContains(response, self.profile.bio)
+        self.assertContains(response, self.profile.hometown)
+        self.assertContains(response, self.profile.occupation)
+        self.assertContains(response, self.profile.image.url)
+        self.assertContains(response, "Accomplishments")
+
+    def test_empty_player_profile(self):
+        self.profile = PlayerProfile.objects.create(
+            player=PlayerFactory(),
+        )
+        ResultFactory(
+            player=self.profile.player,
+        )
+        response = self.get_player_details_2023(self.profile.player)
+        self.assertContains(response, "Accomplishments")
+
+    def test_no_profile(self):
+        player = PlayerFactory()
+        response = self.get_player_details_2023(player)
+        self.assertNotContains(response, "Accomplishments")
+
+    def test_pronouns(self):
+        self.profile = PlayerProfileFactory(pronouns=PlayerProfile.Pronouns.SHE_HER)
+        response = self.get_player_details_2023(self.profile.player)
+        self.assertContains(response, self.profile.get_pronouns_display())
+
+    def test_custom_pronouns(self):
+        self.profile = PlayerProfileFactory(pronouns=PlayerProfile.Pronouns.CUSTOM)
+        response = self.get_player_details_2023(self.profile.player)
+        self.assertContains(response, self.profile.custom_pronouns)
+
+    def test_age(self):
+        self.profile = PlayerProfileFactory(
+            date_of_birth=datetime.date.today() - datetime.timedelta(days=366 * 20)
+        )
+        response = self.get_player_details_2023(self.profile.player)
+        self.assertContains(response, "<b>20</b>")
+
+    def test_local_organizer_name(self):
+        ResultFactory()
+        result2 = ResultFactory()
+        ResultFactory(event__organizer=result2.event.organizer)
+        response = self.get_player_details_2023(result2.player)
+        expected_name = (
+            f"<p>Favorite Organizer: <b>{result2.event.organizer.name}</b></p>"
+        )
+        self.assertContains(response, expected_name)

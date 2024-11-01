@@ -13,6 +13,7 @@
 # limitations under the License.
 
 import dataclasses
+from collections import Counter
 
 from django.views.generic import DetailView
 
@@ -103,24 +104,39 @@ class PlayerDetailsView(PerSeasonMixin, DetailView):
             results, key=lambda r: r[0].event.date, reverse=True
         )
 
-        def accomplishments_sort_key(result_score):
-            result, score = result_score
-            if result.event.category == Event.Category.PREMIER:
-                category = 1
-            elif result.event.category == Event.Category.REGIONAL:
-                category = 2
-            else:
-                category = 3
-
-            return (category, result.single_elimination_result or 16, result.ranking)
-
-        context["accomplishments"] = sorted(
-            context[LAST_RESULTS], key=accomplishments_sort_key
-        )[:3]
-
-        context["accomplishments"] = sorted(
-            context["accomplishments"], key=lambda r: r[0].event.date, reverse=True
+        context["profile"] = context["player"].playerprofile_set.last()
+        organizer_counts = Counter(
+            result.event.organizer.name for result, _ in context[LAST_RESULTS]
         )
+        most_common_organizer = organizer_counts.most_common(1)
+        context["local_organizer_name"] = (
+            most_common_organizer[0][0] if most_common_organizer else None
+        )
+
+        if context["profile"]:
+
+            def accomplishments_sort_key(result_score):
+                result, score = result_score
+                if result.event.category == Event.Category.PREMIER:
+                    category = 1
+                elif result.event.category == Event.Category.REGIONAL:
+                    category = 2
+                else:
+                    category = 3
+
+                return (
+                    category,
+                    result.single_elimination_result or 16,
+                    result.ranking,
+                )
+
+            context["accomplishments"] = sorted(
+                context[LAST_RESULTS], key=accomplishments_sort_key
+            )[:3]
+
+            context["accomplishments"] = sorted(
+                context["accomplishments"], key=lambda r: r[0].event.date, reverse=True
+            )
 
         qp_table = {
             THEAD: [
@@ -171,6 +187,7 @@ class PlayerDetailsView(PerSeasonMixin, DetailView):
             "title": "Top 8 Finishes",
             TABLE: with_top_8_table,
         }
+
         return context
 
     def performance_per_format(self, results) -> dict[str, Performance]:

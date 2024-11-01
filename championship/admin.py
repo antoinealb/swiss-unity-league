@@ -38,6 +38,7 @@ from .models import (
     OrganizerLeague,
     Player,
     PlayerAlias,
+    PlayerProfile,
     RecurrenceRule,
     RecurringEvent,
     Result,
@@ -330,6 +331,27 @@ class PlayerAdmin(admin.ModelAdmin):
         )
 
 
+class PlayerProfileAdmin(admin.ModelAdmin):
+    list_display = (
+        "player",
+        "get_pronouns",
+        "age",
+        "hometown",
+        "occupation",
+    )
+    search_fields = ["player__name", "hometown"]
+
+    def get_pronouns(self, obj):
+        return obj.get_pronouns()
+
+    get_pronouns.short_description = "Pronouns"
+
+    def age(self, obj):
+        return obj.age()
+
+    age.short_description = "Age"
+
+
 class PlayerAliasAdmin(admin.ModelAdmin):
     list_display = (
         "name",
@@ -344,6 +366,7 @@ class PlayerAliasAdmin(admin.ModelAdmin):
 
 admin.site.register(PlayerAlias, PlayerAliasAdmin)
 admin.site.register(Player, PlayerAdmin)
+admin.site.register(PlayerProfile, PlayerProfileAdmin)
 
 
 def _last_day_of_month(any_day: datetime.date) -> datetime.date:
