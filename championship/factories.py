@@ -13,6 +13,7 @@
 # limitations under the License.
 
 import random
+from typing import Iterable
 
 from django.contrib.auth.hashers import make_password
 from django.contrib.auth.models import User
@@ -143,8 +144,8 @@ class RankedEventFactory(EventFactory):
     )
 
     @factory.post_generation
-    def players(self, create, players, **kwargs):
-        if not create or players is None:
+    def players(self, create: bool, players: Iterable[Player] | int):
+        if not create or not players:
             return
 
         if isinstance(players, int):
@@ -163,7 +164,7 @@ class RankedEventFactory(EventFactory):
         return self
 
     @factory.post_generation
-    def with_tops(self, create, with_tops, **kwargs):
+    def with_tops(self, create: bool, with_tops: int, **kwargs):
         if not create or with_tops is None:
             return
 
