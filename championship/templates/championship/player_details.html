@@ -7,17 +7,62 @@
 
 {% block content %}
 
-    <h1 class="my-2">{{ player.name }}</h1>
+    <div class="container">
+        <div class="row">
+            <div class="col-lg-2 col-6 mb-4">
+                <img class="img-fluid" src="https://img.chmedia.ch/2023/01/26/396899a9-3e35-4bbd-8327-c75b078579a9.jpeg?width=480&height=640&fit=bounds&quality=75&auto=webp&crop=2697,3596,x705,y376" alt="{{ player.name }}">
+            </div>
+            <div class="col-lg-4 col-6">
+
+                <h1 class="d-inline me-2">{{ player.name }}</h1>
+                <p class="d-inline">He/Him</p>
+                <p>Age: <b>32</b></p>
+                <p>Hometown: <b>Aarau</b></p>
+                <p>Occupation: <b>Pianist</b></p>
+                <p> Demian Coca is the reigning SUL Player of the Year with 6 Premier and 5 Regional top 8 finshes. <br>
+                    Besides playing Magic, Demian Coca is a Swiss composer and pianist, leading the jazz orchestra Constelar and president of Jazzclub Aarau.
+                </p>
+            </div>
+
+            <div class="col-lg-6 col-12">
+                <div class="table-responsive">
+                    <h2>Accomplishments</h2>
+                    <table class="table table-striped">
+                        <thead>
+                            <tr>
+                                <th scope="col">Event</th>
+                                <th scope="col">Date</th>
+                                <th scope="col">Type</th>
+                                <th scope="col">Rank</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for result, score in accomplishments %}
+                                <tr>
+                                    <td><a href="{{ result.event.get_absolute_url }}">{{result.event.name }}</a></td>
+                                    <td>{{ result.event.date }}</td>
+                                    <td>{{ result.event.get_category_display }}</td>
+                                    <td>{{ result.get_ranking_display }}</td>
+                                </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+
 
     {% if user.is_staff %}
         <a class="btn btn-warning my-2" href="{% url 'admin:championship_player_change' player.id %}">Edit in admin</a>
     {% endif %}
-    {% include 'championship/components/season_dropdown.html' with pk=player.id %}
     <h2 class="mt-2">Achievements in {{ current_season.name }}</h2>
-    <div class="container my-4">
-        <h3>SUL Points</h3>
+    {% include 'championship/components/season_dropdown.html' with pk=player.id %}
+
+    <div class="container">
         <div class="row">
-            <div class="col-lg-6 p-0 pe-lg-5">
+            <div class="col-lg-6 p-0 pe-lg-5 my-4">
+                <h3 class="text-lg-center">SUL Points</h3>
                 <div class="table-responsive">
                     <table class="table table-striped m-0">
                         <thead>
@@ -39,38 +84,32 @@
                     </table>
                 </div>
             </div>
-        </div>
-    </div>
 
-    <div class="container">
-        <div class="row">
-            {% for top_finish_table in top_finishes %}
-                {% if top_finish_table.table.tbody|length != 0 %}
-                    <div class="col-lg-6 p-0 my-4 {% cycle 'pe' 'ps' %}-lg-5">
-                        <h3 class="text-lg-center">{{ top_finish_table.title }}</h3>
-                        <div class="table-responsive">
-                            <table class="table table-striped m-0">
-                                <thead>
+            {% if top_finish_table.table.tbody|length != 0 %}
+                <div class="col-lg-6 p-0 ps-lg-5 my-4">
+                    <h3 class="text-lg-center">{{ top_finish_table.title }}</h3>
+                    <div class="table-responsive">
+                        <table class="table table-striped m-0">
+                            <thead>
+                                <tr>
+                                    {% for event_type in top_finish_table.table.thead %}
+                                        <th>{{ event_type }}</th>
+                                    {% endfor %}
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for rank_row in top_finish_table.table.tbody %}
                                     <tr>
-                                        {% for event_type in top_finish_table.table.thead %}
-                                            <th>{{ event_type }}</th>
+                                        {% for row_element in rank_row %}
+                                            <td>{{ row_element }}</td>
                                         {% endfor %}
                                     </tr>
-                                </thead>
-                                <tbody>
-                                    {% for rank_row in top_finish_table.table.tbody %}
-                                        <tr>
-                                            {% for row_element in rank_row %}
-                                                <td>{{ row_element }}</td>
-                                            {% endfor %}
-                                        </tr>
-                                    {% endfor %}
-                                </tbody>
-                            </table>
-                        </div>
+                                {% endfor %}
+                            </tbody>
+                        </table>
                     </div>
-                {% endif %}
-            {% endfor %}
+                </div>
+            {% endif %}
         </div>
     </div>
 

@@ -35,7 +35,6 @@ from championship.views import (
     TABLE,
     TBODY,
     THEAD,
-    TOP_FINISHES,
     Performance,
 )
 
@@ -186,33 +185,20 @@ class PlayerDetailsTest(TestCase):
             ranking=2,
             single_elimination_result=ser_winner,
         )
-        event3 = EventFactory(category=Event.Category.REGIONAL)
-        ResultFactory(points=10, player=player, event=event3, ranking=1)
         response = self.get_player_details_2023(player)
-        expected_top_finishes = [
-            {
-                THEAD: [
-                    "",
-                    Event.Category.PREMIER.label,
-                    Event.Category.REGIONAL.label,
-                ],
-                TBODY: [
-                    ["1st", 0, 1],
-                    ["5th-8th", 1, 0],
-                ],
-            },
-            {
-                THEAD: [
-                    "",
-                    Event.Category.REGIONAL.label,
-                    Event.Category.REGULAR.label,
-                ],
-                TBODY: [["1st", 1, 0]],
-            },
-        ]
-        actual_top_finishes = [
-            finish[TABLE] for finish in response.context[TOP_FINISHES]
-        ]
+        expected_top_finishes = {
+            THEAD: [
+                "",
+                Event.Category.PREMIER.label,
+                Event.Category.REGIONAL.label,
+            ],
+            TBODY: [
+                ["1st", 0, 1],
+                ["5th-8th", 1, 0],
+            ],
+        }
+
+        actual_top_finishes = response.context["top_finish_table"][TABLE]
         self.assertEqual(expected_top_finishes, actual_top_finishes)
 
     def test_win_ratio_computed_correctly(self):
