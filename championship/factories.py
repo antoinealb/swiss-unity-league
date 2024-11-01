@@ -151,8 +151,8 @@ class RankedEventFactory(EventFactory):
         if isinstance(players, int):
             players = PlayerFactory.create_batch(players)
 
-        num_players = len(players)
-        for i, player in enumerate(players):
+        num_players = len(players)  # type: ignore
+        for i, player in enumerate(players):  # type: ignore
             rank = i + 1
 
             ResultFactory(
