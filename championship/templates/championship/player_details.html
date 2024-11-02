@@ -41,19 +41,19 @@
                         <table class="table table-striped">
                             <thead>
                                 <tr>
+                                    <th scope="col">Rank</th>
                                     <th scope="col">Event</th>
                                     <th scope="col">Date</th>
                                     <th scope="col">Type</th>
-                                    <th scope="col">Rank</th>
                                 </tr>
                             </thead>
                             <tbody>
                                 {% for result, score in accomplishments %}
                                     <tr>
+                                        <td>{{ result.get_ranking_display }}</td>
                                         <td><a href="{{ result.event.get_absolute_url }}">{{result.event.name }}</a></td>
                                         <td>{{ result.event.date }}</td>
                                         <td>{{ result.event.get_category_display }}</td>
-                                        <td>{{ result.get_ranking_display }}</td>
                                     </tr>
                                 {% endfor %}
                             </tbody>
@@ -167,22 +167,24 @@
         <table class="table table-striped">
             <thead>
                 <tr>
+                    <th scope="col">Rank</th>
                     <th scope="col">Event</th>
                     <th scope="col">Date</th>
                     <th scope="col">Type</th>
+                    <th scope="col">Format</th>
                     <th scope="col">SUL Points</th>
-                    <th scope="col">Rank</th>
                     <th scope="col">Record</th>
                 </tr>
             </thead>
             <tbody>
                 {% for result, score in last_results %}
                     <tr>
+                        <td>{{ result.get_ranking_display }}</td>
                         <td><a href="{{ result.event.get_absolute_url }}">{{result.event.name }}</a></td>
                         <td>{{ result.event.date }}</td>
                         <td>{{ result.event.get_category_display }}</td>
+                        <td>{{ result.event.get_format_display }}</td>
                         <td>{{ score.qps }}</td>
-                        <td>{{ result.get_ranking_display }}</td>
                         <td>{{ result.win_count }} - {{ result.loss_count }} - {{ result.draw_count }}</td>
                     </tr>
                 {% endfor %}
