@@ -334,22 +334,18 @@ class PlayerAdmin(admin.ModelAdmin):
 class PlayerProfileAdmin(admin.ModelAdmin):
     list_display = (
         "player",
-        "get_pronouns",
+        "pronouns",
         "age",
         "hometown",
         "occupation",
     )
     search_fields = ["player__name", "hometown"]
 
-    def get_pronouns(self, obj):
+    def pronouns(self, obj):
         return obj.get_pronouns()
-
-    get_pronouns.short_description = "Pronouns"
 
     def age(self, obj):
         return obj.age()
-
-    age.short_description = "Age"
 
 
 class PlayerAliasAdmin(admin.ModelAdmin):
