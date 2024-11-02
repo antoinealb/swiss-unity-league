@@ -8,6 +8,9 @@
 
 {% block content %}
     <h1>Submit Player Profile</h1>
+    <p>We highly encourage you to submit your player profile to help us enhance the community experience and our stream/coverage.</p>
+    <p>All fields are optional. If there are any details you're not comfortable sharing, feel free to skip them.</p>
+    <p>You can choose whether to make this information public on our website or permit us to use it in our stream.</p>
     <form method="post" enctype="multipart/form-data">
         {% csrf_token %}
         {% crispy form %}
