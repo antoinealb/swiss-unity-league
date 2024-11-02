@@ -307,6 +307,7 @@ class PlayerDetailsProfileTest(TestCase):
     def test_empty_player_profile(self):
         self.profile = PlayerProfile.objects.create(
             status=PlayerProfile.Status.APPROVED,
+            consent_for_website=True,
             player=PlayerFactory(),
         )
         ResultFactory(
@@ -322,6 +323,14 @@ class PlayerDetailsProfileTest(TestCase):
 
     def test_pending_player_profile_not_shown(self):
         self.profile = PlayerProfileFactory(status=PlayerProfile.Status.PENDING)
+        ResultFactory(
+            player=self.profile.player,
+        )
+        response = self.get_player_details_2023(self.profile.player)
+        self.assertNotContains(response, "Accomplishments")
+
+    def test_player_profile_not_shown_without_consent(self):
+        self.profile = PlayerProfileFactory(consent_for_website=False)
         ResultFactory(
             player=self.profile.player,
         )
@@ -373,7 +382,7 @@ class SubmitPlayerProfileViewTest(TestCase):
         }
 
     def test_submit_player_profile(self):
-        url = reverse("submit_player_profile")
+        url = reverse("create_player_profile")
         response = self.client.post(url, self.data)
         self.assertRedirects(response, reverse("index"))
         profile = PlayerProfile.objects.get(player=self.player)
@@ -388,7 +397,7 @@ class SubmitPlayerProfileViewTest(TestCase):
 
     def test_unknown_player_stays_on_submit_page(self):
         self.data["player_name"] = "Unknown Player"
-        url = reverse("submit_player_profile")
+        url = reverse("create_player_profile")
         response = self.client.post(url, self.data)
         self.assertEqual(response.status_code, 200)
         self.assertIn(
@@ -399,7 +408,7 @@ class SubmitPlayerProfileViewTest(TestCase):
     def test_submit_profile_for_player_alias(self):
         PlayerAlias.objects.create(true_player=self.player, name="Alias")
         self.data["player_name"] = "Alias"
-        url = reverse("submit_player_profile")
+        url = reverse("create_player_profile")
         response = self.client.post(url, self.data)
         self.assertRedirects(response, reverse("index"))
         self.assertTrue(PlayerProfile.objects.filter(player=self.player).exists())

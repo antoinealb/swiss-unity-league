@@ -109,7 +109,9 @@ class PlayerDetailsView(PerSeasonMixin, DetailView):
 
         context["profile"] = (
             context["player"]
-            .playerprofile_set.filter(status=PlayerProfile.Status.APPROVED)
+            .playerprofile_set.filter(
+                status=PlayerProfile.Status.APPROVED, consent_for_website=True
+            )
             .last()
         )
         organizer_counts = Counter(
