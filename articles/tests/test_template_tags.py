@@ -48,6 +48,10 @@ class ArticleRenderingTestCase(TestCase):
         got = process_article_args("[[Daze]]")
         self.assertEqual(self.daze_html, got.rstrip())
 
+    def test_single_card_does_not_exist(self):
+        got = process_article_args("[[Farmogoyf]]")
+        self.assertEqual("[[Farmogoyf]]", got)
+
     def test_decklist(self):
         decklist = DecklistFactory(
             id="ff521f2e-085c-4cc0-901b-600ec9a71dab",
