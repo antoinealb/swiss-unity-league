@@ -13,6 +13,7 @@
 # limitations under the License.
 
 import dataclasses
+from collections import Counter
 
 from django.views.generic import DetailView
 
@@ -103,6 +104,40 @@ class PlayerDetailsView(PerSeasonMixin, DetailView):
             results, key=lambda r: r[0].event.date, reverse=True
         )
 
+        context["profile"] = context["player"].playerprofile_set.last()
+        organizer_counts = Counter(
+            result.event.organizer.name for result, _ in context[LAST_RESULTS]
+        )
+        most_common_organizer = organizer_counts.most_common(1)
+        context["local_organizer_name"] = (
+            most_common_organizer[0][0] if most_common_organizer else None
+        )
+
+        if context["profile"]:
+
+            def accomplishments_sort_key(result_score):
+                result, score = result_score
+                if result.event.category == Event.Category.PREMIER:
+                    category = 1
+                elif result.event.category == Event.Category.REGIONAL:
+                    category = 2
+                else:
+                    category = 3
+
+                return (
+                    category,
+                    result.single_elimination_result or 16,
+                    result.ranking,
+                )
+
+            context["accomplishments"] = sorted(
+                context[LAST_RESULTS], key=accomplishments_sort_key
+            )[:3]
+
+            context["accomplishments"] = sorted(
+                context["accomplishments"], key=lambda r: r[0].event.date, reverse=True
+            )
+
         qp_table = {
             THEAD: [
                 "",
@@ -117,10 +152,7 @@ class PlayerDetailsView(PerSeasonMixin, DetailView):
             THEAD: ["", Event.Category.PREMIER.label, Event.Category.REGIONAL.label],
             TBODY: [],
         }
-        without_top_8_table = {
-            THEAD: ["", Event.Category.REGIONAL.label, Event.Category.REGULAR.label],
-            TBODY: [],
-        }
+
         for result, score in sorted(context[LAST_RESULTS]):
             add_to_table(
                 qp_table,
@@ -133,23 +165,12 @@ class PlayerDetailsView(PerSeasonMixin, DetailView):
                 column_title=result.event.get_category_display(),
                 row_title=EVENTS,
             )
-
-            if result.has_top8:
-                # For events with top 8 only display the results if the player made top 8
-                if result.single_elimination_result:
-                    add_to_table(
-                        with_top_8_table,
-                        column_title=result.event.get_category_display(),
-                        row_title=result.get_ranking_display(),
-                    )
-            else:
-                # For swiss rounds only display top 3 finishes
-                if result.ranking < 4:
-                    add_to_table(
-                        without_top_8_table,
-                        column_title=result.event.get_category_display(),
-                        row_title=result.get_ranking_display(),
-                    )
+            if result.single_elimination_result:
+                add_to_table(
+                    with_top_8_table,
+                    column_title=result.event.get_category_display(),
+                    row_title=result.get_ranking_display(),
+                )
 
         context[PERFORMANCE_PER_FORMAT] = self.performance_per_format(
             context[LAST_RESULTS]
@@ -162,10 +183,11 @@ class PlayerDetailsView(PerSeasonMixin, DetailView):
 
             context[QP_TABLE] = qp_table
 
-        context[TOP_FINISHES] = [
-            {"title": "Top 8 Finishes", TABLE: with_top_8_table},
-            {"title": "Best Swiss Round Finishes", TABLE: without_top_8_table},
-        ]
+        context["top_finish_table"] = {
+            "title": "Top 8 Finishes",
+            TABLE: with_top_8_table,
+        }
+
         return context
 
     def performance_per_format(self, results) -> dict[str, Performance]:

@@ -28,6 +28,7 @@ from .models import (
     EventOrganizer,
     OrganizerLeague,
     Player,
+    PlayerProfile,
     RecurrenceRule,
     RecurringEvent,
     Result,
@@ -104,6 +105,22 @@ class PlayerFactory(DjangoModelFactory):
         model = Player
 
     name = factory.Faker("name", locale="fr_CH")
+
+
+class PlayerProfileFactory(DjangoModelFactory):
+    class Meta:
+        model = PlayerProfile
+
+    player = factory.SubFactory(PlayerFactory)
+    pronouns = factory.Faker(
+        "random_element",
+        elements=PlayerProfile.Pronouns.values,
+    )
+    custom_pronouns = factory.Faker("text", max_nb_chars=20)
+    date_of_birth = factory.Faker("date_of_birth")
+    hometown = factory.Faker("city", locale="fr_CH")
+    bio = factory.Faker("paragraph", nb_sentences=3)
+    image = factory.Faker("image_url")
 
 
 RANKED_EVENT_CATEGORIES = [
