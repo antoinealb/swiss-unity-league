@@ -15,7 +15,7 @@
 from django import forms
 from django.contrib.auth.forms import UserCreationForm
 from django.contrib.auth.models import User
-from django.core.validators import ValidationError
+from django.core.exceptions import ValidationError
 
 import bleach
 from crispy_forms.helper import FormHelper
@@ -30,6 +30,7 @@ from .models import (
     EventOrganizer,
     Player,
     PlayerAlias,
+    PlayerProfile,
     RecurrenceRule,
     RecurringEvent,
     Result,
@@ -394,3 +395,46 @@ class RecurringEventForm(forms.ModelForm):
             "start_date": forms.DateInput(attrs={"type": "date"}),
             "end_date": forms.DateInput(attrs={"type": "date"}),
         }
+
+
+class PlayerProfileForm(forms.ModelForm, SubmitButtonMixin):
+    player_name = forms.CharField(
+        label="Player name",
+        max_length=100,
+        required=True,
+    )
+
+    class Meta:
+        model = PlayerProfile
+        fields = [
+            "player_name",
+            "pronouns",
+            "custom_pronouns",
+            "date_of_birth",
+            "hometown",
+            "occupation",
+            "bio",
+            "image",
+            "consent_for_website",
+            "consent_for_stream",
+        ]
+
+    def save(self, commit=True):
+        instance = super().save(commit=False)
+        instance.player = self.cleaned_data["player"]
+        if commit:
+            instance.save()
+        return instance
+
+    def clean(self):
+        cleaned_data = super().clean()
+        name = cleaned_data.get("player_name")
+        try:
+            player = PlayerAlias.objects.get(name=name).true_player
+        except PlayerAlias.DoesNotExist:
+            try:
+                player = Player.objects.get(name=name)
+            except Player.DoesNotExist:
+                raise ValidationError(f"Player '{name}' does not exist.")
+        cleaned_data["player"] = player
+        return cleaned_data

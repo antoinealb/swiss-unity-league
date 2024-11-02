@@ -624,6 +624,11 @@ class PlayerProfile(models.Model):
     For those who want we will show it permanently on their player page.
     """
 
+    class Status(models.TextChoices):
+        PENDING = "PENDING", "Pending"
+        APPROVED = "APPROVED", "Approved"
+        ARCHIVED = "ARCHIVED", "Archived"
+
     class Pronouns(models.TextChoices):
         HE_HIM = "HE_HIM", "He/Him"
         SHE_HER = "SHE_HER", "She/Her"
@@ -631,10 +636,15 @@ class PlayerProfile(models.Model):
         CUSTOM = "CUSTOM", "Custom"
 
     player = models.ForeignKey(Player, on_delete=models.CASCADE)
+    status = models.CharField(
+        max_length=20,
+        choices=Status.choices,
+        default=Status.PENDING,
+    )
     pronouns = models.CharField(
         max_length=20,
         choices=Pronouns.choices,
-        default=Pronouns.HE_HIM,
+        blank=True,
     )
     custom_pronouns = models.CharField(max_length=20, blank=True)
     date_of_birth = models.DateField(
@@ -657,6 +667,13 @@ class PlayerProfile(models.Model):
         blank=True,
         null=True,
         validators=[player_image_validator, validate_image_file_extension],
+    )
+    consent_for_website = models.BooleanField(
+        default=False,
+        help_text="I agree to have my player profile published on the website.",
+    )
+    consent_for_stream = models.BooleanField(
+        default=False, help_text="I agree to have my player profile shown on streams."
     )
 
     def age(self):

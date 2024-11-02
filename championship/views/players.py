@@ -15,9 +15,12 @@
 import dataclasses
 from collections import Counter
 
-from django.views.generic import DetailView
+from django.contrib import messages
+from django.urls import reverse
+from django.views.generic import CreateView, DetailView
 
-from championship.models import Event, Player, Result
+from championship.forms import PlayerProfileForm
+from championship.models import Event, Player, PlayerProfile, Result
 from championship.score import get_results_with_qps
 from championship.season import SEASONS_WITH_RANKING
 from championship.views.base import PerSeasonMixin
@@ -233,3 +236,15 @@ class PlayerDetailsView(PerSeasonMixin, DetailView):
         perf_per_format["Overall"] = sum(perf_per_format.values(), start=Performance())
 
         return perf_per_format
+
+
+class SubmitPlayerProfileView(CreateView):
+    model = PlayerProfile
+    form_class = PlayerProfileForm
+    template_name = "championship/submit_player_profile.html"
+
+    def get_success_url(self):
+        messages.success(
+            self.request, "Your player profile has been submitted for review."
+        )
+        return reverse("index")
