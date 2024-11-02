@@ -242,10 +242,10 @@ class PlayerDetailsView(PerSeasonMixin, DetailView):
         return perf_per_format
 
 
-class SubmitPlayerProfileView(CreateView):
+class CreatePlayerProfileView(CreateView):
     model = PlayerProfile
     form_class = PlayerProfileForm
-    template_name = "championship/submit_player_profile.html"
+    template_name = "championship/create_player_profile.html"
 
     def get_success_url(self):
         messages.success(
