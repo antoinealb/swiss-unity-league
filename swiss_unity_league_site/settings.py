@@ -35,7 +35,7 @@ from django.contrib.messages import constants as messages
 import cid.locals
 from prometheus_client import Info
 
-from championship.season import SEASON_2024
+from championship.season import SEASON_2025
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -311,8 +311,8 @@ DATE_FORMAT = "D, d.m.Y"
 USE_L10N = False
 
 
-INFO_TEXT_DEFAULT_SEASON = SEASON_2024
-DEFAULT_SEASON = SEASON_2024
+INFO_TEXT_DEFAULT_SEASON = SEASON_2025
+DEFAULT_SEASON = SEASON_2025
 
 CACHES = {
     "default": {
