@@ -19,7 +19,7 @@ from django.utils.safestring import mark_safe
 from articles.parser import CardTag, DecklistTag, extract_tags
 from decklists.models import Decklist
 from decklists.views import parse_section
-from oracle.models import get_card_by_name
+from oracle.models import Card, get_card_by_name
 
 register = template.Library()
 
@@ -34,9 +34,12 @@ def process_article_args(text: str):
         if isinstance(chunk, str):
             result.append(chunk)
         elif isinstance(chunk, CardTag):
-            card = get_card_by_name(chunk.card_name)
-            rendered = card_template.render(context={"card": card})
-            result.append(mark_safe(rendered))
+            try:
+                card = get_card_by_name(chunk.card_name)
+                rendered = card_template.render(context={"card": card})
+                result.append(mark_safe(rendered))
+            except Card.DoesNotExist:
+                result.append(f"[[{chunk.card_name}]]")
         elif isinstance(chunk, DecklistTag):
             try:
                 decklist = Decklist.objects.get(id=chunk.uid)
