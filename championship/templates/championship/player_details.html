@@ -25,7 +25,9 @@
                 {% if profile.hometown %}
                     <p>Hometown: <b>{{ profile.hometown }}</b></p>
                 {% endif %}
-                <p>Favorite Organizer: <b>{{ local_organizer_name }}</b></p>
+                {% if local_organizer_name %}
+                    <p>Favorite Organizer: <b>{{ local_organizer_name }}</b></p>
+                {% endif %}
                 {% if profile.occupation %}
                     <p>Occupation: <b>{{ profile.occupation }}</b></p>
                 {% endif %}
