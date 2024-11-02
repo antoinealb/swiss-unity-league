@@ -623,7 +623,8 @@ def player_image_validator(image):
 
 class PlayerProfile(models.Model):
     """
-    Represents a player's profile used to display more info about them.
+    Our top players will fill out such a profile each year that we will use for streams and coverage purposes.
+    For those who want we will show it permanently on their player page.
     """
 
     class Pronouns(models.TextChoices):
