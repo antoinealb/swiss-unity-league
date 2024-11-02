@@ -29,6 +29,9 @@
                 {% if profile.occupation %}
                     <p>Occupation: <b>{{ profile.occupation }}</b></p>
                 {% endif %}
+                {% if profile.team_name %}
+                    <p>Team: <b>{{ profile.team_name }}</b></p>
+                {% endif %}
                 {% if profile.bio %}
                     <p>{{ profile.bio|linebreaksbr }}</p>
                 {% endif %}

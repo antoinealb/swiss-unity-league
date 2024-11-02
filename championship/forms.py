@@ -415,9 +415,13 @@ class PlayerProfileForm(forms.ModelForm, SubmitButtonMixin):
             "occupation",
             "bio",
             "image",
+            "team_name",
             "consent_for_website",
             "consent_for_stream",
         ]
+        widgets = {
+            "date_of_birth": forms.DateInput(attrs={"type": "date"}),
+        }
 
     def save(self, commit=True):
         instance = super().save(commit=False)

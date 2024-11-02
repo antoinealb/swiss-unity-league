@@ -346,6 +346,7 @@ class PlayerDetailsProfileTest(TestCase):
         )
         self.assertContains(response, expected_name)
 
+
 class SubmitPlayerProfileViewTest(TestCase):
 
     def setUp(self):

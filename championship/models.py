@@ -668,6 +668,11 @@ class PlayerProfile(models.Model):
         null=True,
         validators=[player_image_validator, validate_image_file_extension],
     )
+    team_name = models.CharField(
+        max_length=200,
+        blank=True,
+        help_text="This year we form teams of 3-4 players. The best 3 swiss scores of each team will be added up. The best teams will receive a small prize. If you don't have a team yet, you can leave this field empty and we will assign a team to you.",
+    )
     consent_for_website = models.BooleanField(
         default=False,
         help_text="I agree to have my player profile published on the website.",
