@@ -1,5 +1,7 @@
 {% extends "championship/base.html" %}
 {% load bleach_tags %}
+{% load custom_tags %}
+
 
 {% block title %}
     {{ eventorganizer.name }}
@@ -116,6 +118,7 @@
                                     <th scope="col">Event</th>
                                     <th scope="col">Date</th>
                                     <th scope="col">Type</th>
+                                    <th scope="col">Format</th>
                                     {% if event_type.has_num_players %}
                                         <th scope="col">Participants</th>
                                     {% endif %}
@@ -125,8 +128,9 @@
                                 {% for event in event_type.list %}
                                     <tr>
                                         <td><a href="{% url 'event_details' event.id %}">{{event.name }}</a></td>
-                                        <td>{{ event.date }}</td>
+                                        <td>{{ event.date|weekday_date }}</td>
                                         <td>{{ event.get_category_display }}</td>
+                                        <td>{{ event.get_format_display }}</td>
                                         {% if event_type.has_num_players %}
                                             <td>
                                                 {% if event.num_players != 0 %}

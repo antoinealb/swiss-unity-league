@@ -12,9 +12,11 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+import datetime
 import re
 
 from django import template
+from django.utils import formats
 
 register = template.Library()
 
@@ -27,6 +29,14 @@ def rangeFilter(value):
 @register.simple_tag
 def verbose_name(model):
     return model._meta.verbose_name
+
+
+@register.filter
+def weekday_date(value):
+    if isinstance(value, datetime.date):
+        format_str = "D, d.m.Y"
+        return formats.date_format(value, format_str)
+    return value
 
 
 @register.filter(name="initials")

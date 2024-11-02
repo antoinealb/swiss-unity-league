@@ -154,6 +154,21 @@ class EventOrganizerDetailViewTests(TestCase):
             response, reverse("recurring_event_update", args=[recurring_event.id])
         )
 
+    def test_shows_event_formats(self):
+        self.response = self.client.get(
+            reverse("organizer_details", args=[self.organizer.id])
+        )
+        self.assertContains(self.response, self.future_event.get_format_display())
+        self.assertContains(self.response, self.past_event.get_format_display())
+
+    def test_shows_correct_date_format(self):
+        self.past_event.date = datetime.date(2024, 11, 1)
+        self.past_event.save()
+        self.response = self.client.get(
+            reverse("organizer_details", args=[self.organizer.id])
+        )
+        self.assertContains(self.response, "Fri, 01.11.2024")
+
 
 class OrganizerImageValidation(TestCase):
 
