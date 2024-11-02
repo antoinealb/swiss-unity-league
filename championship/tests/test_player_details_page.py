@@ -377,6 +377,7 @@ class SubmitPlayerProfileViewTest(TestCase):
             "hometown": "New York",
             "occupation": "Software Engineer",
             "bio": "I love playing Magic!",
+            "team_name": "My Team",
             "consent_for_website": True,
             "consent_for_stream": True,
         }
@@ -391,6 +392,7 @@ class SubmitPlayerProfileViewTest(TestCase):
         self.assertEqual(profile.hometown, "New York")
         self.assertEqual(profile.occupation, "Software Engineer")
         self.assertEqual(profile.bio, "I love playing Magic!")
+        self.assertEqual(profile.team_name, "My Team")
         self.assertTrue(profile.consent_for_website)
         self.assertTrue(profile.consent_for_stream)
         self.assertEqual(profile.status, PlayerProfile.Status.PENDING)
