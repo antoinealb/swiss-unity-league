@@ -107,7 +107,11 @@ class PlayerDetailsView(PerSeasonMixin, DetailView):
             results, key=lambda r: r[0].event.date, reverse=True
         )
 
-        context["profile"] = context["player"].playerprofile_set.last()
+        context["profile"] = (
+            context["player"]
+            .playerprofile_set.filter(status=PlayerProfile.Status.APPROVED)
+            .last()
+        )
         organizer_counts = Counter(
             result.event.organizer.name for result, _ in context[LAST_RESULTS]
         )

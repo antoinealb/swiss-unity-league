@@ -306,6 +306,7 @@ class PlayerDetailsProfileTest(TestCase):
 
     def test_empty_player_profile(self):
         self.profile = PlayerProfile.objects.create(
+            status=PlayerProfile.Status.APPROVED,
             player=PlayerFactory(),
         )
         ResultFactory(
@@ -317,6 +318,14 @@ class PlayerDetailsProfileTest(TestCase):
     def test_no_profile(self):
         player = PlayerFactory()
         response = self.get_player_details_2023(player)
+        self.assertNotContains(response, "Accomplishments")
+
+    def test_pending_player_profile_not_shown(self):
+        self.profile = PlayerProfileFactory(status=PlayerProfile.Status.PENDING)
+        ResultFactory(
+            player=self.profile.player,
+        )
+        response = self.get_player_details_2023(self.profile.player)
         self.assertNotContains(response, "Accomplishments")
 
     def test_pronouns(self):
