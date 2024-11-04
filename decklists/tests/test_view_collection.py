@@ -37,6 +37,17 @@ class CollectionViewTestCase(TestCase):
         resp = self.client.get(reverse("collection-details", args=[collection.id]))
         self.assertEqual(HTTP_200_OK, resp.status_code)
         self.assertIn("collection", resp.context)
+        self.assertContains(resp, collection.name)
+
+    def test_collection_shows_event_name(self):
+        collection = CollectionFactory(name_override="")
+        resp = self.client.get(reverse("collection-details", args=[collection.id]))
+        self.assertContains(resp, collection.event.name)
+
+    def test_collection_shows_format(self):
+        collection = CollectionFactory()
+        resp = self.client.get(reverse("collection-details", args=[collection.id]))
+        self.assertContains(resp, f"Format: {collection.get_format_display()}")
 
     def test_decklists_are_sorted(self):
         """Checks that decklists are sorted correctly.

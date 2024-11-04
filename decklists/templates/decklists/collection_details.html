@@ -1,13 +1,14 @@
 {% extends "championship/base.html" %}
 
 {% block title %}
-    {{ collection.name }}
+    {{ collection.name }} - {{ collection.get_format_display }}
 {% endblock %}
 
 {% block content %}
     <h1>{{ collection.name }}
         <small class="text-muted">by {{ collection.event.organizer.name }}</small>
     </h1>
+    <p class="h3">Format: {{ collection.get_format_display }}</p>
     <p>Submission deadline: {{ collection.submission_deadline }}</p>
     {% if not collection.is_past_deadline %}
         <p><a href="{% url 'decklist-create' %}?collection={{ collection.id }}" class="btn btn-secondary-light">Submit decklist</a></p>
