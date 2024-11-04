@@ -87,18 +87,19 @@ class ScoreMethod2024:
         category = result.event.category
         points = result.points + cls.PARTICIPATION_POINTS
         points = points * cls.MULT[category]
-        if result.single_elimination_result:
-            points += cls.POINTS_FOR_TOP[category][result.single_elimination_result]
-        elif has_top_8:
-            # If the event has a top 8, but the player didn't make it, they can
-            # still get extra points if their match point rate (mpr) is higher than the
-            # threshold of 70% or 65%.
-            maximum_match_points = 3.0 * total_rounds
-            for mpr_threshold, points_for_mpr in cls.POINTS_FOR_MATCHPOINT_RATE:
-                players_mpr = result.points / maximum_match_points
-                if players_mpr >= mpr_threshold:
-                    points += points_for_mpr[category]
-                    break
+        if category in cls.POINTS_FOR_TOP:
+            if result.single_elimination_result:
+                points += cls.POINTS_FOR_TOP[category][result.single_elimination_result]
+            elif has_top_8:
+                # If the event has a top 8, but the player didn't make it, they can
+                # still get extra points if their match point rate (mpr) is higher than the
+                # threshold of 70% or 65%.
+                maximum_match_points = 3.0 * total_rounds
+                for mpr_threshold, points_for_mpr in cls.POINTS_FOR_MATCHPOINT_RATE:
+                    players_mpr = result.points / maximum_match_points
+                    if players_mpr >= mpr_threshold:
+                        points += points_for_mpr[category]
+                        break
         return points
 
     @classmethod
