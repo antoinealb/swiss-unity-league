@@ -1064,7 +1064,6 @@ class AddTop8Results(TestCase):
         self.organizer = EventOrganizerFactory(user=self.user)
         self.event = RankedEventFactory(
             organizer=self.organizer,
-            category=Event.Category.REGIONAL,
             date=datetime.date.today(),
         )
 
@@ -1149,20 +1148,6 @@ class AddTop8Results(TestCase):
             data=self.data,
         )
         self.assertEqual(404, resp.status_code)
-
-    def test_result_top8_not_allowed_for_regular_events(self):
-        self.event.category = Event.Category.REGULAR
-        self.event.save()
-        resp = self.client.post(
-            reverse("results_top8_add", args=(self.event.id,)),
-            data=self.data,
-            follow=True,
-        )
-        self.assertRedirects(resp, reverse("event_details", args=(self.event.id,)))
-        self.assertIn("Top 8 are not allowed at SUL Regular.", resp.content.decode())
-        self.assertIsNone(
-            Result.objects.get(id=self.winner.id).single_elimination_result
-        )
 
     def test_result_top8_not_allowed_for_old_events(self):
         self.event.date = datetime.date.today() - datetime.timedelta(days=32)

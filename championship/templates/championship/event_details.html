@@ -79,9 +79,7 @@
                         <a href="{% url 'recurring_event_create' event.id %}" class="btn btn-secondary">Schedule as Event Series</a>
                     {% endif %}
                     {% if event.can_be_edited and results %}
-                        {% if event.can_have_top8 %}
-                            <a href="{% url 'results_top8_add' event.id %}" class="btn btn-secondary">Add/Edit Playoffs Results</a>
-                        {% endif %}
+                        <a href="{% url 'results_top8_add' event.id %}" class="btn btn-secondary">Add/Edit Playoffs Results</a>
                         <a href="{% url 'event_clear_results' event.id %}" class="btn btn-danger">Delete results</a>
                     {% endif %}
                 </div>

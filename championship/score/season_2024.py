@@ -87,6 +87,9 @@ class ScoreMethod2024:
         category = result.event.category
         points = result.points + cls.PARTICIPATION_POINTS
         points = points * cls.MULT[category]
+        if category not in cls.POINTS_FOR_TOP:
+            return points
+
         if result.single_elimination_result:
             points += cls.POINTS_FOR_TOP[category][result.single_elimination_result]
         elif has_top_8:
@@ -99,6 +102,7 @@ class ScoreMethod2024:
                 if players_mpr >= mpr_threshold:
                     points += points_for_mpr[category]
                     break
+
         return points
 
     @classmethod

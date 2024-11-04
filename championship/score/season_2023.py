@@ -72,6 +72,9 @@ class ScoreMethod2023:
         points = result.points + cls.PARTICIPATION_POINTS
         points = points * cls.MULT[category]
 
+        if category not in cls.POINTS_FOR_TOP:
+            return points
+
         if result.single_elimination_result:
             points += cls.POINTS_FOR_TOP[category][result.single_elimination_result]
         elif has_top_8:

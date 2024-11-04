@@ -48,6 +48,12 @@ class ScoreMethod2025:
             Result.SingleEliminationResult.SEMI_FINALIST: 40,
             Result.SingleEliminationResult.QUARTER_FINALIST: 30,
         },
+        Event.Category.REGULAR: {
+            Result.SingleEliminationResult.WINNER: 12,
+            Result.SingleEliminationResult.FINALIST: 9,
+            Result.SingleEliminationResult.SEMI_FINALIST: 6,
+            Result.SingleEliminationResult.QUARTER_FINALIST: 3,
+        },
     }
     POINTS_FOR_MATCHPOINT_RATE = [
         (

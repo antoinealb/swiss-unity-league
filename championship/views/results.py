@@ -564,10 +564,6 @@ class AddTop8ResultsView(LoginRequiredMixin, FormView):
     def form_valid(self, form):
         self.event = Event.objects.get(id=self.kwargs["pk"])
 
-        if self.event.category == Event.Category.REGULAR:
-            messages.error(self.request, "Top 8 are not allowed at SUL Regular.")
-            return super().form_valid(form)
-
         if not self.event.can_be_edited():
             messages.error(
                 self.request, "Event too old to add or change the playoffs results."

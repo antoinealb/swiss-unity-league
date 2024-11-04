@@ -179,6 +179,22 @@ class ScoresWithTop8TestCase(TestCase):
                 gotScore = self.score(10, ranking)
                 self.assertEqual(wantScore, gotScore)
 
+    def test_regular_event(self):
+        self.event.category = Event.Category.REGULAR
+        self.event.save()
+        testCases = [
+            (Result.SingleEliminationResult.WINNER, 0),
+            (Result.SingleEliminationResult.FINALIST, 0),
+            (Result.SingleEliminationResult.SEMI_FINALIST, 0),
+            (Result.SingleEliminationResult.QUARTER_FINALIST, 0),
+        ]
+
+        for ranking, points in testCases:
+            with self.subTest(f"{ranking.label}"):
+                wantScore = (10 + 3) + points
+                gotScore = self.score(10, ranking)
+                self.assertEqual(wantScore, gotScore)
+
 
 class ScoresWithMatchPointRateTestCase(TestCase):
     def setUp(self):
