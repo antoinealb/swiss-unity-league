@@ -36,6 +36,7 @@ class DecklistPublishedListFilter(admin.SimpleListFilter):
 
 class CollectionAdmin(admin.ModelAdmin):
     date_hierarchy = "submission_deadline"
+    autocomplete_fields = ["event"]
     list_display = (
         "name",
         "owner_name",
