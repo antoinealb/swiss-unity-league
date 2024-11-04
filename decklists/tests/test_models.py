@@ -27,7 +27,7 @@ class CollectionTest(TestCase):
         eo = EventOrganizerFactory(name="Leonin League")
         event = EventFactory(organizer=eo)
         collection = Collection(
-            name="Foobar",
+            name_override="Foobar",
             submission_deadline=datetime.datetime.now(),
             event=event,
         )
