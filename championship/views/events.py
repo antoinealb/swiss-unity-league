@@ -30,6 +30,7 @@ from championship.score import get_results_with_qps
 from championship.season import SEASON_LIST, find_season_by_slug
 from championship.serializers import EventSerializer
 from championship.views.base import CustomDeleteView
+from decklists.models import Collection
 
 
 class EventDetailsView(DetailView):
@@ -40,8 +41,10 @@ class EventDetailsView(DetailView):
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         event = context["event"]
-        results = get_results_with_qps(
-            Result.objects.filter(event=event).select_related("player")
+        results = list(
+            get_results_with_qps(
+                Result.objects.filter(event=event).select_related("player")
+            )
         )
 
         context["can_edit_results"] = (
@@ -49,9 +52,27 @@ class EventDetailsView(DetailView):
         ) or self.request.user.is_superuser
 
         context["results"] = sorted(results)
-        context["has_decklists"] = any(
-            result.decklist_url for result, _ in context["results"]
-        )
+
+        context["unmatched_decklists"] = []
+        for collection in Collection.objects.filter(event=event).prefetch_related(
+            "decklist_set"
+        ):
+            for decklist in collection.decklist_set.all():
+                result = next(
+                    (
+                        result
+                        for result, _ in results
+                        if result.player == decklist.player
+                    ),
+                    None,
+                )
+                if result is None:
+                    context["unmatched_decklists"].append(decklist)
+                else:
+                    context["has_decklists"] = True
+                    if not hasattr(result, "decklists"):
+                        result.decklists = []
+                    result.decklists.append(decklist)
 
         # Prompt the players to notify the organizer that they forgot to upload results
         # Only do so when the event is finished longer than 4 days ago and results can still be uploaded.
