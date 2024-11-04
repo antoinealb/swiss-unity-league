@@ -183,10 +183,10 @@ class ScoresWithTop8TestCase(TestCase):
         self.event.category = Event.Category.REGULAR
         self.event.save()
         testCases = [
-            (Result.SingleEliminationResult.WINNER, 9),
-            (Result.SingleEliminationResult.FINALIST, 6),
-            (Result.SingleEliminationResult.SEMI_FINALIST, 3),
-            (Result.SingleEliminationResult.QUARTER_FINALIST, 0),
+            (Result.SingleEliminationResult.WINNER, 12),
+            (Result.SingleEliminationResult.FINALIST, 9),
+            (Result.SingleEliminationResult.SEMI_FINALIST, 6),
+            (Result.SingleEliminationResult.QUARTER_FINALIST, 3),
         ]
 
         for ranking, points in testCases:
