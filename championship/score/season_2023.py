@@ -71,22 +71,25 @@ class ScoreMethod2023:
         category = result.event.category
         points = result.points + cls.PARTICIPATION_POINTS
         points = points * cls.MULT[category]
-        if category in cls.POINTS_FOR_TOP:
-            if result.single_elimination_result:
-                points += cls.POINTS_FOR_TOP[category][result.single_elimination_result]
-            elif has_top_8:
-                # For large tournaments, we award points for placing, even outside of
-                # top8. See the rules for explanation
-                if event_size > 32 and 9 <= result.ranking <= 12:
-                    points += cls.POINTS_TOP_9_12[category]
-                elif event_size > 48 and 13 <= result.ranking <= 16:
-                    points += cls.POINTS_TOP_13_16[category]
-                elif result.ranking <= 8:
-                    # If we are in this case, it means the event did not play a top8,
-                    # only a top4, and we still need to award points for 5th-8th.
-                    points += cls.POINTS_FOR_TOP[category][
-                        Result.SingleEliminationResult.QUARTER_FINALIST
-                    ]
+
+        if category not in cls.POINTS_FOR_TOP:
+            return points
+
+        if result.single_elimination_result:
+            points += cls.POINTS_FOR_TOP[category][result.single_elimination_result]
+        elif has_top_8:
+            # For large tournaments, we award points for placing, even outside of
+            # top8. See the rules for explanation
+            if event_size > 32 and 9 <= result.ranking <= 12:
+                points += cls.POINTS_TOP_9_12[category]
+            elif event_size > 48 and 13 <= result.ranking <= 16:
+                points += cls.POINTS_TOP_13_16[category]
+            elif result.ranking <= 8:
+                # If we are in this case, it means the event did not play a top8,
+                # only a top4, and we still need to award points for 5th-8th.
+                points += cls.POINTS_FOR_TOP[category][
+                    Result.SingleEliminationResult.QUARTER_FINALIST
+                ]
 
         return points
 
