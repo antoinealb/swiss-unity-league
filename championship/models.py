@@ -484,9 +484,6 @@ class Event(models.Model):
             return ""
         return f"types/icons/{self.category.lower()}.png"
 
-    def can_have_top8(self) -> bool:
-        return self.category != Event.Category.REGULAR
-
     def can_be_edited(self) -> bool:
         """Returns whether changing the Event or its Results is allowed.
 
