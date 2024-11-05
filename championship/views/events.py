@@ -17,6 +17,7 @@ from typing import Any
 
 from django.contrib import messages
 from django.contrib.auth.mixins import LoginRequiredMixin
+from django.db.models import Prefetch
 from django.http import Http404, HttpResponseForbidden, HttpResponseRedirect
 from django.urls import reverse
 from django.views.generic import DetailView
@@ -30,6 +31,7 @@ from championship.score import get_results_with_qps
 from championship.season import SEASON_LIST, find_season_by_slug
 from championship.serializers import EventSerializer
 from championship.views.base import CustomDeleteView
+from decklists.models import Collection, Decklist
 
 
 class EventDetailsView(DetailView):
@@ -40,8 +42,10 @@ class EventDetailsView(DetailView):
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         event = context["event"]
-        results = get_results_with_qps(
-            Result.objects.filter(event=event).select_related("player")
+        results = list(
+            get_results_with_qps(
+                Result.objects.filter(event=event).select_related("player")
+            )
         )
 
         context["can_edit_results"] = (
@@ -49,9 +53,7 @@ class EventDetailsView(DetailView):
         ) or self.request.user.is_superuser
 
         context["results"] = sorted(results)
-        context["has_decklists"] = any(
-            result.decklist_url for result, _ in context["results"]
-        )
+        self.attach_decklists_to_results(results, context)
 
         # Prompt the players to notify the organizer that they forgot to upload results
         # Only do so when the event is finished longer than 4 days ago and results can still be uploaded.
@@ -61,6 +63,38 @@ class EventDetailsView(DetailView):
             and event.category != Event.Category.OTHER
         )
         return context
+
+    def attach_decklists_to_results(self, results, context):
+        """For each player find their most recent decklist in the collection and attach it to their result.
+        If the player doesn't have a result, we show the decklist in the unmatched decklists section.
+        """
+        event = context["event"]
+        context["unmatched_decklists"] = []
+        for collection in Collection.objects.filter(
+            event=event,
+            publication_time__lte=datetime.datetime.now(),
+        ).prefetch_related(
+            Prefetch(
+                "decklist_set", queryset=Decklist.objects.order_by("-last_modified")
+            )
+        ):
+            for decklist in collection.decklist_set.all():
+                result = next(
+                    (
+                        result
+                        for result, _ in results
+                        if result.player == decklist.player
+                    ),
+                    None,
+                )
+                if result is None:
+                    context["unmatched_decklists"].append(decklist)
+                else:
+                    context["has_decklists"] = True
+                    if not hasattr(result, "decklists"):
+                        result.decklists = []
+                    if not any([d.collection == collection for d in result.decklists]):
+                        result.decklists.append(decklist)
 
 
 class CreateEventView(LoginRequiredMixin, FormView):

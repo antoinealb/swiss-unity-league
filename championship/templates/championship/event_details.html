@@ -113,7 +113,7 @@
                         <th scope="col">Match Points</th>
                         <th scope="col">Record</th>
                         <th scope="col">SUL Points</th>
-                        {% if has_decklists %} <th scope="col">Decklist</th> {% endif %}
+                        {% if has_decklists %} <th scope="col">Decklists</th> {% endif %}
                         {% if can_edit_results %} <th scope="col"></th> {% endif %}
                     </tr>
                 </thead>
@@ -133,15 +133,9 @@
                             <td>{{ s.qps }}</td>
                             {% if has_decklists %}
                                 <td>
-                                    {% if r.decklist_url %}
-                                        <a href="{{ r.decklist_url }}" target="_blank" title="View the decklist of {{ r.player_name }}">
-                                            {% if r.deck_name %}
-                                                {{ r.deck_name }}
-                                            {% else %}
-                                                View Decklist
-                                            {% endif %}
-                                        </a>
-                                    {% endif %}
+                                    {% for decklist in r.decklists %}
+                                        <a href="{{ decklist.get_absolute_url }}" target="_blank" title="View the {{ decklist.archetype }} decklist of {{ r.player_name }}">{{ decklist.archetype }}</a>{% if not forloop.last %},{% endif %}
+                                    {% endfor %}
                                 </td>
                             {% endif %}
                             {% if can_edit_results %}
@@ -154,16 +148,22 @@
         </div>
         <p>
             <small>
-                To ensure correct results, always enter your real name in the tournament software. If you find any errors, contact the organizer of this tournament or email <a href="mailto:leoninleague@gmail.com"><u>leoninleague@gmail.com</u></a>.
+                {% if notify_missing_results %}
+                    The organizer has not yet uploaded results for this event. Please notify the organizer or write an email to <a href="mailto:leoninleague@gmail.com"><u>leoninleague@gmail.com</u></a>.
+                {% else %}
+                    To ensure correct results, always enter your real name in the tournament software. If you find any errors, contact the organizer of this tournament or email <a href="mailto:leoninleague@gmail.com"><u>leoninleague@gmail.com</u></a>.
+                {% endif %}
             </small>
         </p>
-    {% else %}
-        {% if notify_missing_results %}
-            <p>
-                <small>
-                    The organizer has not yet uploaded results for this event. Please notify the organizer or write an email to <a href="mailto:leoninleague@gmail.com"><u>leoninleague@gmail.com</u></a>.
-                </small>
-            </p>
+        {% if unmatched_decklists %}
+            <h4>Unmatched decklists</h4>
+            <ul>
+                {% for decklist in unmatched_decklists %}
+                    <li>
+                        <a href="{{ decklist.get_absolute_url }}" target="_blank">{{ decklist.archetype }}</a> by {{ decklist.player.name }}
+                    </li>
+                {% endfor %}
+            </ul>
         {% endif %}
     {% endif %}
 {% endblock %}
