@@ -54,9 +54,10 @@ class EventDetailsView(DetailView):
         context["results"] = sorted(results)
 
         context["unmatched_decklists"] = []
-        for collection in Collection.objects.filter(event=event).prefetch_related(
-            "decklist_set"
-        ):
+        for collection in Collection.objects.filter(
+            event=event,
+            publication_time__lt=datetime.datetime.now(),
+        ).prefetch_related("decklist_set"):
             for decklist in collection.decklist_set.all():
                 result = next(
                     (
