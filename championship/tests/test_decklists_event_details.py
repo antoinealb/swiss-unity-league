@@ -12,17 +12,15 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-import datetime
-
 from django.test import TestCase
 from django.urls import reverse
+from django.utils import timezone
 
 from championship.factories import ResultFactory
 from decklists.factories import DecklistFactory
 
 
 class DecklistViewTestCase(TestCase):
-    databases = ["oracle", "default"]
 
     def setUp(self):
         self.result = ResultFactory()
@@ -31,7 +29,7 @@ class DecklistViewTestCase(TestCase):
         self.decklist = DecklistFactory(
             player=self.player,
             collection__event=self.event,
-            collection__publication_time=datetime.datetime.now(),
+            collection__publication_time=timezone.now() - timezone.timedelta(hours=1),
         )
 
     def test_can_get_decklists(self):
@@ -53,16 +51,17 @@ class DecklistViewTestCase(TestCase):
         self.assertContains(resp, "Unmatched decklists")
 
     def test_doesnt_show_unpublished_decklists(self):
-        unpublished_decklist = DecklistFactory(
-            player=self.player,
-            collection__event=self.event,
+        self.decklist.collection.publication_time = timezone.now() + timezone.timedelta(
+            hours=1
         )
+        self.decklist.collection.save()
         resp = self.client.get(reverse("event_details", args=[self.event.id]))
-        self.assertNotContains(resp, unpublished_decklist.archetype)
-        self.assertNotContains(resp, unpublished_decklist.get_absolute_url())
+        self.assertNotContains(resp, self.decklist.archetype)
+        self.assertNotContains(resp, self.decklist.get_absolute_url())
 
     def test_only_shows_most_recent_decklist_of_collection(self):
         most_recent_decklist = DecklistFactory(
+            archetype="Most recent decklist",
             player=self.player,
             collection=self.decklist.collection,
         )
