@@ -53,7 +53,22 @@ class EventDetailsView(DetailView):
         ) or self.request.user.is_superuser
 
         context["results"] = sorted(results)
+        self.attach_decklists_to_results(results, context)
 
+        # Prompt the players to notify the organizer that they forgot to upload results
+        # Only do so when the event is finished longer than 4 days ago and results can still be uploaded.
+        context["notify_missing_results"] = (
+            event.date < datetime.date.today() - datetime.timedelta(days=4)
+            and event.can_be_edited()
+            and event.category != Event.Category.OTHER
+        )
+        return context
+
+    def attach_decklists_to_results(self, results, context):
+        """For each player find their most recent decklist in the collection and attach it to their result.
+        If the player doesn't have a result, we show the decklist in the unmatched decklists section.
+        """
+        event = context["event"]
         context["unmatched_decklists"] = []
         for collection in Collection.objects.filter(
             event=event,
@@ -80,15 +95,6 @@ class EventDetailsView(DetailView):
                         result.decklists = []
                     if not any([d.collection == collection for d in result.decklists]):
                         result.decklists.append(decklist)
-
-        # Prompt the players to notify the organizer that they forgot to upload results
-        # Only do so when the event is finished longer than 4 days ago and results can still be uploaded.
-        context["notify_missing_results"] = (
-            event.date < datetime.date.today() - datetime.timedelta(days=4)
-            and event.can_be_edited()
-            and event.category != Event.Category.OTHER
-        )
-        return context
 
 
 class CreateEventView(LoginRequiredMixin, FormView):
