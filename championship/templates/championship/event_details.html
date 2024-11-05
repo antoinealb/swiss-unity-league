@@ -159,9 +159,9 @@
             <h4>Unmatched decklists</h4>
             <ul>
                 {% for decklist in unmatched_decklists %}
-                <li>
-                    <a href="{{ decklist.get_absolute_url }}" target="_blank">{{ decklist.archetype }}</a> by {{ decklist.player.name }}
-                </li>
+                    <li>
+                        <a href="{{ decklist.get_absolute_url }}" target="_blank">{{ decklist.archetype }}</a> by {{ decklist.player.name }}
+                    </li>
                 {% endfor %}
             </ul>
         {% endif %}
