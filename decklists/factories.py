@@ -23,7 +23,6 @@ from faker.providers import BaseProvider
 
 import championship.factories
 import decklists.models
-from championship.models import Event
 
 
 class MagicProvider(BaseProvider):
@@ -73,10 +72,6 @@ class CollectionFactory(DjangoModelFactory):
         start_date=datetime.timedelta(seconds=60),
         end_date=datetime.timedelta(hours=1),
         tzinfo=timezone.get_current_timezone(),
-    )
-    format = factory.Faker(
-        "random_element",
-        elements=Event.Format.values,
     )
 
     event = factory.SubFactory(championship.factories.EventFactory)
