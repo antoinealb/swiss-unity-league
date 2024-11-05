@@ -31,8 +31,10 @@ class Collection(models.Model):
     For example, one group could be "Decklists for the Modern portion of the 2024 trial".
     """
 
-    name = models.CharField(
-        help_text="Human readable name of the Collection", max_length=128
+    name_override = models.CharField(
+        help_text="Name of the Decklist Collection. If left empty, we will show the name of the event.",
+        max_length=128,
+        blank=True,
     )
     submission_deadline = models.DateTimeField(
         help_text="Time until new decklists can be created for this group or existing ones can be edited."
@@ -45,9 +47,28 @@ class Collection(models.Model):
         help_text="Event for which those decklists are.",
         on_delete=models.CASCADE,
     )
+    format_override = models.CharField(
+        verbose_name="Format",
+        choices=Event.Format.choices,
+        max_length=10,
+        null=True,
+        blank=True,
+        help_text="Format of the decklist. If left empty, we will use the format of the event.",
+    )
 
     def __str__(self) -> str:
         return f"{self.name} (by {self.event.organizer.name})"
+
+    @property
+    def name(self):
+        return self.name_override or self.event.name
+
+    @property
+    def format(self):
+        return self.format_override or self.event.format
+
+    def get_format_display(self):
+        return Event.Format(self.format).label
 
     def is_past_deadline(self):
         return timezone.now() > self.submission_deadline

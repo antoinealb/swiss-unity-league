@@ -59,7 +59,7 @@ class CollectionFactory(DjangoModelFactory):
         model = decklists.models.Collection
 
     # mtg_event_name is provided by championship.factories
-    name = factory.Faker("mtg_event_name")
+    name_override = factory.Faker("mtg_event_name")
     # Deadline is by default between one minute and one hour in the future
     submission_deadline = factory.Faker(
         "date_time_between",

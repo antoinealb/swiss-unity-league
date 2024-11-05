@@ -19,6 +19,7 @@ from django.utils import timezone
 from rest_framework.status import HTTP_200_OK
 
 from championship.factories import EventFactory, EventOrganizerFactory, PlayerFactory
+from championship.models import Event
 from decklists.factories import CollectionFactory, DecklistFactory
 from decklists.models import Decklist
 
@@ -37,6 +38,22 @@ class CollectionViewTestCase(TestCase):
         resp = self.client.get(reverse("collection-details", args=[collection.id]))
         self.assertEqual(HTTP_200_OK, resp.status_code)
         self.assertIn("collection", resp.context)
+        self.assertContains(resp, collection.name)
+
+    def test_collection_shows_event_name(self):
+        collection = CollectionFactory(name_override="")
+        resp = self.client.get(reverse("collection-details", args=[collection.id]))
+        self.assertContains(resp, collection.event.name)
+
+    def test_collection_shows_format(self):
+        collection = CollectionFactory(format_override=Event.Format.EDH)
+        resp = self.client.get(reverse("collection-details", args=[collection.id]))
+        self.assertContains(resp, f"Format: {Event.Format.EDH.label}")
+
+    def test_shows_event_format_by_default(self):
+        collection = CollectionFactory()
+        resp = self.client.get(reverse("collection-details", args=[collection.id]))
+        self.assertContains(resp, f"Format: {collection.event.get_format_display()}")
 
     def test_decklists_are_sorted(self):
         """Checks that decklists are sorted correctly.
