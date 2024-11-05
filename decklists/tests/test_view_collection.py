@@ -38,12 +38,12 @@ class CollectionViewTestCase(TestCase):
         resp = self.client.get(reverse("collection-details", args=[collection.id]))
         self.assertEqual(HTTP_200_OK, resp.status_code)
         self.assertIn("collection", resp.context)
-        self.assertContains(resp, collection.name)
-
-    def test_collection_shows_event_name(self):
-        collection = CollectionFactory(name_override="")
-        resp = self.client.get(reverse("collection-details", args=[collection.id]))
         self.assertContains(resp, collection.event.name)
+
+    def test_collection_shows_name_override(self):
+        collection = CollectionFactory(name_override="Foobar")
+        resp = self.client.get(reverse("collection-details", args=[collection.id]))
+        self.assertContains(resp, "Foobar")
 
     def test_collection_shows_format(self):
         collection = CollectionFactory(format_override=Event.Format.EDH)
