@@ -17,6 +17,7 @@ from typing import Any
 
 from django.contrib import messages
 from django.contrib.auth.mixins import LoginRequiredMixin
+from django.db.models import Prefetch
 from django.http import Http404, HttpResponseForbidden, HttpResponseRedirect
 from django.urls import reverse
 from django.views.generic import DetailView
@@ -30,7 +31,7 @@ from championship.score import get_results_with_qps
 from championship.season import SEASON_LIST, find_season_by_slug
 from championship.serializers import EventSerializer
 from championship.views.base import CustomDeleteView
-from decklists.models import Collection
+from decklists.models import Collection, Decklist
 
 
 class EventDetailsView(DetailView):
@@ -57,7 +58,11 @@ class EventDetailsView(DetailView):
         for collection in Collection.objects.filter(
             event=event,
             publication_time__lt=datetime.datetime.now(),
-        ).prefetch_related("decklist_set"):
+        ).prefetch_related(
+            Prefetch(
+                "decklist_set", queryset=Decklist.objects.order_by("-last_modified")
+            )
+        ):
             for decklist in collection.decklist_set.all():
                 result = next(
                     (
@@ -73,7 +78,8 @@ class EventDetailsView(DetailView):
                     context["has_decklists"] = True
                     if not hasattr(result, "decklists"):
                         result.decklists = []
-                    result.decklists.append(decklist)
+                    if not any([d.collection == collection for d in result.decklists]):
+                        result.decklists.append(decklist)
 
         # Prompt the players to notify the organizer that they forgot to upload results
         # Only do so when the event is finished longer than 4 days ago and results can still be uploaded.

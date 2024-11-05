@@ -61,3 +61,14 @@ class DecklistViewTestCase(TestCase):
         resp = self.client.get(reverse("event_details", args=[self.event.id]))
         self.assertNotContains(resp, unpublished_decklist.archetype)
         self.assertNotContains(resp, unpublished_decklist.get_absolute_url())
+
+    def test_only_shows_most_recent_decklist_of_collection(self):
+        most_recent_decklist = DecklistFactory(
+            player=self.player,
+            collection=self.decklist.collection,
+        )
+        resp = self.client.get(reverse("event_details", args=[self.event.id]))
+        self.assertNotContains(resp, self.decklist.archetype)
+        self.assertNotContains(resp, self.decklist.get_absolute_url())
+        self.assertContains(resp, most_recent_decklist.archetype)
+        self.assertContains(resp, most_recent_decklist.get_absolute_url())
