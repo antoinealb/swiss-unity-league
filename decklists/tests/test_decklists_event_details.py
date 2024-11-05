@@ -14,12 +14,9 @@
 
 from django.test import TestCase
 from django.urls import reverse
-from django.utils import timezone
-from rest_framework.status import HTTP_200_OK
 
-from championship.factories import EventFactory, PlayerFactory, ResultFactory
-from decklists.factories import CollectionFactory, DecklistFactory
-from oracle.factories import CardFactory
+from championship.factories import ResultFactory
+from decklists.factories import DecklistFactory
 
 
 class DecklistViewTestCase(TestCase):
