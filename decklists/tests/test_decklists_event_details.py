@@ -42,8 +42,7 @@ class DecklistViewTestCase(TestCase):
 
     def test_shows_decklists_without_results(self):
         decklist_without_result = DecklistFactory(
-            collection__event=self.event,
-            collection__publication_time=datetime.datetime.now(),
+            collection=self.decklist.collection,
         )
         resp = self.client.get(reverse("event_details", args=[self.event.id]))
         self.assertContains(resp, self.decklist.archetype)
