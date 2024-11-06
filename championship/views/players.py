@@ -15,9 +15,12 @@
 import dataclasses
 from collections import Counter
 
-from django.views.generic import DetailView
+from django.contrib import messages
+from django.urls import reverse_lazy
+from django.views.generic import CreateView, DetailView
 
-from championship.models import Event, Player, Result
+from championship.forms import PlayerProfileForm
+from championship.models import Event, Player, PlayerProfile, Result
 from championship.score import get_results_with_qps
 from championship.season import SEASONS_WITH_RANKING
 from championship.views.base import PerSeasonMixin
@@ -104,7 +107,13 @@ class PlayerDetailsView(PerSeasonMixin, DetailView):
             results, key=lambda r: r[0].event.date, reverse=True
         )
 
-        context["profile"] = context["player"].playerprofile_set.last()
+        context["profile"] = (
+            context["player"]
+            .playerprofile_set.filter(
+                status=PlayerProfile.Status.APPROVED, consent_for_website=True
+            )
+            .last()
+        )
         organizer_counts = Counter(
             result.event.organizer.name for result, _ in context[LAST_RESULTS]
         )
@@ -233,3 +242,16 @@ class PlayerDetailsView(PerSeasonMixin, DetailView):
         perf_per_format["Overall"] = sum(perf_per_format.values(), start=Performance())
 
         return perf_per_format
+
+
+class CreatePlayerProfileView(CreateView):
+    model = PlayerProfile
+    form_class = PlayerProfileForm
+    template_name = "championship/create_player_profile.html"
+    success_url = reverse_lazy("index")
+
+    def form_valid(self, form):
+        messages.success(
+            self.request, "Your player profile has been submitted for review."
+        )
+        return super().form_valid(form)

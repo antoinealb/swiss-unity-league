@@ -55,6 +55,11 @@ urlpatterns = [
         views.PlayerDetailsView.as_view(),
         name="player_details_by_season",
     ),
+    path(
+        "player/profile/create",
+        views.CreatePlayerProfileView.as_view(),
+        name="create_player_profile",
+    ),
     path("info", views.InformationForPlayerView.as_view(), name="info"),
     path(
         "info/<slug:slug>/",

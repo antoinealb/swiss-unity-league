@@ -112,6 +112,8 @@ class PlayerProfileFactory(DjangoModelFactory):
         model = PlayerProfile
 
     player = factory.SubFactory(PlayerFactory)
+    status = PlayerProfile.Status.APPROVED
+    consent_for_website = True
     pronouns = factory.Faker(
         "random_element",
         elements=PlayerProfile.Pronouns.values,

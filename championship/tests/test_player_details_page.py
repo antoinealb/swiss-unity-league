@@ -28,7 +28,7 @@ from championship.factories import (
     RankedEventFactory,
     ResultFactory,
 )
-from championship.models import Event, PlayerProfile, Result
+from championship.models import Event, PlayerAlias, PlayerProfile, Result
 from championship.season import SEASONS_WITH_RANKING
 from championship.views import (
     EVENTS,
@@ -306,6 +306,8 @@ class PlayerDetailsProfileTest(TestCase):
 
     def test_empty_player_profile(self):
         self.profile = PlayerProfile.objects.create(
+            status=PlayerProfile.Status.APPROVED,
+            consent_for_website=True,
             player=PlayerFactory(),
         )
         ResultFactory(
@@ -317,6 +319,22 @@ class PlayerDetailsProfileTest(TestCase):
     def test_no_profile(self):
         player = PlayerFactory()
         response = self.get_player_details_2023(player)
+        self.assertNotContains(response, "Accomplishments")
+
+    def test_pending_player_profile_not_shown(self):
+        self.profile = PlayerProfileFactory(status=PlayerProfile.Status.PENDING)
+        ResultFactory(
+            player=self.profile.player,
+        )
+        response = self.get_player_details_2023(self.profile.player)
+        self.assertNotContains(response, "Accomplishments")
+
+    def test_player_profile_not_shown_without_consent(self):
+        self.profile = PlayerProfileFactory(consent_for_website=False)
+        ResultFactory(
+            player=self.profile.player,
+        )
+        response = self.get_player_details_2023(self.profile.player)
         self.assertNotContains(response, "Accomplishments")
 
     def test_pronouns(self):
@@ -345,3 +363,54 @@ class PlayerDetailsProfileTest(TestCase):
             f"<p>Favorite Organizer: <b>{result2.event.organizer.name}</b></p>"
         )
         self.assertContains(response, expected_name)
+
+
+class SubmitPlayerProfileViewTest(TestCase):
+
+    def setUp(self):
+        self.player = PlayerFactory()
+        self.data = {
+            "player_name": self.player.name,
+            "pronouns": PlayerProfile.Pronouns.SHE_HER,
+            "custom_pronouns": "",
+            "date_of_birth": "2000-01-01",
+            "hometown": "New York",
+            "occupation": "Software Engineer",
+            "bio": "I love playing Magic!",
+            "team_name": "My Team",
+            "consent_for_website": True,
+            "consent_for_stream": True,
+        }
+
+    def test_submit_player_profile(self):
+        url = reverse("create_player_profile")
+        response = self.client.post(url, self.data)
+        self.assertRedirects(response, reverse("index"))
+        profile = PlayerProfile.objects.get(player=self.player)
+        self.assertEqual(profile.pronouns, PlayerProfile.Pronouns.SHE_HER)
+        self.assertEqual(profile.date_of_birth, datetime.date(2000, 1, 1))
+        self.assertEqual(profile.hometown, "New York")
+        self.assertEqual(profile.occupation, "Software Engineer")
+        self.assertEqual(profile.bio, "I love playing Magic!")
+        self.assertEqual(profile.team_name, "My Team")
+        self.assertTrue(profile.consent_for_website)
+        self.assertTrue(profile.consent_for_stream)
+        self.assertEqual(profile.status, PlayerProfile.Status.PENDING)
+
+    def test_unknown_player_stays_on_submit_page(self):
+        self.data["player_name"] = "Unknown Player"
+        url = reverse("create_player_profile")
+        response = self.client.post(url, self.data)
+        self.assertEqual(response.status_code, 200)
+        self.assertIn(
+            "Player 'Unknown Player' does not exist.",
+            response.context["form"].errors["__all__"],
+        )
+
+    def test_submit_profile_for_player_alias(self):
+        PlayerAlias.objects.create(true_player=self.player, name="Alias")
+        self.data["player_name"] = "Alias"
+        url = reverse("create_player_profile")
+        response = self.client.post(url, self.data)
+        self.assertRedirects(response, reverse("index"))
+        self.assertTrue(PlayerProfile.objects.filter(player=self.player).exists())

@@ -26,7 +26,6 @@ from django.urls import path, reverse
 
 import openpyxl
 
-from championship import views
 from championship.score import get_leaderboard
 from championship.season import SEASONS_WITH_RANKING, find_season_by_slug
 from decklists.models import Decklist
@@ -259,7 +258,7 @@ class PlayerAdmin(admin.ModelAdmin):
 
             first = row[column_indices["First name"]].value
             last = row[column_indices["Last name"]].value
-            full = views.clean_name(f"{first} {last}")
+            full = f"{first} {last}"
             player_names_and_emails.append((full, email))
 
         # Update all players
