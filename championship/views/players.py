@@ -16,7 +16,7 @@ import dataclasses
 from collections import Counter
 
 from django.contrib import messages
-from django.urls import reverse
+from django.urls import reverse_lazy
 from django.views.generic import CreateView, DetailView
 
 from championship.forms import PlayerProfileForm
@@ -248,9 +248,10 @@ class CreatePlayerProfileView(CreateView):
     model = PlayerProfile
     form_class = PlayerProfileForm
     template_name = "championship/create_player_profile.html"
+    success_url = reverse_lazy("index")
 
-    def get_success_url(self):
+    def form_valid(self, form):
         messages.success(
             self.request, "Your player profile has been submitted for review."
         )
-        return reverse("index")
+        return super().form_valid(form)
