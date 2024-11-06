@@ -13,11 +13,12 @@
 # limitations under the License.
 
 
-from django.test import Client, TestCase
+from django.test import TestCase
 from django.urls import reverse
 from django.utils import timezone
 from rest_framework.status import HTTP_200_OK
 
+from championship.factories import UserFactory
 from decklists.factories import CollectionFactory, DecklistFactory
 from oracle.factories import CardFactory
 
@@ -26,7 +27,14 @@ class DecklistViewTestCase(TestCase):
     databases = ["oracle", "default"]
 
     def setUp(self):
-        self.client = Client()
+        self.mother = CardFactory(
+            mana_value=1, type_line="Creature — Human Cleric", name="Mother of Runes"
+        )
+        self.stoneforge = CardFactory(
+            mana_value=2, type_line="Creature — Kor Artificer", name="Stoneforge Mystic"
+        )
+        self.plains = CardFactory(mana_value=0, type_line="Basic Land", name="Plains")
+        self.path = CardFactory(mana_value=1, type_line="Instant", name="Path to Exile")
 
     def test_can_get_decklist(self):
         decklist = DecklistFactory(archetype="Burn")
@@ -49,35 +57,47 @@ class DecklistViewTestCase(TestCase):
         resp = self.client.get(reverse("decklist-details", args=[decklist.id]))
         self.assertNotIn(url, resp.content.decode())
 
-    def test_card_counter(self):
+    def test_section_card_counter(self):
         decklist = DecklistFactory(archetype="Burn")
-        decklist.mainboard = "4 Thalia, Guardian of Thraben\n3Plains"
-        decklist.sideboard = "2 Path to Exile"
+        decklist.mainboard = f"4 {self.stoneforge.name}\n3{self.plains.name}"
+        decklist.sideboard = f"2 {self.path.name}"
         decklist.save()
 
         resp = self.client.get(reverse("decklist-details", args=[decklist.id]))
-        self.assertIn("7 cards", resp.content.decode(), "Missing mainboard counter")
-        self.assertIn("2 cards", resp.content.decode(), "Missing sideboard counter")
+        self.assertContains(resp, "Creatures (4)")
+        self.assertContains(resp, "Lands (3)")
+        self.assertContains(resp, "Sideboard (2)")
 
-    def test_cards_are_sorted_by_mana_value(self):
-        c1 = CardFactory(mana_value=1, type_line="Instant")
-        c2 = CardFactory(mana_value=2, type_line="Instant")
-        decklist = DecklistFactory(mainboard=f"4 {c2.name}\n4 {c1.name}")
+    def test_inside_section_cards_are_sorted_by_mana_value(self):
+        decklist = DecklistFactory(
+            mainboard=f"4 {self.stoneforge.name}\n4 {self.mother.name}"
+        )
         resp = self.client.get(reverse("decklist-details", args=[decklist.id]))
-        want = [c1.name, c2.name]
-        got = [c.name for c in resp.context["mainboard"]]
+        want = [self.mother.name, self.stoneforge.name]
+        got = [c.name for c in resp.context["cards_by_section"]["Creatures (8)"]]
         self.assertEqual(want, got)
 
-    def test_cards_are_sorted_unknown_card(self):
-        c1 = CardFactory(mana_value=1)
-        decklist = DecklistFactory(mainboard=f"4 {c1.name}\n4 Fooburb")
+    def test_unknown_card_section(self):
+        decklist = DecklistFactory(mainboard="4 Fooburb")
         resp = self.client.get(reverse("decklist-details", args=[decklist.id]))
-        self.assertEqual(resp.context["mainboard"][0].name, c1.name)
+        self.assertEqual(
+            resp.context["cards_by_section"]["Unknown (4)"][0].name, "Fooburb"
+        )
 
-    def test_cards_are_sorted_by_type_if_logged_out(self):
-        c1 = CardFactory(mana_value=1, type_line="Instant")
-        c2 = CardFactory(mana_value=2, type_line="Creature")
-        decklist = DecklistFactory(mainboard=f"4 {c1.name}\n4 {c2.name}")
+    def test_no_card_sections_if_logged_in(self):
+        self.client.force_login(UserFactory())
+        decklist = DecklistFactory(
+            mainboard=f"4 {self.stoneforge.name}\n4 {self.path.name}",
+            sideboard=f"4 {self.mother.name}",
+        )
         resp = self.client.get(reverse("decklist-details", args=[decklist.id]))
-        self.assertEqual(resp.context["mainboard"][0].type_line, "Creature")
-        self.assertEqual(resp.context["mainboard"][1].type_line, "Instant")
+        want_mainboard = [self.path.name, self.stoneforge.name]
+        got_mainboard = [
+            c.name for c in resp.context["cards_by_section"]["Mainboard (8)"]
+        ]
+        self.assertEqual(got_mainboard, want_mainboard)
+        want_sidboard = [self.mother.name]
+        got_sidboard = [
+            c.name for c in resp.context["cards_by_section"]["Sideboard (4)"]
+        ]
+        self.assertEqual(got_sidboard, want_sidboard)

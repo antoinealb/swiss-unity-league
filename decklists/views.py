@@ -13,6 +13,7 @@
 # limitations under the License.
 
 import dataclasses
+from collections import defaultdict
 from collections.abc import Iterable
 from typing import TypeAlias
 
@@ -28,6 +29,17 @@ from decklists.forms import DecklistForm
 from decklists.models import Collection, Decklist
 from decklists.parser import DecklistParser
 from oracle.models import Card, get_card_by_name
+
+ORDERED_CARD_TYPES = [
+    "Creature",
+    "Planeswalker",
+    "Battle",
+    "Instant",
+    "Sorcery",
+    "Artifact",
+    "Enchantment",
+    "Land",
+]
 
 
 @dataclasses.dataclass
@@ -156,23 +168,53 @@ class DecklistView(DetailView):
 
         # For players we show the list by types, but for TOs / Judges, only
         # sorted by mana value for deck checks.
-        sort_decklist_by_type = self.request.user.is_anonymous
+        split_decklist_by_type = self.request.user.is_anonymous
 
         mainboard, errors_main = parse_section(
-            context["decklist"].mainboard, sort_by_type=sort_decklist_by_type
+            context["decklist"].mainboard, sort_by_type=False
         )
         sideboard, errors_side = parse_section(
-            context["decklist"].sideboard, sort_by_type=sort_decklist_by_type
+            context["decklist"].sideboard, sort_by_type=False
         )
 
-        context["mainboard"] = mainboard
-        context["sideboard"] = sideboard
+        cards_by_section = {}
+        if split_decklist_by_type:
+            unknown_cards = []
+            cards_by_type = defaultdict(list)
+            for card in mainboard:
+                main_card_type = next(
+                    (
+                        type
+                        for type in ORDERED_CARD_TYPES
+                        if card.type_line and type in card.type_line
+                    ),
+                    None,
+                )
+                if main_card_type is None:
+                    unknown_cards.append(card)
+                else:
+                    cards_by_type[main_card_type].append(card)
+            cards_by_section = {
+                f"{card_type}s": cards_by_type[card_type]
+                for card_type in ORDERED_CARD_TYPES
+                if card_type in cards_by_type
+            }
+            if unknown_cards:
+                cards_by_section["Unknown"] = unknown_cards
+        else:
+            cards_by_section["Mainboard"] = mainboard
 
+        cards_by_section["Sideboard"] = sideboard
+
+        cards_by_section = {
+            f"{section} ({sum(c.qty for c in cards_by_section[section])})": cards_by_section[
+                section
+            ]
+            for section in cards_by_section
+        }
+
+        context["cards_by_section"] = cards_by_section
         context["errors"] = errors_main + errors_side
-
-        context["mainboard_total"] = sum(c.qty for c in mainboard)
-        context["sideboard_total"] = sum(c.qty for c in sideboard)
-
         return context
 
 
