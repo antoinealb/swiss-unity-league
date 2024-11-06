@@ -132,6 +132,8 @@ def get_decklist_table_context(decklist: Decklist, split_decklist_by_type: bool 
     including total cards in the section and the value being the DecklistEntries in the given section.
 
     - errors: A list of errors found while parsing the decklist.
+
+    - total_cards: The total number of cards in the decklist.
     """
     context = {"decklist": decklist}
     mainboard, errors_main = parse_section(decklist.mainboard)
@@ -175,6 +177,7 @@ def get_decklist_table_context(decklist: Decklist, split_decklist_by_type: bool 
 
     context["cards_by_section"] = cards_by_section  # type: ignore
     context["errors"] = errors_main + errors_side  # type: ignore
+    context["total_cards"] = sum(c.qty for cards in cards_by_section.values() for c in cards)  # type: ignore
     return context
 
 

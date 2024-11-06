@@ -67,6 +67,7 @@ class DecklistViewTestCase(TestCase):
         self.assertContains(resp, "Creatures (4)")
         self.assertContains(resp, "Lands (3)")
         self.assertContains(resp, "Sideboard (2)")
+        self.assertContains(resp, "Total Cards: 9")
 
     def test_inside_section_cards_are_sorted_by_mana_value(self):
         decklist = DecklistFactory(

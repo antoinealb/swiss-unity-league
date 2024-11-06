@@ -4,7 +4,7 @@
         <tbody>
             {% for section_title, card_entries in cards_by_section.items %}
                 <tr>
-                    <td colspan="3" class="text-start"><h5 class="my-2">{{section_title}}</h5></td>
+                    <td colspan="3"><h5 class="my-2">{{section_title}}</h5></td>
                 </tr>
                 {% for entry in card_entries %}
                     <tr>
@@ -22,6 +22,7 @@
                     </tr>
                 {% endfor %}
             {% endfor %}
+            <tr><td colspan="3" rowspan="2"><h5 class="my-2">Total Cards: {{ total_cards }}</h5></td></tr>
         </tbody>
     </table>
 </div>
