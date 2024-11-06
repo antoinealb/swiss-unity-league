@@ -29,7 +29,6 @@ from .models import (
     Event,
     EventOrganizer,
     Player,
-    PlayerAlias,
     PlayerProfile,
     RecurrenceRule,
     RecurringEvent,
@@ -141,11 +140,7 @@ class ResultForm(forms.ModelForm):
         old_name = instance.player.name
 
         if new_name != old_name:
-            try:
-                player = PlayerAlias.objects.get(name=new_name).true_player
-            except PlayerAlias.DoesNotExist:
-                player, _ = Player.objects.get_or_create(name=new_name)
-            instance.player = player
+            instance.player, created = Player.objects.get_or_create_by_name(new_name)
 
         instance.points = (
             self.cleaned_data["win_count"] * 3 + self.cleaned_data["draw_count"]
@@ -434,11 +429,8 @@ class PlayerProfileForm(forms.ModelForm, SubmitButtonMixin):
         cleaned_data = super().clean()
         name = cleaned_data.get("player_name")
         try:
-            player = PlayerAlias.objects.get(name=name).true_player
-        except PlayerAlias.DoesNotExist:
-            try:
-                player = Player.objects.get(name=name)
-            except Player.DoesNotExist:
-                raise ValidationError(f"Player '{name}' does not exist.")
+            player = Player.objects.get_by_name(name)
+        except Player.DoesNotExist:
+            raise ValidationError(f"Player '{name}' does not exist.")
         cleaned_data["player"] = player
         return cleaned_data

@@ -13,6 +13,7 @@
 # limitations under the License.
 
 import datetime
+import re
 import urllib.parse
 
 from django.conf import settings
@@ -586,6 +587,81 @@ class LeaderBoardPlayerManager(models.Manager):
         return super().get_queryset().filter(hidden_from_leaderboard=False)
 
 
+def clean_name(name: str) -> str:
+    """Normalizes the given name based on observations from results uploaded.
+
+    This function applies transformations to the provided input so that the
+    result is a clean name ready to be put in the DB.
+
+    For example, all of the following inputs map to the normalized "Antoine Albertelli":
+
+    CamelCase:
+    >>> clean_name('AntoineAlbertelli')
+    'Antoine Albertelli'
+
+    All caps
+    >>> clean_name('Antoine ALBERTELLI')
+    'Antoine Albertelli'
+
+    Snake Case
+    >>> clean_name('Antoine_Albertelli')
+    'Antoine Albertelli'
+
+    Extra spaces
+    >>> clean_name('   Antoine   Albertelli')
+    'Antoine Albertelli'
+
+    All lower caps
+    >>> clean_name('antoine albertelli')
+    'Antoine Albertelli'
+
+    Note lower case words are only capitalized if the word has more than 3 letters
+    (Short terms like "van", ""der", "da" shouldn't be capital).
+    >>> clean_name('Antoine van Albertelli')
+    'Antoine van Albertelli'
+
+    # TODO: Shorter first names like Joe will not be capitalized correctly for
+    now as they are assumed to be particles, like "von", "de" or "van".
+    # >>> clean_name('joe uldry')
+    # 'Joe Uldry'
+
+    >>> clean_name('Antoine J. Albertelli')
+    'Antoine J. Albertelli'
+    """
+    name = name.replace("_", " ")
+    name = re.sub(
+        r"([A-Z])([A-Z]+)", lambda match: match.group(1) + match.group(2).lower(), name
+    )
+    name = re.sub(r"(?<=[a-z])(?=[A-Z])", " ", name)
+    # Normalizes whitespace in case there are double space or tabs
+    name = re.sub(r"\s+", " ", name)
+    name = name.strip()
+    # Capitalizes all words with 4 or more letters or that end with a dot "."
+    name = " ".join(
+        [
+            word.title() if len(word) > 3 or word.endswith(".") else word
+            for word in name.split()
+        ]
+    )
+    return name
+
+
+class PlayerManager(models.Manager):
+    def get_or_create_by_name(self, name):
+        name = clean_name(name)
+        try:
+            return PlayerAlias.objects.get(name=name).true_player, False
+        except PlayerAlias.DoesNotExist:
+            return self.get_or_create(name=name)
+
+    def get_by_name(self, name):
+        name = clean_name(name)
+        try:
+            return PlayerAlias.objects.get(name=name).true_player
+        except PlayerAlias.DoesNotExist:
+            return self.get(name=name)
+
+
 class Player(models.Model):
     """
     Represents a player in the championship, among many tournaments.
@@ -603,7 +679,7 @@ class Player(models.Model):
         default=False,
     )
 
-    objects = models.Manager()
+    objects = PlayerManager()
     leaderboard_objects = LeaderBoardPlayerManager()
 
     def __str__(self):

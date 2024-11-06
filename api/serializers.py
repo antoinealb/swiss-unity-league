@@ -16,9 +16,8 @@ from django.conf import settings
 from django.db import transaction
 from rest_framework import serializers
 
-from championship.models import Event, EventOrganizer, Player, PlayerAlias, Result
+from championship.models import Event, EventOrganizer, Player, Result
 from championship.tournament_valid import StandingsValidationError, validate_standings
-from championship.views.results import clean_name
 
 
 class ResultSerializer(serializers.ModelSerializer):
@@ -106,11 +105,8 @@ class EventInformationSerializer(serializers.ModelSerializer):
         results.sort(key=lambda r: 3 * r["win_count"] + r["draw_count"], reverse=True)
 
         for i, result in enumerate(results):
-            name = clean_name(result["player"]["name"])
-            try:
-                player = PlayerAlias.objects.get(name=name).true_player
-            except PlayerAlias.DoesNotExist:
-                player, _ = Player.objects.get_or_create(name=name)
+            name = result["player"]["name"]
+            player, created = Player.objects.get_or_create_by_name(name)
 
             Result.objects.create(
                 points=3 * result["win_count"] + result["draw_count"],

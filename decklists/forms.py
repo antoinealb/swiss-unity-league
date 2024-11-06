@@ -53,11 +53,8 @@ class DecklistForm(forms.ModelForm):
         instance = super().save(commit=False)
 
         name = self.cleaned_data["player_name"]
-        try:
-            player = Player.objects.get(name=name)
-        except Player.DoesNotExist:
-            player = Player.objects.create(name=name)
-        instance.player = player
+
+        instance.player, created = Player.objects.get_or_create_by_name(name)
 
         if self.collection:
             instance.collection = self.collection

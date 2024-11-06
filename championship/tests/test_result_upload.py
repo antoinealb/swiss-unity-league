@@ -30,10 +30,9 @@ from championship.factories import (
     ResultFactory,
 )
 from championship.forms import AddTop8ResultsForm
-from championship.models import Event, Player, PlayerAlias, Result
+from championship.models import Event, Player, PlayerAlias, Result, clean_name
 from championship.parsers.challonge import TournamentNotSwissError
 from championship.tests.parsers.utils import load_test_html, load_test_json
-from championship.views import clean_name
 
 
 class CleanNameTest(TestCase):
