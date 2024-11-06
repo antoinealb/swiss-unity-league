@@ -19,63 +19,68 @@ from decklists.templatetags.mana import mana
 
 
 class ManaRendererTestCase(TestCase):
+    def mana_symbol_html(self, symbol):
+        return (
+            f'<i class="ms ms-cost ms-{symbol}" style="margin-left: 0 !important;"></i>'
+        )
+
     def test_render_generic_mana(self):
-        want = '<i class="ms ms-cost ms-2"></i>'
+        want = self.mana_symbol_html(2)
         got = mana([2])
         self.assertEqual(want, got)
 
     def test_render_letter_mana(self):
-        want = '<i class="ms ms-cost ms-x"></i>' * 2
+        want = self.mana_symbol_html("x") * 2
         got = mana(["X", "X"])
         self.assertEqual(want, got)
 
     def test_render_color_mana(self):
-        want = '<i class="ms ms-cost ms-g"></i>' * 2
+        want = self.mana_symbol_html("g") * 2
         got = mana([Color.GREEN, Color.GREEN])
         self.assertEqual(want, got)
 
     def test_render_phyrexian_mana(self):
-        want = '<i class="ms ms-cost ms-wp"></i>'
+        want = self.mana_symbol_html("wp")
         got = mana([Phyrexian(Color.WHITE)])
         self.assertEqual(want, got)
 
     def test_render_hybrid(self):
-        want = '<i class="ms ms-cost ms-gu"></i>'
+        want = self.mana_symbol_html("gu")
         got = mana([Hybrid((Color.GREEN, Color.BLUE))])
         self.assertEqual(want, got)
 
     def test_render_hybrid_phyrexian(self):
-        want = '<i class="ms ms-cost ms-gup"></i>'
+        want = self.mana_symbol_html("gup")
         got = mana([Phyrexian(Hybrid((Color.GREEN, Color.BLUE)))])
         self.assertEqual(want, got)
 
     def test_render_hybrid_generic(self):
-        want = '<i class="ms ms-cost ms-2u"></i>'
+        want = self.mana_symbol_html("2u")
         got = mana([Hybrid((2, Color.BLUE))])
         self.assertEqual(want, got)
 
     def test_render_hybrid_colorless(self):
-        want = '<i class="ms ms-cost ms-cu"></i>'
+        want = self.mana_symbol_html("cu")
         got = mana([Hybrid((Colorless, Color.BLUE))])
         self.assertEqual(want, got)
 
     def test_render_snow_mana(self):
-        want = '<i class="ms ms-cost ms-s"></i>'
+        want = self.mana_symbol_html("s")
         got = mana([Snow])
         self.assertEqual(want, got)
 
     def test_render_colorless_mana(self):
-        want = '<i class="ms ms-cost ms-c"></i>'
+        want = self.mana_symbol_html("c")
         got = mana([Colorless])
         self.assertEqual(want, got)
 
     def test_conversion_first(self):
-        want = '<i class="ms ms-cost ms-2"></i>'
+        want = self.mana_symbol_html("2")
         got = mana("{2}")
         self.assertEqual(want, got)
 
     def test_alternative_mana(self):
-        want = '<i class="ms ms-cost ms-2"></i> // <i class="ms ms-cost ms-r"></i>'
+        want = f'{self.mana_symbol_html(2)} // {self.mana_symbol_html("r")}'
         got = mana(AlternativeMana([[2], [Color.RED]]))
         self.assertEqual(want, got)
 
