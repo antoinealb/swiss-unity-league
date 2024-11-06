@@ -99,38 +99,6 @@ def sort_decklist_by_mana_value(entries: Iterable[DecklistEntry]) -> FilterOutpu
     return sorted(entries, key=key), []
 
 
-def sort_decklist_by_type(entries: Iterable[DecklistEntry]) -> FilterOutput:
-    categories = [
-        ["Creature"],
-        ["Battle"],
-        ["Planeswalker"],
-        ["Instant", "Sorcery"],
-        ["Artifact"],
-        ["Enchantment"],
-        ["Land"],
-    ]
-
-    def find_category(type_line):
-        end = len(categories)
-        if type_line is None:
-            return end
-
-        for i, types in enumerate(categories):
-            if any(t in type_line for t in types):
-                return i
-        # We send every unknown type at the end
-        return end
-
-    key = lambda c: (
-        find_category(c.type_line),
-        c.mana_value is None,
-        c.mana_value,
-        c.name,
-    )
-
-    return sorted(entries, key=key), []
-
-
 def pipe_filters(filters, entries) -> FilterOutput:
     result = entries
     errors = []
@@ -142,17 +110,13 @@ def pipe_filters(filters, entries) -> FilterOutput:
     return result, errors
 
 
-def parse_section(section_text: str, sort_by_type: bool = True) -> FilterOutput:
-    if sort_by_type:
-        sort_fn = sort_decklist_by_type
-    else:
-        sort_fn = sort_decklist_by_mana_value
+def parse_section(section_text: str) -> FilterOutput:
 
     all_filters = [
         parse_decklist,
         normalize_decklist,
         annotate_card_attributes,
-        sort_fn,
+        sort_decklist_by_mana_value,
     ]
 
     return pipe_filters(all_filters, section_text)
@@ -160,7 +124,7 @@ def parse_section(section_text: str, sort_by_type: bool = True) -> FilterOutput:
 
 def get_decklist_table_context(decklist: Decklist, split_decklist_by_type: bool = True):
     """
-    Returns a context object used to render a declklist table. It containts:
+    Returns a context object used to render a decklist table. It containts:
 
     - decklist: The decklist object
 
@@ -170,8 +134,8 @@ def get_decklist_table_context(decklist: Decklist, split_decklist_by_type: bool 
     - errors: A list of errors found while parsing the decklist.
     """
     context = {"decklist": decklist}
-    mainboard, errors_main = parse_section(decklist.mainboard, sort_by_type=False)
-    sideboard, errors_side = parse_section(decklist.sideboard, sort_by_type=False)
+    mainboard, errors_main = parse_section(decklist.mainboard)
+    sideboard, errors_side = parse_section(decklist.sideboard)
 
     cards_by_section = {}
     if split_decklist_by_type:
