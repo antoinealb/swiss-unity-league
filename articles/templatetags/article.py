@@ -18,7 +18,7 @@ from django.utils.safestring import mark_safe
 
 from articles.parser import CardTag, DecklistTag, extract_tags
 from decklists.models import Decklist
-from decklists.views import parse_section
+from decklists.views import get_decklist_table_context
 from oracle.models import Card, get_card_by_name
 
 register = template.Library()
@@ -28,7 +28,7 @@ register = template.Library()
 def process_article_args(text: str):
     result = []
     card_template = get_template("decklists/card_modal_instance.html")
-    decklist_section_template = get_template("articles/decklist.html")
+    decklist_section_template = get_template("articles/decklist_card.html")
 
     for chunk in extract_tags(text):
         if isinstance(chunk, str):
@@ -42,27 +42,12 @@ def process_article_args(text: str):
                 result.append(f"[[{chunk.card_name}]]")
         elif isinstance(chunk, DecklistTag):
             try:
-                decklist = Decklist.objects.get(id=chunk.uid)
-                mainboard, errors_mb = parse_section(decklist.mainboard)
-                sideboard, errors_sb = parse_section(decklist.sideboard)
-                errors = errors_mb + errors_sb
-                player = decklist.player
-                archetype = decklist.archetype
+                decklist = Decklist.objects.select_related(
+                    "player", "collection__event"
+                ).get(id=chunk.uid)
+                context = get_decklist_table_context(decklist)
+                result.append(decklist_section_template.render(context=context))
             except Decklist.DoesNotExist:
-                errors = [f"Unknown decklist {chunk.uid}"]
-                mainboard = []
-                sideboard = []
-                player = None
-                archetype = None
-            rendered = decklist_section_template.render(
-                context={
-                    "mainboard": mainboard,
-                    "sideboard": sideboard,
-                    "errors": errors,
-                    "player": player,
-                    "archetype": archetype,
-                }
-            )
-            result.append(rendered)
+                result.append(f"Unknown decklist {chunk.uid}")
 
     return "".join(result)
