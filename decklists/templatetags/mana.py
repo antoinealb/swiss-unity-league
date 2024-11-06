@@ -66,6 +66,8 @@ def mana(mana_spec):
     result = []
     for spec in mana_spec:
         inner = _class_suffix(spec)
-        result.append(f'<i class="ms ms-cost ms-{inner}"></i>')
+        result.append(
+            f'<i class="ms ms-cost ms-{inner}" style="margin-left: 0 !important;"></i>'
+        )
 
     return mark_safe("".join(result))
