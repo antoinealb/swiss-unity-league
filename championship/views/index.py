@@ -16,12 +16,12 @@ import datetime
 import random
 
 from django.conf import settings
+from django.contrib.auth.models import User
 from django.db.models import Max
 from django.views.generic.base import TemplateView
 
 from championship.models import Event, EventOrganizer
 from championship.score import get_leaderboard
-from championship.tests.test_organizer_details import User
 from invoicing.models import Invoice
 
 EVENTS_ON_PAGE = 5

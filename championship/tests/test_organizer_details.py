@@ -14,7 +14,6 @@
 
 import datetime
 
-from django.contrib.auth import get_user_model
 from django.core.exceptions import ValidationError
 from django.core.files.uploadedfile import SimpleUploadedFile
 from django.test import Client, TestCase
@@ -34,8 +33,6 @@ from championship.factories import (
 from championship.models import Event, OrganizerLeague
 from championship.season import SEASON_LIST
 from championship.views.organizers import ORGANIZER_LEAGUE_DESCRIPTION
-
-User = get_user_model()
 
 
 class EventOrganizerDetailViewTests(TestCase):
