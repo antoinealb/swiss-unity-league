@@ -112,6 +112,7 @@ class Command(BaseCommand):
             date__gte=season.start_date,
             date__lte=season.end_date,
             organizer__name="AarebogeMagic",
+            category=Event.Category.PREMIER,
         )
         if format == "modern":
             lookup = ColumnsLookup(last_name=2, first_name=3, archetype=7, url=8)
