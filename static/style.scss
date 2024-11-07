@@ -12,6 +12,16 @@ html {
     width: auto !important;
 }
 
+.responsive-decklist {
+    column-count: 1;
+}
+
+@media (min-width: 768px) {
+    .responsive-decklist {
+        column-count: 2;
+    }
+}
+
 $theme-colors: (
     'primary': #c6b098,
     'primary-light': #ffefde,

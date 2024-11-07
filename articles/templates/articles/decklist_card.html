@@ -1,0 +1,8 @@
+
+<div class="border rounded p-4">
+        <h3>{{ decklist.archetype }} <small class="text-muted">by <a href={{ decklist.player.get_absolute_url }}>{{ decklist.player.name }}</a></small></h3>
+        <p>Format: {{ decklist.collection.get_format_display }}<br>
+                Event: <a href="{{ decklist.collection.event.get_absolute_url }}">{{ decklist.collection.event.name }}</a></p>
+        <hr class="my-2">
+        {% include "decklists/decklist_table.html" with cards_by_section=cards_by_section %}
+</div>

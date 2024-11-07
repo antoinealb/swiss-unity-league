@@ -13,7 +13,7 @@
     <h1>{{ decklist.archetype}}
         <small class="text-muted">by {{decklist.player.name}}</small>
     </h1>
-    <p>Last edit: {{ decklist.last_modified }}</p>
+    <p>Last edited: {{ decklist.last_modified }}</p>
 
     {% if decklist.can_be_edited %}
         <p><a href="{% url 'decklist-update' decklist.id %}" class="btn btn-secondary">Edit decklist</a></p>
@@ -28,13 +28,7 @@
     {% endif %}
 
 
-    <h3>Mainboard</h3>
-    <p><b>{{ mainboard_total }} cards</b></p>
-    {% include "decklists/deck_section.html" with content=mainboard %}
-
-    <h3>Sideboard</h3>
-    <p><b>{{ sideboard_total }} cards</b></p>
-    {% include "decklists/deck_section.html" with content=sideboard %}
-
+    <h3>Decklist</h3>
+    {% include "decklists/decklist_table.html" with cards_by_section=cards_by_section %}
     {% include "decklists/card_modal.html" %}
 {% endblock %}

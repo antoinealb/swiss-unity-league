@@ -67,6 +67,22 @@ class ArticleRenderingTestCase(TestCase):
         self.assertIn(decklist.player.name, got)
         self.assertIn(escape(decklist.archetype), got)
 
+    def test_decklist_details(self):
+        decklist = DecklistFactory(
+            id="ff521f2e-085c-4cc0-901b-600ec9a71dab",
+        )
+        article = """
+        [[https://unityleague.ch/decklists/ff521f2e-085c-4cc0-901b-600ec9a71dab/]]
+        """
+        got = process_article_args(article)
+        event = decklist.collection.event
+        self.assertIn(decklist.archetype, got)
+        self.assertIn(event.name, got)
+        self.assertIn(event.get_absolute_url(), got)
+        self.assertIn(decklist.player.name, got)
+        self.assertIn(decklist.player.get_absolute_url(), got)
+        self.assertIn(decklist.collection.get_format_display(), got)
+
     def test_unknown_decklist(self):
         article = """
         [[https://unityleague.ch/decklists/ff521f2e-085c-4cc0-901b-600ec9a71dab/]]

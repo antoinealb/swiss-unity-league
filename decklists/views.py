@@ -13,6 +13,7 @@
 # limitations under the License.
 
 import dataclasses
+from collections import defaultdict
 from collections.abc import Iterable
 from typing import TypeAlias
 
@@ -28,6 +29,17 @@ from decklists.forms import DecklistForm
 from decklists.models import Collection, Decklist
 from decklists.parser import DecklistParser
 from oracle.models import Card, get_card_by_name
+
+ORDERED_CARD_TYPES = [
+    "Creature",
+    "Planeswalker",
+    "Battle",
+    "Instant",
+    "Sorcery",
+    "Artifact",
+    "Enchantment",
+    "Land",
+]
 
 
 @dataclasses.dataclass
@@ -87,38 +99,6 @@ def sort_decklist_by_mana_value(entries: Iterable[DecklistEntry]) -> FilterOutpu
     return sorted(entries, key=key), []
 
 
-def sort_decklist_by_type(entries: Iterable[DecklistEntry]) -> FilterOutput:
-    categories = [
-        ["Creature"],
-        ["Battle"],
-        ["Planeswalker"],
-        ["Instant", "Sorcery"],
-        ["Artifact"],
-        ["Enchantment"],
-        ["Land"],
-    ]
-
-    def find_category(type_line):
-        end = len(categories)
-        if type_line is None:
-            return end
-
-        for i, types in enumerate(categories):
-            if any(t in type_line for t in types):
-                return i
-        # We send every unknown type at the end
-        return end
-
-    key = lambda c: (
-        find_category(c.type_line),
-        c.mana_value is None,
-        c.mana_value,
-        c.name,
-    )
-
-    return sorted(entries, key=key), []
-
-
 def pipe_filters(filters, entries) -> FilterOutput:
     result = entries
     errors = []
@@ -130,20 +110,75 @@ def pipe_filters(filters, entries) -> FilterOutput:
     return result, errors
 
 
-def parse_section(section_text: str, sort_by_type: bool = True) -> FilterOutput:
-    if sort_by_type:
-        sort_fn = sort_decklist_by_type
-    else:
-        sort_fn = sort_decklist_by_mana_value
+def parse_section(section_text: str) -> FilterOutput:
 
     all_filters = [
         parse_decklist,
         normalize_decklist,
         annotate_card_attributes,
-        sort_fn,
+        sort_decklist_by_mana_value,
     ]
 
     return pipe_filters(all_filters, section_text)
+
+
+def get_decklist_table_context(decklist: Decklist, split_decklist_by_type: bool = True):
+    """
+    Returns a context object used to render a decklist table. It containts:
+
+    - decklist: The decklist object
+
+    - cards_by_section: A dictionary with each section of the decklist. The key is the title of the section
+    including total cards in the section and the value being the DecklistEntries in the given section.
+
+    - errors: A list of errors found while parsing the decklist.
+
+    - total_cards: The total number of cards in the decklist.
+    """
+    context = {"decklist": decklist}
+    mainboard, errors_main = parse_section(decklist.mainboard)
+    sideboard, errors_side = parse_section(decklist.sideboard)
+
+    cards_by_section = {}
+    if split_decklist_by_type:
+        unknown_cards = []
+        cards_by_type = defaultdict(list)
+        for card in mainboard:
+            main_card_type = next(
+                (
+                    type
+                    for type in ORDERED_CARD_TYPES
+                    if card.type_line and type in card.type_line
+                ),
+                None,
+            )
+            if main_card_type is None:
+                unknown_cards.append(card)
+            else:
+                cards_by_type[main_card_type].append(card)
+        cards_by_section = {
+            f"{card_type}s": cards_by_type[card_type]
+            for card_type in ORDERED_CARD_TYPES
+            if card_type in cards_by_type
+        }
+        if unknown_cards:
+            cards_by_section["Unknown"] = unknown_cards
+    else:
+        cards_by_section["Mainboard"] = mainboard
+
+    cards_by_section["Sideboard"] = sideboard
+
+    cards_by_section = {
+        f"{section} ({sum(c.qty for c in cards_by_section[section])})": cards_by_section[
+            section
+        ]
+        for section in cards_by_section
+    }
+
+    context["cards_by_section"] = cards_by_section  # type: ignore
+    context["errors"] = errors_main + errors_side  # type: ignore
+    context["total_cards"] = sum(c.qty for cards in cards_by_section.values() for c in cards)  # type: ignore
+    return context
 
 
 class DecklistView(DetailView):
@@ -153,27 +188,11 @@ class DecklistView(DetailView):
 
     def get_context_data(self, *args, **kwargs):
         context = super().get_context_data(*args, **kwargs)
-
         # For players we show the list by types, but for TOs / Judges, only
         # sorted by mana value for deck checks.
-        sort_decklist_by_type = self.request.user.is_anonymous
-
-        mainboard, errors_main = parse_section(
-            context["decklist"].mainboard, sort_by_type=sort_decklist_by_type
+        return get_decklist_table_context(
+            context["decklist"], split_decklist_by_type=self.request.user.is_anonymous
         )
-        sideboard, errors_side = parse_section(
-            context["decklist"].sideboard, sort_by_type=sort_decklist_by_type
-        )
-
-        context["mainboard"] = mainboard
-        context["sideboard"] = sideboard
-
-        context["errors"] = errors_main + errors_side
-
-        context["mainboard_total"] = sum(c.qty for c in mainboard)
-        context["sideboard_total"] = sum(c.qty for c in sideboard)
-
-        return context
 
 
 class PlayerAutoCompleteMixin:
