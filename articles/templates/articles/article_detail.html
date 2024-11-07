@@ -1,5 +1,6 @@
 {% extends "championship/base.html" %}
 {% load article %}
+{% load cache %}
 
 {% block title %}
     {{ article.title }}
@@ -22,7 +23,9 @@
     {% endif %}
 
 
-    {{ article.content|article_tags }}
+    {% cache 604800 article_content article.id %}
+        {{ article.content|article_tags }}
+    {% endcache %}
 
     {% include "decklists/card_modal.html" %}
 {% endblock %}

@@ -13,7 +13,11 @@
 # limitations under the License.
 
 from django.conf import settings
+from django.core.cache import cache
+from django.core.cache.utils import make_template_fragment_key
 from django.db import models
+from django.db.models.signals import post_save
+from django.dispatch import receiver
 from django.urls import reverse
 from django.utils import timezone
 from django.utils.text import slugify
@@ -78,3 +82,9 @@ class Article(models.Model):
         )
 
     objects = ArticleManager()
+
+
+@receiver(post_save, sender=Article)
+def invalidate_article_cache(sender, instance, **kwargs):
+    key = make_template_fragment_key("article_content", [instance.id])
+    cache.delete(key)
