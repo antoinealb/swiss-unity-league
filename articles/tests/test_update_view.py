@@ -28,14 +28,13 @@ from articles.factories import ArticleFactory
 from articles.models import Article
 from championship.factories import UserFactory
 
-image_io = BytesIO()
-image = Image.new("RGB", (100, 100), color=(255, 0, 0))
-image.save(image_io, "JPEG")
-image_io.seek(0)
 
-header_image = SimpleUploadedFile(
-    "image.jpg", image_io.read(), content_type="image/jpeg"
-)
+def get_test_image_file():
+    image_io = BytesIO()
+    image = Image.new("RGB", (100, 100), color=(255, 0, 0))
+    image.save(image_io, format="JPEG")
+    image_io.seek(0)
+    return SimpleUploadedFile("image.jpg", image_io.read(), content_type="image/jpeg")
 
 
 class ArticleUpdateTestCase(TestCase):
@@ -70,7 +69,7 @@ class ArticleUpdateTestCase(TestCase):
             "title": "Hello World",
             "content": "<b>Hallo Welt</b>",
             "publication_time": "11/26/2022",
-            "header_image": header_image,
+            "header_image": get_test_image_file(),
             "description": "Hello World",
         }
         resp = self.client.post(self.url, data=data)
@@ -115,7 +114,7 @@ class ArticleCreateTestCase(TestCase):
             "title": "Hello World",
             "content": "<b>Hallo Welt</b>",
             "publication_time": "11/26/2022",
-            "header_image": header_image,
+            "header_image": get_test_image_file(),
             "description": "Hello World",
         }
         resp = self.client.post(self.url, data=data)
