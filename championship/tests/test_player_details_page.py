@@ -40,6 +40,7 @@ from championship.views import (
     THEAD,
     Performance,
 )
+from championship.views.players import sorted_most_accomplished_results
 
 
 class PlayerDetailsTest(TestCase):
@@ -363,6 +364,113 @@ class PlayerDetailsProfileTest(TestCase):
             f"<p>Favorite Organizer: <b>{result2.event.organizer.name}</b></p>"
         )
         self.assertContains(response, expected_name)
+
+
+class AccomplishmentsSortTesCase(TestCase):
+    def setUp(self):
+        self.profile = PlayerProfileFactory()
+
+    def sort_results(self, results):
+        sorted_results = sorted_most_accomplished_results([(r, None) for r in results])
+        return [r[0] for r in sorted_results]
+
+    def test_first_sort_by_category(self):
+        results = [
+            ResultFactory(
+                event__category=category,
+                player=self.profile.player,
+            )
+            for category in [
+                Event.Category.OTHER,
+                Event.Category.REGULAR,
+                Event.Category.REGIONAL,
+                Event.Category.PREMIER,
+            ]
+        ]
+        sorted_results = self.sort_results(results)
+        sorted_categories = [r.event.category for r in sorted_results]
+        expected_category_order = [
+            Event.Category.PREMIER,
+            Event.Category.REGIONAL,
+            Event.Category.REGULAR,
+            Event.Category.OTHER,
+        ]
+        self.assertEqual(sorted_categories, expected_category_order)
+
+    def test_second_sort_by_playoff_result(self):
+        results = [
+            ResultFactory(
+                event__category=Event.Category.PREMIER,
+                player=self.profile.player,
+                single_elimination_result=playoff_result,
+            )
+            for playoff_result in [
+                None,
+                Result.SingleEliminationResult.QUARTER_FINALIST,
+                Result.SingleEliminationResult.SEMI_FINALIST,
+                Result.SingleEliminationResult.FINALIST,
+                Result.SingleEliminationResult.WINNER,
+            ]
+        ]
+        sorted_results = self.sort_results(results)
+        sorted_playoff_results = [r.single_elimination_result for r in sorted_results]
+        expected_playoff_result_order = [
+            Result.SingleEliminationResult.WINNER,
+            Result.SingleEliminationResult.FINALIST,
+            Result.SingleEliminationResult.SEMI_FINALIST,
+            Result.SingleEliminationResult.QUARTER_FINALIST,
+            None,
+        ]
+        self.assertEqual(sorted_playoff_results, expected_playoff_result_order)
+
+    def test_third_sort_by_ranking_if_no_playoff_result(self):
+        results = [
+            ResultFactory(
+                event__category=Event.Category.PREMIER,
+                player=self.profile.player,
+                ranking=ranking,
+            )
+            for ranking in [4, 3, 2, 1]
+        ]
+        sorted_results = self.sort_results(results)
+        sorted_ranks = [r.ranking for r in sorted_results]
+        expected_rank_order = [
+            1,
+            2,
+            3,
+            4,
+        ]
+        self.assertEqual(sorted_ranks, expected_rank_order)
+
+    def test_fourth_sort_by_date_if_tied(self):
+        results = [
+            ResultFactory(
+                event__category=Event.Category.PREMIER,
+                player=self.profile.player,
+                event__date=date,
+                single_elimination_result=playoff_result,
+                ranking=ranking,
+            )
+            for ranking, playoff_result, date in [
+                (2, None, datetime.date(2024, 1, 3)),
+                (1, None, datetime.date(2024, 1, 1)),
+                (1, None, datetime.date(2024, 1, 2)),
+                (1, Result.SingleEliminationResult.FINALIST, datetime.date(2022, 1, 1)),
+                (4, Result.SingleEliminationResult.FINALIST, datetime.date(2023, 1, 1)),
+                (8, Result.SingleEliminationResult.WINNER, datetime.date(2021, 1, 1)),
+            ]
+        ]
+        sorted_results = self.sort_results(results)
+        sorted_dates = [r.event.date for r in sorted_results]
+        expected_date_order = [
+            datetime.date(2021, 1, 1),
+            datetime.date(2023, 1, 1),
+            datetime.date(2022, 1, 1),
+            datetime.date(2024, 1, 2),
+            datetime.date(2024, 1, 1),
+            datetime.date(2024, 1, 3),
+        ]
+        self.assertEqual(sorted_dates, expected_date_order)
 
 
 class SubmitPlayerProfileViewTest(TestCase):
