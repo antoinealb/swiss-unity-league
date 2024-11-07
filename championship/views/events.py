@@ -20,6 +20,7 @@ from django.contrib.auth.mixins import LoginRequiredMixin
 from django.db.models import Prefetch
 from django.http import Http404, HttpResponseForbidden, HttpResponseRedirect
 from django.urls import reverse
+from django.utils import timezone
 from django.views.generic import DetailView
 from django.views.generic.base import TemplateView
 from django.views.generic.edit import FormView, UpdateView
@@ -58,7 +59,7 @@ class EventDetailsView(DetailView):
         # Prompt the players to notify the organizer that they forgot to upload results
         # Only do so when the event is finished longer than 4 days ago and results can still be uploaded.
         context["notify_missing_results"] = (
-            event.date < datetime.date.today() - datetime.timedelta(days=4)
+            event.date < timezone.now().date() - timezone.timedelta(days=4)
             and event.can_be_edited()
             and event.category != Event.Category.OTHER
         )
@@ -72,7 +73,7 @@ class EventDetailsView(DetailView):
         context["unmatched_decklists"] = []
         for collection in Collection.objects.filter(
             event=event,
-            publication_time__lte=datetime.datetime.now(),
+            publication_time__lte=timezone.now(),
         ).prefetch_related(
             Prefetch(
                 "decklist_set", queryset=Decklist.objects.order_by("-last_modified")

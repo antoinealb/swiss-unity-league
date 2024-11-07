@@ -39,7 +39,6 @@ class MagicProvider(BaseProvider):
                 "Red Deck Wins",
                 "Jund",
                 "Mono Black Aggro",
-                "Death's Shadow",
                 "Martyr Life",
                 "Temur Aggro",
                 "Elementals",
