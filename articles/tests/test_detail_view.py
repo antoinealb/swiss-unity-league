@@ -69,3 +69,22 @@ class ArticleViewTestCase(TestCase):
         edit_url = reverse("article-update", args=args)
 
         self.assertIn(edit_url, resp.content.decode())
+
+    def test_description_in_metadata(self):
+        article = ArticleFactory()
+        args = [article.id, article.slug]
+        resp = self.client.get(reverse("article-preview", args=args))
+        self.assertContains(
+            resp, f'<meta name="description" content="{article.description}">'
+        )
+
+    def test_content_in_metadata_if_no_description(self):
+        article = ArticleFactory(
+            content="<p>This is the article content</p>",
+            description="",
+        )
+        args = [article.id, article.slug]
+        resp = self.client.get(reverse("article-preview", args=args))
+        self.assertContains(
+            resp, '<meta name="description" content="This is the article content">'
+        )
