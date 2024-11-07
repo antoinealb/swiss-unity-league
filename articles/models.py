@@ -38,8 +38,8 @@ class ArticleManager(models.Manager):
 
 
 def article_image_validator(image):
-    if image.size > 2 * 1024 * 1024:
-        raise ValidationError("Image file too large ( > 2MB )")
+    if image.size > 0.5 * 1024 * 1024:
+        raise ValidationError("Image file too large ( > 500KB )")
 
 
 class Article(models.Model):
@@ -67,7 +67,7 @@ class Article(models.Model):
     )
     header_image = models.ImageField(
         upload_to="article_header",
-        help_text="The advertisment image for the home page. Maximum size: 2MB. Supported formats: JPEG, PNG, WEBP.",
+        help_text="The advertisment image for the home page. Maximum size: 500KB. Supported formats: JPEG, PNG, WEBP.",
         blank=True,
         null=True,
         validators=[article_image_validator, validate_image_file_extension],
