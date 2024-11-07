@@ -757,6 +757,9 @@ class PlayerProfile(models.Model):
         default=False, help_text="I agree to have my player profile shown on streams."
     )
 
+    def __str__(self):
+        return f"{self.player.name}"
+
     def age(self):
         if not self.date_of_birth:
             return None
