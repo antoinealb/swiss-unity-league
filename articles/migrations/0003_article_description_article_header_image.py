@@ -45,7 +45,7 @@ class Migration(migrations.Migration):
                 null=True,
                 upload_to="article_header",
                 validators=[
-                    articles.models.player_image_validator,
+                    articles.models.article_image_validator,
                     django.core.validators.validate_image_file_extension,
                 ],
             ),

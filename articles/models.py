@@ -37,7 +37,7 @@ class ArticleManager(models.Manager):
         return self.exclude(publication_time__lte=today)
 
 
-def player_image_validator(image):
+def article_image_validator(image):
     if image.size > 2 * 1024 * 1024:
         raise ValidationError("Image file too large ( > 2MB )")
 
@@ -70,7 +70,7 @@ class Article(models.Model):
         help_text="The advertisment image for the home page. Maximum size: 2MB. Supported formats: JPEG, PNG, WEBP.",
         blank=True,
         null=True,
-        validators=[player_image_validator, validate_image_file_extension],
+        validators=[article_image_validator, validate_image_file_extension],
     )
 
     def __str__(self):
