@@ -824,7 +824,6 @@ class Result(models.Model):
         "Decklist Link",
         help_text="Link to a page where the decklist of the player can be viewed.",
         blank=True,
-        null=True,
     )
 
     migrated_from_points_to_record = models.BooleanField(

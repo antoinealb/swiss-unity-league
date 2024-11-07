@@ -166,7 +166,7 @@ class CreateResultsView(FormView):
                 win_count=w,
                 loss_count=l,
                 draw_count=d,
-                decklist_url=parse_result.decklist_url,
+                decklist_url=parse_result.decklist_url or "",
                 deck_name=parse_result.deck_name if parse_result.deck_name else "",
             )
 
