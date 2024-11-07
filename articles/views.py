@@ -92,9 +92,9 @@ class ArticleAttachmentCreateView(
         # In-DB storage does not support writing for now
         # TODO: Unique filename
         # TODO: Use Django's Storage API here
-        db_file, _ = File.objects.get_or_create(filename=path)
-        db_file.content = b"".join(file.chunks())
-        db_file.save()
+        self.db_file, _ = File.objects.get_or_create(filename=path)
+        self.db_file.content = b"".join(file.chunks())
+        self.db_file.save()
         return super().form_valid(form)
 
     def get_success_url(self):
@@ -102,6 +102,6 @@ class ArticleAttachmentCreateView(
 
     def get_success_message(self, cleaned_data):
         url = self.request.build_absolute_uri(
-            f"/{settings.MEDIA_URL}/articles/test.txt"
+            f"/{settings.MEDIA_URL}/f{self.db_file.filename}"
         )
         return f"Your file is now available at {url}"

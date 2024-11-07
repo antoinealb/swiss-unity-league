@@ -169,7 +169,7 @@ class FileUploadViewTestCasse(TestCase):
 
     def test_upload_file(self):
         file = SimpleUploadedFile(
-            "test.txt",
+            "hello.txt",
             b"Hello, world!",
             content_type="application/txt",
         )
@@ -179,6 +179,7 @@ class FileUploadViewTestCasse(TestCase):
             follow=True,
         )
         self.assertEqual(200, resp.status_code)
+        self.assertIn("hello.txt", resp.content.decode())
 
-        resp = self.client.get(f"{settings.MEDIA_URL}/articles/test.txt")
+        resp = self.client.get(f"{settings.MEDIA_URL}/articles/hello.txt")
         self.assertEqual(200, resp.status_code)
