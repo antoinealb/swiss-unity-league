@@ -13,13 +13,17 @@
 # limitations under the License.
 
 
+from django.conf import settings
 from django.contrib.auth.mixins import PermissionRequiredMixin
+from django.contrib.messages.views import SuccessMessageMixin
+from django.shortcuts import reverse
 from django.views.generic import DetailView, ListView
 from django.views.generic.dates import ArchiveIndexView, DateDetailView
-from django.views.generic.edit import CreateView, UpdateView
+from django.views.generic.edit import CreateView, FormView, UpdateView
 
-from articles.forms import ArticleUpdateForm
+from articles.forms import ArticleUpdateForm, AttachmentUploadForm
 from articles.models import Article
+from file_storage_db.models import File
 
 
 class ArticleArchiveView(ArchiveIndexView):
@@ -72,3 +76,32 @@ class ArticleDraftView(PermissionRequiredMixin, ListView):
 
     def get_queryset(self):
         return Article.objects.non_published().filter(author=self.request.user)
+
+
+class ArticleAttachmentCreateView(
+    PermissionRequiredMixin, SuccessMessageMixin, FormView
+):
+    permission_required = "articles.add_article"
+    form_class = AttachmentUploadForm
+    template_name = "articles/upload_attachment.html"
+
+    def form_valid(self, form):
+        file = form.cleaned_data["file"]
+        path = f"articles/{file.name}"
+
+        # In-DB storage does not support writing for now
+        # TODO: Unique filename
+        # TODO: Use Django's Storage API here
+        db_file, _ = File.objects.get_or_create(filename=path)
+        db_file.content = b"".join(file.chunks())
+        db_file.save()
+        return super().form_valid(form)
+
+    def get_success_url(self):
+        return reverse("article-attachment-create")
+
+    def get_success_message(self, cleaned_data):
+        url = self.request.build_absolute_uri(
+            f"/{settings.MEDIA_URL}/articles/test.txt"
+        )
+        return f"Your file is now available at {url}"

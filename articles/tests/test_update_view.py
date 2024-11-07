@@ -14,7 +14,9 @@
 
 import datetime
 
+from django.conf import settings
 from django.contrib.auth.models import Permission
+from django.core.files.uploadedfile import SimpleUploadedFile
 from django.test import TestCase
 from django.urls import reverse
 from rest_framework.status import HTTP_200_OK, HTTP_403_FORBIDDEN
@@ -157,3 +159,26 @@ class ArticleDraftTest(TestCase):
 
         self.client.force_login(u)
         self.assertIn(want_url, self.client.get("/").content.decode())
+
+
+class FileUploadViewTestCasse(TestCase):
+    def setUp(self):
+        self.user = UserFactory()
+        self.user.user_permissions.add(Permission.objects.get(codename="add_article"))
+        self.client.force_login(self.user)
+
+    def test_upload_file(self):
+        file = SimpleUploadedFile(
+            "test.txt",
+            b"Hello, world!",
+            content_type="application/txt",
+        )
+        resp = self.client.post(
+            reverse("article-attachment-create"),
+            data={"file": file},
+            follow=True,
+        )
+        self.assertEqual(200, resp.status_code)
+
+        resp = self.client.get(f"{settings.MEDIA_URL}/articles/test.txt")
+        self.assertEqual(200, resp.status_code)

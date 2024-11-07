@@ -17,6 +17,7 @@ from django.urls import path
 from articles.views import (
     ArticleAddView,
     ArticleArchiveView,
+    ArticleAttachmentCreateView,
     ArticleDraftView,
     ArticlePreviewView,
     ArticleUpdateView,
@@ -49,5 +50,10 @@ urlpatterns = [
         "drafts/",
         ArticleDraftView.as_view(),
         name="article-drafts",
+    ),
+    path(
+        "attachment/",
+        ArticleAttachmentCreateView.as_view(),
+        name="article-attachment-create",
     ),
 ]

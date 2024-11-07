@@ -18,6 +18,7 @@ from django.conf import settings
 from tinymce.widgets import TinyMCE
 
 from articles.models import Article
+from championship.forms import SubmitButtonMixin
 
 
 class ArticleUpdateForm(forms.ModelForm):
@@ -43,3 +44,7 @@ To insert a reference to a card wrap it in brackets (e.g. [[Daze]]).""".format(
                 ", ".join(settings.BLEACH_ALLOWED_TAGS_ARTICLE)
             ),
         }
+
+
+class AttachmentUploadForm(forms.Form, SubmitButtonMixin):
+    file = forms.FileField(required=True, help_text="The file to upload.")
