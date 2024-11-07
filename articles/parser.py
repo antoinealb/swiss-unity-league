@@ -16,7 +16,7 @@ import dataclasses
 from collections.abc import Iterator
 from typing import Union
 
-from parsita import ParserContext, lit, opt, reg, rep1
+from parsita import ParserContext, eof, failure, lit, opt, reg, rep1, success, until
 
 
 @dataclasses.dataclass
@@ -29,7 +29,19 @@ class DecklistTag:
     uid: str
 
 
+@dataclasses.dataclass
+class ImageTag:
+    url: str
+    alt_text: str = ""
+
+
 ParsedText = Union[CardTag, str]
+
+
+def non_null_length(*args):
+    if not args or args[0] == "":
+        return failure("Should not be null length")
+    return success(args[0])
 
 
 class ArticleTagParser(ParserContext):  # type: ignore
@@ -42,9 +54,16 @@ class ArticleTagParser(ParserContext):  # type: ignore
     tag_content = (decklist > DecklistTag) | (card > CardTag)
     tag = opening_tag >> tag_content << closing_tag
 
-    # Text is defined as anything that is not a square bracket
-    text = rep1(reg(r"[^\[]")) > (lambda s: "".join(s))
-    article = rep1(text | tag)
+    # A markdown-style image link
+    image_alt_text = reg(r"[^\]]*")
+    image_url = reg(r"[^\)]*")
+    image_tag = lit("![") >> image_alt_text << lit("](") & image_url << lit(")") > (
+        lambda s: ImageTag(url=s[1], alt_text=s[0])
+    )
+
+    text = until(tag | image_tag | eof) >= non_null_length
+
+    article = rep1(tag | image_tag | text)
 
 
 def extract_tags(text: str) -> Iterator[ParsedText]:

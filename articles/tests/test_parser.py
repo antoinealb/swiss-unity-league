@@ -16,7 +16,13 @@ from unittest import TestCase
 
 from parsita import Success
 
-from articles.parser import ArticleTagParser, CardTag, DecklistTag, extract_tags
+from articles.parser import (
+    ArticleTagParser,
+    CardTag,
+    DecklistTag,
+    ImageTag,
+    extract_tags,
+)
 
 
 class ParserTest(TestCase):
@@ -54,4 +60,10 @@ class ParserTest(TestCase):
         article = """[[http://unityleague.ch/decklists/ff521f2e-085c-4cc0-901b-600ec9a71dab/]]"""
         want = [DecklistTag("ff521f2e-085c-4cc0-901b-600ec9a71dab")]
         got = list(extract_tags(article))
+        self.assertEqual(want, got)
+
+    def test_parse_image(self):
+        txt = "![An image](image/url)"
+        want = [ImageTag("image/url", alt_text="An image")]
+        got = list(extract_tags(txt))
         self.assertEqual(want, got)

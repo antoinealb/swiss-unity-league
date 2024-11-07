@@ -16,7 +16,7 @@ from django import template
 from django.template.loader import get_template
 from django.utils.safestring import mark_safe
 
-from articles.parser import CardTag, DecklistTag, extract_tags
+from articles.parser import CardTag, DecklistTag, ImageTag, extract_tags
 from decklists.models import Decklist
 from decklists.views import get_decklist_table_context
 from oracle.models import Card, get_card_by_name
@@ -49,5 +49,9 @@ def process_article_args(text: str):
                 result.append(decklist_section_template.render(context=context))
             except Decklist.DoesNotExist:
                 result.append(f"Unknown decklist {chunk.uid}")
+        elif isinstance(chunk, ImageTag):
+            result.append(
+                f'<img class="img-fluid" src="{chunk.url}" alt="{chunk.alt_text}" />'
+            )
 
     return "".join(result)

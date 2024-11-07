@@ -90,3 +90,11 @@ class ArticleRenderingTestCase(TestCase):
         got = process_article_args(article)
         want = "Unknown decklist"
         self.assertIn(want, got)
+
+    def test_image(self):
+        article = "<p>![SMM Metagame](/media/ssm.png)</p>"
+        got = process_article_args(article)
+        want = (
+            '<p><img class="img-fluid" src="/media/ssm.png" alt="SMM Metagame" /></p>'
+        )
+        self.assertIn(want, got)
