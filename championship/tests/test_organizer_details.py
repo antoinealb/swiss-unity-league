@@ -201,7 +201,7 @@ class OrganizerImageValidation(TestCase):
 class OrganizerListViewTest(TestCase):
     def test_organizer_view(self):
         self.client = Client()
-        to_with_event = EventOrganizerFactory()
+        to_with_event = EventOrganizerFactory(name="TO with event")
         EventFactory(organizer=to_with_event)
 
         # create TO without events, so they shouldn't show up in list

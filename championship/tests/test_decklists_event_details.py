@@ -29,7 +29,7 @@ class DecklistViewTestCase(TestCase):
         self.decklist = DecklistFactory(
             player=self.player,
             collection__event=self.event,
-            collection__publication_time=timezone.now() - timezone.timedelta(hours=1),
+            collection__publication_time=timezone.now() - timezone.timedelta(seconds=1),
         )
 
     def test_can_get_decklists(self):
@@ -40,7 +40,7 @@ class DecklistViewTestCase(TestCase):
 
     def test_shows_decklists_without_results(self):
         decklist_without_result = DecklistFactory(
-            collection=self.decklist.collection,
+            archetype="Archetype without result", collection=self.decklist.collection
         )
         resp = self.client.get(reverse("event_details", args=[self.event.id]))
         self.assertContains(resp, self.decklist.archetype)

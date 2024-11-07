@@ -134,7 +134,7 @@
                             {% if has_decklists %}
                                 <td>
                                     {% for decklist in r.decklists %}
-                                        <a href="{{ decklist.get_absolute_url }}" target="_blank" title="View the {{ decklist.archetype }} decklist of {{ r.player_name }}">{{ decklist.archetype|title }}</a>{% if not forloop.last %},{% endif %}
+                                        <a href="{{ decklist.get_absolute_url }}" target="_blank" title="View the {{ decklist.archetype }} decklist of {{ r.player_name }}">{{ decklist.archetype }}</a>{% if not forloop.last %},{% endif %}
                                     {% endfor %}
                                 </td>
                             {% endif %}
@@ -160,7 +160,7 @@
             <ul>
                 {% for decklist in unmatched_decklists %}
                     <li>
-                        <a href="{{ decklist.get_absolute_url }}" target="_blank">{{ decklist.archetype|title }}</a> by {{ decklist.player.name }}
+                        <a href="{{ decklist.get_absolute_url }}" target="_blank">{{ decklist.archetype }}</a> by {{ decklist.player.name }}
                     </li>
                 {% endfor %}
             </ul>
