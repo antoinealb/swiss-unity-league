@@ -13,6 +13,7 @@
 # limitations under the License.
 
 import datetime
+from io import BytesIO
 
 from django.conf import settings
 from django.contrib.auth.models import Permission
@@ -21,9 +22,20 @@ from django.test import TestCase
 from django.urls import reverse
 from rest_framework.status import HTTP_200_OK, HTTP_403_FORBIDDEN
 
+from PIL import Image
+
 from articles.factories import ArticleFactory
 from articles.models import Article
 from championship.factories import UserFactory
+
+image_io = BytesIO()
+image = Image.new("RGB", (100, 100), color=(255, 0, 0))
+image.save(image_io, "JPEG")
+image_io.seek(0)
+
+header_image = SimpleUploadedFile(
+    "image.jpg", image_io.read(), content_type="image/jpeg"
+)
 
 
 class ArticleUpdateTestCase(TestCase):
@@ -53,16 +65,24 @@ class ArticleUpdateTestCase(TestCase):
 
     def test_post_change(self):
         self.client.force_login(self.user)
+
         data = {
             "title": "Hello World",
             "content": "<b>Hallo Welt</b>",
             "publication_time": "11/26/2022",
+            "header_image": header_image,
+            "description": "Hello World",
         }
         resp = self.client.post(self.url, data=data)
         self.article.refresh_from_db()
 
         self.assertEqual(self.article.title, data["title"])
         self.assertEqual(self.article.content, data["content"])
+        self.assertEqual(self.article.description, data["description"])
+        self.assertEqual(
+            self.article.header_image.url,
+            f"{settings.MEDIA_URL}article_header/image.jpg",
+        )
         self.assertEqual(self.article.publication_time, datetime.date(2022, 11, 26))
 
         self.assertRedirects(resp, self.article.get_absolute_url())
@@ -95,6 +115,8 @@ class ArticleCreateTestCase(TestCase):
             "title": "Hello World",
             "content": "<b>Hallo Welt</b>",
             "publication_time": "11/26/2022",
+            "header_image": header_image,
+            "description": "Hello World",
         }
         resp = self.client.post(self.url, data=data)
 
@@ -102,6 +124,12 @@ class ArticleCreateTestCase(TestCase):
 
         self.assertEqual(article.title, data["title"])
         self.assertEqual(article.content, data["content"])
+        self.assertEqual(article.description, data["description"])
+        self.assertEqual(
+            article.header_image.url,
+            f"{settings.MEDIA_URL}article_header/image.jpg",
+        )
+
         self.assertEqual(article.publication_time, datetime.date(2022, 11, 26))
 
         self.assertEqual(article.author, self.user)
