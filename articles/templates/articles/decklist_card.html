@@ -1,6 +1,6 @@
 
 <div class="border rounded p-4">
-        <h3>{{ decklist.archetype }} <small class="text-muted">by <a href={{ decklist.player.get_absolute_url }}>{{ decklist.player.name }}</a></small></h3>
+        <h3>{{ decklist.archetype|title }} <small class="text-muted">by <a href={{ decklist.player.get_absolute_url }}>{{ decklist.player.name }}</a></small></h3>
         <p>Format: {{ decklist.collection.get_format_display }}<br>
                 Event: <a href="{{ decklist.collection.event.get_absolute_url }}">{{ decklist.collection.event.name }}</a></p>
         <hr class="my-2">
