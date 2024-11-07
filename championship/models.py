@@ -690,8 +690,8 @@ class Player(models.Model):
 
 
 def player_image_validator(image):
-    if image.size > 0.5 * 1024 * 1024:
-        raise ValidationError("Image file too large ( > 500KB )")
+    if image.size > 1024 * 1024:
+        raise ValidationError("Image file too large ( > 1MB )")
 
 
 class PlayerProfile(models.Model):
@@ -739,7 +739,7 @@ class PlayerProfile(models.Model):
     image = models.ImageField(
         verbose_name="Portrait photo of yourself",
         upload_to="player_profile",
-        help_text="Preferably in portrait orientation. Maximum size: 500KB. Supported formats: JPEG, PNG, WEBP.",
+        help_text="Preferably in portrait orientation. Maximum size: 1MB. Supported formats: JPEG, PNG, WEBP.",
         blank=True,
         null=True,
         validators=[player_image_validator, validate_image_file_extension],
