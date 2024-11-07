@@ -1,5 +1,6 @@
 {% extends "championship/base.html" %}
 {% load static %}
+{% load custom_tags %}
 
 {% block content %}
     {% if has_open_invoices %}
@@ -59,24 +60,35 @@
                 </div>
             </div>
         </div>
-        <div class="col-lg-4 mb-5">
-            <div class="card h-100">
-                <div class="card-body">
-                    <h2 class="card-title">How to participate?</h2>
-                    <p class="card-text">
-                        If you're an organizer, register your Magic: the Gathering events with the league to reward your players with SUL Points.
-                        <br>For more details and registration, see our <a href="{% url 'info_organizer' %}" title="Information for Organizers about the League">Organizer Guide</a>.
-                    </p>
-                    <p class="card-text">
-                        If you're a player, please tell your local tournament organizers about the opportunity to join the league.
-                        <br>To stay updated, <a href="https://chat.whatsapp.com/Dk7CDHycts61K99t5xpIgq">join our community on WhatsApp</a>.
-                    </p>
-                </div>
-                <div class="card-footer">
-                    <a class="btn btn-secondary btn-sm" href="{% url 'info_organizer' %}" title="Information for Organizers about the League">Organizer Guide</a>
+        {% if most_recent_article %}
+            <div class="col-lg-4 mb-5">
+                <div class="card h-100">
+                    {% if most_recent_article.header_image %}
+                        <img src="{{ most_recent_article.header_image.url }}" class="card-img-top" alt="Article Image">
+                    {% endif %}
+                    <div class="card-body">
+                        <h2 class="card-title">{{ most_recent_article.title }}</h2>
+                        <p class="card-subtitle text-muted mb-2">
+                            <span>{{ most_recent_article.publication_time|weekday_date }}</span> |
+                            <span>by {{ most_recent_article.author.first_name }} {{ most_recent_article.author.last_name }}</span>
+                        </p>
+                        <p class="card-text">
+                            {% if not most_recent_article.header_image %}
+                                {% if most_recent_article.description %}
+                                    {{ most_recent_article.description }}
+                                {% else %}
+                                    {{ most_recent_article.content|truncatewords:40 }}
+                                {% endif %}
+                            {% endif %}
+                        </p>
+                    </div>
+                    <div class="card-footer">
+                        <a class="btn btn-secondary btn-sm" href="{{ most_recent_article.get_absolute_url }}" title="Read More">Read More</a>
+                        <a class="btn btn-secondary btn-sm" href="{% url 'article-list' %}" title="All Articles">All Articles</a>
+                    </div>
                 </div>
             </div>
-        </div>
+        {% endif %}
         <div class="col-lg-4 mb-5">
             <div class="card h-100">
                 <div class="card-body">

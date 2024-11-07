@@ -15,9 +15,11 @@
 from django.conf import settings
 from django.core.cache import cache
 from django.core.cache.utils import make_template_fragment_key
+from django.core.validators import validate_image_file_extension
 from django.db import models
 from django.db.models.signals import post_save
 from django.dispatch import receiver
+from django.forms import ValidationError
 from django.urls import reverse
 from django.utils import timezone
 from django.utils.text import slugify
@@ -33,6 +35,11 @@ class ArticleManager(models.Manager):
     def non_published(self):
         today = timezone.now().date()
         return self.exclude(publication_time__lte=today)
+
+
+def player_image_validator(image):
+    if image.size > 2 * 1024 * 1024:
+        raise ValidationError("Image file too large ( > 2MB )")
 
 
 class Article(models.Model):
@@ -52,6 +59,18 @@ class Article(models.Model):
         blank=True,
         strip_tags=True,
         allowed_tags=settings.BLEACH_ALLOWED_TAGS_ARTICLE,
+    )
+    description = models.TextField(
+        help_text="A short description that advertises the article. Used on the homepage and in meta data.",
+        blank=True,
+        max_length=200,
+    )
+    header_image = models.ImageField(
+        upload_to="article_header",
+        help_text="The advertisment image for the home page. Maximum size: 2MB. Supported formats: JPEG, PNG, WEBP.",
+        blank=True,
+        null=True,
+        validators=[player_image_validator, validate_image_file_extension],
     )
 
     def __str__(self):

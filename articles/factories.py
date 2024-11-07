@@ -26,3 +26,4 @@ class ArticleFactory(DjangoModelFactory):
     author = factory.SubFactory(UserFactory)
     content = factory.Faker("text")
     title = factory.Faker("sentence")
+    description = factory.Faker("sentence")

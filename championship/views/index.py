@@ -20,6 +20,7 @@ from django.contrib.auth.models import User
 from django.db.models import Max
 from django.views.generic.base import TemplateView
 
+from articles.models import Article
 from championship.models import Event, EventOrganizer
 from championship.score import get_leaderboard
 from invoicing.models import Invoice
@@ -39,6 +40,7 @@ class IndexView(TemplateView):
         context["organizers"] = self._organizers_with_image()
         context["has_open_invoices"] = self._has_open_invoices()
         context["has_pending_registration"] = self._has_pending_registration()
+        context["most_recent_article"] = self._most_recent_article()
         return context
 
     def _future_events(self):
@@ -65,6 +67,9 @@ class IndexView(TemplateView):
         future_events = list(future_regional) + list(future_premier)
         future_events.sort(key=lambda e: (e.date, e.category))
         return future_events
+
+    def _most_recent_article(self):
+        return Article.objects.published().order_by("-publication_time").first()
 
     def _organizers_with_image(self):
         # Just make sure we don't always have the pictures in the same order
