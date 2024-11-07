@@ -837,7 +837,7 @@ class Result(models.Model):
 
     def __str__(self):
         score = f"{self.win_count}-{self.loss_count}-{self.draw_count}"
-        return f"{self.player.name}@{self.event.name} ({score})"
+        return f"{self.player.name}@{self.event.name} {self.event.get_category_display()} ({score})"
 
     def __lt__(self, other):
         """Comparison function for sorting.

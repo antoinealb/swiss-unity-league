@@ -26,4 +26,7 @@ class ResultFactoryTest(TestCase):
 class ResultTest(TestCase):
     def test_str(self):
         p = ResultFactory(win_count=3, draw_count=0, loss_count=2)
-        self.assertEqual(f"{p.player.name}@{p.event.name} (3-2-0)", str(p))
+        self.assertEqual(
+            f"{p.player.name}@{p.event.name} {p.event.get_category_display()} (3-2-0)",
+            str(p),
+        )
