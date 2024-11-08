@@ -90,7 +90,7 @@ def sorted_most_accomplished_results(results):
             category = 1
         elif result.event.category == Event.Category.REGIONAL:
             category = 2
-        elif result.event.category == Event.Category.PREMIER:
+        elif result.event.category == Event.Category.REGULAR:
             category = 3
         else:
             category = 4
