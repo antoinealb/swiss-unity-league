@@ -69,7 +69,7 @@ class IndexView(TemplateView):
         return future_events
 
     def _most_recent_article(self):
-        return Article.objects.published().order_by("-publication_time").first()
+        return Article.objects.published().order_by("-published_date").first()
 
     def _organizers_with_image(self):
         # Just make sure we don't always have the pictures in the same order

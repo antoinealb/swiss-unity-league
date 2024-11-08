@@ -205,7 +205,7 @@ class HomepageTestCase(TestCase):
     def test_hides_unpublished_articles(self):
         articles = [
             ArticleFactory(
-                publication_time=timezone.now().date() + timezone.timedelta(days=1)
+                published_date=timezone.now().date() + timezone.timedelta(days=1)
             ),
             ArticleFactory(),
         ]
@@ -215,7 +215,7 @@ class HomepageTestCase(TestCase):
 
     def test_when_image_shows_no_description(self):
         article = ArticleFactory(
-            publication_time=timezone.now().date(),
+            published_date=timezone.now().date(),
             header_image="header.jpg",
         )
         response = self.client.get("/")
@@ -226,7 +226,7 @@ class HomepageTestCase(TestCase):
 
     def test_article_without_image(self):
         article = ArticleFactory(
-            publication_time=timezone.now().date(),
+            published_date=timezone.now().date(),
         )
         response = self.client.get("/")
         self.assertContains(response, article.title)
@@ -235,7 +235,7 @@ class HomepageTestCase(TestCase):
 
     def test_article_without_description_shows_truncated_content(self):
         article = ArticleFactory(
-            publication_time=timezone.now().date(),
+            published_date=timezone.now().date(),
             description="",
             content="<p>This is a test content</p>",
         )

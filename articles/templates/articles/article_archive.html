@@ -7,8 +7,8 @@
 
     <ul>
         {% for article in articles %}
-            <li>{{ article.publication_time }} - {{ article.author }}:
-                <a href="{% url 'article-details' article.publication_time.year article.publication_time.month article.publication_time.day article.slug  %}">
+            <li>{{ article.published_date }} - {{ article.author }}:
+                <a href="{% url 'article-details' article.published_date.year article.published_date.month article.published_date.day article.slug  %}">
                     {{article.title}}
                 </a>
             </li>

@@ -30,11 +30,11 @@ from django_bleach.models import BleachField
 class ArticleManager(models.Manager):
     def published(self):
         today = timezone.now().date()
-        return self.filter(publication_time__lte=today)
+        return self.filter(published_date__lte=today)
 
     def non_published(self):
         today = timezone.now().date()
-        return self.exclude(publication_time__lte=today)
+        return self.exclude(published_date__lte=today)
 
 
 def article_image_validator(image):
@@ -45,7 +45,7 @@ def article_image_validator(image):
 class Article(models.Model):
     author = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.PROTECT)
     last_changed = models.DateTimeField(auto_now=True)
-    publication_time = models.DateField(
+    published_date = models.DateField(
         null=True,
         blank=True,
         help_text="The date at which an article was published. Can be in the future for scheduled publishing.",
@@ -81,13 +81,13 @@ class Article(models.Model):
         super().save(*args, **kwargs)
 
     def get_absolute_url(self):
-        if self.publication_time and self.publication_time <= timezone.now().date():
+        if self.published_date and self.published_date <= timezone.now().date():
             return reverse(
                 "article-details",
                 args=[
-                    self.publication_time.year,
-                    self.publication_time.month,
-                    self.publication_time.day,
+                    self.published_date.year,
+                    self.published_date.month,
+                    self.published_date.day,
                     self.slug,
                 ],
             )

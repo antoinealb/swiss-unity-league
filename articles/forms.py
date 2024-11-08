@@ -27,12 +27,12 @@ class ArticleUpdateForm(forms.ModelForm):
         fields = [
             "title",
             "content",
-            "publication_time",
+            "published_date",
             "header_image",
             "description",
         ]
         widgets = {
-            "publication_time": forms.DateInput(attrs={"type": "date"}),
+            "published_date": forms.DateInput(attrs={"type": "date"}),
             "content": TinyMCE(
                 mce_attrs={
                     "toolbar": "undo redo | h2 h3 h4 | bold italic | link unlink | bullist numlist",

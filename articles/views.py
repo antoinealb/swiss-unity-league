@@ -28,13 +28,13 @@ from file_storage_db.models import File
 
 class ArticleArchiveView(ArchiveIndexView):
     model = Article
-    date_field = "publication_time"
+    date_field = "published_date"
     context_object_name = "articles"
 
 
 class ArticleView(DateDetailView):
     model = Article
-    date_field = "publication_time"
+    date_field = "published_date"
     year_format = "%Y"
     month_format = "%m"
     day_format = "%d"

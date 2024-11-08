@@ -25,12 +25,12 @@ from championship.factories import UserFactory
 
 class ArticleViewTestCase(TestCase):
     def test_can_get_article(self):
-        article = ArticleFactory(publication_time=datetime.date(2020, 1, 1))
+        article = ArticleFactory(published_date=datetime.date(2020, 1, 1))
 
         args = [
-            article.publication_time.year,
-            article.publication_time.month,
-            article.publication_time.day,
+            article.published_date.year,
+            article.published_date.month,
+            article.published_date.day,
             article.slug,
         ]
 

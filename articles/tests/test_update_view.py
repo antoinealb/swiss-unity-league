@@ -39,7 +39,7 @@ def get_test_image_file():
 
 class ArticleUpdateTestCase(TestCase):
     def setUp(self):
-        self.article = ArticleFactory(publication_time=datetime.date(2020, 1, 1))
+        self.article = ArticleFactory(published_date=datetime.date(2020, 1, 1))
         args = [self.article.id, self.article.slug]
         self.url = reverse("article-update", args=args)
         self.user = UserFactory()
@@ -68,7 +68,7 @@ class ArticleUpdateTestCase(TestCase):
         data = {
             "title": "Hello World",
             "content": "<b>Hallo Welt</b>",
-            "publication_time": "11/26/2022",
+            "published_date": "11/26/2022",
             "header_image": get_test_image_file(),
             "description": "Hello World",
         }
@@ -82,7 +82,7 @@ class ArticleUpdateTestCase(TestCase):
             self.article.header_image.url,
             f"{settings.MEDIA_URL}article_header/image.jpg",
         )
-        self.assertEqual(self.article.publication_time, datetime.date(2022, 11, 26))
+        self.assertEqual(self.article.published_date, datetime.date(2022, 11, 26))
 
         self.assertRedirects(resp, self.article.get_absolute_url())
 
@@ -113,7 +113,7 @@ class ArticleCreateTestCase(TestCase):
         data = {
             "title": "Hello World",
             "content": "<b>Hallo Welt</b>",
-            "publication_time": "11/26/2022",
+            "published_date": "11/26/2022",
             "header_image": get_test_image_file(),
             "description": "Hello World",
         }
@@ -129,7 +129,7 @@ class ArticleCreateTestCase(TestCase):
             f"{settings.MEDIA_URL}article_header/image.jpg",
         )
 
-        self.assertEqual(article.publication_time, datetime.date(2022, 11, 26))
+        self.assertEqual(article.published_date, datetime.date(2022, 11, 26))
 
         self.assertEqual(article.author, self.user)
 
@@ -158,9 +158,7 @@ class ArticleDraftTest(TestCase):
     def test_list_article_draft(self):
         article = ArticleFactory()
         # Another article by same author, but not a draft anymore
-        ArticleFactory(
-            author=article.author, publication_time=datetime.date(2020, 1, 1)
-        )
+        ArticleFactory(author=article.author, published_date=datetime.date(2020, 1, 1))
         ArticleFactory()  # another author
 
         article.author.user_permissions.add(

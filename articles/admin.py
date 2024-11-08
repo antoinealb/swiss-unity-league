@@ -30,10 +30,10 @@ class ArticlePublishedListFilter(admin.SimpleListFilter):
     def queryset(self, request, queryset: QuerySet[articles.models.Article]):
         now = timezone.now()
         if self.value() == "published":
-            return queryset.filter(publication_time__lte=now)
+            return queryset.filter(published_date__lte=now)
         elif self.value() == "private":
             return queryset.filter(
-                Q(publication_time__gte=now) | Q(publication_time__isnull=True)
+                Q(published_date__gte=now) | Q(published_date__isnull=True)
             )
 
 
@@ -52,14 +52,14 @@ class ArticleAdmin(admin.ModelAdmin):
         "title",
         "author_name",
         "last_changed",
-        "publication_time",
+        "published_date",
     )
     list_filter = [ArticlePublishedListFilter]
     fields = [
         "author",
         "title",
         "content",
-        "publication_time",
+        "published_date",
         "description",
         "header_image",
     ]
