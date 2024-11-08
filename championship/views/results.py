@@ -30,8 +30,8 @@ from django.shortcuts import get_object_or_404
 from django.urls import reverse
 from django.views.generic.edit import FormView, UpdateView
 
-import pandas as pd
 import requests
+from openpyxl import load_workbook
 
 from championship.forms import (
     AddTop8ResultsForm,
@@ -393,31 +393,42 @@ class ExcelCsvResultsView(CreateFileParserResultsView):
         + "You can also use the column MATCH_POINTS if you only have the match points and no record."
     )
 
-    def _read_excel_csv(self):
+    def _read_excel_or_csv_rows(self):
+        file_buffer = io.BytesIO(self.request.FILES["standings"].read())
+
         try:
-            file = self.request.FILES["standings"]
-            file_buffer = io.BytesIO(file.read())
-            df = pd.read_excel(file_buffer, engine="openpyxl")
+            workbook = load_workbook(file_buffer, data_only=True)
+            sheet = workbook.active
+
+            rows = []
+            for row in sheet.iter_rows(values_only=True):
+                rows.append([cell for cell in row if cell is not None])
+
+            return rows
         except BadZipFile:
+            file_buffer.seek(0)
             try:
-                file_buffer.seek(0)
                 sniffer = csv.Sniffer()
                 delimiter = sniffer.sniff(file_buffer.read(1024).decode()).delimiter
                 file_buffer.seek(0)
-                df = pd.read_csv(file_buffer, delimiter=delimiter)
-            except (csv.Error, UnicodeDecodeError, pd.errors.ParserError):
-                df = None
-        return df
+
+                reader = csv.reader(
+                    io.TextIOWrapper(file_buffer, encoding="utf-8"), delimiter=delimiter
+                )
+                rows = [row for row in reader]
+                return rows
+            except (csv.Error, UnicodeDecodeError):
+                return None
 
     def get_results(self, form):
-        error_text = "Error in reading the file. Did you upload a .xlsx or .csv file with the headers of the columns named PLAYER_NAME and RECORD (or MATCH_POINTS)?"
-        df = self._read_excel_csv()
-        if df is None:
+        error_text = "Error when reading the file. Did you upload a .xlsx or .csv file with the headers of the columns named PLAYER_NAME and RECORD (or MATCH_POINTS)?"
+        rows = self._read_excel_or_csv_rows()
+        if rows is None:
             logging.exception("Could not parse file as Excel or CSV")
             messages.error(self.request, error_text)
             return
         try:
-            return excel_csv_parser.parse_standings_page(df)
+            return excel_csv_parser.parse_standings_page(rows)
         except Exception as e:
             logging.exception("Error parsing dataframe")
             if hasattr(e, "ui_error_message"):
