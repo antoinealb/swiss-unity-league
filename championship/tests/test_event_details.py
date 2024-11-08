@@ -20,6 +20,7 @@ from django.core.files.uploadedfile import SimpleUploadedFile
 from django.test import Client, TestCase
 from django.urls import reverse
 
+from freezegun import freeze_time
 from parameterized import parameterized
 
 from championship.factories import (
@@ -300,13 +301,17 @@ class EventDetailTestCase(TestCase):
         ]
     )
     def test_missing_results_info(self, minus_delta, missing_results_info_expected):
-        event = EventFactory(
-            category=Event.Category.REGULAR, date=datetime.date.today() - minus_delta
-        )
-        resp = self.client.get(reverse("event_details", args=[event.id]))
-        self.assertEqual(
-            missing_results_info_expected, resp.context_data["notify_missing_results"]
-        )
+        with freeze_time("2024-06-01"):
+            event = EventFactory(
+                category=Event.Category.REGULAR,
+                date=datetime.date.today() - minus_delta,
+            )
+            resp = self.client.get(reverse("event_details", args=[event.id]))
+            self.assertEqual(
+                missing_results_info_expected,
+                resp.context_data["notify_missing_results"],
+                msg=minus_delta,
+            )
 
     def test_shows_time_with_title(self):
         event = EventFactory()
