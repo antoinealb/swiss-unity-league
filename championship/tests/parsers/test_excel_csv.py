@@ -14,7 +14,6 @@
 
 from unittest import TestCase
 
-import pandas as pd
 from parameterized import parameterized
 
 from championship.parsers.excel_csv_parser import (
@@ -31,8 +30,14 @@ from championship.parsers.excel_csv_parser import (
 
 class ExcelCsvStandingParser(TestCase):
     def test_can_parse_record(self):
-        self.df = pd.read_excel("championship/tests/parsers/excel_ranking.xlsx")
-        self.results = parse_standings_page(self.df)
+        rows = [
+            ["Player name", "Match points", "Record"],
+            ["Jari Rentsch", "9", "3-1-0"],
+            ["Noé Dumez", "8", "2-0-2"],
+            ["RENAUD-GOUD, Antoine", "7", "2-1-1"],
+        ]
+
+        self.results = parse_standings_page(rows)
         want = [
             ("Jari Rentsch", 9, (3, 1, 0)),
             ("Noé Dumez", 8, (2, 0, 2)),
@@ -41,13 +46,12 @@ class ExcelCsvStandingParser(TestCase):
         got = [(pr.name, pr.points, pr.record) for pr in self.results[:3]]
         self.assertEqual(want, got)
 
-    def _create_df(self, match_points):
-        self.df = pd.DataFrame(
-            {
-                PLAYER_NAME: [f"Player {i}" for i in range(1, len(match_points) + 1)],
-                MATCH_POINTS: [str(s) for s in match_points],
-            }
-        )
+    def _create_rows(self, match_points):
+        rows = []
+        rows.append([PLAYER_NAME, MATCH_POINTS])  # Add header
+        for i, points in enumerate(match_points, start=1):
+            rows.append([f"Player {i}", str(points)])
+        return rows
 
     @parameterized.expand(
         [
@@ -86,35 +90,45 @@ class ExcelCsvStandingParser(TestCase):
         ]
     )
     def test_can_parse_match_points(self, match_points, want):
-        self._create_df(match_points)
-        self.results = parse_standings_page(self.df)
+        wb = self._create_rows(match_points)
+        self.results = parse_standings_page(wb)
         records = [pr.record for pr in self.results]
         self.assertEqual(want, records)
 
 
 class ExcelCsvStandingParserExceptions(TestCase):
+
     def setUp(self):
-        self.df = pd.read_excel("championship/tests/parsers/excel_ranking.xlsx")
+        self.rows = [
+            [PLAYER_NAME, MATCH_POINTS, RECORD],
+            ["Jari Rentsch", "9", "3-1-0"],
+            ["Noé Dumez", "8", "2-0-2"],
+            ["RENAUD-GOUD, Antoine", "7", "2-1-1"],
+        ]
+
+    def delete_column(self, column_name):
+        index = self.rows[0].index(column_name)
+        for row in self.rows:
+            del row[index]
 
     def test_player_name_not_found(self):
-        del self.df[PLAYER_NAME]
+        self.delete_column(PLAYER_NAME)
         with self.assertRaises(PlayerNameNotFound):
-            parse_standings_page(self.df)
+            parse_standings_page(self.rows)
 
     def test_record_or_match_points_not_found(self):
-        del self.df[RECORD]
-        del self.df[MATCH_POINTS]
+        self.delete_column(MATCH_POINTS)
+        self.delete_column(RECORD)
         with self.assertRaises(RecordOrMatchPointsNotFound):
-            parse_standings_page(self.df)
+            parse_standings_page(self.rows)
 
     def test_invalid_record(self):
-        self.df.loc[0, RECORD] = "invalid"
+        self.rows[1][2] = "invalid"
         with self.assertRaises(InvalidRecordError):
-            parse_standings_page(self.df)
+            parse_standings_page(self.rows)
 
     def test_invalid_match_points(self):
-        del self.df[RECORD]
-        self.df[MATCH_POINTS] = self.df[MATCH_POINTS].astype(str)
-        self.df.loc[0, MATCH_POINTS] = "invalid"
+        self.rows[1][1] = "invalid"
+        self.delete_column(RECORD)
         with self.assertRaises(InvalidMatchPointsError):
-            parse_standings_page(self.df)
+            parse_standings_page(self.rows)

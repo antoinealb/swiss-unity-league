@@ -12,8 +12,6 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-import pandas as pd
-
 from championship.parsers.general_parser_functions import (
     estimate_rounds,
     parse_record,
@@ -26,48 +24,61 @@ RECORD = "RECORD"
 MATCH_POINTS = "MATCH_POINTS"
 
 
-def _standings(df: pd.DataFrame):
-    defined_cols = [
-        col for col in [PLAYER_NAME, RECORD, MATCH_POINTS] if col in df.columns
-    ]
-    df = df[defined_cols]
+def _standings(data):
+    header = data[0]
+    header = [col.strip().upper().replace(" ", "_") for col in header]
+    defined_cols = [col for col in [PLAYER_NAME, RECORD, MATCH_POINTS] if col in header]
 
     if PLAYER_NAME not in defined_cols:
         raise PlayerNameNotFound()
 
-    df = df.dropna(subset=[PLAYER_NAME])
-    if RECORD in defined_cols:
-        for _, row in df.iterrows():
-            name = row[PLAYER_NAME]
-            record_string = row[RECORD]
+    player_name_index = header.index(PLAYER_NAME)
+    record_index = header.index(RECORD) if RECORD in header else None
+    match_points_index = header.index(MATCH_POINTS) if MATCH_POINTS in header else None
+
+    if record_index is not None:
+        for row in data[1:]:
+            if not row[player_name_index]:
+                continue
+
+            name = row[player_name_index]
+            record_string = row[record_index]
             try:
                 parsed_record = parse_record(record_string)
                 points = record_to_points(record_string)
             except ValueError:
                 raise InvalidRecordError(name, record_string)
+
             yield ParseResult(name=name, points=points, record=parsed_record)
-    elif MATCH_POINTS in defined_cols:
-        name_points_tuple_list = []
-        for _, row in df.iterrows():
+
+    elif match_points_index is not None:
+        name_points_list = []
+        for row in data[1:]:
+            if not row[player_name_index]:
+                continue
+
+            name = row[player_name_index]
             try:
-                name_points_tuple_list.append(
-                    (row[PLAYER_NAME], int(row[MATCH_POINTS]))
-                )
+                points = int(row[match_points_index])
+                name_points_list.append((name, points))
             except Exception:
-                raise InvalidMatchPointsError(row[PLAYER_NAME], row[MATCH_POINTS])
-        match_points_list = [points for _, points in name_points_tuple_list]
+                raise InvalidMatchPointsError(name, row[match_points_index])
+
+        match_points_list = [points for _, points in name_points_list]
         num_rounds = estimate_rounds(match_points_list)
-        for name, points in name_points_tuple_list:
+
+        for name, points in name_points_list:
             wins = points // 3
             draws = points % 3
             losses = num_rounds - wins - draws
             yield ParseResult(name=name, points=points, record=(wins, losses, draws))
+
     else:
         raise RecordOrMatchPointsNotFound()
 
 
-def parse_standings_page(df: pd.DataFrame):
-    return list(_standings(df))
+def parse_standings_page(data):
+    return list(_standings(data))
 
 
 class PlayerNameNotFound(ValueError):
