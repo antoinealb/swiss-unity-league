@@ -17,7 +17,9 @@ import datetime
 from django.contrib.auth.models import User
 from django.shortcuts import reverse
 from django.test import Client, TestCase, override_settings
+from django.utils import timezone
 
+from articles.factories import ArticleFactory
 from championship.factories import (
     EventFactory,
     EventOrganizerFactory,
@@ -199,3 +201,45 @@ class HomepageTestCase(TestCase):
 
         response = self.client.get("/")
         self.assertTrue(response.context["has_pending_registration"])
+
+    def test_hides_unpublished_articles(self):
+        articles = [
+            ArticleFactory(
+                publication_time=timezone.now().date() + timezone.timedelta(days=1)
+            ),
+            ArticleFactory(),
+        ]
+        response = self.client.get("/")
+        for article in articles:
+            self.assertNotContains(response, article.title)
+
+    def test_when_image_shows_no_description(self):
+        article = ArticleFactory(
+            publication_time=timezone.now().date(),
+            header_image="header.jpg",
+        )
+        response = self.client.get("/")
+        self.assertContains(response, article.title)
+        self.assertNotContains(response, article.description)
+        self.assertContains(response, article.header_image.url)
+        self.assertContains(response, article.get_absolute_url())
+
+    def test_article_without_image(self):
+        article = ArticleFactory(
+            publication_time=timezone.now().date(),
+        )
+        response = self.client.get("/")
+        self.assertContains(response, article.title)
+        self.assertContains(response, article.description)
+        self.assertContains(response, article.get_absolute_url())
+
+    def test_article_without_description_shows_truncated_content(self):
+        article = ArticleFactory(
+            publication_time=timezone.now().date(),
+            description="",
+            content="<p>This is a test content</p>",
+        )
+        response = self.client.get("/")
+        self.assertContains(response, article.title)
+        self.assertContains(response, "This is a test content")
+        self.assertContains(response, article.get_absolute_url())

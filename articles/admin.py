@@ -60,6 +60,8 @@ class ArticleAdmin(admin.ModelAdmin):
         "title",
         "content",
         "publication_time",
+        "description",
+        "header_image",
     ]
 
 

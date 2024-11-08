@@ -28,6 +28,8 @@ class ArticleUpdateForm(forms.ModelForm):
             "title",
             "content",
             "publication_time",
+            "header_image",
+            "description",
         ]
         widgets = {
             "publication_time": forms.DateInput(attrs={"type": "date"}),
