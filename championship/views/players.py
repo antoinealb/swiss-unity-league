@@ -83,6 +83,30 @@ class Performance:
         )
 
 
+def sorted_most_accomplished_results(results):
+    def accomplishments_sort_key(result_score):
+        result, score = result_score
+        if result.event.category == Event.Category.PREMIER:
+            category = 1
+        elif result.event.category == Event.Category.REGIONAL:
+            category = 2
+        elif result.event.category == Event.Category.REGULAR:
+            category = 3
+        else:
+            category = 4
+
+        return (
+            category,
+            result.single_elimination_result or 16 + result.ranking,
+            -result.event.date.toordinal(),
+        )
+
+    return sorted(
+        results,
+        key=accomplishments_sort_key,
+    )
+
+
 class PlayerDetailsView(PerSeasonMixin, DetailView):
     season_view_name = "player_details_by_season"
     season_list = SEASONS_WITH_RANKING
@@ -124,23 +148,8 @@ class PlayerDetailsView(PerSeasonMixin, DetailView):
 
         if context["profile"]:
 
-            def accomplishments_sort_key(result_score):
-                result, score = result_score
-                if result.event.category == Event.Category.PREMIER:
-                    category = 1
-                elif result.event.category == Event.Category.REGIONAL:
-                    category = 2
-                else:
-                    category = 3
-
-                return (
-                    category,
-                    result.single_elimination_result or 16,
-                    result.ranking,
-                )
-
-            context["accomplishments"] = sorted(
-                context[LAST_RESULTS], key=accomplishments_sort_key
+            context["accomplishments"] = sorted_most_accomplished_results(
+                context[LAST_RESULTS]
             )[:3]
 
             context["accomplishments"] = sorted(

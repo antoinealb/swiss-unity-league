@@ -333,12 +333,13 @@ class PlayerAdmin(admin.ModelAdmin):
 class PlayerProfileAdmin(admin.ModelAdmin):
     list_display = (
         "player",
-        "pronouns",
-        "age",
-        "hometown",
-        "occupation",
+        "status",
+        "consent_for_website",
+        "consent_for_stream",
     )
-    search_fields = ["player__name", "hometown"]
+    search_fields = ["player__name"]
+    autocomplete_fields = ["player"]
+    list_filter = ["status"]
 
     def pronouns(self, obj):
         return obj.get_pronouns()
