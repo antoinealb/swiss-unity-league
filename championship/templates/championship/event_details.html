@@ -62,22 +62,25 @@
             <dt class="col-sm-3">TO actions (only shown to you)</dt>
             <dd class="col-sm-9">
 
-                <div class="btn-group-vertical">
+                <div class="btn-group mb-2">
                     {% if event.can_be_edited %}
                         <a href="{% url 'event_update' event.id %}" class="btn btn-secondary">Edit Event</a>
-                        {% if event.recurring_event %}
-                            <a href="{% url 'event_update_all' event.id %}" class="btn btn-secondary">Edit All Events of Series</a>
-                        {% endif %}
+
                     {% endif %}
-                    <a href="{% url 'event_copy' event.id %}" class="btn btn-secondary-light">Copy Event</a>
                     {% if event.can_be_deleted %}
                         {% include 'championship/delete_confirmation.html' with object=event long_name=True %}
                     {% endif %}
+                    <a href="{% url 'event_copy' event.id %}" class="btn btn-secondary-light">Copy Event</a>
+                </div>
+                <div class="btn-group mb-2">
                     {% if event.recurring_event %}
+                        <a href="{% url 'event_update_all' event.id %}" class="btn btn-secondary">Edit All Events of Series</a>
                         <a href="{% url 'recurring_event_update' event.recurring_event_id %}" class="btn btn-secondary">Update Schedule</a>
                     {% else %}
                         <a href="{% url 'recurring_event_create' event.id %}" class="btn btn-secondary">Schedule as Event Series</a>
                     {% endif %}
+                </div>
+                <div class="btn-group mb-2">
                     {% if event.can_be_edited and results %}
                         <a href="{% url 'results_top8_add' event.id %}" class="btn btn-secondary">Add/Edit Playoffs Results</a>
                         <a href="{% url 'event_clear_results' event.id %}" class="btn btn-danger">Delete results</a>
