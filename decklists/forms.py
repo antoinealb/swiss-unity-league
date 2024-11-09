@@ -12,6 +12,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+import datetime
+
 from django import forms
 
 from championship.models import Event, Player
@@ -68,11 +70,27 @@ class CollectionForm(forms.ModelForm):
     class Meta:
         model = Collection
         fields = ["submission_deadline", "publication_time", "format_override"]
+        widgets = {
+            "submission_deadline": forms.DateTimeInput(
+                attrs={"type": "datetime-local"}
+            ),
+            "publication_time": forms.DateTimeInput(attrs={"type": "datetime-local"}),
+        }
 
     def __init__(self, *args, **kwargs):
         self.event = kwargs.pop("event", None)
         super().__init__(*args, **kwargs)
-        if not self.event:
+
+        if self.event:
+            # When creating a collection, initialize the datetimes based on event date
+            event_start_time = self.event.start_time or datetime.time(hour=9)
+            self.fields["submission_deadline"].initial = datetime.datetime.combine(
+                self.event.date, event_start_time
+            )
+            self.fields["publication_time"].initial = (
+                self.event.date + datetime.timedelta(days=1)
+            )
+        else:
             self.event = self.instance.event
 
         if self.event.format != Event.Format.MULTIFORMAT:

@@ -34,10 +34,37 @@ class CollectionCreateTestCase(TestCase):
         }
         self.url = reverse("collection-create") + f"?event={self.event.id}"
 
-    def test_can_get_form(self):
+    def test_contains_name_of_event(self):
         response = self.client.get(self.url)
         self.assertEqual(response.status_code, 200)
         self.assertContains(response, self.event.name)
+
+    def test_form_initial_submission_deadline_9am(self):
+        response = self.client.get(self.url)
+        initial_submission_deadline = (
+            response.context["form"].fields["submission_deadline"].initial
+        )
+        self.assertEqual(initial_submission_deadline.date(), self.event.date)
+        self.assertEqual(initial_submission_deadline.hour, 9)
+
+    def test_form_initial_submission_deadline_start_time_of_event(self):
+        self.event.start_time = datetime.time(10)
+        self.event.save()
+        response = self.client.get(self.url)
+        initial_submission_deadline = (
+            response.context["form"].fields["submission_deadline"].initial
+        )
+        self.assertEqual(initial_submission_deadline.date(), self.event.date)
+        self.assertEqual(initial_submission_deadline.hour, 10)
+
+    def test_form_initial_pulication_time_next_day(self):
+        response = self.client.get(self.url)
+        initial_publication_time = (
+            response.context["form"].fields["publication_time"].initial
+        )
+        self.assertEqual(
+            initial_publication_time, self.event.date + datetime.timedelta(days=1)
+        )
 
     def test_can_create_collection(self):
         self.client.post(self.url, self.data)
@@ -83,10 +110,22 @@ class CollectionUpdateTestCase(TestCase):
         }
         self.url = reverse("collection-update", args=[self.collection.id])
 
-    def test_can_get_form(self):
+    def test_contains_name_of_event(self):
         response = self.client.get(self.url)
         self.assertEqual(response.status_code, 200)
         self.assertContains(response, self.collection.event.name)
+
+    def test_form_no_initial_datetimes(self):
+        """Unlike when creating a collection, during an update we don't want to initialize the datetime fields."""
+        response = self.client.get(self.url)
+        initial_submission_deadline = (
+            response.context["form"].fields["submission_deadline"].initial
+        )
+        self.assertIsNone(initial_submission_deadline)
+        initial_publication_time = (
+            response.context["form"].fields["publication_time"].initial
+        )
+        self.assertIsNone(initial_publication_time)
 
     def test_can_update_collection(self):
         self.client.post(self.url, self.data)
