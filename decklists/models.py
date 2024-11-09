@@ -56,6 +56,14 @@ class Collection(models.Model):
         help_text="Format of the decklist. If left empty, we will use the format of the event.",
     )
 
+    def clean(self):
+        if self.submission_deadline > self.publication_time:
+            raise ValidationError(
+                {
+                    "publication_time": "Decklists can't be published before the submission deadline.",
+                }
+            )
+
     def __str__(self) -> str:
         return f"{self.name} (by {self.event.organizer.name})"
 

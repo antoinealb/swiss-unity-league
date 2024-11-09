@@ -19,13 +19,15 @@ from typing import TypeAlias
 
 from django.contrib import messages
 from django.contrib.messages.views import SuccessMessageMixin
-from django.shortcuts import redirect
+from django.http import HttpResponseForbidden
+from django.http.response import HttpResponse as HttpResponse
+from django.shortcuts import get_object_or_404, redirect
 from django.urls import reverse
 from django.views.generic import DetailView
 from django.views.generic.edit import CreateView, UpdateView
 
-from championship.models import Player
-from decklists.forms import DecklistForm
+from championship.models import Event, Player
+from decklists.forms import CollectionForm, DecklistForm
 from decklists.models import Collection, Decklist
 from decklists.parser import DecklistParser
 from oracle.models import Card, get_card_by_name
@@ -284,4 +286,46 @@ class CollectionView(DetailView):
         context["decklists"] = self.get_decklists()
         context["show_links"] = self.get_show_links()
         context["owned_decklists"] = self.request.session.get("owned_decklists", [])
+        return context
+
+
+class CollectionCreateView(SuccessMessageMixin, CreateView):
+    model = Collection
+    form_class = CollectionForm
+    template_name = "decklists/collection_edit.html"
+    success_message = "Collection was saved succesfully."
+
+    def dispatch(self, request, *args, **kwargs):
+        event_pk = self.request.GET["event"]
+        self.event = get_object_or_404(Event, pk=event_pk)
+        if self.event.organizer.user != request.user:
+            return HttpResponseForbidden()
+        return super().dispatch(request, *args, **kwargs)
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context["event"] = self.event
+        return context
+
+    def get_form_kwargs(self, *args, **kwargs):
+        res = super().get_form_kwargs(*args, **kwargs)
+        res["event"] = self.event
+        return res
+
+
+class CollectionUpdateView(SuccessMessageMixin, UpdateView):
+    model = Collection
+    form_class = CollectionForm
+    template_name = "decklists/collection_edit.html"
+    success_message = "Collection was saved succesfully."
+
+    def dispatch(self, request, *args, **kwargs):
+        self.event = get_object_or_404(Event, collection__pk=self.kwargs.get("pk"))
+        if self.event.organizer.user != request.user:
+            return HttpResponseForbidden()
+        return super().dispatch(request, *args, **kwargs)
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context["event"] = self.event
         return context

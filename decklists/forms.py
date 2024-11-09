@@ -14,8 +14,8 @@
 
 from django import forms
 
-from championship.models import Player
-from decklists.models import Decklist
+from championship.models import Event, Player
+from decklists.models import Collection, Decklist
 
 
 class DecklistForm(forms.ModelForm):
@@ -58,6 +58,29 @@ class DecklistForm(forms.ModelForm):
 
         if self.collection:
             instance.collection = self.collection
+
+        if commit:
+            instance.save()
+        return instance
+
+
+class CollectionForm(forms.ModelForm):
+    class Meta:
+        model = Collection
+        fields = ["submission_deadline", "publication_time", "format_override"]
+
+    def __init__(self, *args, **kwargs):
+        self.event = kwargs.pop("event", None)
+        super().__init__(*args, **kwargs)
+        if not self.event:
+            self.event = self.instance.event
+
+        if self.event.format != Event.Format.MULTIFORMAT:
+            self.fields.pop("format_override")
+
+    def save(self, commit=True):
+        instance = super().save(commit=False)
+        instance.event = self.event
 
         if commit:
             instance.save()
