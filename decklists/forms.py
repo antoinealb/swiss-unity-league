@@ -76,6 +76,11 @@ class CollectionForm(forms.ModelForm):
             ),
             "publication_time": forms.DateTimeInput(attrs={"type": "datetime-local"}),
         }
+        help_texts = {
+            "submission_deadline": "Deadline for players to submit their decklists.",
+            "publication_time": "Time when decklists become visible to players.",
+            "format_override": "The format of the decklists. Create a seperate decklist collection for each format of your event.",
+        }
 
     def __init__(self, *args, **kwargs):
         self.event = kwargs.pop("event", None)
