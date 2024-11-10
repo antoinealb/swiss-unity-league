@@ -95,6 +95,8 @@ class CollectionForm(forms.ModelForm):
 
         if self.event.format != Event.Format.MULTIFORMAT:
             self.fields.pop("format_override")
+        else:
+            self.fields["format_override"].required = True
 
     def save(self, commit=True):
         instance = super().save(commit=False)
