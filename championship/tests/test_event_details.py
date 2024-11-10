@@ -19,7 +19,6 @@ from django.core.exceptions import ValidationError
 from django.core.files.uploadedfile import SimpleUploadedFile
 from django.test import Client, TestCase
 from django.urls import reverse
-from django.utils import timezone
 
 from freezegun import freeze_time
 from parameterized import parameterized
@@ -32,7 +31,6 @@ from championship.factories import (
     ResultFactory,
 )
 from championship.models import Event, Result
-from decklists.factories import CollectionFactory
 
 
 class EventDetailTestCase(TestCase):
@@ -328,39 +326,6 @@ class EventDetailTestCase(TestCase):
         resp = self.client.get(reverse("event_details", args=[event.id]))
         self.assertContains(resp, "10:00 - 19:00")
         self.assertContains(resp, "Date & Time")
-
-    def test_shows_link_to_upload_decklists(self):
-        collection = CollectionFactory()
-        event = collection.event
-        resp = self.client.get(reverse("event_details", args=[event.id]))
-        self.assertContains(
-            resp,
-            reverse("collection-details", args=[event.id]),
-        )
-        self.assertContains(
-            resp,
-            f"Submit {event.get_format_display()} decklist",
-        )
-        collection.submission_deadline = datetime.date.today() - datetime.timedelta(1)
-        collection.save()
-        resp = self.client.get(reverse("event_details", args=[event.id]))
-        self.assertContains(
-            resp,
-            reverse("collection-details", args=[event.id]),
-        )
-        self.assertContains(
-            resp,
-            f"View {event.get_format_display()} decklist",
-        )
-
-    def test_no_upload_link_for_published_decklists(self):
-        collection = CollectionFactory(publication_time=timezone.now())
-        event = collection.event
-        resp = self.client.get(reverse("event_details", args=[event.id]))
-        self.assertNotContains(
-            resp,
-            reverse("collection-details", args=[event.id]),
-        )
 
 
 class EventImageValidation(TestCase):

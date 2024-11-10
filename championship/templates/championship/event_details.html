@@ -92,6 +92,14 @@
                         <a href="{% url 'event_clear_results' event.id %}" class="btn btn-danger">Delete results</a>
                     {% endif %}
                 </div>
+                <div class="btn-group mb-2">
+                    {% if show_create_collection_link %}
+                        <a href="{% url 'collection-create' %}?event={{ event.id }}" class="btn btn-secondary">Collect Decklists for Event</a>
+                    {% endif %}
+                    {% for collection in collections %}
+                        <a href="{% url 'collection-update' collection.id %}" class="btn btn-secondary">Update {{ collection.get_format_display }} Decklist Collection</a>
+                    {% endfor %}
+                </div>
             </dd>
         {% endif %}
 

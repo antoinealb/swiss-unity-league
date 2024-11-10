@@ -61,6 +61,11 @@ class EventDetailsView(DetailView):
             context["collections"].unpublished().exists()
         )
 
+        # We allow 1 collection only, unless event is multiformat.
+        context["show_create_collection_link"] = (
+            not context["collections"]
+        ) or event.format == Event.Format.MULTIFORMAT
+
         # Prompt the players to notify the organizer that they forgot to upload results
         # Only do so when the event is finished longer than 4 days ago and results can still be uploaded.
         context["notify_missing_results"] = (

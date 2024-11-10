@@ -12,15 +12,18 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+import datetime
+
 from django.test import TestCase
 from django.urls import reverse
 from django.utils import timezone
 
-from championship.factories import ResultFactory
-from decklists.factories import DecklistFactory
+from championship.factories import EventFactory, ResultFactory
+from championship.models import Event
+from decklists.factories import CollectionFactory, DecklistFactory
 
 
-class DecklistViewTestCase(TestCase):
+class DecklistsInResultsEventDetails(TestCase):
 
     def setUp(self):
         self.result = ResultFactory()
@@ -70,3 +73,74 @@ class DecklistViewTestCase(TestCase):
         self.assertNotContains(resp, self.decklist.get_absolute_url())
         self.assertContains(resp, most_recent_decklist.archetype)
         self.assertContains(resp, most_recent_decklist.get_absolute_url())
+
+
+class UploadDecklistEventDetails(TestCase):
+
+    def test_shows_link_to_submit_decklists(self):
+        collection = CollectionFactory()
+        event = collection.event
+        resp = self.client.get(reverse("event_details", args=[event.id]))
+        self.assertContains(
+            resp,
+            reverse("collection-details", args=[event.id]),
+        )
+        self.assertContains(
+            resp,
+            f"Submit {event.get_format_display()} decklist",
+        )
+
+    def test_past_deadline_shows_view_link(self):
+        collection = CollectionFactory(
+            submission_deadline=datetime.date.today() - datetime.timedelta(1)
+        )
+        event = collection.event
+        collection.save()
+        resp = self.client.get(reverse("event_details", args=[event.id]))
+        self.assertContains(
+            resp,
+            reverse("collection-details", args=[event.id]),
+        )
+        self.assertContains(
+            resp,
+            f"View {event.get_format_display()} decklist",
+        )
+
+    def test_no_upload_link_for_published_decklists(self):
+        collection = CollectionFactory(publication_time=timezone.now())
+        event = collection.event
+        resp = self.client.get(reverse("event_details", args=[event.id]))
+        self.assertNotContains(
+            resp,
+            reverse("collection-details", args=[event.id]),
+        )
+
+
+class OrganizerDecklistCollectionEventDetails(TestCase):
+
+    def setUp(self):
+        self.event = EventFactory(format=Event.Format.MODERN)
+        self.client.force_login(self.event.organizer.user)
+
+    def test_shows_create_link_if_no_collection(self):
+        resp = self.client.get(reverse("event_details", args=[self.event.id]))
+        self.assertContains(
+            resp, reverse("collection-create") + f"?event={self.event.id}"
+        )
+
+    def test_hides_create_link_if_collection_exists(self):
+        CollectionFactory(event=self.event)
+        resp = self.client.get(reverse("event_details", args=[self.event.id]))
+        self.assertNotContains(
+            resp, reverse("collection-create") + f"?event={self.event.id}"
+        )
+
+    def test_shows_create_link_despite_collection_for_multiformat(self):
+        """For mutliformat we allow more than 1 collection."""
+        self.event.format = Event.Format.MULTIFORMAT
+        self.event.save()
+        CollectionFactory(event=self.event)
+        resp = self.client.get(reverse("event_details", args=[self.event.id]))
+        self.assertContains(
+            resp, reverse("collection-create") + f"?event={self.event.id}"
+        )
