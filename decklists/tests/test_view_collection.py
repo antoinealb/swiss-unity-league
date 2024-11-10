@@ -167,3 +167,15 @@ class CollectionViewTestCase(TestCase):
         DecklistFactory(collection=collection)
         resp = self.client.get(reverse("collection-details", args=[collection.id]))
         self.assertContains(resp, "2 Players")
+
+    def test_organizers_can_edit_collection(self):
+        collection = CollectionFactory()
+        DecklistFactory(collection=collection)
+        resp = self.client.get(reverse("collection-details", args=[collection.id]))
+        # We don't show the edit button to non-organizers
+        self.assertNotContains(resp, reverse("collection-update", args=[collection.id]))
+        self.client.force_login(collection.event.organizer.user)
+        # We show the edit button to organizers
+        resp = self.client.get(reverse("collection-details", args=[collection.id]))
+        self.assertContains(resp, reverse("collection-update", args=[collection.id]))
+        self.assertContains(resp, "Edit Deadline")
