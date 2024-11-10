@@ -50,19 +50,17 @@
                 <a href="{{ event.url }}">{{ event.url }}</a>
             </dd>
         {% endif %}
-        {% if has_unpublished_collections %}
-            <dt class="col-sm-3">Decklist Submission</dt>
+        {% if collections %}
+            <dt class="col-sm-3">{% if any_decklist_submission_open %}Decklist Submission{% else %}Decklists{% endif %}</dt>
             <dd class="col-sm-9">
                 {% for collection in collections %}
-                    {% if not collection.decklists_published %}
-                        <a class="btn btn-secondary" href="{{ collection.get_absolute_url }}">
-                            {% if collection.is_past_deadline %}
-                                View {{ collection.get_format_display }} decklists
-                            {% else %}
-                                Submit {{ collection.get_format_display }} decklist
-                            {% endif %}
-                        </a>
-                    {% endif %}
+                    <a class="btn btn-secondary" href="{{ collection.get_absolute_url }}">
+                        {% if collection.is_past_deadline %}
+                            View {{ collection.get_format_display }} decklists
+                        {% else %}
+                            Submit {{ collection.get_format_display }} decklist
+                        {% endif %}
+                    </a>
                 {% endfor %}
             </dd>
         {% endif %}

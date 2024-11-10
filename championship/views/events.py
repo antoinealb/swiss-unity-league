@@ -57,8 +57,8 @@ class EventDetailsView(DetailView):
 
         context["collections"] = Collection.objects.filter(event=event).all()
         self.attach_decklists_to_results(results, context)
-        context["has_unpublished_collections"] = (
-            context["collections"].unpublished().exists()
+        context["any_decklist_submission_open"] = any(
+            c for c in context["collections"] if not c.is_past_deadline
         )
 
         # We allow 1 collection only, unless event is multiformat.
