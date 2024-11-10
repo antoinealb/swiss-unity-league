@@ -39,9 +39,9 @@ class DecklistsInResultsEventDetails(TestCase):
         resp = self.client.get(reverse("event_details", args=[self.event.id]))
         self.assertContains(resp, self.decklist.archetype)
         self.assertContains(resp, self.decklist.get_absolute_url())
-        self.assertNotContains(resp, "Unmatched decklists")
+        self.assertNotContains(resp, "Unmatched Decklists")
 
-    def test_shows_decklists_without_results(self):
+    def test_shows_decklists_without_matching_result(self):
         decklist_without_result = DecklistFactory(
             archetype="Archetype without result", collection=self.decklist.collection
         )
@@ -51,7 +51,7 @@ class DecklistsInResultsEventDetails(TestCase):
         self.assertContains(resp, decklist_without_result.archetype)
         self.assertContains(resp, decklist_without_result.get_absolute_url())
         self.assertContains(resp, f"by {decklist_without_result.player.name}")
-        self.assertContains(resp, "Unmatched decklists")
+        self.assertContains(resp, "Unmatched Decklists")
 
     def test_doesnt_show_unpublished_decklists(self):
         self.decklist.collection.publication_time = timezone.now() + timezone.timedelta(

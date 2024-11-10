@@ -185,7 +185,12 @@
             </small>
         </p>
         {% if unmatched_decklists %}
-            <h4>Unmatched decklists</h4>
+            <h4>Unmatched Decklists</h4>
+            <p>
+                <small>
+                    The following decklists were submitted for this event, but were not matched to a player.
+                </small>
+            </p>
             <ul>
                 {% for decklist in unmatched_decklists %}
                     <li>
