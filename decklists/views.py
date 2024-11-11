@@ -233,7 +233,11 @@ class DecklistCreateView(SuccessMessageMixin, CreateView):
         return Collection.objects.get(pk=collection_pk)
 
     def dispatch(self, request, *args, **kwargs):
-        if self.get_collection().is_past_deadline():
+        collection = self.get_collection()
+        if (
+            collection.is_past_deadline()
+            and not collection.event.organizer.user == request.user
+        ):
             messages.error(
                 request,
                 "This decklist cannot be created because you are past the submission deadline.",

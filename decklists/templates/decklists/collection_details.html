@@ -10,7 +10,7 @@
     </h1>
     <p class="h3">Format: {{ collection.get_format_display }}</p>
     <p>Submission deadline: {{ collection.submission_deadline }}</p>
-    {% if not collection.is_past_deadline %}
+    {% if not collection.is_past_deadline or collection.event.organizer.user == user %}
         <p><a href="{% url 'decklist-create' %}?collection={{ collection.id }}" class="btn btn-secondary-light">Submit decklist</a></p>
     {% endif %}
     <table class="table table-striped">

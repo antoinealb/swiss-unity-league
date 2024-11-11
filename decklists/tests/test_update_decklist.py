@@ -114,6 +114,13 @@ class DecklistCreate(TestCase):
         )
         self.assertFalse(Decklist.objects.exists())
 
+    def test_create_organizer_past_deadline(self):
+        self.collection.submission_deadline = timezone.now()
+        self.collection.save()
+        self.client.force_login(self.collection.event.organizer.user)
+        self.client.post(self.url, data=self.data)
+        self.assertTrue(Decklist.objects.exists())
+
     def test_create_decklist_saves_in_session(self):
         """Checks that we save a decklist as ours in a session."""
         self.client.post(self.url, data=self.data)
