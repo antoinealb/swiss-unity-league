@@ -210,7 +210,10 @@ class DecklistUpdateView(PlayerAutoCompleteMixin, SuccessMessageMixin, UpdateVie
 
     def dispatch(self, request, *args, **kwargs):
         decklist = self.get_object()
-        if not decklist.can_be_edited():
+        if not (
+            decklist.can_be_edited()
+            or decklist.collection.event.organizer.user == request.user
+        ):
             messages.error(
                 request,
                 "This decklist cannot be edited because you are past the submission deadline.",

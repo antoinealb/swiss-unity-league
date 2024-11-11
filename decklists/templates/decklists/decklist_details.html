@@ -15,7 +15,7 @@
     </h1>
     <p>Last edited: {{ decklist.last_modified }}</p>
 
-    {% if decklist.can_be_edited %}
+    {% if decklist.can_be_edited or user == decklist.collection.event.organizer.user %}
         <p><a href="{% url 'decklist-update' decklist.id %}" class="btn btn-secondary">Edit decklist</a></p>
     {% endif %}
     {% if errors %}
