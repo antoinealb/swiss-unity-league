@@ -31,7 +31,6 @@ from championship.factories import (
     ResultFactory,
 )
 from championship.models import Event, Result
-from championship.templatetags.custom_tags import initials
 
 
 class EventDetailTestCase(TestCase):
@@ -269,7 +268,9 @@ class EventDetailTestCase(TestCase):
         )
 
     def test_skips_links_if_hidden(self):
-        result = ResultFactory()
+        result = ResultFactory(
+            player__name="Test Player",
+        )
         result.player.hidden_from_leaderboard = True
         result.player.save()
         resp = self.client.get(reverse("event_details", args=[result.event.id]))
@@ -277,8 +278,8 @@ class EventDetailTestCase(TestCase):
             reverse("player_details", args=[result.player.id]), resp.content.decode()
         )
 
-        # The name should be replaced by initials
-        self.assertIn(initials(result.player.name), resp.content.decode())
+        # The last name should be replaced by initials
+        self.assertIn("Test P.", resp.content.decode())
 
     def test_shows_record(self):
         event = RankedEventFactory()

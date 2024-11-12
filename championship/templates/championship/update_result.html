@@ -7,7 +7,7 @@
 {% endblock %}
 
 {% block content %}
-    <h2>Edit Result of {{ object.player.name }}</h2>
+    <h2>Edit Result of {{ object.player.get_name_display }}</h2>
 
     <form method="post">
         {% csrf_token %}

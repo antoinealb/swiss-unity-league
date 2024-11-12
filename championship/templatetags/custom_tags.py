@@ -13,7 +13,6 @@
 # limitations under the License.
 
 import datetime
-import re
 
 from django import template
 from django.utils import formats
@@ -37,21 +36,6 @@ def weekday_date(value):
         format_str = "D, d.m.Y"
         return formats.date_format(value, format_str)
     return value
-
-
-@register.filter(name="initials")
-def initials(name):
-    """Returns a name with only their initials, aside from first name.
-
-    >>> initials("Bob Johnson")
-    'Bob J.'
-    """
-    components = re.split(r"[\s-]", name)
-    components = [c for c in components if c]
-    # We keep the first name complete and initial the rest
-    for c in components[1:]:
-        name = name.replace(c, f"{c[0]}.")
-    return name
 
 
 @register.filter(name="percentage")

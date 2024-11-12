@@ -2,7 +2,7 @@
 {% load custom_tags %}
 
 {% block title %}
-    {{ player.name }}
+    {{ player.get_name_display }}
 {% endblock %}
 
 {% block content %}
@@ -15,11 +15,11 @@
                 <div class="row">
                     {% if profile.image %}
                         <div class="col-lg-4 col-md-8 col-12 mb-4">
-                            <img class="img-fluid" src="{{ profile.image.url }}" alt="{{ player.name }}">
+                            <img class="img-fluid" src="{{ profile.image.url }}" alt="{{ player.get_name_display }}">
                         </div>
                     {% endif %}
                     <div class="{% if profile.image %}col-lg-8{% endif %} col-12">
-                        <h1 class="d-inline me-2">{{ player.name }}</h1>
+                        <h1 class="d-inline me-2">{{ player.get_name_display }}</h1>
                         {% if profile.get_pronouns %}
                             <p class="d-inline">{{ profile.get_pronouns }}</p>
                         {% endif %}
