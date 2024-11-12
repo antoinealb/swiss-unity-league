@@ -124,7 +124,7 @@ class PlayerDetailsView(PerSeasonMixin, DetailView):
                 player=context["player"],
                 event__date__gte=self.current_season.start_date,
                 event__date__lte=self.current_season.end_date,
-            )
+            ).prefetch_related("event__organizer")
         )
 
         context[LAST_RESULTS] = sorted(

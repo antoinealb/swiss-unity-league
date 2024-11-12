@@ -76,7 +76,10 @@ class EventDetailsView(DetailView):
             publication_time__lte=timezone.now(),
         ).prefetch_related(
             Prefetch(
-                "decklist_set", queryset=Decklist.objects.order_by("-last_modified")
+                "decklist_set",
+                queryset=Decklist.objects.select_related("player").order_by(
+                    "-last_modified"
+                ),
             )
         ):
             for decklist in collection.decklist_set.all():
@@ -84,7 +87,7 @@ class EventDetailsView(DetailView):
                     (
                         result
                         for result, _ in results
-                        if result.player == decklist.player
+                        if result.player_id == decklist.player_id
                     ),
                     None,
                 )
