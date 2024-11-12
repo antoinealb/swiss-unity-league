@@ -59,7 +59,6 @@ def create_example_event(instance: str, token: str):
         "format": "LEGACY",
         "category": "PREMIER",
         "url": "https://test.example",
-        "decklists_url": "https://test.example/decklists",
         "description": "This is going to be <b>very</b> cool!",
     }
     headers = {"Authorization": f"Token {token}"}

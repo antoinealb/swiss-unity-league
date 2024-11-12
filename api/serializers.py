@@ -47,7 +47,6 @@ class EventInformationSerializer(serializers.ModelSerializer):
             "format",
             "category",
             "url",
-            "decklists_url",
             "description",
             "organizer",
             "results",

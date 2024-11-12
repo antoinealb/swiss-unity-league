@@ -67,7 +67,6 @@ class EventCreateForm(forms.ModelForm):
             "category",
             "address",
             "url",
-            "decklists_url",
             "description",
             "image",
         ]

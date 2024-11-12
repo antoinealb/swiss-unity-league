@@ -47,7 +47,6 @@ class TestEventListAPI(APITestCase):
     def test_can_get_all_events(self):
         e1 = RankedEventFactory(
             description="Hello",
-            decklists_url="http://deck.com",
             start_time=datetime.time(hour=15),
             end_time=datetime.time(hour=17),
         )
@@ -65,7 +64,6 @@ class TestEventListAPI(APITestCase):
             "category": e1.category,
             "format": e1.format,
             "url": e1.url,
-            "decklists_url": e1.decklists_url,
             "description": e1.description,
             "start_time": e1.start_time.strftime("%H:%M:%S"),
             "end_time": e1.end_time.strftime("%H:%M:%S"),
