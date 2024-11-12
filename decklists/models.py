@@ -14,6 +14,7 @@
 
 import uuid
 
+from django.conf import settings
 from django.core.validators import ValidationError
 from django.db import models
 from django.db.models import F, Q
@@ -152,3 +153,10 @@ class Decklist(models.Model):
 
     def get_absolute_url(self):
         return reverse("decklist-details", args=[self.id])
+
+
+if "auditlog" in settings.INSTALLED_APPS:
+    from auditlog.registry import auditlog
+
+    auditlog.register(Decklist)
+    auditlog.register(Collection)
