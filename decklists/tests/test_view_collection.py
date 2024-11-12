@@ -79,7 +79,8 @@ class CollectionViewTestCase(TestCase):
         self.assertEqual(want, got)
 
     def test_links_are_shown_once_published(self):
-        collection = CollectionFactory(publication_time=timezone.now())
+        now = timezone.now()
+        collection = CollectionFactory(publication_time=now, submission_deadline=now)
         d = DecklistFactory(collection=collection)
         resp = self.client.get(reverse("collection-details", args=[collection.id]))
         self.assertTrue(resp.context["show_links"])

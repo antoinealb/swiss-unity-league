@@ -40,6 +40,7 @@ class CollectionAdmin(admin.ModelAdmin):
     list_display = (
         "name",
         "owner_name",
+        "get_format_display",
         "submission_deadline",
         "publication_time",
     )
@@ -48,6 +49,10 @@ class CollectionAdmin(admin.ModelAdmin):
     @admin.display(ordering="event__organizer__name", description="Owner name")
     def owner_name(self, instance: decklists.models.Collection) -> str:
         return instance.event.organizer.name
+
+    @admin.display(description="Format")
+    def get_format_display(self, instance: decklists.models.Collection) -> str:
+        return instance.get_format_display()
 
 
 admin.site.register(decklists.models.Collection, CollectionAdmin)

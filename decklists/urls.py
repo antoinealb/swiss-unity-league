@@ -25,4 +25,14 @@ urlpatterns = [
         views.CollectionView.as_view(),
         name="collection-details",
     ),
+    path(
+        "collections/create/",
+        views.CollectionCreateView.as_view(),
+        name="collection-create",
+    ),
+    path(
+        "collections/<int:pk>/edit/",
+        views.CollectionUpdateView.as_view(),
+        name="collection-update",
+    ),
 ]

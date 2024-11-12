@@ -29,7 +29,7 @@ class DecklistViewTestCase(TestCase):
         self.decklist = DecklistFactory(
             player=self.player,
             collection__event=self.event,
-            collection__publication_time=timezone.now() - timezone.timedelta(seconds=1),
+            collection__published=True,
         )
 
     def test_can_get_decklists(self):

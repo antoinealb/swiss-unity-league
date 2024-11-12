@@ -53,23 +53,25 @@ class MagicProvider(BaseProvider):
 factory.Faker.add_provider(MagicProvider)
 
 
+def _publication_time(o):
+    now = timezone.now()
+    dt = datetime.timedelta(hours=1)
+    if o.published:
+        return now - dt
+    else:
+        return now + dt
+
+
 class CollectionFactory(DjangoModelFactory):
     class Meta:
         model = decklists.models.Collection
 
-    # Deadline is by default between one minute and one hour in the future
-    submission_deadline = factory.Faker(
-        "date_time_between",
-        start_date=datetime.timedelta(seconds=60),
-        end_date=datetime.timedelta(hours=1),
-        tzinfo=timezone.get_current_timezone(),
-    )
-    publication_time = factory.Faker(
-        "date_time_between",
-        start_date=datetime.timedelta(seconds=60),
-        end_date=datetime.timedelta(hours=1),
-        tzinfo=timezone.get_current_timezone(),
-    )
+    class Params:
+        published = False
+
+    # By default the publication time is when the decklists are published
+    submission_deadline = factory.LazyAttribute(lambda o: o.publication_time)
+    publication_time = factory.LazyAttribute(_publication_time)
 
     event = factory.SubFactory(championship.factories.EventFactory)
 

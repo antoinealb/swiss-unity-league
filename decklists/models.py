@@ -16,6 +16,7 @@ import uuid
 
 from django.core.validators import ValidationError
 from django.db import models
+from django.db.models import F, Q
 from django.urls import reverse
 from django.utils import timezone
 
@@ -55,6 +56,15 @@ class Collection(models.Model):
         blank=True,
         help_text="Format of the decklist. If left empty, we will use the format of the event.",
     )
+
+    class Meta:
+        constraints = [
+            models.CheckConstraint(
+                check=Q(submission_deadline__lte=F("publication_time")),
+                name="decklists_collection_submission_before_publication",
+                violation_error_message="Submission deadline must be before decklist publication.",
+            )
+        ]
 
     def __str__(self) -> str:
         return f"{self.name} (by {self.event.organizer.name})"
