@@ -20,7 +20,7 @@ from django.utils.timezone import get_current_timezone, now
 
 from championship.factories import EventFactory, EventOrganizerFactory, PlayerFactory
 from decklists.factories import CollectionFactory, DecklistFactory
-from decklists.models import Collection
+from decklists.models import Collection, Decklist
 
 
 class CollectionTest(TestCase):
@@ -62,6 +62,13 @@ class CollectionTest(TestCase):
                 submission_deadline=datetime.datetime(2022, 1, 1, tzinfo=tz),
             )
 
+    def test_queryset(self):
+        c1 = CollectionFactory(published=False)
+        c2 = CollectionFactory(published=True)
+
+        self.assertQuerysetEqual(Collection.objects.unpublished(), [c1])
+        self.assertQuerysetEqual(Collection.objects.published(), [c2])
+
 
 class DecklistTest(TestCase):
     def test_str(self):
@@ -92,3 +99,10 @@ class DecklistTest(TestCase):
         decklist = DecklistFactory()
         decklist.collection.submission_deadline -= datetime.timedelta(days=200)
         self.assertFalse(decklist.can_be_edited())
+
+    def test_queryset(self):
+        d1 = DecklistFactory(collection__published=False)
+        d2 = DecklistFactory(collection__published=True)
+
+        self.assertQuerysetEqual(Decklist.objects.unpublished(), [d1])
+        self.assertQuerysetEqual(Decklist.objects.published(), [d2])

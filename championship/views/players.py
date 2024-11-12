@@ -17,7 +17,6 @@ from collections import Counter
 
 from django.contrib import messages
 from django.urls import reverse_lazy
-from django.utils import timezone
 from django.views.generic import CreateView, DetailView
 
 from championship.forms import PlayerProfileForm
@@ -213,9 +212,8 @@ class PlayerDetailsView(PerSeasonMixin, DetailView):
 
     def _decklists(self, player):
         return (
-            Decklist.objects.filter(
-                player=player, collection__publication_time__lte=timezone.now()
-            )
+            Decklist.objects.published()
+            .filter(player=player)
             .select_related("collection__event")
             .order_by("-collection__event__date")
         )

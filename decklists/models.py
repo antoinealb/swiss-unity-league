@@ -26,6 +26,14 @@ from championship.models import Event, Player
 from decklists.parser import DecklistParser
 
 
+class CollectionQuerySet(models.QuerySet):
+    def published(self):
+        return self.filter(publication_time__lte=timezone.now())
+
+    def unpublished(self):
+        return self.exclude(publication_time__lte=timezone.now())
+
+
 class Collection(models.Model):
     """Group of decklists that are collected at the same time and for the same purpose.
 
@@ -66,6 +74,8 @@ class Collection(models.Model):
             )
         ]
 
+    objects = CollectionQuerySet.as_manager()
+
     def __str__(self) -> str:
         return f"{self.name} (by {self.event.organizer.name})"
 
@@ -89,6 +99,14 @@ class Collection(models.Model):
 
     def get_absolute_url(self):
         return reverse("collection-details", args=[self.id])
+
+
+class DecklistQuerySet(models.QuerySet):
+    def published(self):
+        return self.filter(collection__publication_time__lte=timezone.now())
+
+    def unpublished(self):
+        return self.exclude(collection__publication_time__lte=timezone.now())
 
 
 def validate_decklist_format(value: str):
@@ -122,6 +140,8 @@ class Decklist(models.Model):
         ),
         validators=[validate_decklist_format],
     )
+
+    objects = DecklistQuerySet.as_manager()
 
     def __str__(self) -> str:
         return f"{self.player.name} ({self.archetype})"

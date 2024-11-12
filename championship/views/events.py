@@ -71,15 +71,16 @@ class EventDetailsView(DetailView):
         """
         event = context["event"]
         context["unmatched_decklists"] = []
-        for collection in Collection.objects.filter(
-            event=event,
-            publication_time__lte=timezone.now(),
-        ).prefetch_related(
-            Prefetch(
-                "decklist_set",
-                queryset=Decklist.objects.select_related("player").order_by(
-                    "-last_modified"
-                ),
+        for collection in (
+            Collection.objects.published()
+            .filter(event=event)
+            .prefetch_related(
+                Prefetch(
+                    "decklist_set",
+                    queryset=Decklist.objects.select_related("player").order_by(
+                        "-last_modified"
+                    ),
+                )
             )
         ):
             for decklist in collection.decklist_set.all():
