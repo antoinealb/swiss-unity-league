@@ -336,6 +336,7 @@ class PlayerProfileAdmin(admin.ModelAdmin):
         "status",
         "consent_for_website",
         "consent_for_stream",
+        "team_name",
     )
     search_fields = ["player__name"]
     autocomplete_fields = ["player"]
