@@ -685,17 +685,35 @@ class Player(models.Model):
     def __str__(self):
         return self.name
 
-    def get_name_display(self):
-        """For players hidden from the leaderboard we only show the first name. For all subsequent words in their name we only show initials."""
-        if self.hidden_from_leaderboard:
-            name = self.name
-            components = re.split(r"[\s-]", name)
-            components = [c for c in components if c]
-            # We keep the first name complete and initial the rest
-            for c in components[1:]:
-                name = name.replace(c, f"{c[0]}.")
-            return name
-        return self.name
+    def get_name_display(self) -> str:
+        """
+        Returns the name as it should be displayed publicly.
+
+        Some players have requested that their full name should be hidden from
+        the website for privacy reasons. However, we to track those players'
+        identities so that they don't reappear on the next result upload. In
+        those cases, we display a shortened version of the name, and do not
+        allow looking up the full player profile.
+
+        All access to a player name for displaying it on the website should go
+        through this function.
+
+        >>> Player(name="John Winston Lennon").get_name_display()
+        'John Winston Lennon'
+
+        >>> Player(name="John Winston Lennon", hidden_from_leaderboard=True).get_name_display()
+        'John W. L.'
+        """
+        if not self.hidden_from_leaderboard:
+            return self.name
+
+        name = self.name
+        components = re.split(r"[\s-]", name)
+        components = [c for c in components if c]
+        # We keep the first name complete and initial the rest
+        for c in components[1:]:
+            name = name.replace(c, f"{c[0]}.")
+        return name
 
     def get_absolute_url(self):
         if self.hidden_from_leaderboard:
