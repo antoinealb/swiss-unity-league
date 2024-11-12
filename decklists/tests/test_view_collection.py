@@ -91,6 +91,36 @@ class CollectionViewTestCase(TestCase):
         resp = self.client.get(reverse("collection-details", args=[collection.id]))
         self.assertTrue(resp.context["show_links"])
 
+    def test_link_submit_decklist_shown_before_deadline(self):
+        collection = CollectionFactory()
+        resp = self.client.get(reverse("collection-details", args=[collection.id]))
+        self.assertContains(resp, "Submit decklist")
+        self.assertContains(
+            resp, reverse("decklist-create") + f"?collection={collection.id}"
+        )
+
+    def test_link_submit_decklist_hidden_after_deadline(self):
+        collection = CollectionFactory(
+            submission_deadline=timezone.now() - timezone.timedelta(hours=1)
+        )
+        resp = self.client.get(reverse("collection-details", args=[collection.id]))
+        self.assertNotContains(resp, "Submit decklist")
+        self.assertNotContains(
+            resp, reverse("decklist-create") + f"?collection={collection.id}"
+        )
+
+    def test_link_submit_decklists_shown_to_organizer_past_deadline(self):
+        self.login()
+        collection = CollectionFactory(
+            event__organizer=self.organizer,
+            submission_deadline=timezone.now() - timezone.timedelta(hours=1),
+        )
+        resp = self.client.get(reverse("collection-details", args=[collection.id]))
+        self.assertContains(resp, "Submit decklist")
+        self.assertContains(
+            resp, reverse("decklist-create") + f"?collection={collection.id}"
+        )
+
     def test_links_are_shown_with_right_permissions(self):
         """Test that we can grant permissions to view unpublished decklists.
 

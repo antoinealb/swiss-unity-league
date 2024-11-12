@@ -23,13 +23,20 @@ from decklists.models import Decklist
 
 
 class DecklistEdit(TestCase):
-    def test_permission_denied_with_old_decklists(self):
-        collection = CollectionFactory(
-            submission_deadline=timezone.now() - timezone.timedelta(hours=1)
+    def test_permission_denied_past_deadline(self):
+        decklist = DecklistFactory(
+            collection__submission_deadline=timezone.now() - timezone.timedelta(hours=1)
         )
-        decklist = DecklistFactory(collection=collection)
         resp = self.client.post(reverse("decklist-update", args=[decklist.id]))
         self.assertRedirects(resp, reverse("decklist-details", args=[decklist.id]))
+
+    def test_organizer_can_edit_decklist_past_deadline(self):
+        decklist = DecklistFactory(
+            collection__submission_deadline=timezone.now() - timezone.timedelta(hours=1)
+        )
+        self.client.force_login(decklist.collection.event.organizer.user)
+        resp = self.client.post(reverse("decklist-update", args=[decklist.id]))
+        self.assertEqual(200, resp.status_code)
 
     def test_can_change_decklist_archetype_and_sideboard(self):
         decklist = DecklistFactory()
@@ -106,6 +113,13 @@ class DecklistCreate(TestCase):
             resp, reverse("collection-details", args=[self.collection.id])
         )
         self.assertFalse(Decklist.objects.exists())
+
+    def test_create_organizer_past_deadline(self):
+        self.collection.submission_deadline = timezone.now()
+        self.collection.save()
+        self.client.force_login(self.collection.event.organizer.user)
+        self.client.post(self.url, data=self.data)
+        self.assertTrue(Decklist.objects.exists())
 
     def test_create_decklist_saves_in_session(self):
         """Checks that we save a decklist as ours in a session."""
