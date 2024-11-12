@@ -17,6 +17,7 @@ from collections import Counter
 
 from django.contrib import messages
 from django.urls import reverse_lazy
+from django.utils import timezone
 from django.views.generic import CreateView, DetailView
 
 from championship.forms import PlayerProfileForm
@@ -24,6 +25,7 @@ from championship.models import Event, Player, PlayerProfile, Result
 from championship.score import get_results_with_qps
 from championship.season import SEASONS_WITH_RANKING
 from championship.views.base import PerSeasonMixin
+from decklists.models import Decklist
 
 LAST_RESULTS = "last_results"
 TOP_FINISHES = "top_finishes"
@@ -206,7 +208,17 @@ class PlayerDetailsView(PerSeasonMixin, DetailView):
             TABLE: with_top_8_table,
         }
 
+        context["decklists"] = self._decklists(context["player"])
         return context
+
+    def _decklists(self, player):
+        return (
+            Decklist.objects.filter(
+                player=player, collection__publication_time__lte=timezone.now()
+            )
+            .select_related("collection__event")
+            .order_by("-collection__event__date")
+        )
 
     def performance_per_format(self, results) -> dict[str, Performance]:
         """Returns the peformance per format, with the display name of the format as key."""
