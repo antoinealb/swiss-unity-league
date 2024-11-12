@@ -41,6 +41,7 @@ from championship.views import (
     Performance,
 )
 from championship.views.players import sorted_most_accomplished_results
+from decklists.factories import DecklistFactory
 
 
 class PlayerDetailsTest(TestCase):
@@ -264,6 +265,44 @@ class PlayerDetailsTest(TestCase):
         got = perf_per_format[event.get_format_display()]
         want = Performance(5 + 2, 2 + 0, 3)
         self.assertEqual(want, got)
+
+
+class PlayerDetailsDecklistTest(TestCase):
+
+    def get_player_details_2023(self, player):
+        url = reverse("player_details_by_season", args=[player.id, "2023"])
+        return self.client.get(url)
+
+    def test_player_details_decklist(self):
+        decklist = DecklistFactory(collection__published=True)
+        player = decklist.player
+        resp = self.get_player_details_2023(player)
+        self.assertContains(resp, "Decklists")
+        self.assertContains(resp, decklist.archetype)
+        self.assertContains(resp, decklist.get_absolute_url())
+        self.assertContains(resp, decklist.collection.get_format_display())
+
+    def test_decklists_ordered_by_date(self):
+        player = PlayerFactory()
+        dates = [
+            datetime.date(2023, 1, 1),
+            datetime.date(2023, 1, 2),
+            datetime.date(2023, 1, 3),
+        ]
+        decklists = [
+            DecklistFactory(
+                player=player, collection__event__date=date, collection__published=True
+            )
+            for date in dates
+        ]
+        resp = self.get_player_details_2023(player)
+        self.assertEqual(list(resp.context["decklists"]), decklists[::-1])
+
+    def test_hides_unpublished_decklists(self):
+        player = PlayerFactory()
+        DecklistFactory(player=player, collection__published=False)
+        resp = self.get_player_details_2023(player)
+        self.assertTrue(resp.context["decklists"].count() == 0)
 
 
 class PlayerDetailSeasonTestCase(TestCase):

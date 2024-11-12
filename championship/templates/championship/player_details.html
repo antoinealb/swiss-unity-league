@@ -47,8 +47,8 @@
 
             {% if accomplishments %}
                 <div class="col-lg-6 col-12">
+                    <h2>Accomplishments</h2>
                     <div class="table-responsive">
-                        <h2>Accomplishments</h2>
                         <table class="table table-striped">
                             <thead>
                                 <tr>
@@ -134,74 +134,100 @@
         </div>
     </div>
 
-    <div class="container">
-        <div class="row">
-            <div class="table-responsive my-4">
-                <h3>Performance per format</h3>
+    <div class="my-4">
+        <h3>Performance per format</h3>
+        <div class="table-responsive">
+            <table class="table table-striped">
+                <thead>
+                    <tr>
+                        <th scope="col">Format</th>
+                        <th scope="col">Record</th>
+                        <th scope="col">Win ratio</th>
+                        <th scope="col">Win ratio (excluding draws)</th>
+                    </tr>
+                </thead>
+                <tbody>
+
+
+                    {% for format, record in performance_per_format.items %}
+                        <tr>
+
+                            {% if format == "Overall" %}
+                                <td><b>{{ format }}</b></td>
+                                <td><b>{{ record }}</b></td>
+                                <td><b>{{ record.win_ratio|percentage }}</b></td>
+                                <td><b>{{ record.win_ratio_without_draws|percentage }}</b></td>
+                            {% else %}
+                                <td>{{ format }}</td>
+                                <td>{{ record }}</td>
+                                <td>{{ record.win_ratio|percentage }}</td>
+                                <td>{{ record.win_ratio_without_draws|percentage }}</td>
+                            {% endif %}
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    {% if decklists %}
+        <div class="my-4">
+            <h3>Decklists</h3>
+            <div class="table-responsive">
                 <table class="table table-striped">
                     <thead>
                         <tr>
+                            <th scope="col">Archetype</th>
                             <th scope="col">Format</th>
-                            <th scope="col">Record</th>
-                            <th scope="col">Win ratio</th>
-                            <th scope="col">Win ratio (excluding draws)</th>
+                            <th scope="col">Event</th>
+                            <th scope="col">Date</th>
                         </tr>
                     </thead>
                     <tbody>
-
-
-                        {% for format, record in performance_per_format.items %}
+                        {% for decklist in decklists %}
                             <tr>
-
-                                {% if format == "Overall" %}
-                                    <td><b>{{ format }}</b></td>
-                                    <td><b>{{ record }}</b></td>
-                                    <td><b>{{ record.win_ratio|percentage }}</b></td>
-                                    <td><b>{{ record.win_ratio_without_draws|percentage }}</b></td>
-                                {% else %}
-                                    <td>{{ format }}</td>
-                                    <td>{{ record }}</td>
-                                    <td>{{ record.win_ratio|percentage }}</td>
-                                    <td>{{ record.win_ratio_without_draws|percentage }}</td>
-                                {% endif %}
+                                <td><a href="{{ decklist.get_absolute_url }}">{{ decklist.archetype }}</a></td>
+                                <td>{{ decklist.collection.get_format_display }}</td>
+                                <td><a href="{{ decklist.collection.event.get_absolute_url }}">{{ decklist.collection.event.name }}</a></td>
+                                <td>{{ decklist.collection.event.date|weekday_date }}</td>
                             </tr>
                         {% endfor %}
                     </tbody>
                 </table>
             </div>
         </div>
-    </div>
+    {% endif %}
 
-
-    <div class="table-responsive my-4">
+    <div class="my-4">
         <h2>Event History</h2>
-        <table class="table table-striped">
-            <thead>
-                <tr>
-                    <th scope="col">Rank</th>
-                    <th scope="col">Event</th>
-                    <th scope="col">Date</th>
-                    <th scope="col">Type</th>
-                    <th scope="col">Format</th>
-                    <th scope="col">SUL Points</th>
-                    <th scope="col">Record</th>
-                </tr>
-            </thead>
-            <tbody>
-                {% for result, score in last_results %}
+        <div class="table-responsive">
+            <table class="table table-striped">
+                <thead>
                     <tr>
-                        <td>{{ result.get_ranking_display }}</td>
-                        <td><a href="{{ result.event.get_absolute_url }}">{{result.event.name }}</a></td>
-                        <td>{{ result.event.date }}</td>
-                        <td>{{ result.event.get_category_display }}</td>
-                        <td>{{ result.event.get_format_display }}</td>
-                        <td>{{ score.qps }}</td>
-                        <td>{{ result.win_count }} - {{ result.loss_count }} - {{ result.draw_count }}</td>
+                        <th scope="col">Rank</th>
+                        <th scope="col">Event</th>
+                        <th scope="col">Date</th>
+                        <th scope="col">Type</th>
+                        <th scope="col">Format</th>
+                        <th scope="col">SUL Points</th>
+                        <th scope="col">Record</th>
                     </tr>
-                {% endfor %}
-            </tbody>
-        </table>
+                </thead>
+                <tbody>
+                    {% for result, score in last_results %}
+                        <tr>
+                            <td>{{ result.get_ranking_display }}</td>
+                            <td><a href="{{ result.event.get_absolute_url }}">{{ result.event.name }}</a></td>
+                            <td>{{ result.event.date|weekday_date }}</td>
+                            <td>{{ result.event.get_category_display }}</td>
+                            <td>{{ result.event.get_format_display }}</td>
+                            <td>{{ score.qps }}</td>
+                            <td>{{ result.win_count }} - {{ result.loss_count }} - {{ result.draw_count }}</td>
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
     </div>
-
 
 {% endblock %}
