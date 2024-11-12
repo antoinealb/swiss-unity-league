@@ -34,7 +34,7 @@ class ArticleTest(TestCase):
 
     def test_url(self):
         a = ArticleFactory(
-            publication_time=datetime.date(2023, 1, 1), title="Hello World"
+            published_date=datetime.date(2023, 1, 1), title="Hello World"
         )
         want = "/articles/2023/1/1/hello-world/"
         self.assertEqual(want, a.get_absolute_url())
@@ -46,7 +46,7 @@ class ArticleTest(TestCase):
 
     def test_url_not_published_yet(self):
         a = ArticleFactory(
-            title="Hello World", publication_time=datetime.date(2050, 1, 1)
+            title="Hello World", published_date=datetime.date(2050, 1, 1)
         )
         want = "/articles/preview/1/hello-world/"
         self.assertEqual(want, a.get_absolute_url())
@@ -54,15 +54,15 @@ class ArticleTest(TestCase):
 
 class ArticleObjectManagerTestCase(TestCase):
     def test_non_yet_published(self):
-        ArticleFactory(publication_time=datetime.date(2050, 1, 1))
+        ArticleFactory(published_date=datetime.date(2050, 1, 1))
         self.assertFalse(Article.objects.published().exists())
 
     def test_non_published(self):
-        ArticleFactory(publication_time=None)
+        ArticleFactory(published_date=None)
         self.assertFalse(Article.objects.published().exists())
         self.assertTrue(Article.objects.non_published().exists())
 
     def test_published(self):
-        ArticleFactory(publication_time=datetime.date(2010, 1, 1))
+        ArticleFactory(published_date=datetime.date(2010, 1, 1))
         self.assertTrue(Article.objects.published().exists())
         self.assertFalse(Article.objects.non_published().exists())

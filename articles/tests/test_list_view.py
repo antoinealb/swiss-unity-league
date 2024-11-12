@@ -24,34 +24,34 @@ from articles.factories import ArticleFactory
 class ArticleArchiveTest(TestCase):
     def test_list_includes_all_published_articles(self):
         published = [
-            ArticleFactory(publication_time=d)
+            ArticleFactory(published_date=d)
             for d in [
                 datetime.date(2011, 1, 1),
                 datetime.date(2010, 1, 1),
             ]
         ]
         # Add an unpublished article
-        ArticleFactory(publication_time=None)
-        ArticleFactory(publication_time=datetime.date(2050, 1, 1))
+        ArticleFactory(published_date=None)
+        ArticleFactory(published_date=datetime.date(2050, 1, 1))
         resp = self.client.get(reverse("article-list"))
 
         self.assertEqual(HTTP_200_OK, resp.status_code)
         self.assertListEqual(published, list(resp.context["articles"]))
 
     def test_list_includes_link_to_article(self):
-        a = ArticleFactory(publication_time=datetime.date(2011, 1, 1))
+        a = ArticleFactory(published_date=datetime.date(2011, 1, 1))
         resp = self.client.get(reverse("article-list"))
         want_url = reverse("article-details", args=[2011, 1, 1, a.slug])
         self.assertIn(want_url, resp.content.decode())
 
     def test_link_is_included_in_home_page_if_articles(self):
-        ArticleFactory(publication_time=datetime.date(2011, 1, 1))
+        ArticleFactory(published_date=datetime.date(2011, 1, 1))
         want_url = reverse("article-list")
         resp = self.client.get("/")
         self.assertIn(want_url, resp.content.decode())
 
     def test_no_article_no_link(self):
-        ArticleFactory(publication_time=datetime.date(2050, 1, 1))
+        ArticleFactory(published_date=datetime.date(2050, 1, 1))
         want_url = reverse("article-list")
         resp = self.client.get("/")
         self.assertNotIn(want_url, resp.content.decode())

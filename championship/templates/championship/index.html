@@ -69,7 +69,7 @@
                     <div class="card-body">
                         <h2 class="card-title">{{ most_recent_article.title }}</h2>
                         <p class="card-subtitle text-muted mb-2">
-                            <span>{{ most_recent_article.publication_time|weekday_date }}</span> |
+                            <span>{{ most_recent_article.published_date|weekday_date }}</span> |
                             <span>by {{ most_recent_article.author.first_name }} {{ most_recent_article.author.last_name }}</span>
                         </p>
                         <p class="card-text">
