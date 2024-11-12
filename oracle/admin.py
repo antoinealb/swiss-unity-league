@@ -22,5 +22,17 @@ class CardAdmin(admin.ModelAdmin):
     search_fields = ("name", "type_line")
     list_filter = ("mana_value",)
 
+    # Cards are created through a management command to import data from
+    # Scryfall. We do not want people adding or modifying the content of the
+    # Cards manually, but want them to be able to see the objects.
+    def has_add_permission(self, request, obj=None):
+        return False
+
+    def has_delete_permission(self, request, obj=None):
+        return False
+
+    def has_change_permission(self, request, obj=None):
+        return False
+
 
 admin.site.register(Card, CardAdmin)
