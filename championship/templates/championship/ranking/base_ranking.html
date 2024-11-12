@@ -36,7 +36,7 @@
                         </div>
                     </td>
                     <td aria-label="SUL Points">{{ player.score.total_score }}</td>
-                    <td aria-label="Player Name"><a href="{{ player.get_absolute_url }}" title="View tournament statistics of {{ player.name }}">{{ player.name }}</a></td>
+                    <td aria-label="Player Name"><a href="{{ player.get_absolute_url }}" title="View tournament statistics of {{ player.get_name_display }}">{{ player.get_name_display }}</a></td>
                 </tr>
             {% endfor %}
         </tbody>

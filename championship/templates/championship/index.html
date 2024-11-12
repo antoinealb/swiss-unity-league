@@ -100,7 +100,7 @@
                                     <li itemprop="itemListElement" itemscope itemtype="http://schema.org/ListItem">
                                         <meta itemprop="position" content="{{ forloop.counter }}" />
                                         <span itemprop="item" itemscope itemtype="http://schema.org/Person">
-                                            <span itemprop="name">{{ player.name }}</span>
+                                            <span itemprop="name">{{ player.get_name_display }}</span>
                                             (<span itemprop="description">{{ player.score.total_score }} points</span>)
                                         </span>
                                     </li>

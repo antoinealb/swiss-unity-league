@@ -11,7 +11,7 @@
         <p>This will delete the following results:</p>
         <ol>
             {% for r in event.result_set.all %}
-                <li>{{ r.player.name}} - {{ r.points }} points</li>
+                <li>{{ r.player.get_name_display}} - {{ r.points }} points</li>
             {% endfor %}
         </ol>
         <input type="submit" value="Confirm" class="btn btn-danger">

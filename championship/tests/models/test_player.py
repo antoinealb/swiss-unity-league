@@ -16,10 +16,10 @@ from django.test import TestCase
 
 from parameterized import parameterized
 
-from championship.templatetags.custom_tags import initials
+from championship.models import Player
 
 
-class InitialFilterTestCase(TestCase):
+class PlayerNameTestCase(TestCase):
     @parameterized.expand(
         [
             ("Antoine Albertelli", "Antoine A."),
@@ -29,6 +29,6 @@ class InitialFilterTestCase(TestCase):
             ("-Missing Name-", "-Missing N.-"),
         ]
     )
-    def test_initial(self, name, want):
-        got = initials(name)
+    def test_shows_initials_for_hidden_players(self, name, want):
+        got = Player(name=name, hidden_from_leaderboard=True).get_name_display()
         self.assertEqual(got, want)
