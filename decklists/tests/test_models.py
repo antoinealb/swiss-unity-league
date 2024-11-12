@@ -14,8 +14,9 @@
 
 import datetime
 
+from django.db import IntegrityError
 from django.test import TestCase
-from django.utils.timezone import now
+from django.utils.timezone import get_current_timezone, now
 
 from championship.factories import EventFactory, EventOrganizerFactory, PlayerFactory
 from decklists.factories import CollectionFactory, DecklistFactory
@@ -44,9 +45,22 @@ class CollectionTest(TestCase):
         self.assertFalse(collection.decklists_published)
 
         collection = CollectionFactory(
-            publication_time=now() - datetime.timedelta(hours=1)
+            publication_time=now() - datetime.timedelta(hours=1),
+            submission_deadline=now() - datetime.timedelta(hours=2),
         )
         self.assertTrue(collection.decklists_published)
+
+    def test_published_factory(self):
+        self.assertFalse(CollectionFactory(published=False).decklists_published)
+        self.assertTrue(CollectionFactory(published=True).decklists_published)
+
+    def test_submission_deadline_cannot_be_after_publication(self):
+        tz = get_current_timezone()
+        with self.assertRaises(IntegrityError):
+            CollectionFactory(
+                publication_time=datetime.datetime(2021, 12, 31, tzinfo=tz),
+                submission_deadline=datetime.datetime(2022, 1, 1, tzinfo=tz),
+            )
 
 
 class DecklistTest(TestCase):

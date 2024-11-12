@@ -85,8 +85,11 @@ class CollectionCreateTestCase(TestCase):
     def test_publication_time_before_submission_deadline_shows_error(self):
         self.data["publication_time"] = timezone.now() - datetime.timedelta(days=1)
         response = self.client.post(self.url, self.data)
+        self.assertIn(
+            "Submission deadline must be before decklist publication.",
+            response.context["form"].errors["__all__"],
+        )
         self.assertEqual(response.status_code, 200)
-        self.assertIn("publication_time", response.context["form"].errors)
         self.assertEqual(self.event.collection_set.count(), 0)
 
     def test_format_override_not_submitted_for_single_format_events(self):
@@ -151,7 +154,10 @@ class CollectionUpdateTestCase(TestCase):
         self.data["publication_time"] = timezone.now() - datetime.timedelta(days=1)
         response = self.client.post(self.url, self.data)
         self.assertEqual(response.status_code, 200)
-        self.assertIn("publication_time", response.context["form"].errors)
+        self.assertIn(
+            "Submission deadline must be before decklist publication.",
+            response.context["form"].errors["__all__"],
+        )
         self.collection.refresh_from_db()
         # Make sure the collection was not updated
         self.assertNotEqual(

@@ -15,7 +15,6 @@
 
 from django.test import TestCase
 from django.urls import reverse
-from django.utils import timezone
 from rest_framework.status import HTTP_200_OK
 
 from championship.factories import UserFactory
@@ -50,15 +49,13 @@ class DecklistViewTestCase(TestCase):
         self.assertIn(url, resp.content.decode())
 
     def test_nolink_edit_decklist_after_deadline(self):
-        deadline = timezone.now() - timezone.timedelta(seconds=1)
-        decklist = DecklistFactory(collection__submission_deadline=deadline)
+        decklist = DecklistFactory(collection__published=True)
         url = reverse("decklist-update", args=[decklist.id])
         resp = self.client.get(reverse("decklist-details", args=[decklist.id]))
         self.assertNotIn(url, resp.content.decode())
 
     def test_link_edit_decklist_after_deadline_for_organizer(self):
-        deadline = timezone.now() - timezone.timedelta(seconds=1)
-        decklist = DecklistFactory(collection__submission_deadline=deadline)
+        decklist = DecklistFactory(collection__published=True)
         self.client.force_login(decklist.collection.event.organizer.user)
         url = reverse("decklist-update", args=[decklist.id])
         resp = self.client.get(reverse("decklist-details", args=[decklist.id]))
