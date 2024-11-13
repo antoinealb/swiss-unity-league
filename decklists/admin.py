@@ -13,7 +13,7 @@
 # limitations under the License.
 
 from django.contrib import admin
-from django.db.models import QuerySet
+from django.db.models import Case, F, QuerySet, When
 from django.utils import timezone
 
 import decklists.models
@@ -50,9 +50,18 @@ class CollectionAdmin(admin.ModelAdmin):
     def owner_name(self, instance: decklists.models.Collection) -> str:
         return instance.event.organizer.name
 
-    @admin.display(description="Format")
+    @admin.display(description="Format", ordering="_format_ordering")
     def get_format_display(self, instance: decklists.models.Collection) -> str:
         return instance.get_format_display()
+
+    def get_queryset(self, *args, **kwargs):
+        qs = super().get_queryset(*args, **kwargs)
+        return qs.annotate(
+            _format_ordering=Case(
+                When(format_override__isnull=False, then=F("format_override")),
+                default=F("event__format"),
+            )
+        )
 
 
 admin.site.register(decklists.models.Collection, CollectionAdmin)
