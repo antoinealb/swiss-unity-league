@@ -40,8 +40,6 @@ class Collection(models.Model):
     For example, one group could be "Decklists for the Modern portion of the 2024 trial".
     """
 
-    objects = CollectionQuerySet.as_manager()
-
     name_override = models.CharField(
         help_text="Name of the Decklist Collection. If left empty, we will show the name of the event.",
         max_length=128,
