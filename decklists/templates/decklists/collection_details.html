@@ -7,6 +7,9 @@
 {% block content %}
     <h1>{{ collection.name }}
         <small class="text-muted">by {{ collection.event.organizer.name }}</small>
+        {% if user == collection.event.organizer.user %}
+            <a href="{% url 'collection-update' collection.id %}" class="btn btn-secondary">Edit Deadline</a>
+        {% endif %}
     </h1>
     <p class="h3">Format: {{ collection.get_format_display }}</p>
     <p>Submission deadline: {{ collection.submission_deadline }}</p>

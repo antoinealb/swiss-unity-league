@@ -54,7 +54,17 @@ class EventDetailsView(DetailView):
         ) or self.request.user.is_superuser
 
         context["results"] = sorted(results)
+
+        context["collections"] = Collection.objects.filter(event=event).all()
         self.attach_decklists_to_results(results, context)
+        context["any_decklist_submission_open"] = any(
+            c for c in context["collections"] if not c.is_past_deadline
+        )
+
+        # We allow 1 collection only, unless event is multiformat.
+        context["show_create_collection_link"] = (
+            not context["collections"]
+        ) or event.format == Event.Format.MULTIFORMAT
 
         # Prompt the players to notify the organizer that they forgot to upload results
         # Only do so when the event is finished longer than 4 days ago and results can still be uploaded.
@@ -63,6 +73,7 @@ class EventDetailsView(DetailView):
             and event.can_be_edited()
             and event.category != Event.Category.OTHER
         )
+
         return context
 
     def attach_decklists_to_results(self, results, context):
@@ -72,7 +83,8 @@ class EventDetailsView(DetailView):
         event = context["event"]
         context["unmatched_decklists"] = []
         for collection in (
-            Collection.objects.published()
+            context["collections"]
+            .published()
             .filter(event=event)
             .prefetch_related(
                 Prefetch(

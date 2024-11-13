@@ -172,3 +172,11 @@ class CollectionUpdateTestCase(TestCase):
         response = self.client.post(self.url, self.data)
         self.collection.refresh_from_db()
         self.assertEqual(self.collection.format_override, None)
+
+    def test_format_override_required_for_multi_format_events(self):
+        del self.data["format_override"]
+        response = self.client.post(self.url, self.data)
+        self.assertEqual(response.status_code, 200)
+        self.assertIn("format_override", response.context["form"].errors)
+        self.collection.refresh_from_db()
+        self.assertEqual(self.collection.format_override, None)

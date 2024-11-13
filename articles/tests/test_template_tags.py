@@ -53,7 +53,7 @@ class ArticleRenderingTestCase(TestCase):
         self.assertEqual("[[Farmogoyf]]", got)
 
     def test_decklist(self):
-        decklist = DecklistFactory(
+        DecklistFactory(
             id="ff521f2e-085c-4cc0-901b-600ec9a71dab",
             mainboard="4 Daze",
             sideboard="4 Fry",
@@ -64,8 +64,6 @@ class ArticleRenderingTestCase(TestCase):
         got = process_article_args(article)
         self.assertIn(self.daze_html, got)
         self.assertIn(self.fry_html, got)
-        self.assertIn(decklist.player.name, got)
-        self.assertIn(escape(decklist.archetype), got)
 
     def test_decklist_details(self):
         decklist = DecklistFactory(
@@ -76,7 +74,7 @@ class ArticleRenderingTestCase(TestCase):
         """
         got = process_article_args(article)
         event = decklist.collection.event
-        self.assertIn(decklist.archetype, got)
+        self.assertIn(escape(decklist.archetype), got)
         self.assertIn(event.name, got)
         self.assertIn(event.get_absolute_url(), got)
         self.assertIn(decklist.player.name, got)

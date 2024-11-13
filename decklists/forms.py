@@ -76,6 +76,11 @@ class CollectionForm(forms.ModelForm):
             ),
             "publication_time": forms.DateTimeInput(attrs={"type": "datetime-local"}),
         }
+        help_texts = {
+            "submission_deadline": "Deadline for players to submit their decklists.",
+            "publication_time": "Time when decklists become visible to players.",
+            "format_override": "The format of the decklists. Create a seperate decklist collection for each format of your event.",
+        }
 
     def __init__(self, *args, **kwargs):
         self.event = kwargs.pop("event", None)
@@ -95,6 +100,8 @@ class CollectionForm(forms.ModelForm):
 
         if self.event.format != Event.Format.MULTIFORMAT:
             self.fields.pop("format_override")
+        else:
+            self.fields["format_override"].required = True
 
     def save(self, commit=True):
         instance = super().save(commit=False)

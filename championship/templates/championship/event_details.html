@@ -50,38 +50,65 @@
                 <a href="{{ event.url }}">{{ event.url }}</a>
             </dd>
         {% endif %}
-        {% if event.decklists_url %}
-            <dt class="col-sm-3">Decklists</dt>
+        {% if collections %}
+            <dt class="col-sm-3">{% if any_decklist_submission_open %}Decklist Submission{% else %}Decklists{% endif %}</dt>
             <dd class="col-sm-9">
-                <a href="{{ event.decklists_url }}">{{ event.decklists_url }}</a>
+                {% for collection in collections %}
+                    <a class="btn btn-secondary" href="{{ collection.get_absolute_url }}">
+                        {% if collection.is_past_deadline %}
+                            View {{ collection.get_format_display }} decklists
+                        {% else %}
+                            Submit {{ collection.get_format_display }} decklist
+                        {% endif %}
+                    </a>
+                {% endfor %}
             </dd>
         {% endif %}
 
 
         {% if event.organizer.user == user %}
-            <dt class="col-sm-3">TO actions (only shown to you)</dt>
+            <h2 class="mt-4">Organizer Actions <small class="text-muted">(only shown to you)</small></h2>
+            <dt class="col-sm-3">Edit Event</dt>
             <dd class="col-sm-9">
-
-                <div class="btn-group-vertical">
+                <div class="btn-group mb-2">
                     {% if event.can_be_edited %}
                         <a href="{% url 'event_update' event.id %}" class="btn btn-secondary">Edit Event</a>
-                        {% if event.recurring_event %}
-                            <a href="{% url 'event_update_all' event.id %}" class="btn btn-secondary">Edit All Events of Series</a>
-                        {% endif %}
                     {% endif %}
-                    <a href="{% url 'event_copy' event.id %}" class="btn btn-secondary-light">Copy Event</a>
                     {% if event.can_be_deleted %}
                         {% include 'championship/delete_confirmation.html' with object=event long_name=True %}
                     {% endif %}
+                    <a href="{% url 'event_copy' event.id %}" class="btn btn-secondary-light">Copy Event</a>
+                </div>
+            </dd>
+            <dt class="col-sm-3">Schedule Event Series</dt>
+            <dd class="col-sm-9">
+                <div class="btn-group mb-2">
                     {% if event.recurring_event %}
+                        <a href="{% url 'event_update_all' event.id %}" class="btn btn-secondary">Edit All Events of Series</a>
                         <a href="{% url 'recurring_event_update' event.recurring_event_id %}" class="btn btn-secondary">Update Schedule</a>
                     {% else %}
                         <a href="{% url 'recurring_event_create' event.id %}" class="btn btn-secondary">Schedule as Event Series</a>
                     {% endif %}
-                    {% if event.can_be_edited and results %}
+                </div>
+            </dd>
+            {% if event.can_be_edited and results %}
+                <dt class="col-sm-3">Results</dt>
+                <dd class="col-sm-9">
+                    <div class="btn-group mb-2">
                         <a href="{% url 'results_top8_add' event.id %}" class="btn btn-secondary">Add/Edit Playoffs Results</a>
                         <a href="{% url 'event_clear_results' event.id %}" class="btn btn-danger">Delete results</a>
+                    </div>
+                </dd>
+            {% endif %}
+            <dt class="col-sm-3">Collect Decklists</dt>
+            <dd class="col-sm-9">
+                <div class="btn-group mb-2">
+                    {% if show_create_collection_link %}
+                        <a href="{% url 'collection-create' %}?event={{ event.id }}" class="btn btn-secondary-light">Collect Decklists for {% if collections %}other formats{% else %}Event{% endif %}</a>
                     {% endif %}
+                    {% for collection in collections %}
+                        <a href="{% url 'collection-update' collection.id %}" class="btn btn-secondary">Edit {{ collection.get_format_display }} decklist deadlines</a>
+                    {% endfor %}
                 </div>
             </dd>
         {% endif %}
@@ -156,7 +183,12 @@
             </small>
         </p>
         {% if unmatched_decklists %}
-            <h4>Unmatched decklists</h4>
+            <h4>Unmatched Decklists</h4>
+            <p>
+                <small>
+                    The following decklists were submitted for this event, but were not matched to a player.
+                </small>
+            </p>
             <ul>
                 {% for decklist in unmatched_decklists %}
                     <li>

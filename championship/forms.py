@@ -67,7 +67,6 @@ class EventCreateForm(forms.ModelForm):
             "category",
             "address",
             "url",
-            "decklists_url",
             "description",
             "image",
         ]
@@ -117,8 +116,6 @@ class ResultForm(forms.ModelForm):
             "win_count",
             "loss_count",
             "draw_count",
-            "deck_name",
-            "decklist_url",
         ]
 
     def __init__(self, *args, **kwargs):

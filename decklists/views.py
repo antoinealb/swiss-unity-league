@@ -237,7 +237,7 @@ class DecklistCreateView(SuccessMessageMixin, CreateView):
     def dispatch(self, request, *args, **kwargs):
         collection = self.get_collection()
         if (
-            collection.is_past_deadline()
+            collection.is_past_deadline
             and not collection.event.organizer.user == request.user
         ):
             messages.error(

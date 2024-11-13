@@ -90,6 +90,7 @@ class Collection(models.Model):
     def get_format_display(self):
         return Event.Format(self.format).label
 
+    @property
     def is_past_deadline(self):
         return timezone.now() > self.submission_deadline
 
@@ -147,7 +148,7 @@ class Decklist(models.Model):
         return f"{self.player.name} ({self.archetype})"
 
     def can_be_edited(self) -> bool:
-        return not self.collection.is_past_deadline()
+        return not self.collection.is_past_deadline
 
     def get_absolute_url(self):
         return reverse("decklist-details", args=[self.id])
