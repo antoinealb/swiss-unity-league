@@ -766,7 +766,8 @@ class PlayerProfile(models.Model):
     )
     bio = models.TextField(
         blank=True,
-        help_text="Some more info about you: other hobbies/interests, favorite cards/decks, fun facts, jokes, ...",
+        max_length=1000,
+        help_text="Tell us about yourself: Magic background, favorite cards/formats/decks, tournament stories, other hobbies/interests, fun facts, jokes, ...",
     )
     image = models.ImageField(
         verbose_name="Portrait photo of yourself",
