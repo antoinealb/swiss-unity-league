@@ -169,7 +169,9 @@ class CollectionViewTestCase(TestCase):
         resp = self.client.get(reverse("collection-details", args=[d.collection.id]))
         url = resp.context["judge_link"]
         resp = self.client.get(url)
-        self.assertIn(reverse("decklist-details", args=[d.id]), resp.content.decode())
+        # We want links for judges to be sorted by mana value by default
+        want_url = reverse("decklist-details", args=[d.id]) + "?sort=manavalue"
+        self.assertIn(want_url, resp.content.decode())
 
     def test_num_players_shown(self):
         collection = CollectionFactory()

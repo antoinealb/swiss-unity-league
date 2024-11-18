@@ -31,7 +31,12 @@
                 <tr>
                     <td>
                         {% if show_decklist_links or decklist.id.hex in owned_decklists %}
-                            <a href={{decklist.get_absolute_url}}>{{ decklist.player.name }} ({{ decklist.archetype }})</a>
+                            {% if using_judge_link %}
+                                <a href={{decklist.get_absolute_url}}?sort=manavalue>
+                            {% else %}
+                                <a href={{decklist.get_absolute_url}}>
+                            {% endif %}
+                            {{ decklist.player.name }} ({{ decklist.archetype }})</a>
                         {% else %}
                             {{ decklist.player.name }}
                         {% endif %}

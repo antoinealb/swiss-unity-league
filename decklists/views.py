@@ -191,10 +191,15 @@ class DecklistView(DetailView):
 
     def get_context_data(self, *args, **kwargs):
         context = super().get_context_data(*args, **kwargs)
-        # For players we show the list by types, but for TOs / Judges, only
-        # sorted by mana value for deck checks.
+
+        # By default, we sort by type, but we can also sort by manavalue for
+        # deckchecks.
+        sort_by_type = True
+        if self.request.GET.get("sort") == "manavalue":
+            sort_by_type = False
+
         return get_decklist_table_context(
-            context["decklist"], split_decklist_by_type=self.request.user.is_anonymous
+            context["decklist"], split_decklist_by_type=sort_by_type
         )
 
 
@@ -284,21 +289,25 @@ class CollectionView(DetailView):
 
         return None
 
-    def get_show_decklist_links(self):
-        if self.get_object().decklists_published:
-            return True
-
+    def get_using_judge_link(self):
         # If decklist are not published, only show them to a user presenting
         # the right sharing key. Use constant-time comparison.
         k1 = self.get_object().staff_key
         k2 = self.request.GET.get("staff_key", "")
         return secrets.compare_digest(k1, k2)
 
+    def get_show_decklist_links(self):
+        if self.get_object().decklists_published:
+            return True
+
+        return self.get_using_judge_link()
+
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         context["decklists"] = self.get_decklists()
         context["judge_link"] = self.get_judge_link()
         context["show_decklist_links"] = self.get_show_decklist_links()
+        context["using_judge_link"] = self.get_using_judge_link()
         context["owned_decklists"] = self.request.session.get("owned_decklists", [])
         return context
 
