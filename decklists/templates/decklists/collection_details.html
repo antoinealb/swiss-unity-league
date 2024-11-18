@@ -13,6 +13,9 @@
     </h1>
     <p class="h3">Format: {{ collection.get_format_display }}</p>
     <p>Submission deadline: {{ collection.submission_deadline }}</p>
+    {% if judge_link %}
+        <p><a href="{{ judge_link }}">Judge link (show links to decklists, can be shared)</a></p>
+    {% endif %}
     {% if not collection.is_past_deadline or collection.event.organizer.user == user %}
         <p><a href="{% url 'decklist-create' %}?collection={{ collection.id }}" class="btn btn-secondary-light">Submit decklist</a></p>
     {% endif %}
@@ -27,7 +30,7 @@
             {% for decklist in decklists %}
                 <tr>
                     <td>
-                        {% if show_links or decklist.id.hex in owned_decklists %}
+                        {% if show_decklist_links or decklist.id.hex in owned_decklists %}
                             <a href={{decklist.get_absolute_url}}>{{ decklist.player.name }} ({{ decklist.archetype }})</a>
                         {% else %}
                             {{ decklist.player.name }}

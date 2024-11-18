@@ -12,6 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+import secrets
 import uuid
 
 from django.conf import settings
@@ -33,6 +34,10 @@ class CollectionQuerySet(models.QuerySet):
 
     def unpublished(self):
         return self.exclude(publication_time__lte=timezone.now())
+
+
+def make_collection_staff_key():
+    return secrets.token_urlsafe(nbytes=16)
 
 
 class Collection(models.Model):
@@ -64,6 +69,12 @@ class Collection(models.Model):
         null=True,
         blank=True,
         help_text="Format of the decklist. If left empty, we will use the format of the event.",
+    )
+
+    staff_key = models.CharField(
+        default=make_collection_staff_key,
+        max_length=22,  # 128 bit of secret, url encoded
+        help_text="A secret string (URL safe) used to give permissions when sharing a collection link.",
     )
 
     class Meta:

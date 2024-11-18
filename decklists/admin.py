@@ -45,6 +45,7 @@ class CollectionAdmin(admin.ModelAdmin):
         "publication_time",
     )
     list_filter = ["event__organizer", DecklistPublishedListFilter]
+    exclude = ["staff_key"]
 
     @admin.display(ordering="event__organizer__name", description="Owner name")
     def owner_name(self, instance: decklists.models.Collection) -> str:

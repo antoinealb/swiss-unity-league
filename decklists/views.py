@@ -13,6 +13,7 @@
 # limitations under the License.
 
 import dataclasses
+import secrets
 from collections import defaultdict
 from collections.abc import Iterable
 from typing import TypeAlias
@@ -272,19 +273,32 @@ class CollectionView(DetailView):
     def get_decklists(self):
         return self.get_object().decklist_set.order_by("player__name", "-last_modified")
 
-    def get_show_links(self):
+    def get_judge_link(self):
+        collection = self.get_object()
+        link = collection.get_absolute_url() + f"?staff_key={collection.staff_key}"
         if self.get_object().event.organizer.user == self.request.user:
-            return True
+            return link
 
         if self.request.user.has_perm("decklists.view_decklist"):
+            return link
+
+        return None
+
+    def get_show_decklist_links(self):
+        if self.get_object().decklists_published:
             return True
 
-        return self.get_object().decklists_published
+        # If decklist are not published, only show them to a user presenting
+        # the right sharing key. Use constant-time comparison.
+        k1 = self.get_object().staff_key
+        k2 = self.request.GET.get("staff_key", "")
+        return secrets.compare_digest(k1, k2)
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         context["decklists"] = self.get_decklists()
-        context["show_links"] = self.get_show_links()
+        context["judge_link"] = self.get_judge_link()
+        context["show_decklist_links"] = self.get_show_decklist_links()
         context["owned_decklists"] = self.request.session.get("owned_decklists", [])
         return context
 

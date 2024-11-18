@@ -79,18 +79,17 @@ class CollectionViewTestCase(TestCase):
         self.assertEqual(want, got)
 
     def test_links_are_shown_once_published(self):
-        now = timezone.now()
-        collection = CollectionFactory(publication_time=now, submission_deadline=now)
-        d = DecklistFactory(collection=collection)
-        resp = self.client.get(reverse("collection-details", args=[collection.id]))
-        self.assertTrue(resp.context["show_links"])
+        d = DecklistFactory(collection__published=True)
+        resp = self.client.get(reverse("collection-details", args=[d.collection.id]))
+        self.assertTrue(resp.context["show_decklist_links"])
         self.assertIn(reverse("decklist-details", args=[d.id]), resp.content.decode())
 
-    def test_links_are_shown_to_tournament_organizer(self):
+    def test_judge_link_is_shown_to_tournament_organizer(self):
         self.login()
         collection = CollectionFactory(event=EventFactory(organizer=self.organizer))
         resp = self.client.get(reverse("collection-details", args=[collection.id]))
-        self.assertTrue(resp.context["show_links"])
+        self.assertFalse(resp.context["show_decklist_links"])
+        self.assertIsNotNone(resp.context["judge_link"])
 
     def test_link_submit_decklist_shown_before_deadline(self):
         collection = CollectionFactory()
@@ -133,7 +132,9 @@ class CollectionViewTestCase(TestCase):
         self.login()
         collection = CollectionFactory()
         resp = self.client.get(reverse("collection-details", args=[collection.id]))
-        self.assertTrue(resp.context["show_links"])
+        self.assertFalse(resp.context["show_decklist_links"])
+        self.assertIsNotNone(resp.context["judge_link"])
+        self.assertContains(resp, resp.context["judge_link"])
 
     def test_decklists_are_not_linked_by_default(self):
         d = DecklistFactory()
@@ -141,7 +142,8 @@ class CollectionViewTestCase(TestCase):
         self.assertNotIn(
             reverse("decklist-details", args=[d.id]), resp.content.decode()
         )
-        self.assertFalse(resp.context["show_links"])
+        self.assertIsNone(resp.context["judge_link"])
+        self.assertFalse(resp.context["show_decklist_links"])
 
     def test_decklist_are_shown_if_we_are_the_creator_of_the_list(self):
         collection = CollectionFactory()
@@ -160,6 +162,14 @@ class CollectionViewTestCase(TestCase):
         self.assertIn(
             reverse("decklist-details", args=[decklist.id]), resp.content.decode()
         )
+
+    def test_decklist_are_shown_if_using_the_judge_link(self):
+        d = DecklistFactory()
+        self.client.force_login(d.collection.event.organizer.user)
+        resp = self.client.get(reverse("collection-details", args=[d.collection.id]))
+        url = resp.context["judge_link"]
+        resp = self.client.get(url)
+        self.assertIn(reverse("decklist-details", args=[d.id]), resp.content.decode())
 
     def test_num_players_shown(self):
         collection = CollectionFactory()
