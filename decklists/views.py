@@ -276,12 +276,13 @@ class CollectionView(DetailView):
     template_name = "decklists/collection_details.html"
 
     def get_decklists(self):
-        return self.get_object().decklist_set.order_by("player__name", "-last_modified")
+        return self.object.decklist_set.select_related("player").order_by(
+            "player__name", "-last_modified"
+        )
 
     def get_judge_link(self):
-        collection = self.get_object()
-        link = collection.get_absolute_url() + f"?staff_key={collection.staff_key}"
-        if self.get_object().event.organizer.user == self.request.user:
+        link = self.object.get_absolute_url() + f"?staff_key={self.object.staff_key}"
+        if self.object.event.organizer.user == self.request.user:
             return link
 
         if self.request.user.has_perm("decklists.view_decklist"):
@@ -292,12 +293,12 @@ class CollectionView(DetailView):
     def get_using_judge_link(self):
         # If decklist are not published, only show them to a user presenting
         # the right sharing key. Use constant-time comparison.
-        k1 = self.get_object().staff_key
+        k1 = self.object.staff_key
         k2 = self.request.GET.get("staff_key", "")
         return secrets.compare_digest(k1, k2)
 
     def get_show_decklist_links(self):
-        if self.get_object().decklists_published:
+        if self.object.decklists_published:
             return True
 
         return self.get_using_judge_link()
