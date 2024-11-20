@@ -125,4 +125,5 @@
     <script src="{% static 'future_events.js' %}"></script>
     <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
     <script src="https://cdn.jsdelivr.net/gh/alpinejs/alpine@v2.x.x/dist/alpine.min.js" ></script>
+    {{ events|json_script:"events-data"}}
 {% endblock %}

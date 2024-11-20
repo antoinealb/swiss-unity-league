@@ -14,7 +14,7 @@
 
 import datetime
 
-from django.test import Client, TestCase
+from django.test import TestCase
 from django.urls import reverse
 
 from championship.factories import AddressFactory, EventFactory, EventOrganizerFactory
@@ -56,7 +56,7 @@ class EventApiTestCase(TestCase):
             format=Event.Format.MODERN,
             category=Event.Category.REGIONAL,
         )
-        resp = Client().get(
+        resp = self.client.get(
             reverse("past-events-list", kwargs={"slug": SEASON_2023.slug})
         )
         want = [
@@ -99,42 +99,50 @@ class EventApiTestCase(TestCase):
         ]
         self.assertEqual(want, resp.json())
 
+
+class FutureEventsView(TestCase):
     def test_get_all_future_events(self):
-        eo = EventOrganizerFactory(name="Test TO", addresses=[])
         tomorrow = datetime.date.today() + datetime.timedelta(days=1)
-        a = EventFactory(
-            organizer=eo,
+        event = EventFactory(
+            organizer__addresses=[],
             date=tomorrow,
             format=Event.Format.LEGACY,
             category=Event.Category.PREMIER,
         )
-        resp = Client().get(reverse("future-events-list"))
+        resp = self.client.get(reverse("events"))
+
         want = [
             {
-                "name": a.name,
+                "name": event.name,
                 "date": tomorrow.strftime("%a, %d.%m.%Y"),
                 "time": "",
                 "startDateTime": tomorrow.isoformat(),
                 "endDateTime": "",
-                "organizer": eo.name,
+                "organizer": event.organizer.name,
                 "format": "Legacy",
                 "locationName": "",
                 "seoAddress": "",
                 "shortAddress": "",
                 "region": "",
                 "category": "SUL Premier",
-                "details_url": TEST_SERVER + reverse("event_details", args=[a.id]),
+                "details_url": TEST_SERVER + event.get_absolute_url(),
                 "organizer_url": TEST_SERVER
-                + reverse("organizer_details", args=[a.id]),
+                + reverse("organizer_details", args=[event.id]),
                 "icon_url": "/static/types/icons/premier.png",
             }
         ]
         self.assertEqual(resp.status_code, 200)
-        self.assertEqual(want, resp.json())
+        self.assertEqual(want, resp.context["events"])
 
-
-class FormatsApiTestCase(TestCase):
-    def test_get_all_formats(self):
-        resp = Client().get(reverse("formats-list"))
-        want = sorted(Event.Format.labels)
-        self.assertEqual(want, resp.json())
+    def test_future_events_are_ordered_by_date(self):
+        today = datetime.date.today()
+        tomorrow = today + datetime.timedelta(days=1)
+        e1 = EventFactory(date=tomorrow)
+        e2 = EventFactory(date=today)
+        got_events = self.client.get(reverse("events")).context["events"]
+        want_events = [e2, e1]
+        self.assertEqual(
+            [p["name"] for p in got_events],
+            [p.name for p in want_events],
+            "Events should be ordered by date",
+        )
