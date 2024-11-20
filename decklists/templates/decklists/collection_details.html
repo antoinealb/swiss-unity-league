@@ -12,40 +12,67 @@
         {% endif %}
     </h1>
     <p class="h3">Format: {{ collection.get_format_display }}</p>
-    <p>Submission deadline: {{ collection.submission_deadline }}</p>
+    <p>Submission deadline: {{ collection.submission_deadline }}</p>
     {% if judge_link %}
-        <p><a href="{{ judge_link }}">Judge link (show links to decklists, can be shared)</a></p>
+        <div class="form-group">
+            <label for="judgeLink" class="font-weight-bold"><b>Judge Link</b> (share decklists with judges and other staff before they are public):</label>
+            <div class="input-group my-3">
+                <input type="text" id="judgeLink" class="form-control" value="{{ judge_link }}" readonly>
+                <button class="btn btn-secondary" type="button" id="copyJudgeLinkButton">Copy to Clipboard</button>
+            </div>
+        </div>
     {% endif %}
     {% if not collection.is_past_deadline or collection.event.organizer.user == user %}
         <p><a href="{% url 'decklist-create' %}?collection={{ collection.id }}" class="btn btn-secondary-light">Submit decklist</a></p>
     {% endif %}
-    <table class="table table-striped">
-        <thead>
-            <tr>
-                <th scope="col">{{ decklists|length }} Players</th>
-                <th scope="col">Last modified</th>
-            </tr>
-        </thead>
-        <tbody>
-            {% for decklist in decklists %}
+    <div class="table-responsive">
+        <table class="table table-striped table-hover">
+            <thead class="thead-dark">
                 <tr>
-                    <td>
-                        {% if show_decklist_links or decklist.id.hex in owned_decklists %}
-                            {% if using_judge_link %}
-                                <a href={{decklist.get_absolute_url}}?sort=manavalue>
-                            {% else %}
-                                <a href={{decklist.get_absolute_url}}>
-                            {% endif %}
-                            {{ decklist.player.name }} ({{ decklist.archetype }})</a>
-                        {% else %}
-                            {{ decklist.player.name }}
-                        {% endif %}
-                    </td>
-                    <td>
-                        {{ decklist.last_modified }}
-                    </td>
+                    <th scope="col">{{ decklists|length }} Players</th>
+                    <th scope="col">Last Modified</th>
                 </tr>
-            {% endfor %}
-        </tbody>
-    </table>
+            </thead>
+            <tbody>
+                {% for decklist in decklists %}
+                    <tr>
+                        <td>
+                            {% if show_decklist_links or decklist.id.hex in owned_decklists %}
+                                {% if using_judge_link %}
+                                    <a href="{{ decklist.get_absolute_url }}?sort=manavalue">
+                                {% else %}
+                                    <a href="{{ decklist.get_absolute_url }}">
+                                {% endif %}
+                                {{ decklist.player.name }} ({{ decklist.archetype }})</a>
+                            {% else %}
+                                {{ decklist.player.name }}
+                            {% endif %}
+                        </td>
+                        <td>
+                            {{ decklist.last_modified }}
+                        </td>
+                    </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+{% endblock %}
+
+{% block scripts %}
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            var copyButton = document.getElementById('copyJudgeLinkButton');
+            var judgeLinkField = document.getElementById('judgeLink');
+
+            copyButton.addEventListener('click', function() {
+                judgeLinkField.select();
+                judgeLinkField.setSelectionRange(0, 99999);
+                document.execCommand('copy');
+                copyButton.innerText = 'Copied!';
+                setTimeout(function() {
+                    copyButton.innerText = 'Copy to Clipboard';
+                }, 3000);
+            });
+        });
+    </script>
 {% endblock %}
