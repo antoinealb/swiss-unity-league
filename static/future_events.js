@@ -59,26 +59,32 @@ function events(seasonUrls) {
                 selected[key] = false
             }
         },
-        loadEvents(seasonName) {
+        async loadEvents(seasonName) {
             let self = this
+
+            // Fast path: if we request the upcoming events, load them from the
+            // DOM where Django will have put them.
             if (!seasonName) {
                 seasonName = self.currentSeason
+                const events = JSON.parse(
+                    document.getElementById('events-data').textContent
+                )
+                self.eventsPerSeason[seasonName].data = events
+                self.setEvents(self.eventsPerSeason[seasonName].data)
+                return
             }
 
-            // Load the given events if they weren't loaded already.
-            if (self.eventsPerSeason[seasonName].data.length === 0) {
-                axios
-                    .get(self.eventsPerSeason[seasonName].url)
-                    .then(function (response) {
-                        self.eventsPerSeason[seasonName].data = response.data
-                        self.setEvents(response.data)
-                    })
-                    .catch(function (error) {
-                        console.log(error)
-                    })
-            } else {
+            // Slow path, cached: Simply set the events from the cache
+            if (self.eventsPerSeason[seasonName].data.length > 0) {
                 self.setEvents(self.eventsPerSeason[seasonName].data)
+                return
             }
+
+            // Slow path, not in the cache: issue an API call to fetch events
+            // for the given season.
+            response = await axios.get(self.eventsPerSeason[seasonName].url)
+            self.eventsPerSeason[seasonName].data = response.data
+            self.setEvents(response.data)
         },
         setEvents(events) {
             self = this

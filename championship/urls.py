@@ -23,9 +23,6 @@ from . import views
 # Define a private API router for the event view
 api_router = routers.DefaultRouter()
 api_router.register(
-    r"future-events", views.FutureEventViewSet, basename="future-events"
-)
-api_router.register(
     r"past-events/(?P<slug>[a-z0-9]+)",
     views.PastEventViewSet,
     basename="past-events",

@@ -198,28 +198,25 @@ class FutureEventView(TemplateView):
 
     def get_context_data(self, **kwargs: Any):
         context = super().get_context_data(**kwargs)
-        future_events = {"Upcoming": reverse("future-events-list")}
+        future_events = {"Upcoming": ""}
         past_events_each_season = [
             {s.name: reverse("past-events-list", kwargs={"slug": s.slug})}
             for s in SEASON_LIST
         ]
         context["season_urls"] = [future_events] + past_events_each_season
+
+        future_events = (
+            Event.objects.future_events()
+            .select_related("organizer", "address", "organizer__default_address")
+            .order_by("date")
+        )
+
+        events = EventSerializer(
+            future_events, many=True, context={"request": self.request}
+        )
+        context["events"] = events.data
+
         return context
-
-
-class FutureEventViewSet(viewsets.ReadOnlyModelViewSet):
-    """API endpoint for the upcoming events page, showing future events."""
-
-    serializer_class = EventSerializer
-
-    def get_queryset(self):
-        """Returns all Events in the future."""
-
-        # This needs to be a function (get_queryset) instead of an attribute as
-        # otherwise the today means "when the app was started.
-        qs = Event.objects.filter(date__gte=datetime.date.today())
-        qs = qs.select_related("organizer", "address", "organizer__default_address")
-        return qs.order_by("date")
 
 
 class PastEventViewSet(viewsets.ReadOnlyModelViewSet):
