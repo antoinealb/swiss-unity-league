@@ -10,51 +10,57 @@
     {% include 'championship/components/season_dropdown.html' %}
     <br>
     {% block info_text %}{% endblock %}
-    <input type="text" id="playerSearch" class="form-control mb-3" placeholder="Search for players..." onkeyup="filterPlayers()">
-    <table class="table table-striped" id="rankingTable" aria-label="Leaderboard Swiss Unity League {{ current_season.name }}">
-        <thead>
-            <tr>
-                <th scope="col">Rank</th>
-                <th scope="col">SUL Points</th>
-                <th scope="col">Player Name</th>
-            </tr>
-        </thead>
-        <tbody>
-            {% for player in players %}
+    <div x-data="init()">
+        <input type="text" id="playerSearch" class="form-control mb-3" placeholder="Search for players..." x-model="search">
+        <table class="table table-striped" id="rankingTable" aria-label="Leaderboard Swiss Unity League {{ current_season.name }}">
+            <thead>
                 <tr>
-                    <td aria-label="Rank">
-                        <div class="d-inline text-nowrap">
-                            {{ player.score.rank }}
-                            {% if player.score.qualification_type.name == "LEADERBOARD" %}
-                                <i class="icon-star" title="{{ player.score.qualification_reason }}"></i>
-                            {% elif player.score.qualification_type.name == "DIRECT" %}
-                                <i class="icon-trophy" title="{{ player.score.qualification_reason }}"></i>
-                            {% endif %}
-                            {% for i in player.score.byes|range %}
-                                <i class="icon-shield" title="1 Bye for the Invitational tournament"></i>
-                            {% endfor %}
-                        </div>
-                    </td>
-                    <td aria-label="SUL Points">{{ player.score.total_score }}</td>
-                    <td aria-label="Player Name"><a href="{{ player.get_absolute_url }}" title="View tournament statistics of {{ player.get_name_display }}">{{ player.get_name_display }}</a></td>
+                    <th scope="col">Rank</th>
+                    <th scope="col">SUL Points</th>
+                    <th scope="col">Player Name</th>
                 </tr>
-            {% endfor %}
-        </tbody>
-    </table>
+            </thead>
+            <tbody>
+                <template x-for="player in players">
+                    <tr x-show="shouldShow(player)">
+                        <td aria-label="Rank">
+                            <div class="d-inline text-nowrap">
+                                <span x-text="player.rank"></span>
+                                <template x-if="player.qualification_type == 'LEADERBOARD'">
+                                    <i class="icon-star" :title="player.qualification_reason"></i>
+                                </template>
+                                <template x-if="player.qualification_type == 'DIRECT'">
+                                    <i class="icon-trophy" :title="player.qualification_reason"></i>
+                                </template>
+                                <template x-for="i in player.byes">
+                                    <i class="icon-shield" title="1 Bye for the Invitational tournament"></i>
+                                </template>
+                            </div>
+                        </td>
+                        <td aria-label="SUL Points" x-text="player.total_score"></td>
+                        <td aria-label="Player Name"><a :href="player.url" :title="'View tournament statistics of ' + player.name" x-text="player.name"></a></td>
+                    </tr>
+                </template>
+            </tbody>
+        </table>
+    </div>
 
-    <script>
-        function filterPlayers() {
-            const input = document.getElementById('playerSearch');
-            const searchTerm = input.value.toLowerCase();
-            const table = document.getElementById('rankingTable');
-            const rows = table.getElementsByTagName('tr');
-            const playerNameIndex = Array.from(rows[0].getElementsByTagName('th')).findIndex(th => th.innerText === 'Player Name');
-            for (let i = 1; i < rows.length; i++) {
-                const cells = rows[i].getElementsByTagName('td');
-                const playerName = cells[playerNameIndex].innerText;
-                rows[i].style.display = playerName.toLowerCase().indexOf(searchTerm) > -1 ? "" : "none";
+
+    {% block scripts %}
+        <script src="https://cdn.jsdelivr.net/gh/alpinejs/alpine@v2.x.x/dist/alpine.min.js" ></script>
+        {{ players|json_script:"players-data" }}
+        <script>
+            function init() {
+                const players = JSON.parse(document.getElementById('players-data').textContent);
+                return {
+                    search: '',
+                    players: players,
+                    shouldShow(player) {
+                        return player.name.toLowerCase().indexOf(this.search) > -1
+                    }
+                };
             }
-        }
-    </script>
+        </script>
+    {% endblock %}
 
 {% endblock %}

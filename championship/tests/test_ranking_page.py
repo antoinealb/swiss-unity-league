@@ -15,26 +15,18 @@
 import datetime
 
 from django.shortcuts import reverse
-from django.test import Client, TestCase
+from django.test import TestCase
 
 from parameterized import parameterized
 
-from championship.factories import (
-    EventFactory,
-    PlayerFactory,
-    RankedEventFactory,
-    ResultFactory,
-)
+from championship.factories import PlayerFactory, RankedEventFactory, ResultFactory
 from championship.season import SEASONS_WITH_RANKING
 
 
 class RankingTestCase(TestCase):
     """
-    Tests for the landing page of the website.
+    Tests for the leaderboard page.
     """
-
-    def setUp(self):
-        self.client = Client()
 
     def get_by_slug(self, slug):
         url = reverse("ranking-by-season", kwargs={"slug": slug})
@@ -48,29 +40,25 @@ class RankingTestCase(TestCase):
         tournament gets deleted, then we have stale players with no results.
         In this case the player shouldn't show up in the ranking.
         """
-        player_with_results = PlayerFactory()
-        ResultFactory(player=player_with_results, points=1)
-        player_without_results = PlayerFactory()
-        response = self.get_by_slug("2023")
-        self.assertContains(response, player_with_results.name)
-        self.assertNotContains(response, player_without_results.name)
+        result = ResultFactory()
+        PlayerFactory()  # another player, without results
+        players = self.get_by_slug("2023").context["players"]
+        self.assertEqual([p["name"] for p in players], [result.player.name])
 
     def test_ranking_for_player_hidden(self):
         """Checks that we hide hidden players from the leaderboard."""
-        player = PlayerFactory(hidden_from_leaderboard=True)
-        EventFactory(date=datetime.date(2023, 4, 1))
-        ResultFactory(player=player, points=1)
-        response = self.get_by_slug("2023")
-        self.assertNotContains(response, player.name)
+        ResultFactory(player__hidden_from_leaderboard=True, points=1)
+        players = self.get_by_slug("2023").context["players"]
+        self.assertEqual(players, [])
 
     def test_score_properties_rendering(self):
         """Checks that the score properties are rendered correctly."""
-        player = PlayerFactory()
         event = RankedEventFactory(date=datetime.date(2023, 4, 1))
-        ResultFactory(player=player, points=2, event=event)
+        ResultFactory(event=event)
         response = self.get_by_slug("2023")
-        self.assertContains(response, """<i class="icon-star"></i>""")
-        self.assertContains(response, """<i class="icon-shield"></i>""")
+        player = response.context["players"][0]
+        self.assertEqual(player["byes"], 2)
+        self.assertEqual(player["qualification_type"], "LEADERBOARD")
 
     def test_get_for_default_season(self):
         """Checks that we can get the page for the default season without a crash."""

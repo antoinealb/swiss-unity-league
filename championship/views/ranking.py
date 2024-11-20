@@ -26,5 +26,20 @@ class CompleteRankingView(PerSeasonMixin, TemplateView):
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        context["players"] = get_leaderboard(self.current_season)
+        players = get_leaderboard(self.current_season)
+        players_serialized = [
+            {
+                "rank": player.score.rank,
+                "qualification_type": player.score.qualification_type.name,
+                "qualification_reason": player.score.qualification_reason,
+                "byes": player.score.byes,
+                "total_score": player.score.total_score,
+                "name": player.get_name_display(),
+                "url": player.get_absolute_url(),
+            }
+            for player in players
+        ]
+
+        context["players"] = players_serialized
+
         return context
