@@ -281,7 +281,9 @@ class CollectionView(DetailView):
         )
 
     def get_judge_link(self):
-        link = self.object.get_absolute_url() + f"?staff_key={self.object.staff_key}"
+        link = self.request.build_absolute_uri(
+            self.object.get_absolute_url() + f"?staff_key={self.object.staff_key}"
+        )
         if self.object.event.organizer.user == self.request.user:
             return link
 
