@@ -53,7 +53,7 @@
                             <template x-for="selectedItem in Object.keys(filter.selected)">
                                 <div class="dropdown-item" x-on:click="filter.selected[selectedItem] = !filter.selected[selectedItem]">
                                     <div class="form-check">
-                                        <input class="form-check-input" type="checkbox" x-bind:id="selectedItem" x-model="filter.selected[selectedItem]">
+                                        <input class="form-check-input" type="checkbox" x-model="filter.selected[selectedItem]">
                                         <label class="form-check-label" x-bind:for="selectedItem" x-text="selectedItem.trim() === '' ? 'No '+filter.title : selectedItem"></label>
                                     </div>
                                 </div>
