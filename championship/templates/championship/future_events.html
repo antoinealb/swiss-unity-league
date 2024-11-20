@@ -100,7 +100,9 @@
                                 <div class="row align-items-center flex-lg-row flex-column-reverse">
                                     <div class="col-lg-auto order-lg-1">
                                         <div class="sul-type-icon">
-                                            <img x-show="event.category != 'Other'" :src="event.icon_url" :alt="'Icon ' + event.category" :title="event.category" class="sul-type-icon">
+                                            <template x-if="event.category != 'Other'">
+                                                <img :src="event.icon_url" :alt="'Icon ' + event.category" :title="event.category" class="sul-type-icon">
+                                            </template>
                                         </div>
                                     </div>
                                     <div class="col order-lg-2">
