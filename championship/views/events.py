@@ -232,16 +232,13 @@ class PastEventViewSet(viewsets.ReadOnlyModelViewSet):
 
         self.slug = self.kwargs.get("slug")
         try:
-            self.current_season = find_season_by_slug(self.slug)
+            season = find_season_by_slug(self.slug)
         except KeyError:
             raise Http404(f"Unknown season {self.slug}")
 
-        # This needs to be a function (get_queryset) instead of an attribute as
-        # otherwise the today means "when the app was started.
-        qs = Event.objects.filter(date__lt=datetime.date.today())
-        qs = qs.filter(
-            date__gte=self.current_season.start_date,
-            date__lte=self.current_season.end_date,
+        return (
+            Event.objects.in_season(season)
+            .past_events()
+            .select_related("organizer", "address", "organizer__default_address")
+            .order_by("-date")
         )
-        qs = qs.select_related("organizer", "address", "organizer__default_address")
-        return qs.order_by("-date")

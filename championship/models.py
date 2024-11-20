@@ -202,7 +202,7 @@ class EventOrganizer(models.Model):
         return self.name
 
 
-class EventManager(models.Manager):
+class EventQueryset(models.QuerySet):
     def available_for_result_upload(self, user):
         today = datetime.date.today()
         start_date = today - settings.EVENT_MAX_AGE_FOR_RESULT_ENTRY
@@ -217,6 +217,20 @@ class EventManager(models.Manager):
 
         valid_event_ids = [event.id for event in initial_qs if event.can_be_edited()]
         return initial_qs.filter(id__in=valid_event_ids)
+
+    def future_events(self):
+        today = datetime.date.today()
+        return self.filter(date__gte=today)
+
+    def past_events(self):
+        today = datetime.date.today()
+        return self.filter(date__lt=today)
+
+    def in_season(self, season: Season):
+        return self.filter(
+            date__gte=season.start_date,
+            date__lte=season.end_date,
+        )
 
 
 def tomorrow():
@@ -537,7 +551,7 @@ class Event(models.Model):
 
         return self
 
-    objects = EventManager()
+    objects = EventQueryset.as_manager()
 
     DOWNGRADED_TO_REGIONAL_NAME = " (Downgraded to Regional)"
     DOWNGRADED_TO_REGIONAL_DESCRIPTION = f"This event was downgraded to SUL Regional, because a minimum of {settings.MIN_PLAYERS_FOR_PREMIER} players is needed for SUL Premier events."

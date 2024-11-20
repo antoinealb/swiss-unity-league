@@ -45,8 +45,8 @@ class IndexView(TemplateView):
 
     def _future_events(self):
         future_premier = (
-            Event.objects.filter(
-                date__gte=datetime.date.today(),
+            Event.objects.future_events()
+            .filter(
                 date__lte=datetime.date.today() + datetime.timedelta(days=30),
                 category=Event.Category.PREMIER,
             )
@@ -56,9 +56,8 @@ class IndexView(TemplateView):
 
         remaining_regionals = EVENTS_ON_PAGE - len(future_premier)
         future_regional = (
-            Event.objects.filter(
-                date__gte=datetime.date.today(), category=Event.Category.REGIONAL
-            )
+            Event.objects.future_events()
+            .filter(category=Event.Category.REGIONAL)
             .order_by("date")[:remaining_regionals]
             .prefetch_related("address", "organizer")
         )

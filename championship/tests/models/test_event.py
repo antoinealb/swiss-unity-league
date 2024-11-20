@@ -24,6 +24,7 @@ from parameterized import parameterized
 
 from championship.factories import EventFactory, ResultFactory
 from championship.models import Event
+from championship.season import SEASON_2023
 
 
 class EventCopyFromTest(TestCase):
@@ -200,3 +201,26 @@ class PremierEventDowngrade(TestCase):
         )
         self.assertTrue(self.original_description in event.description)
         self.assertEqual(event.category, Event.Category.REGIONAL)
+
+
+class QuerysetTestCase(TestCase):
+    today = datetime.date.today()
+    tomorrow = today + datetime.timedelta(days=1)
+
+    def test_future_events(self):
+        EventFactory(date=datetime.date(2020, 1, 1))  # a past event
+        e1 = EventFactory(date=self.today)  # we consider "today" a future event
+        e2 = EventFactory(date=self.tomorrow)
+        self.assertQuerysetEqual(
+            Event.objects.future_events().order_by("date"), [e1, e2]
+        )
+
+    def test_past_events(self):
+        e = EventFactory(date=datetime.date(2020, 1, 1))  # a past event
+        EventFactory(date=self.today)  # we consider "today" a future event
+        self.assertQuerysetEqual(Event.objects.past_events(), [e])
+
+    def test_season_events(self):
+        e = EventFactory(date=datetime.date(2023, 8, 1))
+        EventFactory(date=datetime.date(2024, 8, 1))
+        self.assertQuerysetEqual(Event.objects.in_season(SEASON_2023), [e])

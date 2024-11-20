@@ -59,11 +59,12 @@ class EventOrganizerDetailView(DetailView):
         context = super().get_context_data(**kwargs)
         organizer = self.get_object()
 
-        future_events = Event.objects.filter(
-            organizer=organizer, date__gte=datetime.date.today()
-        ).order_by("date")
+        future_events = (
+            Event.objects.future_events().filter(organizer=organizer).order_by("date")
+        )
         past_events = (
-            Event.objects.filter(organizer=organizer, date__lt=datetime.date.today())
+            Event.objects.past_events()
+            .filter(organizer=organizer)
             .annotate(num_players=Count("result"))
             .order_by("-date")
         )
