@@ -349,14 +349,17 @@ REST_FRAMEWORK = {
 
 if sendgrid_api_key := os.getenv("SENDGRID_API_KEY"):
     # Email settings, see https://docs.sendgrid.com/for-developers/sending-email/django
-    EMAIL_HOST = "smtp.sendgrid.net"
-    EMAIL_HOST_USER = "apikey"
-    EMAIL_HOST_PASSWORD = sendgrid_api_key
-    EMAIL_PORT = 587
-    EMAIL_USE_TLS = True
+    EMAIL_BACKEND = "sendgrid_backend.SendgridBackend"
+    SENDGRID_API_KEY = sendgrid_api_key
+    SENDGRID_TRACK_EMAIL_OPENS = False
+    SENDGRID_TRACK_CLICKS_HTML = False
+    SENDGRID_TRACK_CLICKS_PLAIN = False
 else:
     # During development log emails to the console
     EMAIL_BACKEND = "django.core.mail.backends.console.EmailBackend"
+
+# Those people will receive emails when an exception arise
+ADMINS = [("Antoine", "antoinea101@gmail.com")]
 
 if "test" in sys.argv or "pytest" in sys.modules:
     # Set some options for faster unit testing in Django See:

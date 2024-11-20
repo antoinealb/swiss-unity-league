@@ -30,3 +30,4 @@ django-ical~=1.9.2
 pillow~=10.2.0
 djhtml~=3.0.6
 matplotlib~=3.8.3
+django-sendgrid-v5~=1.2.3
