@@ -43,7 +43,7 @@ class RankingTestCase(TestCase):
         result = ResultFactory()
         PlayerFactory()  # another player, without results
         players = self.get_by_slug("2023").context["players"]
-        self.assertEqual([p["name"] for p in players], [result.player.name])
+        self.assertEqual([p.name for p in players], [result.player.name])
 
     def test_ranking_for_player_hidden(self):
         """Checks that we hide hidden players from the leaderboard."""
@@ -57,8 +57,8 @@ class RankingTestCase(TestCase):
         ResultFactory(event=event)
         response = self.get_by_slug("2023")
         player = response.context["players"][0]
-        self.assertEqual(player["byes"], 2)
-        self.assertEqual(player["qualification_type"], "LEADERBOARD")
+        self.assertEqual(player.score.byes, 2)
+        self.assertEqual(player.score.qualification_type.name, "LEADERBOARD")
 
     def test_get_for_default_season(self):
         """Checks that we can get the page for the default season without a crash."""

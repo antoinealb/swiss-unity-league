@@ -21,42 +21,42 @@
                 </tr>
             </thead>
             <tbody>
-                <template x-for="player in players">
-                    <tr x-show="shouldShow(player)">
+                {% for player in players %}
+                    <tr x-show="shouldShow('{{ player.name|escapejs }}')">
                         <td aria-label="Rank">
                             <div class="d-inline text-nowrap">
-                                <span x-text="player.rank"></span>
-                                <template x-if="player.qualification_type == 'LEADERBOARD'">
-                                    <i class="icon-star" :title="player.qualification_reason"></i>
-                                </template>
-                                <template x-if="player.qualification_type == 'DIRECT'">
-                                    <i class="icon-trophy" :title="player.qualification_reason"></i>
-                                </template>
-                                <template x-for="i in player.byes">
+                                {{ player.score.rank }}
+                                {% if player.score.qualification_type.name == 'LEADERBOARD' %}
+                                    <i class="icon-star" title="{{ player.qualification_reason }}"></i>
+                                {% elif player.score.qualification_type.name == 'LEADERBOARD' %}
+                                    <i class="icon-trophy" title="{{ player.qualification_reason }}"></i>
+                                {% endif %}
+                                {% for i in player.score.byes|range %}
                                     <i class="icon-shield" title="1 Bye for the Invitational tournament"></i>
-                                </template>
+                                {% endfor %}
                             </div>
                         </td>
-                        <td aria-label="SUL Points" x-text="player.total_score"></td>
-                        <td aria-label="Player Name"><a :href="player.url" :title="'View tournament statistics of ' + player.name" x-text="player.name"></a></td>
+                        <td aria-label="SUL Points">{{ player.score.total_score }}</td>
+                        <td aria-label="Player Name">
+                            <a href="{{ player.get_absolute_url }}" title="View tournament statistics of {{ player.get_name_display }}">
+                                {{ player.get_name_display }}
+                            </a>
+                        </td>
                     </tr>
-                </template>
+                {% endfor %}
             </tbody>
         </table>
     </div>
 
 
     {% block scripts %}
-        {{ players|json_script:"players-data" }}
         {% include 'alpinejs.html' %}
         <script>
             function init() {
-                const players = JSON.parse(document.getElementById('players-data').textContent);
                 return {
                     search: '',
-                    players: players,
-                    shouldShow(player) {
-                        return player.name.toLowerCase().indexOf(this.search.toLowerCase()) > -1
+                    shouldShow(name) {
+                        return name.toLowerCase().indexOf(this.search.toLowerCase()) > -1
                     }
                 };
             }
