@@ -360,6 +360,7 @@ else:
 
 # Those people will receive emails when an exception arise
 ADMINS = [("Antoine", "antoinea101@gmail.com")]
+SERVER_EMAIL = "django@unityleague.ch"
 
 if "test" in sys.argv or "pytest" in sys.modules:
     # Set some options for faster unit testing in Django See:
