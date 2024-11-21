@@ -27,9 +27,9 @@
                             <div class="d-inline text-nowrap">
                                 {{ player.score.rank }}
                                 {% if player.score.qualification_type.name == 'LEADERBOARD' %}
-                                    <i class="icon-star" title="{{ player.qualification_reason }}"></i>
-                                {% elif player.score.qualification_type.name == 'LEADERBOARD' %}
-                                    <i class="icon-trophy" title="{{ player.qualification_reason }}"></i>
+                                    <i class="icon-star" title="{{ player.score.qualification_reason }}"></i>
+                                {% elif player.score.qualification_type.name == 'DIRECT' %}
+                                    <i class="icon-trophy" title="{{ player.score.qualification_reason }}"></i>
                                 {% endif %}
                                 {% for i in player.score.byes|range %}
                                     <i class="icon-shield" title="1 Bye for the Invitational tournament"></i>
