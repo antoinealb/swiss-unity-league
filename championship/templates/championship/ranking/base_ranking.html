@@ -56,7 +56,7 @@
                     search: '',
                     players: players,
                     shouldShow(player) {
-                        return player.name.toLowerCase().indexOf(this.search) > -1
+                        return player.name.toLowerCase().indexOf(this.search.toLowerCase()) > -1
                     }
                 };
             }
