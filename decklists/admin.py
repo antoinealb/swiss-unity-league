@@ -45,6 +45,7 @@ class CollectionAdmin(admin.ModelAdmin):
         "publication_time",
     )
     list_filter = ["event__organizer", DecklistPublishedListFilter]
+    exclude = ["staff_key"]
 
     @admin.display(ordering="event__organizer__name", description="Owner name")
     def owner_name(self, instance: decklists.models.Collection) -> str:
@@ -65,4 +66,41 @@ class CollectionAdmin(admin.ModelAdmin):
 
 
 admin.site.register(decklists.models.Collection, CollectionAdmin)
-admin.site.register(decklists.models.Decklist)
+
+
+class DecklistAdmin(admin.ModelAdmin):
+    @admin.display(description="Collection name", ordering="collection__name")
+    def collection_name(self, obj):
+        return obj.collection.name
+
+    @admin.display(
+        description="Event Organizer", ordering="collection__event__organizer__name"
+    )
+    def event_organizer(self, obj):
+        return obj.collection.event.organizer.name
+
+    @admin.display(description="Event", ordering="collection__event__name")
+    def event_name(self, obj):
+        return obj.collection.event.name
+
+    @admin.display(description="Player", ordering="player__name")
+    def player_name(self, obj):
+        return obj.player.name
+
+    def get_queryset(self, *args, **kwargs):
+        qs = super().get_queryset(*args, **kwargs)
+        return qs.select_related(
+            "collection", "collection__event", "collection__event__organizer", "player"
+        )
+
+    list_display = [
+        "last_modified",
+        "player_name",
+        "event_organizer",
+        "event_name",
+        "collection_name",
+    ]
+    ordering = ["-last_modified"]
+
+
+admin.site.register(decklists.models.Decklist, DecklistAdmin)
