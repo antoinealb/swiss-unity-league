@@ -153,21 +153,26 @@ class CreateResultsView(FormView):
         ):
             return self.form_invalid(form)
 
+        results_to_create = []
         for i, parse_result in enumerate(standings):
             (w, l, d) = parse_result.record
             player, created = Player.objects.get_or_create_by_name(parse_result.name)
 
-            Result.objects.create(
-                points=parse_result.points,
-                player=player,
-                event=self.event,
-                ranking=i + 1,
-                win_count=w,
-                loss_count=l,
-                draw_count=d,
-                decklist_url=parse_result.decklist_url or "",
-                deck_name=parse_result.deck_name if parse_result.deck_name else "",
+            results_to_create.append(
+                Result(
+                    points=parse_result.points,
+                    player=player,
+                    event=self.event,
+                    ranking=i + 1,
+                    win_count=w,
+                    loss_count=l,
+                    draw_count=d,
+                    decklist_url=parse_result.decklist_url or "",
+                    deck_name=parse_result.deck_name or "",
+                )
             )
+
+        Result.objects.bulk_create(results_to_create)
 
         return super().form_valid(form)
 
