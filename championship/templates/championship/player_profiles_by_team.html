@@ -1,0 +1,29 @@
+{% extends "championship/base.html" %}
+
+{% block content %}
+    <div class="container">
+        <h1>Teams of the SUL Invitational</h1>
+
+        {% for team_name, profiles in profiles_by_team.items %}
+            <div>
+                <h2 class="mt-4">{{ team_name }}</h2>
+                <div class="row">
+                    {% for profile in profiles %}
+                        {% include "championship/player_profile_card.html" %}
+                    {% endfor %}
+                </div>
+            </div>
+        {% endfor %}
+
+        {% if teamless_profiles %}
+            <div class="team-section">
+                <h2 class="mt-4">Teamless Players</h2>
+                <div class="row">
+                    {% for profile in teamless_profiles %}
+                        {% include "championship/player_profile_card.html" %}
+                    {% endfor %}
+                </div>
+            </div>
+        {% endif %}
+    </div>
+{% endblock %}

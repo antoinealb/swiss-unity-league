@@ -1,0 +1,29 @@
+<div class="col-xl-3 col-md-6 mb-4 align-items-stretch">
+    <div class="card h-100" style="max-width: 350px; margin: auto;">
+        {% if profile.image %}
+            <div style="overflow: hidden; height: 300px;">
+                <a href="{{ profile.get_absolute_url }}">
+                    <img src="{{ profile.image.url }}" class="card-img-top" alt="Profile Picture" style="width: 100%; height: 100%; object-fit: cover; object-position: top;">
+                </a>
+            </div>
+        {% endif %}
+        <div class="card-body">
+            <h5 class="card-title"><a href="{{ profile.get_absolute_url }}" >{{ profile.player.name }}</a>
+                {% if profile.get_pronouns %}<span class="text-muted h6">{{ profile.get_pronouns }}</span>{% endif %}
+            </h5>
+            <p class="card-text">
+                {% if profile.age %}Age: {{ profile.age }}{% if profile.occupation or profile.hometown %}, {% endif %}{% endif %}
+                {% if profile.occupation %} {{ profile.occupation }}{% endif %}
+                {% if profile.hometown %} from {{ profile.hometown }}{% endif %}
+                {% if profile.bio %}
+                    <br><br>
+                    {% if profile.image %}
+                        {{ profile.bio|linebreaks|truncatewords:20 }}
+                    {% else %}
+                        {{ profile.bio|linebreaks|truncatewords:40 }}
+                    {% endif %}
+                {% endif %}
+            </p>
+        </div>
+    </div>
+</div>

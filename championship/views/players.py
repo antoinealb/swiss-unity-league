@@ -13,11 +13,11 @@
 # limitations under the License.
 
 import dataclasses
-from collections import Counter
+from collections import Counter, defaultdict
 
 from django.contrib import messages
 from django.urls import reverse_lazy
-from django.views.generic import CreateView, DetailView
+from django.views.generic import CreateView, DetailView, TemplateView
 
 from championship.forms import PlayerProfileForm
 from championship.models import Event, Player, PlayerProfile, Result
@@ -274,3 +274,44 @@ class CreatePlayerProfileView(CreateView):
             self.request, "Your player profile has been submitted for review."
         )
         return super().form_valid(form)
+
+
+class PlayerProfilesByTeamView(TemplateView):
+    template_name = "championship/player_profiles_by_team.html"
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+
+        player_profiles = PlayerProfile.objects.filter(
+            status=PlayerProfile.Status.APPROVED, consent_for_website=True
+        ).select_related("player")
+
+        profiles_by_team = defaultdict(list)
+        teamless_profiles = []
+        for profile in player_profiles:
+            if profile.team_name:
+                profiles_by_team[profile.team_name].append(profile)
+            else:
+                teamless_profiles.append(profile)
+
+        def profile_sort_key(profile):
+            return (not profile.image, not profile.bio, profile.player.name.lower())
+
+        for team in profiles_by_team:
+            profiles_by_team[team].sort(key=profile_sort_key)
+
+        teamless_profiles.sort(key=profile_sort_key)
+
+        def team_sort_key(team):
+            profiles = profiles_by_team[team]
+            # Sort teams by most number of profiles with images and bios
+            num_images = sum(1 for profile in profiles if profile.image)
+            num_bios = sum(1 for profile in profiles if profile.bio)
+            return (-num_images, -num_bios, team.lower())
+
+        sorted_teams = sorted(profiles_by_team, key=team_sort_key)
+        context["profiles_by_team"] = {
+            team: profiles_by_team[team] for team in sorted_teams
+        }
+        context["teamless_profiles"] = teamless_profiles
+        return context
