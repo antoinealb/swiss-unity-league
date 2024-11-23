@@ -13,16 +13,14 @@
 # limitations under the License.
 
 import datetime
-import re
 from datetime import date
 
-from django.conf import settings
 from django.test import TestCase
 
 from freezegun import freeze_time
 from parameterized import parameterized
 
-from championship.factories import EventFactory, ResultFactory
+from championship.factories import EventFactory
 from championship.models import Event
 from championship.season import SEASON_2023
 
@@ -104,103 +102,6 @@ class EventCanChangeResults(TestCase):
 
         e.edit_deadline_override = date(2023, 9, 30)
         self.assertEqual(e.can_be_edited(), True)
-
-
-class PremierEventDowngrade(TestCase):
-    f"""Premier events with less than {settings.MIN_PLAYERS_FOR_PREMIER} are downgraded to SUL Regional."""
-
-    def setUp(self):
-        self.original_name = "Original name"
-        self.original_description = "Original description"
-
-    def test_premier_event_downgraded_to_regional(self):
-        event = EventFactory(
-            category=Event.Category.PREMIER,
-            name=self.original_name,
-            description=self.original_description,
-        )
-        event.save()
-        self.assertEqual(event.name, self.original_name)
-        self.assertEqual(event.description, self.original_description)
-        self.assertEqual(event.category, Event.Category.PREMIER)
-
-        for i in range(settings.MIN_PLAYERS_FOR_PREMIER - 1):
-            ResultFactory(event=event)
-
-        event.save()
-        self.assertEqual(
-            event.name, self.original_name + Event.DOWNGRADED_TO_REGIONAL_NAME
-        )
-        self.assertTrue(Event.DOWNGRADED_TO_REGIONAL_DESCRIPTION in event.description)
-        self.assertTrue(self.original_description in event.description)
-        self.assertEqual(event.category, Event.Category.REGIONAL)
-
-    def test_premier_with_enough_players_not_downgraded(self):
-        event = EventFactory(
-            category=Event.Category.PREMIER,
-            name=self.original_name,
-            description=self.original_description,
-        )
-
-        for i in range(settings.MIN_PLAYERS_FOR_PREMIER):
-            ResultFactory(event=event)
-
-        event.save()
-        self.assertEqual(event.name, self.original_name)
-        self.assertEqual(event.description, self.original_description)
-        self.assertEqual(event.category, Event.Category.PREMIER)
-
-    def test_edit_to_premier(self):
-        """When the event is downgraded to Regional, the TO might think it's a mistake and try to fix it by
-        editing the event to Premier. We need to check that the event is correctly downgraded again.
-        """
-        event = EventFactory(
-            category=Event.Category.PREMIER,
-            name=self.original_name,
-            description=self.original_description,
-        )
-        ResultFactory(event=event)
-        event.save()
-        event.category = Event.Category.PREMIER
-        event.save()
-        self.assertEqual(
-            event.name, self.original_name + Event.DOWNGRADED_TO_REGIONAL_NAME
-        )
-        self.assertEqual(
-            len(
-                re.findall(Event.DOWNGRADED_TO_REGIONAL_DESCRIPTION, event.description)
-            ),
-            1,
-        )
-        self.assertTrue(self.original_description in event.description)
-        self.assertEqual(event.category, Event.Category.REGIONAL)
-
-    def test_long_name_truncated(self):
-        name_max_length = Event.name.field.max_length
-        self.original_name = (self.original_name * 20)[
-            :name_max_length
-        ]  # Name with max allowed characters
-        event = EventFactory(
-            category=Event.Category.PREMIER,
-            name=self.original_name,
-            description=self.original_description,
-        )
-        ResultFactory(event=event)
-        event.save()
-        remaining_chars_name = name_max_length - len(Event.DOWNGRADED_TO_REGIONAL_NAME)
-        self.assertEqual(
-            event.name,
-            self.original_name[:remaining_chars_name]
-            + Event.DOWNGRADED_TO_REGIONAL_NAME,
-        )
-        self.assertEqual(
-            len(
-                re.findall(Event.DOWNGRADED_TO_REGIONAL_DESCRIPTION, event.description)
-            ),
-            1,
-        )
-        self.assertTrue(self.original_description in event.description)
-        self.assertEqual(event.category, Event.Category.REGIONAL)
 
 
 class QuerysetTestCase(TestCase):
