@@ -53,6 +53,11 @@ urlpatterns = [
         name="player_details_by_season",
     ),
     path(
+        "player/profile/teams",
+        views.PlayerProfilesByTeamView.as_view(),
+        name="player_profiles_by_teams",
+    ),
+    path(
         "player/profile/create",
         views.CreatePlayerProfileView.as_view(),
         name="create_player_profile",
