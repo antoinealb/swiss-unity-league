@@ -133,21 +133,21 @@ class ExtraPointsOutsideOfTopsTestCase(TestCase):
         players = [PlayerFactory() for _ in range(player_count)]
         for i, (player, pi) in enumerate(zip(players, points)):
             if i == 0:
-                ser = Result.SingleEliminationResult.WINNER
+                playoff_result = Result.PlayoffResult.WINNER
             elif i == 1:
-                ser = Result.SingleEliminationResult.FINALIST
+                playoff_result = Result.PlayoffResult.FINALIST
             elif 2 <= i <= 3:
-                ser = Result.SingleEliminationResult.SEMI_FINALIST
+                playoff_result = Result.PlayoffResult.SEMI_FINALIST
             elif i < 8:
-                ser = Result.SingleEliminationResult.QUARTER_FINALIST
+                playoff_result = Result.PlayoffResult.QUARTER_FINALIST
             else:
-                ser = None
+                playoff_result = None
 
             Result.objects.create(
                 player=player,
                 event=self.event,
                 ranking=i + 1,
-                single_elimination_result=ser,
+                playoff_result=playoff_result,
                 points=pi,
                 win_count=pi // 3,
                 draw_count=pi % 3,
@@ -234,7 +234,7 @@ class ScoresWithTop8TestCase(TestCase):
             points=points,
             event=self.event,
             player=self.player,
-            single_elimination_result=result,
+            playoff_result=result,
             ranking=1,
         )
         return ScoreMethod2023._qps_for_result(ep, event_size=32, has_top_8=True)
@@ -243,10 +243,10 @@ class ScoresWithTop8TestCase(TestCase):
         self.event.category = Event.Category.PREMIER
         self.event.save()
         testCases = [
-            (Result.SingleEliminationResult.WINNER, 500),
-            (Result.SingleEliminationResult.FINALIST, 300),
-            (Result.SingleEliminationResult.SEMI_FINALIST, 200),
-            (Result.SingleEliminationResult.QUARTER_FINALIST, 150),
+            (Result.PlayoffResult.WINNER, 500),
+            (Result.PlayoffResult.FINALIST, 300),
+            (Result.PlayoffResult.SEMI_FINALIST, 200),
+            (Result.PlayoffResult.QUARTER_FINALIST, 150),
         ]
 
         for ranking, points in testCases:
@@ -259,10 +259,10 @@ class ScoresWithTop8TestCase(TestCase):
         self.event.category = Event.Category.REGIONAL
         self.event.save()
         testCases = [
-            (Result.SingleEliminationResult.WINNER, 100),
-            (Result.SingleEliminationResult.FINALIST, 60),
-            (Result.SingleEliminationResult.SEMI_FINALIST, 40),
-            (Result.SingleEliminationResult.QUARTER_FINALIST, 30),
+            (Result.PlayoffResult.WINNER, 100),
+            (Result.PlayoffResult.FINALIST, 60),
+            (Result.PlayoffResult.SEMI_FINALIST, 40),
+            (Result.PlayoffResult.QUARTER_FINALIST, 30),
         ]
 
         for ranking, points in testCases:
@@ -286,10 +286,10 @@ class ScoresWithTop8TestCase(TestCase):
         self.event.category = Event.Category.REGULAR
         self.event.save()
         testCases = [
-            (Result.SingleEliminationResult.WINNER, 0),
-            (Result.SingleEliminationResult.FINALIST, 0),
-            (Result.SingleEliminationResult.SEMI_FINALIST, 0),
-            (Result.SingleEliminationResult.QUARTER_FINALIST, 0),
+            (Result.PlayoffResult.WINNER, 0),
+            (Result.PlayoffResult.FINALIST, 0),
+            (Result.PlayoffResult.SEMI_FINALIST, 0),
+            (Result.PlayoffResult.QUARTER_FINALIST, 0),
         ]
 
         for ranking, points in testCases:
@@ -317,7 +317,7 @@ class TestSortResults(TestCase):
         sorted_rankings = [s.ranking for s in sorted(Result.objects.all())]
         self.assertEqual(list(range(1, 11)), sorted_rankings)
 
-    def test_can_order_results_based_on_single_elimination_results(self):
+    def test_can_order_results_based_on_playoff_results(self):
         e = EventFactory(category=Event.Category.PREMIER)
         num_players = 16
         results = [
@@ -337,17 +337,13 @@ class TestSortResults(TestCase):
         inverse_top_8_results = [results[7], results[6]] + results[4:6] + results[:4]
         for i, r in enumerate(inverse_top_8_results, 1):
             if i == 1:
-                r.single_elimination_result = Result.SingleEliminationResult.WINNER
+                r.playoff_result = Result.PlayoffResult.WINNER
             elif i == 2:
-                r.single_elimination_result = Result.SingleEliminationResult.FINALIST
+                r.playoff_result = Result.PlayoffResult.FINALIST
             elif i <= 4:
-                r.single_elimination_result = (
-                    Result.SingleEliminationResult.SEMI_FINALIST
-                )
+                r.playoff_result = Result.PlayoffResult.SEMI_FINALIST
             elif i <= 8:
-                r.single_elimination_result = (
-                    Result.SingleEliminationResult.QUARTER_FINALIST
-                )
+                r.playoff_result = Result.PlayoffResult.QUARTER_FINALIST
             r.save()
 
         sorted_rankings = sorted(Result.objects.all())
@@ -363,21 +359,21 @@ def create_test_tournament(players, category=Event.Category.PREMIER, with_top8=T
 
         if category != Event.Category.REGULAR and with_top8:
             if rank == 1:
-                ser = Result.SingleEliminationResult.WINNER
+                playoff_result = Result.PlayoffResult.WINNER
             elif rank == 2:
-                ser = Result.SingleEliminationResult.FINALIST
+                playoff_result = Result.PlayoffResult.FINALIST
             elif rank <= 4:
-                ser = Result.SingleEliminationResult.SEMI_FINALIST
+                playoff_result = Result.PlayoffResult.SEMI_FINALIST
             elif rank <= 8:
-                ser = Result.SingleEliminationResult.QUARTER_FINALIST
+                playoff_result = Result.PlayoffResult.QUARTER_FINALIST
             else:
-                ser = None
+                playoff_result = None
 
         ResultFactory(
             player=player,
             points=num_players - i,
             ranking=rank,
-            single_elimination_result=ser,
+            playoff_result=playoff_result,
             event=event,
         )
 
@@ -400,7 +396,7 @@ class TestScoresByes(TestCase):
     def test_large_tournament_byes(self):
         # Make sure that a different player is points leader
         ResultFactory(
-            single_elimination_result=Result.SingleEliminationResult.FINALIST,
+            playoff_result=Result.PlayoffResult.FINALIST,
             event=EventFactory(category=Event.Category.PREMIER),
             player=self.players[1],
         )
@@ -423,7 +419,7 @@ class TestScoresByes(TestCase):
         # Make sure that a different player is points leader
         for _ in range(4):
             ResultFactory(
-                single_elimination_result=Result.SingleEliminationResult.FINALIST,
+                playoff_result=Result.PlayoffResult.FINALIST,
                 event=EventFactory(category=Event.Category.PREMIER),
                 player=self.players[1],
             )

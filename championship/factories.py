@@ -196,17 +196,17 @@ class RankedEventFactory(EventFactory):
         results = self.result_set.order_by("ranking").all()
         for rank in range(1, with_tops + 1):
             if rank == 1:
-                ser = Result.SingleEliminationResult.WINNER
+                playoff_result = Result.PlayoffResult.WINNER
             elif rank == 2:
-                ser = Result.SingleEliminationResult.FINALIST
+                playoff_result = Result.PlayoffResult.FINALIST
             elif rank <= 4:
-                ser = Result.SingleEliminationResult.SEMI_FINALIST
+                playoff_result = Result.PlayoffResult.SEMI_FINALIST
             elif rank <= 8:
-                ser = Result.SingleEliminationResult.QUARTER_FINALIST
+                playoff_result = Result.PlayoffResult.QUARTER_FINALIST
             else:
-                ser = None
+                playoff_result = None
             result = results[rank - 1]
-            result.single_elimination_result = ser
+            result.playoff_result = playoff_result
             result.save()
         return self
 

@@ -335,16 +335,16 @@ class AddTop8ResultsForm(forms.Form, SubmitButtonMixin):
 
         scnt = 0
         qcnt = 0
-        for r in event.result_set.exclude(single_elimination_result=None):
-            s = r.single_elimination_result
-            if s == Result.SingleEliminationResult.WINNER:
+        for r in event.result_set.exclude(playoff_result=None):
+            s = r.playoff_result
+            if s == Result.PlayoffResult.WINNER:
                 self.initial["winner"] = r
-            elif s == Result.SingleEliminationResult.FINALIST:
+            elif s == Result.PlayoffResult.FINALIST:
                 self.initial["finalist"] = r
-            elif s == Result.SingleEliminationResult.SEMI_FINALIST:
+            elif s == Result.PlayoffResult.SEMI_FINALIST:
                 self.initial[f"semi{scnt}"] = r
                 scnt += 1
-            elif s == Result.SingleEliminationResult.QUARTER_FINALIST:
+            elif s == Result.PlayoffResult.QUARTER_FINALIST:
                 self.initial[f"quarter{qcnt}"] = r
                 qcnt += 1
 

@@ -72,11 +72,11 @@ class EventDetailTestCase(TestCase):
         # Create 18 results with a top8
         results = (
             [
-                Result.SingleEliminationResult.WINNER,
-                Result.SingleEliminationResult.FINALIST,
+                Result.PlayoffResult.WINNER,
+                Result.PlayoffResult.FINALIST,
             ]
-            + [Result.SingleEliminationResult.SEMI_FINALIST] * 2
-            + [Result.SingleEliminationResult.QUARTER_FINALIST] * 4
+            + [Result.PlayoffResult.SEMI_FINALIST] * 2
+            + [Result.PlayoffResult.QUARTER_FINALIST] * 4
             + [None] * 10  # outside of top8
         )
 
@@ -84,7 +84,7 @@ class EventDetailTestCase(TestCase):
             ResultFactory(
                 event=event,
                 ranking=i + 1,
-                single_elimination_result=r,
+                playoff_result=r,
                 points=9,
                 win_count=3,
                 loss_count=0,
@@ -95,8 +95,8 @@ class EventDetailTestCase(TestCase):
         results = [r for r, _ in resp.context_data["results"]]
         self.assertEqual(results[8].ranking, 9)
         self.assertEqual(
-            results[0].single_elimination_result,
-            Result.SingleEliminationResult.WINNER,
+            results[0].playoff_result,
+            Result.PlayoffResult.WINNER,
         )
         self.assertEqual(
             results[0].get_ranking_display(),

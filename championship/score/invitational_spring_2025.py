@@ -52,9 +52,7 @@ class ScoreMethodInvitationalSpring2025(ScoreMethod2025):
         )
         direct_qualification_reasons_by_player = {}
         for event in events:
-            has_tops = event.result_set.filter(
-                single_elimination_result__isnull=False
-            ).exists()
+            has_tops = event.result_set.filter(playoff_result__isnull=False).exists()
             if not has_tops:
                 qualifications = 0
             elif event.category == Event.Category.PREMIER:

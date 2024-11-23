@@ -130,8 +130,8 @@ class OrganizerLeagueTest(TestCase):
             organizer=league.organizer,
             category=league.category,
         )
-        for ser in [None, Result.SingleEliminationResult.WINNER]:
-            ResultFactory(single_elimination_result=ser, event=event_with_playoffs)
+        for playoff_result in [None, Result.PlayoffResult.WINNER]:
+            ResultFactory(playoff_result=playoff_result, event=event_with_playoffs)
 
         result_without_playoffs = ResultFactory(
             event=RankedEventFactory(

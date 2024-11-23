@@ -71,7 +71,7 @@ def fee_for_event(event: Event) -> int:
     # This could be done in the DB but results in one query per event. Doing
     # this like this with a prefetch_related in the parent is faster.
     for r in results.all():
-        if r.single_elimination_result:
+        if r.playoff_result:
             has_top8 = True
             break
     else:

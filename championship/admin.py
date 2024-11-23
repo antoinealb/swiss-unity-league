@@ -58,7 +58,7 @@ class ResultInline(admin.TabularInline):
         "player",
         "event",
         "ranking",
-        "single_elimination_result",
+        "playoff_result",
         "points",
         "win_count",
         "loss_count",
@@ -82,7 +82,7 @@ class ResultAdmin(admin.ModelAdmin):
         "event",
         ("ranking", "points"),
         ("win_count", "loss_count", "draw_count"),
-        "single_elimination_result",
+        "playoff_result",
     ]
     search_fields = [
         "player__name",

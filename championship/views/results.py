@@ -512,14 +512,14 @@ class AddTop8ResultsView(LoginRequiredMixin, FormView):
             return super().form_valid(form)
 
         FIELDS_TO_RESULTS = {
-            "winner": Result.SingleEliminationResult.WINNER,
-            "finalist": Result.SingleEliminationResult.FINALIST,
-            "semi0": Result.SingleEliminationResult.SEMI_FINALIST,
-            "semi1": Result.SingleEliminationResult.SEMI_FINALIST,
-            "quarter0": Result.SingleEliminationResult.QUARTER_FINALIST,
-            "quarter1": Result.SingleEliminationResult.QUARTER_FINALIST,
-            "quarter2": Result.SingleEliminationResult.QUARTER_FINALIST,
-            "quarter3": Result.SingleEliminationResult.QUARTER_FINALIST,
+            "winner": Result.PlayoffResult.WINNER,
+            "finalist": Result.PlayoffResult.FINALIST,
+            "semi0": Result.PlayoffResult.SEMI_FINALIST,
+            "semi1": Result.PlayoffResult.SEMI_FINALIST,
+            "quarter0": Result.PlayoffResult.QUARTER_FINALIST,
+            "quarter1": Result.PlayoffResult.QUARTER_FINALIST,
+            "quarter2": Result.PlayoffResult.QUARTER_FINALIST,
+            "quarter3": Result.PlayoffResult.QUARTER_FINALIST,
         }
 
         playoff_results_filled = [
@@ -541,9 +541,9 @@ class AddTop8ResultsView(LoginRequiredMixin, FormView):
             )
             return super().form_invalid(form)
 
-        self.event.result_set.update(single_elimination_result=None)
+        self.event.result_set.update(playoff_result=None)
         for event_player_result, single_elim_result in playoff_results_filled:
-            event_player_result.single_elimination_result = single_elim_result
+            event_player_result.playoff_result = single_elim_result
             event_player_result.save()
 
         return super().form_valid(form)

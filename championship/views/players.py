@@ -98,7 +98,7 @@ def sorted_most_accomplished_results(results):
 
         return (
             category,
-            result.single_elimination_result or 16 + result.ranking,
+            result.playoff_result or 16 + result.ranking,
             -result.event.date.toordinal(),
         )
 
@@ -184,7 +184,7 @@ class PlayerDetailsView(PerSeasonMixin, DetailView):
                 column_title=result.event.get_category_display(),
                 row_title=EVENTS,
             )
-            if result.single_elimination_result:
+            if result.playoff_result:
                 add_to_table(
                     with_top_8_table,
                     column_title=result.event.get_category_display(),
@@ -222,15 +222,15 @@ class PlayerDetailsView(PerSeasonMixin, DetailView):
         """Returns the peformance per format, with the display name of the format as key."""
 
         def extra_wins_for_top(result):
-            if result.single_elimination_result is None:
+            if result.playoff_result is None:
                 return 0
 
             points = {
-                Result.SingleEliminationResult.WINNER: 3,
-                Result.SingleEliminationResult.FINALIST: 2,
-                Result.SingleEliminationResult.SEMI_FINALIST: 1,
-                Result.SingleEliminationResult.QUARTER_FINALIST: 0,
-            }[result.single_elimination_result]
+                Result.PlayoffResult.WINNER: 3,
+                Result.PlayoffResult.FINALIST: 2,
+                Result.PlayoffResult.SEMI_FINALIST: 1,
+                Result.PlayoffResult.QUARTER_FINALIST: 0,
+            }[result.playoff_result]
 
             # If we are in top4, it means we had one less match to win to get
             # to any rank. We can ignore QUARTER_FINALIST being 0, as they
@@ -241,8 +241,8 @@ class PlayerDetailsView(PerSeasonMixin, DetailView):
             return points
 
         def extra_losses_for_top(result):
-            ser = result.single_elimination_result
-            if ser in (None, Result.SingleEliminationResult.WINNER):
+            playoff_result = result.playoff_result
+            if playoff_result in (None, Result.PlayoffResult.WINNER):
                 return 0
             return 1
 

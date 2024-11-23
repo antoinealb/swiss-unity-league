@@ -56,6 +56,6 @@ class CreateEventApiExample(LiveServerTestCase):
 
         self.assertEqual(7, Result.objects.count())
         self.assertEqual(
-            Result.SingleEliminationResult.WINNER,
-            Result.objects.get(player__name="Darth Vader").single_elimination_result,
+            Result.PlayoffResult.WINNER,
+            Result.objects.get(player__name="Darth Vader").playoff_result,
         )

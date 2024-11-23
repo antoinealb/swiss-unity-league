@@ -75,7 +75,7 @@ class ReportRenderingTest(TestCase):
 
         for event in events:
             for _ in range(10):
-                ResultFactory(event=event, single_elimination_result=None)
+                ResultFactory(event=event, playoff_result=None)
 
         # All events will have the same fees.
         price_per_event = fee_for_event(Event.objects.all()[0])
@@ -146,7 +146,7 @@ class ReportRenderingTest(TestCase):
         )
 
         for _ in range(10):
-            ResultFactory(event=event, single_elimination_result=None)
+            ResultFactory(event=event, playoff_result=None)
 
         want = [(0, fee_for_event(event) - invoice.discount)]
         got = list(Report().data_points_for_season(SEASON_2024))

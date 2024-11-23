@@ -37,22 +37,22 @@ class ScoreMethod2025:
     PARTICIPATION_POINTS = 3
     POINTS_FOR_TOP = {
         Event.Category.PREMIER: {
-            Result.SingleEliminationResult.WINNER: 400,
-            Result.SingleEliminationResult.FINALIST: 240,
-            Result.SingleEliminationResult.SEMI_FINALIST: 160,
-            Result.SingleEliminationResult.QUARTER_FINALIST: 120,
+            Result.PlayoffResult.WINNER: 400,
+            Result.PlayoffResult.FINALIST: 240,
+            Result.PlayoffResult.SEMI_FINALIST: 160,
+            Result.PlayoffResult.QUARTER_FINALIST: 120,
         },
         Event.Category.REGIONAL: {
-            Result.SingleEliminationResult.WINNER: 100,
-            Result.SingleEliminationResult.FINALIST: 60,
-            Result.SingleEliminationResult.SEMI_FINALIST: 40,
-            Result.SingleEliminationResult.QUARTER_FINALIST: 30,
+            Result.PlayoffResult.WINNER: 100,
+            Result.PlayoffResult.FINALIST: 60,
+            Result.PlayoffResult.SEMI_FINALIST: 40,
+            Result.PlayoffResult.QUARTER_FINALIST: 30,
         },
         Event.Category.REGULAR: {
-            Result.SingleEliminationResult.WINNER: 12,
-            Result.SingleEliminationResult.FINALIST: 9,
-            Result.SingleEliminationResult.SEMI_FINALIST: 6,
-            Result.SingleEliminationResult.QUARTER_FINALIST: 3,
+            Result.PlayoffResult.WINNER: 12,
+            Result.PlayoffResult.FINALIST: 9,
+            Result.PlayoffResult.SEMI_FINALIST: 6,
+            Result.PlayoffResult.QUARTER_FINALIST: 3,
         },
     }
     POINTS_FOR_MATCHPOINT_RATE = [
@@ -92,8 +92,8 @@ class ScoreMethod2025:
         category = result.event.category
         points = result.points + cls.PARTICIPATION_POINTS
         points = points * cls.MULT[category]
-        if result.single_elimination_result:
-            points += cls.POINTS_FOR_TOP[category][result.single_elimination_result]
+        if result.playoff_result:
+            points += cls.POINTS_FOR_TOP[category][result.playoff_result]
         elif has_top_8:
             # If the event has a top 8, but the player didn't make it, they can
             # still get extra points if their match point rate (mpr) is higher than the
