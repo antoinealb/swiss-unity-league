@@ -214,32 +214,3 @@ class TestEventResultsAPI(APITestCase):
         self.assertEqual(
             results[0].player.name, "Player 2", "Results should have been sorted."
         )
-
-    def test_premier_events_downgrade(self):
-        self.event.category = Event.Category.PREMIER
-        self.event.save()
-
-        self.client.login(**self.credentials)
-        data = {
-            "results": [
-                {
-                    "player": "Antoine Albertelli",
-                    "win_count": 1,
-                    "draw_count": 0,
-                    "loss_count": 0,
-                    "single_elimination_result": 1,
-                },
-                {
-                    "player": "Jari Rentsch",
-                    "win_count": 0,
-                    "draw_count": 0,
-                    "loss_count": 1,
-                    "single_elimination_result": 1,
-                },
-            ],
-        }
-        resp = self.client.patch(self.url, data=data, format="json")
-        self.assertEqual(HTTP_200_OK, resp.status_code)
-        self.assertEqual(2, Result.objects.count())
-        self.event.refresh_from_db()
-        self.assertEqual(self.event.category, Event.Category.REGIONAL)

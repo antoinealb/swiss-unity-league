@@ -688,17 +688,6 @@ class MtgEventUploadTest(TestCase):
         self.assertEqual(results.count(), 10)
         self.assertEqual(results[0].player.name, "Toni Marty")
 
-    def test_premier_event_downgraded_to_regional(self):
-        self.login()
-        self.event.category = Event.Category.PREMIER
-        self.event.save()
-        resp = self.client.post(
-            reverse("results_create_mtgevent"), self.data, follow=True
-        )
-        self.assertEqual(200, resp.status_code)
-        self.assertContains(resp, "this event was downgraded to SUL Regional")
-        self.assertTrue(self.event.result_set.exists())
-
     def test_disable_tournament_validation(self):
         """Check that we can disable event results validation in case a
         tournament requires it (e.g. because of byes)."""

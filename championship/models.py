@@ -553,48 +553,6 @@ class Event(models.Model):
 
     objects = EventQueryset.as_manager()
 
-    DOWNGRADED_TO_REGIONAL_NAME = " (Downgraded to Regional)"
-    DOWNGRADED_TO_REGIONAL_DESCRIPTION = f"This event was downgraded to SUL Regional, because a minimum of {settings.MIN_PLAYERS_FOR_PREMIER} players is needed for SUL Premier events."
-
-    def save(self, *args, **kwargs):
-        self._adjust_category_before_save()
-        return super().save(*args, **kwargs)
-
-    def _adjust_category_before_save(self):
-        f"""Handles Premier with not enough entries.
-
-        Premier events with less than {settings.MIN_PLAYERS_FOR_PREMIER} players
-        are downgraded to SUL Regional on save.
-        """
-        if not self.pk:
-            return
-
-        if self.category != Event.Category.PREMIER:
-            return
-
-        # We don't adjust events that don't have results yet.
-        if not self.result_set.exists():
-            return
-
-        player_count = self.result_set.count()
-        if player_count >= settings.MIN_PLAYERS_FOR_PREMIER:
-            return
-
-        self.category = Event.Category.REGIONAL
-        if self.DOWNGRADED_TO_REGIONAL_DESCRIPTION not in self.description:
-            self.description = (
-                f"<p><b>{self.DOWNGRADED_TO_REGIONAL_DESCRIPTION}</b></p><p></p>"
-                + self.description
-            )
-
-        if self.DOWNGRADED_TO_REGIONAL_NAME not in self.name:
-            remaining_name_length = Event.name.field.max_length - len(
-                self.DOWNGRADED_TO_REGIONAL_NAME
-            )
-            self.name = (
-                self.name[:remaining_name_length] + self.DOWNGRADED_TO_REGIONAL_NAME
-            )
-
 
 class LeaderBoardPlayerManager(models.Manager):
     def get_queryset(self):

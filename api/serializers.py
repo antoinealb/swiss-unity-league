@@ -12,7 +12,6 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from django.conf import settings
 from django.db import transaction
 from rest_framework import serializers
 
@@ -117,14 +116,6 @@ class EventInformationSerializer(serializers.ModelSerializer):
                 draw_count=result["draw_count"],
                 single_elimination_result=result["single_elimination_result"],
             )
-
-        if (
-            instance.category == Event.Category.PREMIER
-            and len(results) < settings.MIN_PLAYERS_FOR_PREMIER
-        ):
-            # Premier events with less than MIN_PLAYERS_FOR_PREMIER will be
-            # downgraded when saving the event.
-            instance.save()
 
         return res
 
