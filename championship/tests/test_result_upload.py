@@ -1095,36 +1095,36 @@ class AddTop8Results(TestCase):
         )
 
         self.assertEqual(
-            Result.objects.get(id=self.winner.id).single_elimination_result,
-            Result.SingleEliminationResult.WINNER,
+            Result.objects.get(id=self.winner.id).playoff_result,
+            Result.PlayoffResult.WINNER,
         )
         self.assertEqual(
-            Result.objects.get(id=self.finalist.id).single_elimination_result,
-            Result.SingleEliminationResult.FINALIST,
+            Result.objects.get(id=self.finalist.id).playoff_result,
+            Result.PlayoffResult.FINALIST,
         )
         self.assertEqual(
-            Result.objects.get(id=self.semi0.id).single_elimination_result,
-            Result.SingleEliminationResult.SEMI_FINALIST,
+            Result.objects.get(id=self.semi0.id).playoff_result,
+            Result.PlayoffResult.SEMI_FINALIST,
         )
         self.assertEqual(
-            Result.objects.get(id=self.semi1.id).single_elimination_result,
-            Result.SingleEliminationResult.SEMI_FINALIST,
+            Result.objects.get(id=self.semi1.id).playoff_result,
+            Result.PlayoffResult.SEMI_FINALIST,
         )
         self.assertEqual(
-            Result.objects.get(id=self.quarter0.id).single_elimination_result,
-            Result.SingleEliminationResult.QUARTER_FINALIST,
+            Result.objects.get(id=self.quarter0.id).playoff_result,
+            Result.PlayoffResult.QUARTER_FINALIST,
         )
         self.assertEqual(
-            Result.objects.get(id=self.quarter1.id).single_elimination_result,
-            Result.SingleEliminationResult.QUARTER_FINALIST,
+            Result.objects.get(id=self.quarter1.id).playoff_result,
+            Result.PlayoffResult.QUARTER_FINALIST,
         )
         self.assertEqual(
-            Result.objects.get(id=self.quarter2.id).single_elimination_result,
-            Result.SingleEliminationResult.QUARTER_FINALIST,
+            Result.objects.get(id=self.quarter2.id).playoff_result,
+            Result.PlayoffResult.QUARTER_FINALIST,
         )
         self.assertEqual(
-            Result.objects.get(id=self.quarter3.id).single_elimination_result,
-            Result.SingleEliminationResult.QUARTER_FINALIST,
+            Result.objects.get(id=self.quarter3.id).playoff_result,
+            Result.PlayoffResult.QUARTER_FINALIST,
         )
 
     def test_result_top8_not_allowed_for_other_users(self):
@@ -1146,9 +1146,7 @@ class AddTop8Results(TestCase):
             follow=True,
         )
         self.assertRedirects(resp, reverse("event_details", args=(self.event.id,)))
-        self.assertIsNone(
-            Result.objects.get(id=self.winner.id).single_elimination_result
-        )
+        self.assertIsNone(Result.objects.get(id=self.winner.id).playoff_result)
 
     def test_result_top8_results_are_removed_before_upload(self):
         # first, post with initial data
@@ -1167,7 +1165,7 @@ class AddTop8Results(TestCase):
 
         # We should only have one winner and it should be the new one
         winners = self.event.result_set.filter(
-            single_elimination_result=Result.SingleEliminationResult.WINNER
+            playoff_result=Result.PlayoffResult.WINNER
         )
 
         self.assertEqual(1, winners.count(), "Only one WINNER should be set.")
@@ -1184,15 +1182,15 @@ class AddTop8Results(TestCase):
 
         # Check that we have one winner
         self.assertEqual(
-            Result.objects.get(id=self.winner.id).single_elimination_result,
-            Result.SingleEliminationResult.WINNER,
+            Result.objects.get(id=self.winner.id).playoff_result,
+            Result.PlayoffResult.WINNER,
         )
 
         # And that we have no quarter finalist
         self.assertEqual(
             0,
             self.event.result_set.filter(
-                single_elimination_result=Result.SingleEliminationResult.QUARTER_FINALIST
+                playoff_result=Result.PlayoffResult.QUARTER_FINALIST
             ).count(),
         )
 
@@ -1227,7 +1225,7 @@ class AddTop8Results(TestCase):
 
         self.assertFalse(
             self.event.result_set.filter(
-                single_elimination_result=Result.SingleEliminationResult.WINNER
+                playoff_result=Result.PlayoffResult.WINNER
             ).exists(),
             "Should not have a winner.",
         )
@@ -1241,7 +1239,7 @@ class AddTop8Results(TestCase):
         self.assertEqual(200, resp.status_code)
         self.assertFalse(
             self.event.result_set.filter(
-                single_elimination_result=Result.SingleEliminationResult.WINNER
+                playoff_result=Result.PlayoffResult.WINNER
             ).exists(),
             "Should not have a winner.",
         )
@@ -1255,7 +1253,7 @@ class AddTop8Results(TestCase):
         self.assertEqual(200, resp.status_code)
         self.assertFalse(
             self.event.result_set.filter(
-                single_elimination_result=Result.SingleEliminationResult.WINNER
+                playoff_result=Result.PlayoffResult.WINNER
             ).exists(),
             "Should not have a winner.",
         )

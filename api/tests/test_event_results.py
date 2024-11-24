@@ -79,8 +79,8 @@ class TestEventResultsAPI(APITestCase):
         self.assertEqual(e.draw_count, 2)
         self.assertEqual(e.points, 11)
         self.assertEqual(
-            e.single_elimination_result,
-            Result.SingleEliminationResult.WINNER,
+            e.playoff_result,
+            Result.PlayoffResult.WINNER,
         )
 
     def test_send_results_player_alias(self):

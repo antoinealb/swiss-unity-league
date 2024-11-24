@@ -142,7 +142,7 @@ class PlayerDetailsTest(TestCase):
             win_count=3,
             loss_count=0,
             draw_count=1,
-            single_elimination_result=Result.SingleEliminationResult.QUARTER_FINALIST,
+            playoff_result=Result.PlayoffResult.QUARTER_FINALIST,
         )
         event = EventFactory(category=Event.Category.REGULAR, id=12345)
         ResultFactory(
@@ -172,8 +172,8 @@ class PlayerDetailsTest(TestCase):
 
     def test_top_finishes(self):
         player = PlayerFactory()
-        ser_winner = Result.SingleEliminationResult.WINNER
-        ser_quarter = Result.SingleEliminationResult.QUARTER_FINALIST
+        ser_winner = Result.PlayoffResult.WINNER
+        ser_quarter = Result.PlayoffResult.QUARTER_FINALIST
         event1 = EventFactory(category=Event.Category.PREMIER)
         event2 = EventFactory(category=Event.Category.REGIONAL)
         ResultFactory(
@@ -181,14 +181,14 @@ class PlayerDetailsTest(TestCase):
             player=player,
             event=event1,
             ranking=1,
-            single_elimination_result=ser_quarter,
+            playoff_result=ser_quarter,
         )
         ResultFactory(
             points=10,
             player=player,
             event=event2,
             ranking=2,
-            single_elimination_result=ser_winner,
+            playoff_result=ser_winner,
         )
         response = self.get_player_details_2023(player)
         expected_top_finishes = {
@@ -222,7 +222,7 @@ class PlayerDetailsTest(TestCase):
             win_count=5,
             loss_count=2,
             draw_count=3,
-            single_elimination_result=Result.SingleEliminationResult.FINALIST,
+            playoff_result=Result.PlayoffResult.FINALIST,
         )
         resp = self.get_player_details_2023(epr.player)
         perf_per_format = resp.context["performance_per_format"]
@@ -244,19 +244,19 @@ class PlayerDetailsTest(TestCase):
                 win_count=5,
                 loss_count=2,
                 draw_count=3,
-                single_elimination_result=None,
+                playoff_result=None,
             )
             for _ in range(16)
         ]
         results = [
-            Result.SingleEliminationResult.WINNER,
-            Result.SingleEliminationResult.FINALIST,
-            Result.SingleEliminationResult.SEMI_FINALIST,
-            Result.SingleEliminationResult.SEMI_FINALIST,
+            Result.PlayoffResult.WINNER,
+            Result.PlayoffResult.FINALIST,
+            Result.PlayoffResult.SEMI_FINALIST,
+            Result.PlayoffResult.SEMI_FINALIST,
         ]
 
         for epr, result in zip(eprs, results):
-            epr.single_elimination_result = result
+            epr.playoff_result = result
             epr.save()
 
         # Winner had 2 extra wins, zero extra losses
@@ -441,23 +441,23 @@ class AccomplishmentsSortTesCase(TestCase):
             ResultFactory(
                 event__category=Event.Category.PREMIER,
                 player=self.profile.player,
-                single_elimination_result=playoff_result,
+                playoff_result=playoff_result,
             )
             for playoff_result in [
                 None,
-                Result.SingleEliminationResult.QUARTER_FINALIST,
-                Result.SingleEliminationResult.SEMI_FINALIST,
-                Result.SingleEliminationResult.FINALIST,
-                Result.SingleEliminationResult.WINNER,
+                Result.PlayoffResult.QUARTER_FINALIST,
+                Result.PlayoffResult.SEMI_FINALIST,
+                Result.PlayoffResult.FINALIST,
+                Result.PlayoffResult.WINNER,
             ]
         ]
         sorted_results = self.sort_results(results)
-        sorted_playoff_results = [r.single_elimination_result for r in sorted_results]
+        sorted_playoff_results = [r.playoff_result for r in sorted_results]
         expected_playoff_result_order = [
-            Result.SingleEliminationResult.WINNER,
-            Result.SingleEliminationResult.FINALIST,
-            Result.SingleEliminationResult.SEMI_FINALIST,
-            Result.SingleEliminationResult.QUARTER_FINALIST,
+            Result.PlayoffResult.WINNER,
+            Result.PlayoffResult.FINALIST,
+            Result.PlayoffResult.SEMI_FINALIST,
+            Result.PlayoffResult.QUARTER_FINALIST,
             None,
         ]
         self.assertEqual(sorted_playoff_results, expected_playoff_result_order)
@@ -487,16 +487,16 @@ class AccomplishmentsSortTesCase(TestCase):
                 event__category=Event.Category.PREMIER,
                 player=self.profile.player,
                 event__date=date,
-                single_elimination_result=playoff_result,
+                playoff_result=playoff_result,
                 ranking=ranking,
             )
             for ranking, playoff_result, date in [
                 (2, None, datetime.date(2024, 1, 3)),
                 (1, None, datetime.date(2024, 1, 1)),
                 (1, None, datetime.date(2024, 1, 2)),
-                (1, Result.SingleEliminationResult.FINALIST, datetime.date(2022, 1, 1)),
-                (4, Result.SingleEliminationResult.FINALIST, datetime.date(2023, 1, 1)),
-                (8, Result.SingleEliminationResult.WINNER, datetime.date(2021, 1, 1)),
+                (1, Result.PlayoffResult.FINALIST, datetime.date(2022, 1, 1)),
+                (4, Result.PlayoffResult.FINALIST, datetime.date(2023, 1, 1)),
+                (8, Result.PlayoffResult.WINNER, datetime.date(2021, 1, 1)),
             ]
         ]
         sorted_results = self.sort_results(results)

@@ -47,7 +47,7 @@ def get_invoice_pdf_context(invoice: Invoice):
     events = invoice.events.annotate(
         top8_cnt=Count(
             "result",
-            filter=Q(result__single_elimination_result__gt=0),
+            filter=Q(result__playoff_result__gt=0),
         ),
         event_size=Count("result"),
     ).order_by("date")[:]

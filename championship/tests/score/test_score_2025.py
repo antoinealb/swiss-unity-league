@@ -140,7 +140,7 @@ class ScoresWithTop8TestCase(TestCase):
             points=points,
             event=self.event,
             player=self.player,
-            single_elimination_result=result,
+            playoff_result=result,
             ranking=1,
         )
         return ScoreMethod2025._qps_for_result(
@@ -151,10 +151,10 @@ class ScoresWithTop8TestCase(TestCase):
         self.event.category = Event.Category.PREMIER
         self.event.save()
         testCases = [
-            (Result.SingleEliminationResult.WINNER, 400),
-            (Result.SingleEliminationResult.FINALIST, 240),
-            (Result.SingleEliminationResult.SEMI_FINALIST, 160),
-            (Result.SingleEliminationResult.QUARTER_FINALIST, 120),
+            (Result.PlayoffResult.WINNER, 400),
+            (Result.PlayoffResult.FINALIST, 240),
+            (Result.PlayoffResult.SEMI_FINALIST, 160),
+            (Result.PlayoffResult.QUARTER_FINALIST, 120),
         ]
 
         for ranking, points in testCases:
@@ -167,10 +167,10 @@ class ScoresWithTop8TestCase(TestCase):
         self.event.category = Event.Category.REGIONAL
         self.event.save()
         testCases = [
-            (Result.SingleEliminationResult.WINNER, 100),
-            (Result.SingleEliminationResult.FINALIST, 60),
-            (Result.SingleEliminationResult.SEMI_FINALIST, 40),
-            (Result.SingleEliminationResult.QUARTER_FINALIST, 30),
+            (Result.PlayoffResult.WINNER, 100),
+            (Result.PlayoffResult.FINALIST, 60),
+            (Result.PlayoffResult.SEMI_FINALIST, 40),
+            (Result.PlayoffResult.QUARTER_FINALIST, 30),
         ]
 
         for ranking, points in testCases:
@@ -183,10 +183,10 @@ class ScoresWithTop8TestCase(TestCase):
         self.event.category = Event.Category.REGULAR
         self.event.save()
         testCases = [
-            (Result.SingleEliminationResult.WINNER, 12),
-            (Result.SingleEliminationResult.FINALIST, 9),
-            (Result.SingleEliminationResult.SEMI_FINALIST, 6),
-            (Result.SingleEliminationResult.QUARTER_FINALIST, 3),
+            (Result.PlayoffResult.WINNER, 12),
+            (Result.PlayoffResult.FINALIST, 9),
+            (Result.PlayoffResult.SEMI_FINALIST, 6),
+            (Result.PlayoffResult.QUARTER_FINALIST, 3),
         ]
 
         for ranking, points in testCases:
@@ -206,7 +206,7 @@ class ScoresWithMatchPointRateTestCase(TestCase):
             points=points,
             event=self.event,
             player=self.player,
-            single_elimination_result=None,
+            playoff_result=None,
             ranking=1,
         )
         return ScoreMethod2025._qps_for_result(
@@ -302,7 +302,7 @@ class TestSortResults(TestCase):
         sorted_rankings = [s.ranking for s in sorted(Result.objects.all())]
         self.assertEqual(list(range(1, 11)), sorted_rankings)
 
-    def test_can_order_results_based_on_single_elimination_results(self):
+    def test_can_order_results_based_on_playoff_results(self):
         e = Event2025Factory(category=Event.Category.PREMIER)
         num_players = 16
         results = [
@@ -322,17 +322,13 @@ class TestSortResults(TestCase):
         inverse_top_8_results = [results[7], results[6]] + results[4:6] + results[:4]
         for i, r in enumerate(inverse_top_8_results, 1):
             if i == 1:
-                r.single_elimination_result = Result.SingleEliminationResult.WINNER
+                r.playoff_result = Result.PlayoffResult.WINNER
             elif i == 2:
-                r.single_elimination_result = Result.SingleEliminationResult.FINALIST
+                r.playoff_result = Result.PlayoffResult.FINALIST
             elif i <= 4:
-                r.single_elimination_result = (
-                    Result.SingleEliminationResult.SEMI_FINALIST
-                )
+                r.playoff_result = Result.PlayoffResult.SEMI_FINALIST
             elif i <= 8:
-                r.single_elimination_result = (
-                    Result.SingleEliminationResult.QUARTER_FINALIST
-                )
+                r.playoff_result = Result.PlayoffResult.QUARTER_FINALIST
             r.save()
 
         sorted_rankings = sorted(Result.objects.all())
@@ -350,21 +346,21 @@ def create_test_tournament(
 
         if category != Event.Category.REGULAR and with_top8:
             if rank == 1:
-                ser = Result.SingleEliminationResult.WINNER
+                playoff_result = Result.PlayoffResult.WINNER
             elif rank == 2:
-                ser = Result.SingleEliminationResult.FINALIST
+                playoff_result = Result.PlayoffResult.FINALIST
             elif rank <= 4:
-                ser = Result.SingleEliminationResult.SEMI_FINALIST
+                playoff_result = Result.PlayoffResult.SEMI_FINALIST
             elif rank <= 8:
-                ser = Result.SingleEliminationResult.QUARTER_FINALIST
+                playoff_result = Result.PlayoffResult.QUARTER_FINALIST
             else:
-                ser = None
+                playoff_result = None
 
         ResultFactory(
             player=player,
             points=num_players - i,
             ranking=rank,
-            single_elimination_result=ser,
+            playoff_result=playoff_result,
             event=event,
         )
     return event
@@ -597,7 +593,7 @@ class TestPlayerDetails2025(TestCase):
         # Make sure the event is with top 8
         ResultFactory(
             event=self.event,
-            single_elimination_result=Result.SingleEliminationResult.QUARTER_FINALIST,
+            playoff_result=Result.PlayoffResult.QUARTER_FINALIST,
             win_count=6,
             loss_count=0,
             draw_count=0,

@@ -32,6 +32,9 @@ class ResultSerializer(serializers.ModelSerializer):
         ]
 
     player = serializers.CharField(source="player.name")
+    single_elimination_result = serializers.IntegerField(
+        source="playoff_result", allow_null=True
+    )
 
 
 class EventInformationSerializer(serializers.ModelSerializer):
@@ -114,7 +117,7 @@ class EventInformationSerializer(serializers.ModelSerializer):
                 win_count=result["win_count"],
                 loss_count=result["loss_count"],
                 draw_count=result["draw_count"],
-                single_elimination_result=result["single_elimination_result"],
+                playoff_result=result["playoff_result"],
             )
 
         return res

@@ -83,7 +83,7 @@ def get_results_with_qps(
         event_player_results.select_related("event")
         .annotate(
             event_size=Count("event__result"),
-            top_count=Count("event__result__single_elimination_result"),
+            top_count=Count("event__result__playoff_result"),
         )
         .exclude(event__category=Event.Category.OTHER)
     )

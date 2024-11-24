@@ -801,7 +801,7 @@ class Result(models.Model):
     A result for a single player in a single event.
     """
 
-    class SingleEliminationResult(models.IntegerChoices):
+    class PlayoffResult(models.IntegerChoices):
         WINNER = 1
         FINALIST = 2
         SEMI_FINALIST = 4
@@ -812,10 +812,10 @@ class Result(models.Model):
     )
     player = models.ForeignKey(Player, on_delete=models.CASCADE)
     event = models.ForeignKey(Event, on_delete=models.CASCADE)
-    single_elimination_result = models.PositiveIntegerField(
+    playoff_result = models.PositiveIntegerField(
         null=True,
         blank=True,
-        choices=SingleEliminationResult.choices,
+        choices=PlayoffResult.choices,
     )
     ranking = models.PositiveIntegerField(help_text="Standings after the Swiss rounds")
     win_count = models.PositiveIntegerField(help_text="Number of won matches")
@@ -852,8 +852,8 @@ class Result(models.Model):
 
         First checks single elimination results, then swiss rounds ranking.
         """
-        self_single_elim = self.single_elimination_result or 32
-        other_single_elim = other.single_elimination_result or 32
+        self_single_elim = self.playoff_result or 32
+        other_single_elim = other.playoff_result or 32
         if self_single_elim < other_single_elim:
             return True
         elif self_single_elim > other_single_elim:
@@ -863,13 +863,13 @@ class Result(models.Model):
 
     def get_ranking_display(self):
         SINGLE_ELIM_TO_RANK = {
-            Result.SingleEliminationResult.WINNER: "1st",
-            Result.SingleEliminationResult.FINALIST: "2nd",
-            Result.SingleEliminationResult.SEMI_FINALIST: "3rd-4th",
-            Result.SingleEliminationResult.QUARTER_FINALIST: "5th-8th",
+            Result.PlayoffResult.WINNER: "1st",
+            Result.PlayoffResult.FINALIST: "2nd",
+            Result.PlayoffResult.SEMI_FINALIST: "3rd-4th",
+            Result.PlayoffResult.QUARTER_FINALIST: "5th-8th",
         }
-        if self.single_elimination_result:
-            return SINGLE_ELIM_TO_RANK[self.single_elimination_result]
+        if self.playoff_result:
+            return SINGLE_ELIM_TO_RANK[self.playoff_result]
         else:
             return ordinal(self.ranking)
 
@@ -974,7 +974,7 @@ class OrganizerLeague(models.Model):
 
         if not self.playoffs:
             q = q.annotate(
-                top_count=Count("event__result__single_elimination_result"),
+                top_count=Count("event__result__playoff_result"),
             ).exclude(top_count__gt=0)
 
         return q

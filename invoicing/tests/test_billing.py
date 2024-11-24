@@ -50,7 +50,7 @@ class Billing2023TestCase(BillingTestCase):
 
         ResultFactory(
             event=e,
-            single_elimination_result=Result.SingleEliminationResult.WINNER,
+            playoff_result=Result.PlayoffResult.WINNER,
         )
         for _ in range(9):
             ResultFactory(event=e)
@@ -62,7 +62,7 @@ class Billing2023TestCase(BillingTestCase):
 
         ResultFactory(
             event=e,
-            single_elimination_result=Result.SingleEliminationResult.WINNER,
+            playoff_result=Result.PlayoffResult.WINNER,
         )
         for _ in range(9):
             ResultFactory(event=e)
@@ -83,7 +83,7 @@ class Billing2024FeesTestCase(BillingTestCase):
 
         ResultFactory(
             event=e,
-            single_elimination_result=Result.SingleEliminationResult.WINNER,
+            playoff_result=Result.PlayoffResult.WINNER,
         )
         for _ in range(9):
             ResultFactory(event=e)
@@ -95,7 +95,7 @@ class Billing2024FeesTestCase(BillingTestCase):
 
         ResultFactory(
             event=e,
-            single_elimination_result=Result.SingleEliminationResult.WINNER,
+            playoff_result=Result.PlayoffResult.WINNER,
         )
         for _ in range(9):
             ResultFactory(event=e)
@@ -115,7 +115,7 @@ class Billing2025FeesTestCase(BillingTestCase):
 
         ResultFactory(
             event=e,
-            single_elimination_result=Result.SingleEliminationResult.WINNER,
+            playoff_result=Result.PlayoffResult.WINNER,
         )
         for _ in range(9):
             ResultFactory(event=e)
@@ -127,7 +127,7 @@ class Billing2025FeesTestCase(BillingTestCase):
 
         ResultFactory(
             event=e,
-            single_elimination_result=Result.SingleEliminationResult.WINNER,
+            playoff_result=Result.PlayoffResult.WINNER,
         )
         for _ in range(9):
             ResultFactory(event=e)

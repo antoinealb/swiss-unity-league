@@ -35,16 +35,16 @@ class ScoreMethod2023:
     PARTICIPATION_POINTS = 3
     POINTS_FOR_TOP = {
         Event.Category.PREMIER: {
-            Result.SingleEliminationResult.WINNER: 500,
-            Result.SingleEliminationResult.FINALIST: 300,
-            Result.SingleEliminationResult.SEMI_FINALIST: 200,
-            Result.SingleEliminationResult.QUARTER_FINALIST: 150,
+            Result.PlayoffResult.WINNER: 500,
+            Result.PlayoffResult.FINALIST: 300,
+            Result.PlayoffResult.SEMI_FINALIST: 200,
+            Result.PlayoffResult.QUARTER_FINALIST: 150,
         },
         Event.Category.REGIONAL: {
-            Result.SingleEliminationResult.WINNER: 100,
-            Result.SingleEliminationResult.FINALIST: 60,
-            Result.SingleEliminationResult.SEMI_FINALIST: 40,
-            Result.SingleEliminationResult.QUARTER_FINALIST: 30,
+            Result.PlayoffResult.WINNER: 100,
+            Result.PlayoffResult.FINALIST: 60,
+            Result.PlayoffResult.SEMI_FINALIST: 40,
+            Result.PlayoffResult.QUARTER_FINALIST: 30,
         },
     }
     POINTS_TOP_9_12 = {
@@ -75,8 +75,8 @@ class ScoreMethod2023:
         if category not in cls.POINTS_FOR_TOP:
             return points
 
-        if result.single_elimination_result:
-            points += cls.POINTS_FOR_TOP[category][result.single_elimination_result]
+        if result.playoff_result:
+            points += cls.POINTS_FOR_TOP[category][result.playoff_result]
         elif has_top_8:
             # For large tournaments, we award points for placing, even outside of
             # top8. See the rules for explanation
@@ -88,7 +88,7 @@ class ScoreMethod2023:
                 # If we are in this case, it means the event did not play a top8,
                 # only a top4, and we still need to award points for 5th-8th.
                 points += cls.POINTS_FOR_TOP[category][
-                    Result.SingleEliminationResult.QUARTER_FINALIST
+                    Result.PlayoffResult.QUARTER_FINALIST
                 ]
 
         return points
@@ -105,8 +105,7 @@ class ScoreMethod2023:
         if (
             result.event_size > MIN_SIZE_EXTRA_BYE
             and result.event.category == Event.Category.PREMIER
-            and result.single_elimination_result
-            == Result.SingleEliminationResult.WINNER
+            and result.playoff_result == Result.PlayoffResult.WINNER
         ):
             return 2
         return 0
