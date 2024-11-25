@@ -214,3 +214,10 @@ class TestEventResultsAPI(APITestCase):
         self.assertEqual(
             results[0].player.name, "Player 2", "Results should have been sorted."
         )
+
+    def test_event_results_with_redacted_name(self):
+        result = ResultFactory(event=self.event, player__hidden_from_leaderboard=True)
+        resp = self.client.get(self.url).json()
+        self.assertNotEqual(
+            resp["results"][0]["player"], result.player.name, "Name should be redacted."
+        )
