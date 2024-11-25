@@ -86,7 +86,7 @@
                     {% if event.recurring_event %}
                         <a href="{% url 'event_update_all' event.id %}" class="btn btn-secondary">Edit All Events of Series</a>
                         <a href="{% url 'recurring_event_update' event.recurring_event_id %}" class="btn btn-secondary">Update Schedule</a>
-                    {% else %}
+                    {% elif event.category == "REGULAR" or event.category == "REGIONAL" %}
                         <a href="{% url 'recurring_event_create' event.id %}" class="btn btn-secondary">Schedule as Event Series</a>
                     {% endif %}
                 </div>
