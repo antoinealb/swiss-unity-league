@@ -19,6 +19,17 @@ from championship.models import Event, EventOrganizer, Player, Result
 from championship.tournament_valid import StandingsValidationError, validate_standings
 
 
+class PlayerField(serializers.Field):
+    """Custom serialization field that respects hidden_from_leaderboard."""
+
+    def to_representation(self, player: Player):
+        return player.get_name_display()
+
+    def to_internal_value(self, name: str):
+        player, _ = Player.objects.get_or_create_by_name(name)
+        return player
+
+
 class ResultSerializer(serializers.ModelSerializer):
     class Meta:
         model = Result
@@ -31,7 +42,7 @@ class ResultSerializer(serializers.ModelSerializer):
             "draw_count",
         ]
 
-    player = serializers.CharField(source="player.name")
+    player = PlayerField()
     single_elimination_result = serializers.IntegerField(
         source="playoff_result", allow_null=True
     )
@@ -87,7 +98,7 @@ class EventInformationSerializer(serializers.ModelSerializer):
         # Check that uploaded results make sense
         results_for_validation = [
             (
-                r["player"]["name"],
+                r["player"].name,
                 r["win_count"] * 3 + r["draw_count"],
                 (r["win_count"], r["draw_count"], r["loss_count"]),
             )
@@ -106,12 +117,9 @@ class EventInformationSerializer(serializers.ModelSerializer):
         results.sort(key=lambda r: 3 * r["win_count"] + r["draw_count"], reverse=True)
 
         for i, result in enumerate(results):
-            name = result["player"]["name"]
-            player, created = Player.objects.get_or_create_by_name(name)
-
             Result.objects.create(
                 points=3 * result["win_count"] + result["draw_count"],
-                player=player,
+                player=result["player"],
                 event=instance,
                 ranking=i + 1,
                 win_count=result["win_count"],
