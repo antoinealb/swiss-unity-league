@@ -327,6 +327,28 @@ class EventDetailTestCase(TestCase):
         self.assertContains(resp, "10:00 - 19:00")
         self.assertContains(resp, "Date & Time")
 
+    @parameterized.expand(
+        [
+            (Event.Category.REGULAR, True),
+            (Event.Category.REGIONAL, True),
+            (Event.Category.PREMIER, False),
+        ]
+    )
+    def test_shows_link_to_schedule_event_series(self, category, show_link):
+        event = EventFactory(category=category)
+        self.client.force_login(event.organizer.user)
+        resp = self.client.get(reverse("event_details", args=[event.id]))
+        if show_link:
+            self.assertContains(
+                resp,
+                reverse("recurring_event_create", args=[event.id]),
+            )
+        else:
+            self.assertNotContains(
+                resp,
+                reverse("recurring_event_create", args=[event.id]),
+            )
+
 
 class EventImageValidation(TestCase):
 
