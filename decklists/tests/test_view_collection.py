@@ -162,8 +162,7 @@ class CollectionViewTestCase(TestCase):
         data = {
             "player_name": "Antoine Albertelli",
             "archetype": "new",
-            "mainboard": "1 Fog",
-            "sideboard": "1 Fly",
+            "content": "1 Fog\n\n1 Fry",
         }
         url = reverse("decklist-create") + f"?collection={collection.id}"
         self.client.post(url, data=data)

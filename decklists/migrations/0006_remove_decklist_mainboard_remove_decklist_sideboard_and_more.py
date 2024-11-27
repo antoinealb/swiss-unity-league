@@ -13,27 +13,26 @@
 # limitations under the License.
 
 import dataclasses
-import enum
+
+from django.db import migrations, models
 
 from parsita import (
     ParserContext,
-    Success,
     eof,
     failure,
     lit,
     longest,
     opt,
     reg,
-    rep,
-    rep1,
-    rep1sep,
     repsep,
     success,
     until,
 )
-from parsita.util import constant
+
+import decklists.models
 
 
+# copied from decklists/parser to maek sure it does not change.
 @dataclasses.dataclass
 class ParsedDecklistEntry:
     qty: int
@@ -89,61 +88,66 @@ class DecklistParser(ParserContext, whitespace=r"[ \t]*"):  # type: ignore
 
     # MTGO / txt format
     line = integer & card
-    mtgo_sideboard = rep(newline) & opt(lit("Sideboard") & newline)
-    mtgo_part = repsep(line, newline) << (newline | eof)
-    mtgo_deck = (
-        rep(newline) >> ((mtgo_part << mtgo_sideboard) & mtgo_part)
-        > _convert_mtgo_parse_result
-    )
+    mtgo_sideboard = opt(lit("Sideboard")) & newline
+    mtgo_part = repsep(line, newline) << opt(newline)
+    mtgo_deck = ((mtgo_part << mtgo_sideboard) & mtgo_part) > _convert_mtgo_parse_result
 
     # Put together
     deck = mwdeck_deck | mtgo_deck
 
 
-class Color(enum.Enum):
-    WHITE = "W"
-    BLUE = "U"
-    RED = "R"
-    BLACK = "B"
-    GREEN = "G"
+def merge_content(apps, schema_editor):
+    Decklist = apps.get_model("decklists", "Decklist")
+    db_alias = schema_editor.connection.alias
+    for d in Decklist.objects.using(db_alias).all():
+        d.content = f"{d.mainboard}\n\nSideboard\n{d.sideboard}"
+        d.save()
 
 
-@dataclasses.dataclass
-class Hybrid:
-    colors: tuple[Color | int, Color]
+def unmerge_content(apps, schema_editor):
+    Decklist = apps.get_model("decklists", "Decklist")
+    db_alias = schema_editor.connection.alias
+    for d in Decklist.objects.using(db_alias).all():
+        parsed = DecklistParser.deck.parse(d.content).unwrap()
+        d.mainboard = "\n".join(f"{l.qty} {l.name}" for l in parsed.mainboard)
+        d.sideboard = "\n".join(f"{l.qty} {l.name}" for l in parsed.sideboard)
+        d.save()
 
 
-@dataclasses.dataclass
-class Phyrexian:
-    color: Color
+class Migration(migrations.Migration):
 
+    dependencies = [
+        ("decklists", "0005_collection_staff_key"),
+    ]
 
-@dataclasses.dataclass
-class AlternativeMana:
-    content: list
-
-
-Snow = object()
-Colorless = object()
-
-
-class ManaParser(ParserContext):
-    integer = reg(r"[0-9]+") > int
-    color = longest(*(lit(s) for s in "WURBG")) > Color
-    colorless = lit("C") > constant(Colorless)
-    letter = lit("X") | lit("Y") | lit("Z")
-    hybrid = ((color | integer | colorless) << "/" & color) > (
-        lambda s: Hybrid(tuple(s))
-    )
-    phyrexian = (color | hybrid) << lit("/P") > Phyrexian
-    snow = lit("S") > constant(Snow)
-    mana_inside = integer | color | letter | hybrid | phyrexian | snow | colorless
-    mana_with_braces = rep1("{" >> mana_inside << "}")
-    mana = mana_with_braces | (rep1sep(mana_with_braces, " // ") > AlternativeMana)
-
-
-def parse_mana(mana_cost: str):
-    res = ManaParser.mana.parse(mana_cost)
-    if isinstance(res, Success):
-        return res.unwrap()
-    raise ValueError(res.failure())
+    operations = [
+        migrations.AddField(
+            model_name="decklist",
+            name="content",
+            field=models.TextField(
+                default="",
+                help_text="Content of the deck, one entry per line, 4 Brainstorm.",
+                validators=[decklists.models.validate_decklist_format],
+            ),
+            preserve_default=False,
+        ),
+        migrations.RunPython(merge_content, unmerge_content),
+        migrations.AlterField(
+            model_name="decklist",
+            name="mainboard",
+            field=models.TextField(default=""),
+        ),
+        migrations.RemoveField(
+            model_name="decklist",
+            name="mainboard",
+        ),
+        migrations.AlterField(
+            model_name="decklist",
+            name="sideboard",
+            field=models.TextField(default=""),
+        ),
+        migrations.RemoveField(
+            model_name="decklist",
+            name="sideboard",
+        ),
+    ]

@@ -90,10 +90,8 @@ def annotate_card_attributes(entries: Iterable[DecklistEntry]) -> FilterOutput:
     return result, errors
 
 
-def parse_decklist(content: str) -> FilterOutput:
-    entries = DecklistParser.deck.parse(content).unwrap()
-    entries = [tuple(line) for line in entries]
-    entries = [DecklistEntry(qty, card) for (qty, card) in entries]
+def parse_decklist(entries) -> FilterOutput:
+    entries = [DecklistEntry(e.qty, e.name) for e in entries]
     return entries, []
 
 
@@ -113,7 +111,7 @@ def pipe_filters(filters, entries) -> FilterOutput:
     return result, errors
 
 
-def parse_section(section_text: str) -> FilterOutput:
+def parse_section(section_text) -> FilterOutput:
 
     all_filters = [
         parse_decklist,
@@ -139,8 +137,9 @@ def get_decklist_table_context(decklist: Decklist, split_decklist_by_type: bool 
     - total_cards: The total number of cards in the decklist.
     """
     context = {"decklist": decklist}
-    mainboard, errors_main = parse_section(decklist.mainboard)
-    sideboard, errors_side = parse_section(decklist.sideboard)
+    parsed = DecklistParser.deck.parse(decklist.content).unwrap()
+    mainboard, errors_main = parse_section(parsed.mainboard)
+    sideboard, errors_side = parse_section(parsed.sideboard)
 
     cards_by_section = {}
     if split_decklist_by_type:

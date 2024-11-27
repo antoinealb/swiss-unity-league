@@ -34,6 +34,12 @@ class DecklistViewTestCase(TestCase):
         self.plains = CardFactory(mana_value=0, type_line="Basic Land", name="Plains")
         self.path = CardFactory(mana_value=1, type_line="Instant", name="Path to Exile")
 
+        self.content = f"""4 {self.stoneforge.name}
+3{self.plains.name}
+
+2 {self.path.name}
+"""
+
     def test_can_get_decklist(self):
         decklist = DecklistFactory(archetype="Burn")
         resp = self.client.get(reverse("decklist-details", args=[decklist.id]))
@@ -78,10 +84,7 @@ class DecklistViewTestCase(TestCase):
         )
 
     def test_section_card_counter(self):
-        decklist = DecklistFactory(archetype="Burn")
-        decklist.mainboard = f"4 {self.stoneforge.name}\n3{self.plains.name}"
-        decklist.sideboard = f"2 {self.path.name}"
-        decklist.save()
+        decklist = DecklistFactory(archetype="Burn", content=self.content)
 
         resp = self.client.get(reverse("decklist-details", args=[decklist.id]))
         self.assertContains(resp, "Creatures (4)")
@@ -91,7 +94,7 @@ class DecklistViewTestCase(TestCase):
 
     def test_inside_section_cards_are_sorted_by_mana_value(self):
         decklist = DecklistFactory(
-            mainboard=f"4 {self.stoneforge.name}\n4 {self.mother.name}"
+            content=f"4 {self.stoneforge.name}\n4 {self.mother.name}\n\n\n"
         )
         resp = self.client.get(reverse("decklist-details", args=[decklist.id]))
         want = [self.mother.name, self.stoneforge.name]
@@ -99,7 +102,7 @@ class DecklistViewTestCase(TestCase):
         self.assertEqual(want, got)
 
     def test_unknown_card_section(self):
-        decklist = DecklistFactory(mainboard="4 Fooburb")
+        decklist = DecklistFactory(content="4 Fooburb\n\n\n")
         resp = self.client.get(reverse("decklist-details", args=[decklist.id]))
         self.assertEqual(
             resp.context["cards_by_section"]["Unknown (4)"][0].name, "Fooburb"
@@ -109,20 +112,17 @@ class DecklistViewTestCase(TestCase):
         """
         Check that we can sort by mana value instead of the default mode.
         """
-        decklist = DecklistFactory(
-            mainboard=f"4 {self.stoneforge.name}\n4 {self.path.name}",
-            sideboard=f"4 {self.mother.name}",
-        )
+        decklist = DecklistFactory(content=self.content)
         resp = self.client.get(
             reverse("decklist-details", args=[decklist.id]) + "?sort=manavalue"
         )
-        want_mainboard = [self.path.name, self.stoneforge.name]
+        want_mainboard = [self.plains.name, self.stoneforge.name]
         got_mainboard = [
-            c.name for c in resp.context["cards_by_section"]["Mainboard (8)"]
+            c.name for c in resp.context["cards_by_section"]["Mainboard (7)"]
         ]
         self.assertEqual(got_mainboard, want_mainboard)
-        want_sideboard = [self.mother.name]
+        want_sideboard = [self.path.name]
         got_sideboard = [
-            c.name for c in resp.context["cards_by_section"]["Sideboard (4)"]
+            c.name for c in resp.context["cards_by_section"]["Sideboard (2)"]
         ]
         self.assertEqual(got_sideboard, want_sideboard)

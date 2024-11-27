@@ -142,15 +142,8 @@ class Decklist(models.Model):
     last_modified = models.DateTimeField(
         help_text="Last modification timestamp.", auto_now=True
     )
-    mainboard = models.TextField(
-        help_text="Content of the main deck, one entry per line (e.g. 4 Brainstorm)",
-        validators=[validate_decklist_format],
-    )
-    sideboard = models.TextField(
-        help_text=(
-            "Content of the sideboard, also one entry per line."
-            " If you use extra decks, such as attractions, add them here as well."
-        ),
+    content = models.TextField(
+        help_text="Content of the deck, one entry per line, 4 Brainstorm.",
         validators=[validate_decklist_format],
     )
 

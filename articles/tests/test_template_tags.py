@@ -56,8 +56,7 @@ class ArticleRenderingTestCase(TestCase):
     def test_decklist(self):
         DecklistFactory(
             id="ff521f2e-085c-4cc0-901b-600ec9a71dab",
-            mainboard="4 Daze",
-            sideboard="4 Fry",
+            content="4 Daze\n\n4 Fry",
         )
         article = f"""
         [[https://{SWISS_DOMAIN}/decklists/ff521f2e-085c-4cc0-901b-600ec9a71dab/]]

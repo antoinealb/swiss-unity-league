@@ -12,7 +12,11 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+import os.path
 from unittest import TestCase
+
+from parameterized import parameterized
+from parsita import Success
 
 from decklists.parser import (
     AlternativeMana,
@@ -21,9 +25,16 @@ from decklists.parser import (
     DecklistParser,
     Hybrid,
     ManaParser,
+    ParsedDecklistEntry,
     Phyrexian,
     Snow,
 )
+
+
+def read_decklist(name):
+    path = os.path.join(os.path.dirname(__file__), name)
+    with open(path) as f:
+        return f.read()
 
 
 class ParserTestCase(TestCase):
@@ -38,24 +49,65 @@ class ParserTestCase(TestCase):
         parsed = DecklistParser.line.parse("4 Thalia, Guardian of Thraben").unwrap()
         self.assertEqual([4, "Thalia, Guardian of Thraben"], parsed)
 
-    def test_parse_deck(self):
-        decklist = """4 Thalia, Guardian of Thraben
-        4 Lightning Bolt"""
-        want = [[4, "Thalia, Guardian of Thraben"], [4, "Lightning Bolt"]]
-        got = DecklistParser.deck.parse(decklist).unwrap()
-        self.assertEqual(want, got)
+    def read_and_parse(self, name):
+        decklist = read_decklist(name)
+        res = DecklistParser.mtgo_deck.parse(decklist)
+        self.assertIsInstance(res, Success)
+        return res.unwrap()
 
-    def test_parse_deck_with_trailing_whitespace(self):
-        decklist = "4 Thalia, Guardian of Thraben" + "  \n" + "4 Lightning Bolt"
-        want = [[4, "Thalia, Guardian of Thraben"], [4, "Lightning Bolt"]]
-        got = DecklistParser.deck.parse(decklist).unwrap()
-        self.assertEqual(want, got)
+    def test_parse_mtgo_format(self):
+        got = self.read_and_parse("deck.txt")
+        self.assertEqual(got.mainboard[0], ParsedDecklistEntry(4, "Unearth"))
+        self.assertEqual(got.sideboard[0], ParsedDecklistEntry(2, "Toxic Deluge"))
 
-    def test_parse_deck_with_windows_newsline(self):
-        decklist = "4 Thalia, Guardian of Thraben\r\n4 Lightning Bolt"
-        want = [[4, "Thalia, Guardian of Thraben"], [4, "Lightning Bolt"]]
-        got = DecklistParser.deck.parse(decklist).unwrap()
-        self.assertEqual(want, got)
+    def test_parse_mtgo_format_no_sideboard_marker(self):
+        got = self.read_and_parse("deck_no_sideboard_marker.txt")
+
+        self.assertEqual(
+            got.mainboard[0], ParsedDecklistEntry(4, "Anoint with Affliction")
+        )
+        self.assertEqual(got.sideboard[0], ParsedDecklistEntry(1, "Blot Out"))
+
+    def test_parse_no_sideboard(self):
+        res = DecklistParser.mtgo_deck.parse("4 Fry\n\n\n")
+        self.assertIsInstance(res, Success)
+
+
+class MwDeckTestCase(TestCase):
+    """Test for Magic Workstation decks (.mwdeck, .dec)"""
+
+    def test_parse_mwdeck_comment(self):
+        got = DecklistParser.mwdeck_comment.parse("// Hello world")
+        self.assertIsInstance(got, Success)
+
+    @parameterized.expand(["MH2", "UL"])
+    def test_parse_mwdeck_set(self, setcode):
+        got = DecklistParser.mwdeck_set.parse(setcode)
+        self.assertIsInstance(got, Success)
+
+    @parameterized.expand(
+        [
+            ("2 [] Sink into Stupor", (False, 2, "Sink into Stupor")),
+            ("3 [DIS] Spell Snare", (False, 3, "Spell Snare")),
+            ("SB: 3 [DIS] Spell Snare", (True, 3, "Spell Snare")),
+            ("// NAME : Dimir Control", "NAME : Dimir Control"),
+        ]
+    )
+    def test_parse_mwdeck_line(self, line, want):
+        got = DecklistParser.mwdeck_line.parse(line)
+        self.assertIsInstance(got, Success)
+        self.assertSequenceEqual(got.unwrap(), want)
+
+    def test_parse_mwdeck_format(self):
+        path = os.path.join(os.path.dirname(__file__), "deck.mwDeck")
+        with open(path) as f:
+            decklist = f.read()
+
+        got = DecklistParser.mwdeck_deck.parse(decklist)
+        self.assertIsInstance(got, Success)
+        got = got.unwrap()
+        self.assertEqual(got.mainboard[0], ParsedDecklistEntry(4, "Unearth"))
+        self.assertEqual(got.sideboard[0], ParsedDecklistEntry(2, "Toxic Deluge"))
 
 
 class ManaParserTestCase(TestCase):

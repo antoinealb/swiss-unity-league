@@ -23,7 +23,7 @@ from decklists.models import Collection, Decklist
 class DecklistForm(forms.ModelForm):
     class Meta:
         model = Decklist
-        fields = ["player_name", "archetype", "mainboard", "sideboard"]
+        fields = ["player_name", "archetype", "content"]
 
     player_name = forms.CharField(
         label="Player",
@@ -46,10 +46,7 @@ class DecklistForm(forms.ModelForm):
                 pass
 
         self.fields["archetype"].widget.attrs["placeholder"] = "E.g. 'Burn'"
-        self.fields["mainboard"].widget.attrs["placeholder"] = "e.g. 4 Brainstorm"
-        self.fields["sideboard"].widget.attrs[
-            "placeholder"
-        ] = "e.g. 4 Surgical Extraction"
+        self.fields["content"].widget.attrs["placeholder"] = "e.g. 4 Brainstorm"
 
     def save(self, commit=True):
         instance = super().save(commit=False)

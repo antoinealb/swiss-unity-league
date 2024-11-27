@@ -27,8 +27,7 @@ class DecklistEdit(TestCase):
         self.data = {
             "player_name": "player",
             "archetype": "new",
-            "mainboard": "1 Fog",
-            "sideboard": "1 Fly",
+            "content": "1 Fog\nSideboard\n1 Fly",
         }
 
     def test_permission_denied_past_deadline(self):
@@ -72,14 +71,16 @@ class DecklistEdit(TestCase):
 
     def test_can_change_decklist_archetype_and_sideboard(self):
         decklist = DecklistFactory()
-        self.data["player_name"] = decklist.player.name
+        data = {
+            "player_name": decklist.player.name,
+            "archetype": "new",
+            "content": "1 Fog\nSideboard\n1 Fry",
+        }
         resp = self.client.post(
-            reverse("decklist-update", args=[decklist.id]), data=self.data
+            reverse("decklist-update", args=[decklist.id]), data=data
         )
         decklist.refresh_from_db()
         self.assertEqual("new", decklist.archetype)
-        self.assertEqual("1 Fog", decklist.mainboard)
-        self.assertEqual("1 Fly", decklist.sideboard)
         self.assertEqual(decklist.get_absolute_url(), resp.url)
 
     def test_can_change_decklist_player_for_another_player(self):
@@ -108,8 +109,7 @@ class DecklistCreate(TestCase):
     data = {
         "player_name": "Antoine Albertelli",
         "archetype": "new",
-        "mainboard": "1 Fog",
-        "sideboard": "1 Fly",
+        "content": "1 Fog\nSideboard\n1 Fry\n",
     }
 
     def setUp(self):
