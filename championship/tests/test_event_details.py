@@ -198,11 +198,14 @@ class EventDetailTestCase(TestCase):
             resp.content.decode(),
         )
 
-    def test_shows_link_create_recurring_event(self):
-        organizer = EventOrganizerFactory(user=self.user)
-        event = EventFactory(
-            organizer=organizer,
-        )
+    @parameterized.expand(
+        [
+            (Event.Category.REGULAR,),
+            (Event.Category.REGIONAL,),
+        ]
+    )
+    def test_shows_link_create_recurring_event(self, category):
+        event = EventFactory(organizer__user=self.user, category=category)
         resp = self.client.get(reverse("event_details", args=[event.id]))
         self.assertContains(
             resp,
