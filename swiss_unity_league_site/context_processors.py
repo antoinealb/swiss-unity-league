@@ -23,3 +23,10 @@ def debug(request):
     possible with the way the SUL playground is setup.
     """
     return {"debug": settings.DEBUG}
+
+
+def public_contact_email(request):
+    """
+    Provides a context variable to the email address for public contact.
+    """
+    return {"PUBLIC_CONTACT_EMAIL": settings.PUBLIC_CONTACT_EMAIL}

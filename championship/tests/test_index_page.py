@@ -14,6 +14,7 @@
 
 import datetime
 
+from django.conf import settings
 from django.contrib.auth.models import User
 from django.shortcuts import reverse
 from django.test import Client, TestCase, override_settings
@@ -243,3 +244,7 @@ class HomepageTestCase(TestCase):
         self.assertContains(response, article.title)
         self.assertContains(response, "This is a test content")
         self.assertContains(response, article.get_absolute_url())
+
+    def test_shows_contact_email(self):
+        response = self.client.get("/")
+        self.assertContains(response, settings.PUBLIC_CONTACT_EMAIL)
