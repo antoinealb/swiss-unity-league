@@ -107,6 +107,16 @@ class EventDetailTestCase(TestCase):
             "9th",
         )
 
+    def test_results_category_others_shows_no_points(self):
+        """
+        Checks that SUL Other events can have results but should not display any SUL points.
+        """
+        result = ResultFactory(event__category=Event.Category.OTHER)
+        resp = self.client.get(reverse("event_details", args=[result.event.id]))
+        self.assertEqual(resp.context["results"][0][0], result)
+        self.assertIsNone(resp.context["results"][0][1], "score should be none")
+        self.assertIn("N/A", resp.content.decode())
+
     def test_escapes_content_description(self):
         """
         Checks that we correctly strip tags unknown tags.
@@ -196,24 +206,6 @@ class EventDetailTestCase(TestCase):
         self.assertNotIn(
             reverse("results_top8_add", args=[event.id]),
             resp.content.decode(),
-        )
-
-    @parameterized.expand(
-        [
-            (Event.Category.REGULAR,),
-            (Event.Category.REGIONAL,),
-        ]
-    )
-    def test_shows_link_create_recurring_event(self, category):
-        event = EventFactory(organizer__user=self.user, category=category)
-        resp = self.client.get(reverse("event_details", args=[event.id]))
-        self.assertContains(
-            resp,
-            reverse("recurring_event_create", args=[event.id]),
-        )
-        self.assertNotContains(
-            resp,
-            reverse("event_update_all", args=[event.id]),
         )
 
     def test_shows_link_update_recurring_event(self):

@@ -13,6 +13,7 @@
 # limitations under the License.
 
 import datetime
+from itertools import repeat
 from typing import Any
 
 from django.contrib import messages
@@ -27,7 +28,7 @@ from django.views.generic.edit import FormView, UpdateView
 from rest_framework import viewsets
 
 from championship.forms import EventCreateForm
-from championship.models import Event, Result
+from championship.models import Event
 from championship.score import get_results_with_qps
 from championship.season import SEASON_LIST, find_season_by_slug
 from championship.serializers import EventSerializer
@@ -40,14 +41,21 @@ class EventDetailsView(DetailView):
     model = Event
     context_object_name = "event"
 
+    def get_results(self, event):
+        qs = event.result_set.all().select_related("player")
+
+        # SUL Other events can have results in some cases (SUL invitational
+        # only) but they don't give points, and get_results_with_qps will filter
+        # them out. Just use None as scores.
+        if event.category == Event.Category.OTHER:
+            return zip(qs, repeat(None))
+        return get_results_with_qps(qs)
+
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         event = context["event"]
-        results = list(
-            get_results_with_qps(
-                Result.objects.filter(event=event).select_related("player")
-            )
-        )
+
+        results = list(self.get_results(event))
 
         context["can_edit_results"] = (
             event.can_be_edited() and event.organizer.user == self.request.user
