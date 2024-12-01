@@ -165,5 +165,4 @@ urlpatterns = [
         "premierevents.ics", ical_feeds.PremierEventsFeed(), name="premier_events_feed"
     ),
     path("calendar-integration", views.IcalInformationView.as_view(), name="info_ical"),
-    path("robots.txt", views.RobotsTxtView.as_view()),
 ]

@@ -99,8 +99,3 @@ class IndexView(TemplateView):
             is_active=False, last_login__isnull=True
         )
         return authorized and pending_registration.exists()
-
-
-class RobotsTxtView(TemplateView):
-    template_name = "robots.txt"
-    content_type = "text/plain"
