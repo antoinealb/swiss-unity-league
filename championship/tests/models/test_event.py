@@ -23,6 +23,7 @@ from parameterized import parameterized
 from championship.factories import EventFactory
 from championship.models import Event
 from championship.season import SEASON_2023
+from multisite.factories import SiteFactory
 
 
 class EventCopyFromTest(TestCase):
@@ -125,3 +126,8 @@ class QuerysetTestCase(TestCase):
         e = EventFactory(date=datetime.date(2023, 8, 1))
         EventFactory(date=datetime.date(2024, 8, 1))
         self.assertQuerysetEqual(Event.objects.in_season(SEASON_2023), [e])
+
+    def test_event_on_site(self):
+        e1 = EventFactory()
+        EventFactory(organizer__site=SiteFactory())
+        self.assertQuerysetEqual(Event.objects.on_site(), [e1])

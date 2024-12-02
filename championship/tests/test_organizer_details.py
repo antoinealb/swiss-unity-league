@@ -33,6 +33,7 @@ from championship.factories import (
 from championship.models import Event, OrganizerLeague
 from championship.season import SEASON_LIST
 from championship.views.organizers import ORGANIZER_LEAGUE_DESCRIPTION
+from multisite.factories import SiteFactory
 
 
 class EventOrganizerDetailViewTests(TestCase):
@@ -200,19 +201,24 @@ class OrganizerImageValidation(TestCase):
 
 class OrganizerListViewTest(TestCase):
     def test_organizer_view(self):
-        self.client = Client()
-        to_with_event = EventOrganizerFactory(name="TO with event")
-        EventFactory(organizer=to_with_event)
-
-        # create TO without events, so they shouldn't show up in list
-        to_without_event = EventOrganizerFactory()
-
+        event = EventFactory()
         response = self.client.get(reverse("organizer_view"))
+        self.assertContains(response, event.organizer.name)
+        self.assertContains(
+            response,
+            event.organizer.default_address.city,
+            msg_prefix="response should contain city of the organizer",
+        )
 
+    def test_organizer_without_events_is_skipped(self):
+        to_without_event = EventOrganizerFactory()
+        response = self.client.get(reverse("organizer_view"))
         self.assertNotContains(response, to_without_event.name)
-        self.assertContains(response, to_with_event.name)
-        # Check that the city of the default address of the organizer is shown
-        self.assertContains(response, to_with_event.default_address.city)
+
+    def test_organizer_on_another_site_is_skipped(self):
+        event = EventFactory(organizer__site=SiteFactory())
+        response = self.client.get(reverse("organizer_view"))
+        self.assertNotContains(response, event.organizer.name)
 
 
 class OrganizerLeaderboardTest(TestCase):

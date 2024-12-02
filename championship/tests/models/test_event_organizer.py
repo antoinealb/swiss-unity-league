@@ -18,6 +18,7 @@ from django.test import TestCase
 
 from championship.factories import EventFactory, EventOrganizerFactory
 from championship.models import EventOrganizer
+from multisite.factories import SiteFactory
 
 
 class EventOrganizerTest(TestCase):
@@ -38,3 +39,8 @@ class EventOrganizerTest(TestCase):
 
         with self.assertRaises(ProtectedError):
             User.objects.filter(id=eo.user.id).delete()
+
+    def test_organizer_on_site(self):
+        eo1 = EventOrganizerFactory()
+        EventOrganizerFactory(site=SiteFactory())
+        self.assertQuerysetEqual([eo1], EventOrganizer.objects.on_site())

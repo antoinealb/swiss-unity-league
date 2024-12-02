@@ -18,6 +18,7 @@ import urllib.parse
 
 from django.conf import settings
 from django.contrib.humanize.templatetags.humanize import ordinal
+from django.contrib.sites.models import Site
 from django.core.exceptions import ValidationError
 from django.core.validators import validate_image_file_extension
 from django.db import models
@@ -156,6 +157,11 @@ def organizer_image_validator(image):
         raise ValidationError("Image file too large ( > 500KB )")
 
 
+class EventOrganizerQuerySet(models.QuerySet):
+    def on_site(self):
+        return self.filter(site=settings.SITE_ID)
+
+
 class EventOrganizer(models.Model):
     """
     An organizer, who organizes several events in the championship.
@@ -191,6 +197,8 @@ class EventOrganizer(models.Model):
         verbose_name="Main location",
         help_text="The location of your store or the location where most of your events take place.",
     )
+    site = models.ForeignKey(Site, default=settings.SITE_ID, on_delete=models.PROTECT)
+    objects = EventOrganizerQuerySet.as_manager()
 
     def get_absolute_url(self):
         return reverse("organizer_details", args=[self.pk])
@@ -231,6 +239,9 @@ class EventQueryset(models.QuerySet):
             date__gte=season.start_date,
             date__lte=season.end_date,
         )
+
+    def on_site(self):
+        return self.filter(organizer__site=settings.SITE_ID)
 
 
 def tomorrow():

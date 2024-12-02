@@ -140,7 +140,8 @@ class OrganizerListView(ListView):
     context_object_name = "organizers"
 
     queryset = (
-        EventOrganizer.objects.select_related("default_address")
+        EventOrganizer.objects.on_site()
+        .select_related("default_address")
         .annotate(num_events=Count("event"))
         .filter(num_events__gt=0)
         .order_by("-num_events")
