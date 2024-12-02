@@ -64,6 +64,7 @@ class EventDetailTestCase(TestCase):
 
         self.assertEqual(results[0].points, 10)
         self.assertEqual(scores[0].qps, (10 + 3) * 6)
+        self.assertContains(resp, "League Points")
 
     def test_get_result_with_top_8(self):
         category = Event.Category.PREMIER
@@ -115,7 +116,7 @@ class EventDetailTestCase(TestCase):
         resp = self.client.get(reverse("event_details", args=[result.event.id]))
         self.assertEqual(resp.context["results"][0][0], result)
         self.assertIsNone(resp.context["results"][0][1], "score should be none")
-        self.assertIn("N/A", resp.content.decode())
+        self.assertNotContains(resp, "League Points")
 
     def test_escapes_content_description(self):
         """

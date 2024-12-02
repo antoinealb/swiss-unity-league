@@ -139,7 +139,7 @@
                         <th scope="col">Name</th>
                         <th scope="col">Match Points</th>
                         <th scope="col">Record</th>
-                        <th scope="col">SUL Points</th>
+                        {% if has_league_points %}<th scope="col">League Points</th>{% endif %}
                         {% if has_decklists %} <th scope="col">Decklists</th> {% endif %}
                         {% if can_edit_results %} <th scope="col"></th> {% endif %}
                     </tr>
@@ -157,7 +157,7 @@
                             </td>
                             <td>{{ r.points }}</td>
                             <td class="text-nowrap">{{ r.get_record_display }}</td>
-                            <td>{{ s.qps|default:"N/A" }}</td>
+                            {% if has_league_points %}<td>{{ s.qps }}</td>{% endif %}
                             {% if has_decklists %}
                                 <td>
                                     {% for decklist in r.decklists %}

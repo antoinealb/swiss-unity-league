@@ -62,6 +62,7 @@ class EventDetailsView(DetailView):
         ) or self.request.user.is_superuser
 
         context["results"] = sorted(results)
+        context["has_league_points"] = any(points for _, points in results)
 
         context["collections"] = Collection.objects.filter(event=event).all()
         self.attach_decklists_to_results(results, context)
