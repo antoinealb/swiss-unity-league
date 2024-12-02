@@ -161,7 +161,7 @@
                         <thead>
                             <tr>
                                 <th scope="col">Rank</th>
-                                <th scope="col">SUL Points</th>
+                                <th scope="col">League Points</th>
                                 <th scope="col">Player Name</th>
                             </tr>
                         </thead>
@@ -169,7 +169,7 @@
                             {% for player in players %}
                                 <tr>
                                     <td aria-label="Rank">{{ player.score.rank }}</td>
-                                    <td aria-label="SUL Points">{{ player.score.total_score }}</td>
+                                    <td aria-label="League Points">{{ player.score.total_score }}</td>
                                     <td aria-label="Player Name"><a href="{{ player.get_absolute_url }}" title="View tournament statistics of {{ player.get_name_display }}">{{ player.get_name_display }}</a></td>
                                 </tr>
                             {% endfor %}
