@@ -69,6 +69,8 @@ try:
 except KeyError:
     CSRF_TRUSTED_ORIGINS = []
 
+SITE_ID = int(os.environ.get("SITE_ID", 1))
+
 DEBUG_TOOLBAR_CONFIG = {
     "SHOW_TOOLBAR_CALLBACK": "swiss_unity_league_site.settings.should_show_toolbar",
     "DEBUG_TOOLBAR_USERS": set(["antoinealb", "jari"]),
@@ -104,6 +106,7 @@ INSTALLED_APPS = [
     "django.contrib.humanize",
     "django.contrib.messages",
     "django.contrib.sessions",
+    "django.contrib.sites",
     "django.contrib.staticfiles",
     "django_bleach",
     "django_prometheus",
@@ -112,6 +115,7 @@ INSTALLED_APPS = [
     "hijack",
     "hijack.contrib.admin",
     "invoicing",
+    "multisite",
     "oracle",
     "rest_framework",
     "rest_framework.authtoken",
