@@ -23,6 +23,7 @@ class Migration(migrations.Migration):
     dependencies = [
         ("championship", "0049_backfill_emails"),
         ("sites", "0002_alter_domain_unique"),
+        ("multisite", "0001_initial"),
     ]
 
     operations = [
