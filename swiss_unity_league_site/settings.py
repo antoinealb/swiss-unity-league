@@ -406,6 +406,35 @@ if "test" in sys.argv or "pytest" in sys.modules:
     # Finally, disable logging in unit testing
     logging.disable(logging.CRITICAL)
 
+LOGGING = {
+    "version": 1,
+    "disable_existing_loggers": False,
+    "formatters": {
+        "django.server": {
+            "()": "django.utils.log.ServerFormatter",
+            "format": "[{server_time}] {message}",
+            "style": "{",
+        }
+    },
+    "handlers": {
+        "django.server": {
+            "level": "INFO",
+            "class": "logging.StreamHandler",
+            "formatter": "django.server",
+        },
+    },
+    "loggers": {
+        # Instead of sending an email on Disallowed Host, simply log it as it is
+        # quite noisy.
+        "django.security.DisallowedHost": {
+            "handlers": ["django.server"],
+            "level": "INFO",
+            "propagate": False,
+        },
+    },
+}
+
+
 SECURE_PROXY_SSL_HEADER = ("HTTP_X_FORWARDED_PROTO", "https")
 
 # The age of session cookies, in seconds.
