@@ -85,6 +85,7 @@ restart-service:
     - sudo /bin/systemctl restart league_playground.service
     - sleep 30
     - sudo /usr/bin/docker exec league_playground.service ./manage.py migrate --no-input
+    - sudo /bin/systemctl restart league_playground_eu.service
 
     - sudo /bin/systemctl restart league.service
     - sleep 30
