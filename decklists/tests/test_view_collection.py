@@ -78,6 +78,18 @@ class CollectionViewTestCase(TestCase):
         got = list(resp.context["decklists"])
         self.assertEqual(want, got)
 
+    def test_own_decklists_sorted_first(self):
+        collection = CollectionFactory()
+        d2 = DecklistFactory(collection=collection)
+        d1 = DecklistFactory(collection=collection)
+        session = self.client.session
+        session["owned_decklists"] = [d2.id.hex]
+        session.save()
+        resp = self.client.get(reverse("collection-details", args=[collection.id]))
+        want = [d2, d1]
+        got = list(resp.context["decklists"])
+        self.assertEqual(want, got)
+
     def test_links_are_shown_once_published(self):
         d = DecklistFactory(collection__published=True)
         resp = self.client.get(reverse("collection-details", args=[d.collection.id]))

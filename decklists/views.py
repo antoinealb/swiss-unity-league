@@ -313,6 +313,12 @@ class CollectionView(DetailView):
         context["show_decklist_links"] = self.get_show_decklist_links()
         context["using_staff_link"] = self.get_using_staff_link()
         context["owned_decklists"] = self.request.session.get("owned_decklists", [])
+        # Show owned decklists first
+        context["decklists"] = sorted(
+            context["decklists"],
+            key=lambda d: d.id.hex in context["owned_decklists"],
+            reverse=True,
+        )
         return context
 
 
