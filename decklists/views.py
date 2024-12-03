@@ -279,7 +279,9 @@ class CollectionView(DetailView):
             "player__name", "-last_modified"
         )
 
-    def get_judge_link(self):
+    def get_staff_link(self):
+        if self.object.decklists_published:
+            return None
         link = self.request.build_absolute_uri(
             self.object.get_absolute_url() + f"?staff_key={self.object.staff_key}"
         )
@@ -291,7 +293,7 @@ class CollectionView(DetailView):
 
         return None
 
-    def get_using_judge_link(self):
+    def get_using_staff_link(self):
         # If decklist are not published, only show them to a user presenting
         # the right sharing key. Use constant-time comparison.
         k1 = self.object.staff_key
@@ -302,14 +304,14 @@ class CollectionView(DetailView):
         if self.object.decklists_published:
             return True
 
-        return self.get_using_judge_link()
+        return self.get_using_staff_link()
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         context["decklists"] = self.get_decklists()
-        context["judge_link"] = self.get_judge_link()
+        context["staff_link"] = self.get_staff_link()
         context["show_decklist_links"] = self.get_show_decklist_links()
-        context["using_judge_link"] = self.get_using_judge_link()
+        context["using_staff_link"] = self.get_using_staff_link()
         context["owned_decklists"] = self.request.session.get("owned_decklists", [])
         return context
 

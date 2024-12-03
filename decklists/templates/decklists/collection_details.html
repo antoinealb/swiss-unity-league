@@ -13,11 +13,11 @@
     </h1>
     <p class="h3">Format: {{ collection.get_format_display }}</p>
     <p>Submission deadline: {{ collection.submission_deadline }}</p>
-    {% if judge_link %}
+    {% if staff_link %}
         <div class="form-group">
-            <label for="judgeLink" class="font-weight-bold"><b>Judge Link</b> (share decklists with judges and other staff before they are public):</label>
+            <label for="judgeLink" class="font-weight-bold"><b>Staff Link</b> (share decklists with judges and other staff before they are public):</label>
             <div class="input-group my-3">
-                <input type="text" id="judgeLink" class="form-control" value="{{ judge_link }}" readonly>
+                <input type="text" id="judgeLink" class="form-control" value="{{ staff_link }}" readonly>
                 <button class="btn btn-secondary" type="button" id="copyJudgeLinkButton">Copy to Clipboard</button>
             </div>
         </div>
@@ -38,7 +38,7 @@
                     <tr>
                         <td>
                             {% if show_decklist_links or decklist.id.hex in owned_decklists %}
-                                {% if using_judge_link %}
+                                {% if using_staff_link %}
                                     <a href="{{ decklist.get_absolute_url }}?sort=manavalue">
                                 {% else %}
                                     <a href="{{ decklist.get_absolute_url }}">

@@ -18,7 +18,7 @@ from django.urls import reverse
 from django.utils import timezone
 from rest_framework.status import HTTP_200_OK
 
-from championship.factories import EventFactory, EventOrganizerFactory, PlayerFactory
+from championship.factories import EventOrganizerFactory, PlayerFactory
 from championship.models import Event
 from decklists.factories import CollectionFactory, DecklistFactory
 from decklists.models import Decklist
@@ -84,12 +84,19 @@ class CollectionViewTestCase(TestCase):
         self.assertTrue(resp.context["show_decklist_links"])
         self.assertIn(reverse("decklist-details", args=[d.id]), resp.content.decode())
 
-    def test_judge_link_is_shown_to_tournament_organizer(self):
+    def test_staff_link_is_shown_to_tournament_organizer(self):
         self.login()
-        collection = CollectionFactory(event=EventFactory(organizer=self.organizer))
+        collection = CollectionFactory(event__organizer=self.organizer)
         resp = self.client.get(reverse("collection-details", args=[collection.id]))
         self.assertFalse(resp.context["show_decklist_links"])
-        self.assertIsNotNone(resp.context["judge_link"])
+        self.assertIsNotNone(resp.context["staff_link"])
+
+    def test_hide_staff_link_for_organizer_if_published(self):
+        self.login()
+        collection = CollectionFactory(event__organizer=self.organizer, published=True)
+        resp = self.client.get(reverse("collection-details", args=[collection.id]))
+        self.assertTrue(resp.context["show_decklist_links"])
+        self.assertNotContains(resp, resp.context["staff_link"])
 
     def test_link_submit_decklist_shown_before_deadline(self):
         collection = CollectionFactory()
@@ -130,11 +137,11 @@ class CollectionViewTestCase(TestCase):
         self.user.user_permissions.add(Permission.objects.get(codename="view_decklist"))
         self.user.save()
         self.login()
-        collection = CollectionFactory()
+        collection = CollectionFactory(published=False)
         resp = self.client.get(reverse("collection-details", args=[collection.id]))
         self.assertFalse(resp.context["show_decklist_links"])
-        self.assertIsNotNone(resp.context["judge_link"])
-        self.assertContains(resp, resp.context["judge_link"])
+        self.assertIsNotNone(resp.context["staff_link"])
+        self.assertContains(resp, resp.context["staff_link"])
 
     def test_decklists_are_not_linked_by_default(self):
         d = DecklistFactory()
@@ -142,7 +149,7 @@ class CollectionViewTestCase(TestCase):
         self.assertNotIn(
             reverse("decklist-details", args=[d.id]), resp.content.decode()
         )
-        self.assertIsNone(resp.context["judge_link"])
+        self.assertIsNone(resp.context["staff_link"])
         self.assertFalse(resp.context["show_decklist_links"])
 
     def test_decklist_are_shown_if_we_are_the_creator_of_the_list(self):
@@ -163,11 +170,11 @@ class CollectionViewTestCase(TestCase):
             reverse("decklist-details", args=[decklist.id]), resp.content.decode()
         )
 
-    def test_decklist_are_shown_if_using_the_judge_link(self):
+    def test_decklist_are_shown_if_using_the_staff_link(self):
         d = DecklistFactory()
         self.client.force_login(d.collection.event.organizer.user)
         resp = self.client.get(reverse("collection-details", args=[d.collection.id]))
-        url = resp.context["judge_link"]
+        url = resp.context["staff_link"]
         resp = self.client.get(url)
         # We want links for judges to be sorted by mana value by default
         want_url = reverse("decklist-details", args=[d.id]) + "?sort=manavalue"
