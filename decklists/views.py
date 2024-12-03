@@ -27,6 +27,7 @@ from django.views.generic import DetailView
 from django.views.generic.edit import CreateView, UpdateView
 
 from championship.models import Event, Player
+from championship.views.base import CustomDeleteView
 from decklists.forms import CollectionForm, DecklistForm
 from decklists.models import Collection, Decklist
 from decklists.parser import DecklistParser
@@ -268,6 +269,19 @@ class DecklistCreateView(SuccessMessageMixin, CreateView):
         except KeyError:
             self.request.session["owned_decklists"] = [self.object.id.hex]
         return resp
+
+
+class DecklistDeleteView(CustomDeleteView):
+    model = Decklist
+
+    def get_success_url(self):
+        return reverse("collection-details", args=[self.object.collection.id])
+
+    def allowed_to_delete(self, object, request):
+        return (
+            object.can_be_edited()
+            or object.collection.event.organizer.user == request.user
+        )
 
 
 class CollectionView(DetailView):

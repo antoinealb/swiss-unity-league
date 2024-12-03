@@ -21,6 +21,9 @@ urlpatterns = [
     path("<uuid:pk>/", views.DecklistView.as_view(), name="decklist-details"),
     path("<uuid:pk>/edit/", views.DecklistUpdateView.as_view(), name="decklist-update"),
     path(
+        "<uuid:pk>/delete/", views.DecklistDeleteView.as_view(), name="decklist-delete"
+    ),
+    path(
         "collections/<int:pk>/",
         views.CollectionView.as_view(),
         name="collection-details",

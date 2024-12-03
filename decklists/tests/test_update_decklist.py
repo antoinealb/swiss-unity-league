@@ -131,3 +131,22 @@ class DecklistCreate(TestCase):
         self.assertEqual(
             self.client.session["owned_decklists"], [d.id.hex for d in decklists]
         )
+
+
+class DecklistDeletion(TestCase):
+
+    def test_can_delete_decklist_before_deadline(self):
+        decklist = DecklistFactory(collection__published=False)
+        self.client.post(reverse("decklist-delete", args=[decklist.id]))
+        self.assertFalse(Decklist.objects.exists())
+
+    def test_cannot_delete_decklist_after_deadline(self):
+        decklist = DecklistFactory(collection__published=True)
+        self.client.post(reverse("decklist-delete", args=[decklist.id]))
+        self.assertTrue(Decklist.objects.exists())
+
+    def test_organizer_can_delete_decklist_after_deadline(self):
+        decklist = DecklistFactory(collection__published=True)
+        self.client.force_login(decklist.collection.event.organizer.user)
+        self.client.post(reverse("decklist-delete", args=[decklist.id]))
+        self.assertFalse(Decklist.objects.exists())

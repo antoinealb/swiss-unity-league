@@ -14,7 +14,6 @@
 
 from django.conf import settings
 from django.contrib import messages
-from django.contrib.auth.mixins import LoginRequiredMixin
 from django.http import Http404, HttpResponseForbidden
 from django.views.generic.edit import DeleteView
 
@@ -49,7 +48,7 @@ class PerSeasonMixin:
         return context
 
 
-class CustomDeleteView(LoginRequiredMixin, DeleteView):
+class CustomDeleteView(DeleteView):
     success_message = "Successfully deleted {verbose_name}!"
 
     def allowed_to_delete(self, object, request):
