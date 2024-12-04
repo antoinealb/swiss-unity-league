@@ -14,7 +14,7 @@
 
 import datetime
 
-from django.contrib.auth.models import User
+from django.contrib.auth.models import Permission, User
 from django.core.exceptions import ValidationError
 from django.core.files.uploadedfile import SimpleUploadedFile
 from django.test import Client, TestCase
@@ -42,6 +42,8 @@ class EventDetailTestCase(TestCase):
         self.client = Client()
         credentials = dict(username="test", password="test")
         self.user = User.objects.create_user(is_staff=True, **credentials)
+        self.user.user_permissions.add(Permission.objects.get(codename="change_event"))
+        self.user.save()
         self.client.login(**credentials)
 
     def test_get_page(self):
@@ -138,6 +140,17 @@ class EventDetailTestCase(TestCase):
         resp = self.client.get(reverse("event_details", args=[event.id]))
 
         self.assertIn(
+            reverse("admin:championship_event_change", args=[event.id]),
+            resp.content.decode(),
+        )
+
+    def test_link_is_hidden_for_staff_users_without_permission(self):
+        event = EventFactory()
+        self.user.user_permissions.clear()
+        self.user.save()
+
+        resp = self.client.get(event.get_absolute_url())
+        self.assertNotIn(
             reverse("admin:championship_event_change", args=[event.id]),
             resp.content.decode(),
         )

@@ -113,7 +113,7 @@
             </dd>
         {% endif %}
 
-        {% if user.is_staff %}
+        {% if user.is_staff and perms.championship.change_event %}
             <dt class="col-sm-3">Admin (shown only to staff users)</dt>
             <dd class="col-sm-9">
                 <a class="btn btn-warning" href="{% url 'admin:championship_event_change' event.id %}">Edit in admin</a>
