@@ -191,16 +191,33 @@ class DecklistView(DetailView):
 
     def get_context_data(self, *args, **kwargs):
         context = super().get_context_data(*args, **kwargs)
-
+        decklist = context["decklist"]
         # By default, we sort by type, but we can also sort by manavalue for
         # deckchecks.
         sort_by_type = True
         if self.request.GET.get("sort") == "manavalue":
             sort_by_type = False
 
-        return get_decklist_table_context(
-            context["decklist"], split_decklist_by_type=sort_by_type
+        context.update(
+            get_decklist_table_context(decklist, split_decklist_by_type=sort_by_type)
         )
+        if (
+            decklist.can_be_edited()
+            or decklist.collection.event.organizer.user == self.request.user
+            or "staff_key" in self.request.GET
+        ):
+            staff_query_param = (
+                f"?staff_key={self.request.GET['staff_key']}"
+                if "staff_key" in self.request.GET
+                else ""
+            )
+            context["edit_decklist_url"] = (
+                reverse("decklist-update", args=[decklist.id]) + staff_query_param
+            )
+            context["delete_decklist_url"] = (
+                reverse("decklist-delete", args=[decklist.id]) + staff_query_param
+            )
+        return context
 
 
 class PlayerAutoCompleteMixin:
@@ -221,6 +238,7 @@ class DecklistUpdateView(PlayerAutoCompleteMixin, SuccessMessageMixin, UpdateVie
         if not (
             decklist.can_be_edited()
             or decklist.collection.event.organizer.user == request.user
+            or decklist.collection.staff_key == request.GET.get("staff_key")
         ):
             messages.error(
                 request,
@@ -228,6 +246,13 @@ class DecklistUpdateView(PlayerAutoCompleteMixin, SuccessMessageMixin, UpdateVie
             )
             return redirect(reverse("decklist-details", args=[decklist.id]))
         return super().dispatch(request, *args, **kwargs)
+
+    def get_success_url(self) -> str:
+        return super().get_success_url() + (
+            f"?staff_key={self.request.GET['staff_key']}"
+            if "staff_key" in self.request.GET
+            else ""
+        )
 
 
 class DecklistCreateView(SuccessMessageMixin, CreateView):
@@ -281,6 +306,9 @@ class DecklistDeleteView(CustomDeleteView):
         return (
             object.can_be_edited()
             or object.collection.event.organizer.user == request.user
+            or secrets.compare_digest(
+                object.collection.staff_key, request.GET.get("staff_key", "")
+            )
         )
 
 
@@ -289,13 +317,11 @@ class CollectionView(DetailView):
     template_name = "decklists/collection_details.html"
 
     def get_decklists(self):
-        return self.object.decklist_set.select_related("player").order_by(
+        return self.object.decklist_set.select_related("player", "collection").order_by(
             "player__name", "-last_modified"
         )
 
     def get_staff_link(self):
-        if self.object.decklists_published:
-            return None
         link = self.request.build_absolute_uri(
             self.object.get_absolute_url() + f"?staff_key={self.object.staff_key}"
         )

@@ -15,10 +15,14 @@
     </h1>
     <p>Last edited: {{ decklist.last_modified }}</p>
 
-    {% if decklist.can_be_edited or user == decklist.collection.event.organizer.user %}
+    {% if edit_decklist_url or delete_decklist_url %}
         <p>
-            <a href="{% url 'decklist-update' decklist.id %}" class="btn btn-secondary">Edit decklist</a>
-            {% include 'championship/delete_confirmation.html' with object=decklist delete_url=decklist_delete_url %}
+            {% if edit_decklist_url %}
+                <a href="{{ edit_decklist_url }}" class="btn btn-secondary">Edit decklist</a>
+            {% endif %}
+            {% if delete_decklist_url %}
+                {% include 'championship/delete_confirmation.html' with object=decklist delete_url=delete_decklist_url %}
+            {% endif %}
         </p>
     {% endif %}
     {% if errors %}

@@ -43,22 +43,39 @@ class DecklistViewTestCase(TestCase):
 
     def test_link_edit_decklist_if_before_deadline(self):
         decklist = DecklistFactory()
-        url = reverse("decklist-update", args=[decklist.id])
         resp = self.client.get(reverse("decklist-details", args=[decklist.id]))
-        self.assertIn(url, resp.content.decode())
+        self.assertContains(resp, reverse("decklist-update", args=[decklist.id]))
+        self.assertContains(resp, reverse("decklist-delete", args=[decklist.id]))
 
     def test_nolink_edit_decklist_after_deadline(self):
         decklist = DecklistFactory(collection__published=True)
-        url = reverse("decklist-update", args=[decklist.id])
         resp = self.client.get(reverse("decklist-details", args=[decklist.id]))
-        self.assertNotIn(url, resp.content.decode())
+        self.assertNotContains(resp, reverse("decklist-update", args=[decklist.id]))
+        self.assertNotContains(resp, reverse("decklist-delete", args=[decklist.id]))
 
     def test_link_edit_decklist_after_deadline_for_organizer(self):
         decklist = DecklistFactory(collection__published=True)
         self.client.force_login(decklist.collection.event.organizer.user)
-        url = reverse("decklist-update", args=[decklist.id])
         resp = self.client.get(reverse("decklist-details", args=[decklist.id]))
-        self.assertIn(url, resp.content.decode())
+        self.assertContains(resp, reverse("decklist-update", args=[decklist.id]))
+        self.assertContains(resp, reverse("decklist-delete", args=[decklist.id]))
+
+    def test_link_edit_decklist_after_deadline_with_staff_key(self):
+        decklist = DecklistFactory(collection__published=True)
+        resp = self.client.get(
+            reverse("decklist-details", args=[decklist.id])
+            + f"?staff_key={decklist.collection.staff_key}"
+        )
+        self.assertContains(
+            resp,
+            reverse("decklist-update", args=[decklist.id])
+            + f"?staff_key={decklist.collection.staff_key}",
+        )
+        self.assertContains(
+            resp,
+            reverse("decklist-delete", args=[decklist.id])
+            + f"?staff_key={decklist.collection.staff_key}",
+        )
 
     def test_section_card_counter(self):
         decklist = DecklistFactory(archetype="Burn")

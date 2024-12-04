@@ -23,31 +23,58 @@ from decklists.models import Decklist
 
 
 class DecklistEdit(TestCase):
+    def setUp(self):
+        self.data = {
+            "player_name": "player",
+            "archetype": "new",
+            "mainboard": "1 Fog",
+            "sideboard": "1 Fly",
+        }
+
     def test_permission_denied_past_deadline(self):
         decklist = DecklistFactory(
             collection__submission_deadline=timezone.now() - timezone.timedelta(hours=1)
         )
-        resp = self.client.post(reverse("decklist-update", args=[decklist.id]))
+        resp = self.client.post(
+            reverse("decklist-update", args=[decklist.id]), data=self.data
+        )
         self.assertRedirects(resp, reverse("decklist-details", args=[decklist.id]))
+        decklist.refresh_from_db()
+        self.assertNotEqual(decklist.archetype, self.data["archetype"])
 
     def test_organizer_can_edit_decklist_past_deadline(self):
         decklist = DecklistFactory(
             collection__submission_deadline=timezone.now() - timezone.timedelta(hours=1)
         )
         self.client.force_login(decklist.collection.event.organizer.user)
-        resp = self.client.post(reverse("decklist-update", args=[decklist.id]))
-        self.assertEqual(200, resp.status_code)
+        self.client.post(reverse("decklist-update", args=[decklist.id]), data=self.data)
+        decklist.refresh_from_db()
+        self.assertEqual(decklist.archetype, self.data["archetype"])
+
+    def test_can_update_decklist_past_deadline_with_staff_key(self):
+        decklist = DecklistFactory(
+            collection__submission_deadline=timezone.now() - timezone.timedelta(hours=1)
+        )
+        resp = self.client.post(
+            reverse("decklist-update", args=[decklist.id])
+            + f"?staff_key={decklist.collection.staff_key}",
+            data=self.data,
+        )
+        decklist.refresh_from_db()
+        self.assertEqual(decklist.archetype, self.data["archetype"])
+
+        # Check that the staff_key is in the redirected URL
+        expected_redirect_url = reverse("decklist-details", args=[decklist.id])
+        self.assertEqual(
+            resp.url,
+            f"{expected_redirect_url}?staff_key={decklist.collection.staff_key}",
+        )
 
     def test_can_change_decklist_archetype_and_sideboard(self):
         decklist = DecklistFactory()
-        data = {
-            "player_name": decklist.player.name,
-            "archetype": "new",
-            "mainboard": "1 Fog",
-            "sideboard": "1 Fly",
-        }
+        self.data["player_name"] = decklist.player.name
         resp = self.client.post(
-            reverse("decklist-update", args=[decklist.id]), data=data
+            reverse("decklist-update", args=[decklist.id]), data=self.data
         )
         decklist.refresh_from_db()
         self.assertEqual("new", decklist.archetype)
@@ -58,25 +85,15 @@ class DecklistEdit(TestCase):
     def test_can_change_decklist_player_for_another_player(self):
         decklist = DecklistFactory()
         newplayer = PlayerFactory()
-        data = {
-            "player_name": newplayer.name,
-            "archetype": "new",
-            "mainboard": "1 Fog",
-            "sideboard": "1 Fly",
-        }
-        self.client.post(reverse("decklist-update", args=[decklist.id]), data=data)
+        self.data["player_name"] = newplayer.name
+        self.client.post(reverse("decklist-update", args=[decklist.id]), data=self.data)
         decklist.refresh_from_db()
         self.assertEqual(newplayer, decklist.player)
 
     def test_can_change_decklist_player_for_new_player(self):
         decklist = DecklistFactory()
-        data = {
-            "player_name": "Yoda",
-            "archetype": "new",
-            "mainboard": "1 Fog",
-            "sideboard": "1 Fly",
-        }
-        self.client.post(reverse("decklist-update", args=[decklist.id]), data=data)
+        self.data["player_name"] = "Yoda"
+        self.client.post(reverse("decklist-update", args=[decklist.id]), data=self.data)
         decklist.refresh_from_db()
         self.assertEqual("Yoda", decklist.player.name)
         self.assertEqual(2, Player.objects.count())
@@ -149,4 +166,12 @@ class DecklistDeletion(TestCase):
         decklist = DecklistFactory(collection__published=True)
         self.client.force_login(decklist.collection.event.organizer.user)
         self.client.post(reverse("decklist-delete", args=[decklist.id]))
+        self.assertFalse(Decklist.objects.exists())
+
+    def test_can_delete_decklist_with_staff_key_after_deadline(self):
+        decklist = DecklistFactory(collection__published=True)
+        self.client.post(
+            reverse("decklist-delete", args=[decklist.id])
+            + f"?staff_key={decklist.collection.staff_key}"
+        )
         self.assertFalse(Decklist.objects.exists())

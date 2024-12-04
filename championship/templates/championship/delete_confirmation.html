@@ -21,7 +21,7 @@
                 </div>
                 <div class="modal-footer">
                     <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
-                    <form method="post" action="{{ object.get_delete_url }}">
+                    <form method="post" action="{% if delete_url %}{{ delete_url }}{% else %}{{ object.get_delete_url }}{% endif %}">
                         {% csrf_token %}
                         <button class="btn btn-danger" type="submit">Delete</button>
                     </form>

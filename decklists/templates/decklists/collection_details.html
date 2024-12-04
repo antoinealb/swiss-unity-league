@@ -39,7 +39,7 @@
                         <td>
                             {% if show_decklist_links or decklist.id.hex in owned_decklists %}
                                 {% if using_staff_link %}
-                                    <a href="{{ decklist.get_absolute_url }}?sort=manavalue">
+                                    <a href="{{ decklist.get_absolute_url }}?sort=manavalue&staff_key={{ decklist.collection.staff_key }}">
                                 {% else %}
                                     <a href="{{ decklist.get_absolute_url }}">
                                 {% endif %}

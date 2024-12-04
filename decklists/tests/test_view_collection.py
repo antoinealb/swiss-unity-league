@@ -103,13 +103,6 @@ class CollectionViewTestCase(TestCase):
         self.assertFalse(resp.context["show_decklist_links"])
         self.assertIsNotNone(resp.context["staff_link"])
 
-    def test_hide_staff_link_for_organizer_if_published(self):
-        self.login()
-        collection = CollectionFactory(event__organizer=self.organizer, published=True)
-        resp = self.client.get(reverse("collection-details", args=[collection.id]))
-        self.assertTrue(resp.context["show_decklist_links"])
-        self.assertNotContains(resp, resp.context["staff_link"])
-
     def test_link_submit_decklist_shown_before_deadline(self):
         collection = CollectionFactory()
         resp = self.client.get(reverse("collection-details", args=[collection.id]))
@@ -189,8 +182,11 @@ class CollectionViewTestCase(TestCase):
         url = resp.context["staff_link"]
         resp = self.client.get(url)
         # We want links for judges to be sorted by mana value by default
-        want_url = reverse("decklist-details", args=[d.id]) + "?sort=manavalue"
-        self.assertIn(want_url, resp.content.decode())
+        want_url = (
+            reverse("decklist-details", args=[d.id])
+            + f"?sort=manavalue&staff_key={d.collection.staff_key}"
+        )
+        self.assertContains(resp, want_url)
 
     def test_num_players_shown(self):
         collection = CollectionFactory()
