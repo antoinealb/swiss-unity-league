@@ -84,6 +84,15 @@ class PlayerDetailsTest(TestCase):
 
         self.assertEqual(gotScore, (10 + 3) * 6)
 
+    def test_score_is_replaced_by_na_for_others(self):
+        """
+        Checks that OTHER events are displayed but without score.
+        """
+        result = ResultFactory(event__category=Event.Category.OTHER, win_count=3)
+        response = self.get_player_details_2023(result.player)
+        got_score = response.context_data[LAST_RESULTS][0][1]
+        self.assertIsNone(got_score, "Score should be None for OTHER events.")
+
     def test_404_when_player_is_hidden(self):
         """
         Checks that if a player wants to be hidden from leaderboard, we

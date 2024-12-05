@@ -120,16 +120,13 @@ class PlayerDetailsView(PerSeasonMixin, DetailView):
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
 
-        results = get_results_with_qps(
-            Result.objects.filter(
-                player=context["player"],
-                event__date__gte=self.current_season.start_date,
-                event__date__lte=self.current_season.end_date,
-            ).prefetch_related("event__organizer")
-        )
-
-        context[LAST_RESULTS] = sorted(
-            results, key=lambda r: r[0].event.date, reverse=True
+        context[LAST_RESULTS] = list(
+            get_results_with_qps(
+                Result.objects.filter(player=context["player"])
+                .in_season(self.current_season)
+                .prefetch_related("event__organizer")
+                .order_by("-event__date")
+            )
         )
 
         context["profile"] = (
@@ -177,7 +174,7 @@ class PlayerDetailsView(PerSeasonMixin, DetailView):
                 qp_table,
                 column_title=result.event.get_category_display(),
                 row_title=QPS,
-                value=score.qps,
+                value=score.qps if score else None,
             )
             add_to_table(
                 qp_table,

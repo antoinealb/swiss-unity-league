@@ -12,9 +12,13 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+from datetime import date
+
 from django.test import TestCase
 
 from championship.factories import ResultFactory
+from championship.models import Result
+from championship.season import SEASON_2023
 
 
 class ResultFactoryTest(TestCase):
@@ -30,3 +34,8 @@ class ResultTest(TestCase):
             f"{p.player.name}@{p.event.name} {p.event.get_category_display()} (3-2-0)",
             str(p),
         )
+
+    def test_query_season(self):
+        r = ResultFactory(event__date=date(2023, 8, 1))
+        ResultFactory(event__date=date(2024, 8, 1))
+        self.assertQuerysetEqual(Result.objects.in_season(SEASON_2023), [r])

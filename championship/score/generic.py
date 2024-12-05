@@ -79,13 +79,9 @@ def get_results_with_qps(
     - event: the event
     - byes: Number of byes awarded for this result.
     """
-    results = (
-        event_player_results.select_related("event")
-        .annotate(
-            event_size=Count("event__result"),
-            top_count=Count("event__result__playoff_result"),
-        )
-        .exclude(event__category=Event.Category.OTHER)
+    results = event_player_results.select_related("event").annotate(
+        event_size=Count("event__result"),
+        top_count=Count("event__result__playoff_result"),
     )
 
     # Calculate the number of rounds by taking the sum of win/draw/loss. We
@@ -100,12 +96,15 @@ def get_results_with_qps(
     for result in results:
         method = SCOREMETHOD_PER_SEASON[result.event.season]
         result.has_top8 = result.top_count > 0
-        score = method.score_for_result(  # type: ignore
-            result,
-            event_size=result.event_size,
-            has_top8=result.has_top8,
-            total_rounds=rounds_per_event[result.event_id],
-        )
+        if result.event.category == Event.Category.OTHER:
+            score = None
+        else:
+            score = method.score_for_result(  # type: ignore
+                result,
+                event_size=result.event_size,
+                has_top8=result.has_top8,
+                total_rounds=rounds_per_event[result.event_id],
+            )
         yield result, score
 
 

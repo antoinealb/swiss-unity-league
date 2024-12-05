@@ -221,7 +221,7 @@
                             <td>{{ result.event.date|weekday_date }}</td>
                             <td>{{ result.event.get_category_display }}</td>
                             <td>{{ result.event.get_format_display }}</td>
-                            <td>{{ score.qps }}</td>
+                            <td>{{ score.qps|default:"N/A" }}</td>
                             <td>{{ result.win_count }} - {{ result.loss_count }} - {{ result.draw_count }}</td>
                         </tr>
                     {% endfor %}

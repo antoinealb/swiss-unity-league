@@ -807,6 +807,14 @@ class PlayerAlias(models.Model):
         verbose_name_plural = "player aliases"
 
 
+class ResultQuerySet(models.QuerySet):
+    def in_season(self, season: Season):
+        return self.filter(
+            event__date__gte=season.start_date,
+            event__date__lte=season.end_date,
+        )
+
+
 class Result(models.Model):
     """
     A result for a single player in a single event.
@@ -849,6 +857,8 @@ class Result(models.Model):
         default=False,
         help_text="Indicates whether this result was automatically migrated from points to records. Used for diagnostics.",
     )
+
+    objects = ResultQuerySet.as_manager()
 
     class Meta:
         indexes = [models.Index(fields=["event"], name="championship_result_event_idx")]
