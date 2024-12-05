@@ -26,13 +26,13 @@ class InfoPlayerViewTest(TestCase):
         url = reverse("info_for_season", kwargs={"slug": season.slug})
         response = self.client.get(url)
         self.assertEqual(response.status_code, 200)
-        self.assertTemplateUsed(
-            response, f"championship/info/{season.slug}/info_player.html"
-        )
+        self.assertTemplateUsed(response, f"info/{season.slug}/info_player.html")
 
     def test_default_info_exists(self):
-        response = self.client.get(reverse("info"))
+        response = self.client.get("/info", follow=True)
         self.assertEqual(response.status_code, 200)
+
+    def test_season_does_not_exist(self):
         response = self.client.get(
             reverse("info_for_season", kwargs={"slug": "foobar"})
         )
@@ -45,14 +45,21 @@ class InfoOrganizerViewTest(TestCase):
         url = reverse("info_organizer_for_season", kwargs={"slug": season.slug})
         response = self.client.get(url)
         self.assertEqual(response.status_code, 200)
-        self.assertTemplateUsed(
-            response, f"championship/info/{season.slug}/info_organizer.html"
-        )
+        self.assertTemplateUsed(response, f"info/{season.slug}/info_organizer.html")
 
     def test_default_info_exists(self):
-        response = self.client.get(reverse("info_organizer"))
+        response = self.client.get("/info/organizer")
         self.assertEqual(response.status_code, 200)
+
+    def test_season_does_not_exist(self):
         response = self.client.get(
             reverse("info_organizer_for_season", kwargs={"slug": "foobar"})
         )
         self.assertEqual(response.status_code, 404)
+
+
+class InfoIcal(TestCase):
+    def test_get_ical_page(self):
+        """Checks that the information page for ical integration exists."""
+        resp = self.client.get(reverse("info_ical"))
+        self.assertEqual(200, resp.status_code)

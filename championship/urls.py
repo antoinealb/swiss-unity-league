@@ -62,22 +62,6 @@ urlpatterns = [
         views.CreatePlayerProfileView.as_view(),
         name="create_player_profile",
     ),
-    path("info", views.InformationForPlayerView.as_view(), name="info"),
-    path(
-        "info/<slug:slug>/",
-        views.InformationForPlayerView.as_view(),
-        name="info_for_season",
-    ),
-    path(
-        "info/organizer",
-        views.InformationForOrganizerView.as_view(),
-        name="info_organizer",
-    ),
-    path(
-        "info/organizer/<slug:slug>",
-        views.InformationForOrganizerView.as_view(),
-        name="info_organizer_for_season",
-    ),
     path("events", views.FutureEventView.as_view(), name="events"),
     path("events/create", views.CreateEventView.as_view(), name="events_create"),
     path(
@@ -164,5 +148,4 @@ urlpatterns = [
     path(
         "premierevents.ics", ical_feeds.PremierEventsFeed(), name="premier_events_feed"
     ),
-    path("calendar-integration", views.IcalInformationView.as_view(), name="info_ical"),
 ]

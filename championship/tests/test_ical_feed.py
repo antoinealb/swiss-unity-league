@@ -15,7 +15,6 @@
 import datetime
 
 from django.test import Client, TestCase
-from django.urls import reverse
 
 from icalendar import Calendar
 
@@ -74,9 +73,3 @@ class ICalFeedGetTest(TestCase):
         events = self.get_ical_feed("/premierevents.ics")
         events = [str(c["SUMMARY"]) for c in events]
         self.assertEqual([f"[{e.organizer.name}] {e.name}"], events)
-
-    def test_get_ical_page(self):
-        """Checks that the information page for ical integration exists."""
-        client = Client()
-        resp = client.get(reverse("info_ical"))
-        self.assertEqual(200, resp.status_code)

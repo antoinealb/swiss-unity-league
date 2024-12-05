@@ -45,4 +45,5 @@ urlpatterns = [
     path("tinymce/", include("tinymce.urls")),
     path("media/", include("file_storage_db.urls")),
     path("articles/", include("articles.urls")),
+    path("info/", include("info.urls")),
 ]

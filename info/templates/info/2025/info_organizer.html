@@ -1,34 +1,27 @@
-{% extends "championship/info/base_info_organizer.html" %}
+{% extends "info/base_info_organizer.html" %}
 
 {% load static %}
 
 {% block info %}
     <h2>Eligible Tournaments</h2>
-    <p>The 2024 season runs from 01.11.2023 until 31.10.2024 and qualifies for the
-        Invitational tournament in November 2024. During that time, you can register
-        all of your Magic: the Gathering events for the league to make them
-        award SUL Points to the participants.</p>
-    <p>Eligible are all Magic: the Gathering tournaments that are:</p>
-    <ul>
-        <li>Held in or around Switzerland</li>
-        <li>Held in real life</li>
-        <li>Held in a single-player format</li>
-    </ul>
-    <p>Digital and multiplayer events can still be advertised on our website, but they cannot award SUL Points.</p>
+    <p>All <b>Magic: the Gathering</b> tournaments held in <b>real life</b> are eligible to award points for the SUL.</p>
+    <p>The 2025 season runs from 01.11.2024 until 31.10.2025 and qualifies for the
+        SUL Championship in November 2025. During that time, you can register
+        all of your MTG events for the league to make them
+        award League Points to the participants. Afterwards the next season begins.</p>
     <h2>Tournament Types</h2>
     <p>There are 3 types of tournaments (SUL Regular, Regional, and Premier).
         To each of your tournaments, you can assign one of these types,
         which defines how many points your event will award.</p>
-    <p>To finance the prize pool of the invitational, organizers pay a fee
+    <p>To finance the prize pool of the Championship, organizers pay a fee
         to run SUL Premier and SUL Regional tournaments. The higher the fee that you pay, the more
         points your event will award to players. SUL Regular tournaments are free to organize.</p>
-
     <div>
         <img src="{% static 'types/logos/regular.png' %}" class="float-end float-md-start  ms-3 ms-md-0 me-md-3 sul-type-logo-size">
         <h3>SUL Regular</h3>
         <p>All your normal events (weekly, FNM, Prerelease) will be SUL Regular
             events. These events don't have a fee and allow you to award
-            extra prizes in the form of SUL Points to your players for free.
+            extra prizes in the form of League Points to your players for free.
             Therefore, if your budget is limited, it is still possible to participate
             in the league by running all of your events as SUL Regular and not paying any fees.</p>
     </div>
@@ -38,16 +31,10 @@
         <h3>SUL Regional</h3>
         <p>If you wish to make your local events more attractive for people in your canton,
             you can turn them into SUL Regional events.</p>
-        <p>Each month, you can organize the following SUL Regional events:</p>
-        <div>
-            <ul style="overflow: auto;">
-                <li>For each format, you can run 1 SUL Regional event. (e.g., 1 Modern, 1 Legacy, 1 Pioneer, etc.)</li>
-                <li>For each weekly recurring event, 1 event of this series can be SUL Regional.</li>
-            </ul>
-        </div>
+        <p>For <b>each kind of event</b> you organizer, <b>one</b> of those events <b>per month</b> can be <b>SUL Regional.</b></p>
         <p><i>Example: If you have a weekly modern event on Wednesday and a weekly legacy event on Friday,
             you can have among these events 1 Legacy and 1 Modern event be SUL Regional per month. Additionally,
-            you could organize a Modern event on a Saturday and a Legacy event on a Sunday, both with top 8.</i></p>
+            you can organize a Modern Regional event on a Saturday and a Legacy Regional event on a Sunday, both with top 8.</i></p>
         <p>Running an SUL Regional event comes with a fee of CHF 1 per participant. Playoffs (top 8 or top 4)
             are optional for regional events. If your Regional event has playoffs
             then a further fee of CHF 20 needs to be paid.</p>
@@ -56,13 +43,9 @@
     <div class="pt-3">
         <img src="{% static 'types/logos/premier.png' %}" class="float-end float-md-start  ms-3 ms-md-0 me-md-3 sul-type-logo-size">
         <h3>SUL Premier</h3>
-        <p>SUL Premier events are the most competitive events of the year. Since there is a very
-            limited amount of SUL Premier events, people travel all around Switzerland to attend them.</p>
-        <p>Every organizer gets the chance to organize 1 SUL Premier event per year. If you
-            have already organized Premier events in the previous season, you can run 2 Premier
-            events instead.</p>
-        <p>Running an SUL Premier event comes with a fee of CHF 100 plus and additional CHF 2 per participant.
-            Premier events require at least 24 participants and a top 8 must be played.</p>
+        <p>SUL Premier events are the most competitive events of the year. There's only a limited amount of SUL Premier events and hence people travel all around Switzerland to attend them.</p>
+        <p>Running an SUL Premier event comes with a fee of CHF 200.</p>
+        <p>Please contact us at least 1 month before your event for a 2025 SUL Premier event slot.</p>
     </div>
     <div class="clearfix"></div>
     <em><p>You may use <a href="https://drive.google.com/drive/u/1/folders/1uei55wTZZ76oxHrfoiYFOw4aZAi7baKo">these logos</a> to label your events on your flyers or website</p></em>
@@ -83,19 +66,19 @@
                         <td>Regular</td>
                         <td>Unlimited</td>
                         <td>free</td>
-                        <td>-</td>
+                        <td>free</td>
                     </tr>
                     <tr>
                         <td>Regional</td>
-                        <td>For each format 1 per month (+1 for each weekly event)</td>
+                        <td>For each kind of event 1 Regional per month</td>
                         <td>1.-</td>
                         <td>20.-</td>
                     </tr>
                     <tr>
                         <td>Premier</td>
-                        <td>1-2 per year</td>
-                        <td>2.-</td>
-                        <td>100.-</td>
+                        <td>Requires to request a slot</td>
+                        <td>-</td>
+                        <td>200.-</td>
                     </tr>
                 </tbody>
             </table>
@@ -107,79 +90,64 @@
     <p>We try to make participation in the league as easy as possible by automating many workflows on
         the website. Here are the remaining tasks required from the tournament organizer's side:</p>
     <ul>
-        <li>Enter your event details into the calendar on the SUL website. This will also link back to
-            your own website, providing you with advertising.</li>
-        <li>At the end of each event, the results must be imported on the SUL website. This can be done
-            via a direct link or PDF from the following tournament apps: Eventlink, Aetherhub, Challonge, Melee,
-            MTGEvent. Alternatively, you can manually upload the results or use an Excel or CSV file.</li>
-        <li>The fees will be calculated automatically, and you will receive an invoice every 3 months.</li>
+        <li>Enter your events into the SUL calendar so that all of our 1000+ player can find them.</li>
+        <li>At the end of each event, the results must be uploaded on the SUL website. We have integrations
+            that allow you to directly import results from the following tournament apps:
+            Eventlink/Companion, Aetherhub, Challonge, Melee, Spicerack, and MTGEvent.
+            Alternatively, you can manually upload the results or use an Excel or CSV file.</li>
+        <li>The fees will be calculated automatically, and you will receive an invoice every 2-3 months.</li>
     </ul>
     <p><em>Example: Ajani wants to turn his Saturday Modern event with top 8 into an SUL Regional Event. He
         creates the event on the website, which is then advertised on the SUL calendar. Ajani's
         event runs well and attracts 22 players. During the event, he manages the pairings and
-        results as usual with the Eventlink app. Once the event is over, Ajani downloads the results
+        results as usual with the Eventlink/Companion app. Once the event is over, Ajani downloads the results
         from Eventlink and uploads them on the SUL website, which immediately updates the ranking.
         Some time later, Ajani receives an invoice from the League for 22x1 + 20 = 42 CHF, which
-        goes into the prize pool for the Invitational.</em></p>
-
-    <h2>Benefits for Organizers</h2>
-    <ul>
-        <li>Advertising for your events through the Swiss Unity League event calendar.</li>
-        <li>Players are motivated to participate in your events more regularly.</li>
-        <li>Players from other regions are motivated to travel to your events.</li>
-        <li>Additional prizes at your weekly events in the form of SUL Points, at no cost to you.</li>
-        <li>Players can redeem their prizes from the SUL Invitational at your store.</li>
-    </ul>
-
-    <h2>SUL Rules</h2>
-    <p>Tournaments participating in the Swiss Unity League must be “Magic: the Gathering” events
-        in a single-player format and held in real life. Digital SUL events on MTG Arena, MTG Online,
+        goes into the prize pool of the Championship.</em></p>
+    <br><br><br>
+    <h2>SUL Guidelines</h2>
+    <p><b>In the following we provide detailed rules about the SUL as a reference. In general reading everything above will be enough info to participate.</b></p>
+    <p>Tournaments participating in the Swiss Unity League must be “Magic: the Gathering” events held in real life. Digital SUL events on MTG Arena,
         or similar platforms are not allowed.</p>
     <h3>Magic Tournament Rules</h3>
     <p>SUL events must follow the official <a href="https://blogs.magicjudges.org/rules/mtr/">
-        Magic Tournament Rules</a> (MTR). The following exceptions and additional rules apply:</p>
-    <li>Number of Swiss Rounds
-        <ul>
-            <li>For SUL Regular events, the number of Swiss rounds can be determined by the
-                TO individually.</li>
-            <li>For SUL Regional events without playoffs, the TO can decide the number of
-                Swiss rounds, up to a maximum of 5.</li>
-            <li>For events with playoffs (SUL Regional or Premier), the number of Swiss rounds
-                and type of playoffs (top 4/8) must comply with “Appendix E—Recommended Number
-                of Rounds in Swiss Tournaments” of the
-                <a href="https://blogs.magicjudges.org/rules/mtr-appendix-e/">MTR</a>.</li>
-        </ul>
-    </li>
+        Magic Tournament Rules</a> (MTR). The following additional rules apply:</p>
+    <ul>
+        <li>Number of Swiss Rounds
+            <ul>
+                <li>For SUL Regular events, the number of Swiss rounds can be determined by the
+                    TO individually.</li>
+                <li>For SUL Regional events without playoffs, the TO can decide the number of
+                    Swiss rounds, up to a maximum of 5.</li>
+                <li>For events with playoffs (SUL Regional or Premier), the number of Swiss rounds
+                    and type of playoffs (top 4/8) must comply with “Appendix E—Recommended Number
+                    of Rounds in Swiss Tournaments” of the
+                    <a href="https://blogs.magicjudges.org/rules/mtr-appendix-e/">MTR</a>.</li>
+            </ul>
+        </li>
     </ul>
     <h3>Tournament Requirements</h3>
     <h4>SUL Regional Events</h4>
+    <p>For each kind of event you organize, you can have one event of this kind be SUL Regional. Here some examples:</p>
     <ul>
-        <li>For each format you can run 1 SUL Regional event (all types of Limited count as the
-            same format).</li>
-        <li>For each weekly recurring event, 1 event of this series can be SUL Regional.</li>
-        <li>If you wish to run more than 3 Regional events in a given month, please
-            <a href="mailto:leoninleague@gmail.com">contact us</a> for approval.</li>
+        <li>If you run competive 1k events in different formats, you can have one event of each format be SUL Regional per month.</li>
+        <li>If you run a weekly recurring event, 1 event of this series can be SUL Regional per month.</li>
+        <li>If you run 3 Prereleases on a weekend, you can have 1 of these be SUL Regional.</li>
     </ul>
     <h4>SUL Premier Events</h4>
     <ul>
-        <li>You can run only 1 SUL Premier event per year. If you have organized Premier
-            events in the previous season, you can run 2 instead.</li>
-        <li>A minimum of 24 players is required for Premier events. If fewer than 24
-            players show up, your event will be downgraded to an SUL Regional event.</li>
-        <li>Online preregistration is required.</li>
+        <li>Premier events require approval. Please <a href="mailto:leoninleague@gmail.com">contatct us</a> at least one month prior to the event.</li>
         <li>SUL Premier events must be held on a Saturday or Sunday.</li>
         <li>Allowed formats include Limited, Modern, Legacy, and Pioneer.</li>
         <li>Competitive REL is mandatory.</li>
         <li>At least 1 judge is required for each Premier event.</li>
+        <li>Players need to be able to preregister online for the event.</li>
     </ul>
 
     <h3>Deadlines</h3>
     <ul>
         <li>In the last month of the Season (October), SUL Regional events must be announced in the SUL calendar at least 2 weeks in advance.</li>
         <li>Premier events must be announced in the SUL calendar at least 1 month in advance.</li>
-        <li>Approval is required for SUL Premier events. Please
-            <a href="mailto:leoninleague@gmail.com">contact us</a> at
-            least 5 weeks before the date of the event.</li>
         <li>Results must be uploaded within 1 month after an event is finished.</li>
         <li>At the end of the season, you have only 7 days to upload any remaining results.</li>
     </ul>
@@ -187,27 +155,22 @@
     <h3>Deviation from League Rules</h3>
     <p>If you wish to deviate from the league rules for a particular tournament, please
         <a href="mailto:leoninleague@gmail.com">contact us</a> in advance.</p>
-    <p>Examples of such deviations:</p>
-    <ul>
-        <li>Running more SUL Premier or Regional events than allowed.</li>
-        <li>Increasing the number of Swiss rounds at your SUL Regional event.</li>
-    </ul>
 
     <h2>Labeling Your Events</h2>
     <p>To ensure that SUL events are easily recognizable to players, it's important to label
         them consistently. Therefore, include the following details for each event in the calendar
         on your own website:</p>
     <ul>
-        <li>Mention that the event is part of the Swiss Unity League and awards SUL Points.</li>
+        <li>Mention that the event is part of the Swiss Unity League and awards League Points.</li>
         <li>Specify the type of the event (SUL Regular/Regional/Premier).</li>
         <li>Provide a link to <a href="{% url 'index' %}">unityleague.ch</a> for more information.</li>
     </ul>
-    <p>Additionally, you may use <a href="https://drive.google.com/drive/u/1/folders/1uei55wTZZ76oxHrfoiYFOw4aZAi7baKo">these logos</a> to label your events on your flyers or website</p>
+    <p>Additionally, you may use <a href="https://drive.google.com/drive/u/1/folders/1uei55wTZZ76oxHrfoiYFOw4aZAi7baKo">these logos</a> to label your events on your flyers or website.</p>
 
-    <h2>Redeem Invitational Prizes</h2>
-    <p>The prizes of the SUL Invitational 2024 will be paid out in store credits of eligible organizers of SUL.
+    <h2>Redeem Championship Prizes</h2>
+    <p>The prizes of the SUL Championship 2025 will be paid out in store credits of eligible organizers of SUL.
         Among all the TOs that offer their store credit (or other prizes), the players can choose freely where they want to redeem them.</p>
-    <p>To be eligible, a TO needs to pay at least CHF 400 in SUL fees for the Season 2024 (01.11.23-31.10.24).</p>
+    <p>To be eligible, a TO needs to pay at least CHF 400 in SUL fees during the Season 2025 (01.11.24-31.10.25).</p>
     <h2>Finances, Liability, and Sponsoring</h2>
     <p>The Swiss Unity League is financed through sponsorships and fees from organizers of SUL
         Regional and Premier events. The main organizer, the Leonin League association, assumes

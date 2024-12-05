@@ -114,6 +114,7 @@ INSTALLED_APPS = [
     "file_storage_db",
     "hijack",
     "hijack.contrib.admin",
+    "info",
     "invoicing",
     "multisite",
     "oracle",

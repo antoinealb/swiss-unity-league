@@ -11,11 +11,3 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-
-from championship.views.events import *  # noqa
-from championship.views.index import *  # noqa
-from championship.views.organizers import *  # noqa
-from championship.views.players import *  # noqa
-from championship.views.ranking import *  # noqa
-from championship.views.recurring_events import *  # noqa
-from championship.views.results import *  # noqa
