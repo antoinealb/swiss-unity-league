@@ -12,9 +12,11 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+import os.path
 from functools import lru_cache
 
 from django.conf import settings
+from django.contrib.sites.models import Site
 from django.template import TemplateDoesNotExist
 from django.template.loader import get_template
 from django.urls import reverse
@@ -43,7 +45,12 @@ class InformationView(TemplateView):
         return season
 
     def get_template_for_season(self, season):
-        return f"info/{season.slug}/{self.base_template_name}"
+        return os.path.join(
+            "info",
+            Site.objects.get_current().domain,
+            season.slug,
+            self.base_template_name,
+        )
 
     def get_template_names(self):
         return [self.get_template_for_season(self.get_season())]

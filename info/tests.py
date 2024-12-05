@@ -28,11 +28,15 @@ class InfoPlayerViewTest(TestCase):
         url = reverse("info_for_season", kwargs={"slug": season.slug})
         response = self.client.get(url)
         self.assertEqual(response.status_code, 200)
-        self.assertTemplateUsed(response, f"info/{season.slug}/info.html")
+        self.assertTemplateUsed(
+            response, f"info/unityleague.ch/{season.slug}/info.html"
+        )
+        self.assertEqual(response.context["view_name"], "info_for_season")
 
     def test_default_info_exists(self):
         response = self.client.get("/info", follow=True)
         self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.context["view_name"], "info_for_season")
 
 
 class InfoOrganizerViewTest(TestCase):
@@ -41,7 +45,9 @@ class InfoOrganizerViewTest(TestCase):
         url = reverse("info_organizer_for_season", kwargs={"slug": season.slug})
         response = self.client.get(url)
         self.assertEqual(response.status_code, 200)
-        self.assertTemplateUsed(response, f"info/{season.slug}/info_organizer.html")
+        self.assertTemplateUsed(
+            response, f"info/unityleague.ch/{season.slug}/info_organizer.html"
+        )
 
     def test_default_info_exists(self):
         response = self.client.get("/info/organizer")
