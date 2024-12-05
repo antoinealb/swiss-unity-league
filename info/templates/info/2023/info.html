@@ -69,7 +69,7 @@
     <p>There will be a 30-minute lunch break on both days. There is no cut to day 2.</p>
 
     <h2>How to participate</h2>
-    <p>Tell your local tournament organizer (TO) about our league and show them the <a href="{% url 'info_organizer' %}">Guide for Organizers</a> page! Your TO will then register their local events for the league so you can start collecting Qualification Points at those events.</p>
+    <p>Tell your local tournament organizer (TO) about our league and show them the <a href="{% url 'info_organizer_for_season' slug=current_season.slug %}">Guide for Organizers</a> page! Your TO will then register their local events for the league so you can start collecting Qualification Points at those events.</p>
     <h2>Qualification Points</h2>
     <p>Players can earn Qualification Points (QPs) at all tournaments
         participating in the league. QPs are awarded in the following three
@@ -228,7 +228,7 @@
         <h2>How do we finance this ?</h2>
         <p>In addition to sponsorships, tournament organizers will pay a small
             fee for each participant of the Regional and Premier events they
-            organize. For detailed information, see <a href="{% url 'info_organizer' %}">
+            organize. For detailed information, see <a href="{% url 'info_organizer_for_season' slug=current_season.slug %}">
                 Guide for Organizers</a>!</p>
         <h4>Changelog</h4>
         <ul>

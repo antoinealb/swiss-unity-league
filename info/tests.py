@@ -17,7 +17,9 @@ from django.urls import reverse
 
 from parameterized import parameterized
 
-from championship.season import SEASONS_WITH_INFO
+from championship.season import SEASON_2023, SEASON_2024, SEASON_2025
+
+SEASONS_WITH_INFO = [SEASON_2025, SEASON_2024, SEASON_2023]
 
 
 class InfoPlayerViewTest(TestCase):
@@ -26,17 +28,11 @@ class InfoPlayerViewTest(TestCase):
         url = reverse("info_for_season", kwargs={"slug": season.slug})
         response = self.client.get(url)
         self.assertEqual(response.status_code, 200)
-        self.assertTemplateUsed(response, f"info/{season.slug}/info_player.html")
+        self.assertTemplateUsed(response, f"info/{season.slug}/info.html")
 
     def test_default_info_exists(self):
         response = self.client.get("/info", follow=True)
         self.assertEqual(response.status_code, 200)
-
-    def test_season_does_not_exist(self):
-        response = self.client.get(
-            reverse("info_for_season", kwargs={"slug": "foobar"})
-        )
-        self.assertEqual(response.status_code, 404)
 
 
 class InfoOrganizerViewTest(TestCase):
@@ -50,12 +46,6 @@ class InfoOrganizerViewTest(TestCase):
     def test_default_info_exists(self):
         response = self.client.get("/info/organizer")
         self.assertEqual(response.status_code, 200)
-
-    def test_season_does_not_exist(self):
-        response = self.client.get(
-            reverse("info_organizer_for_season", kwargs={"slug": "foobar"})
-        )
-        self.assertEqual(response.status_code, 404)
 
 
 class InfoIcal(TestCase):

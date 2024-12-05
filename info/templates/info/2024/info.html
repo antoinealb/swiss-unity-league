@@ -55,7 +55,7 @@
         </li>
     </ul>
     <h2>How to Participate</h2>
-    <p>Tell your local tournament organizer (TO) about our league and show them the <a href="{% url 'info_organizer' %}">Guide for Organizers</a> page! Your TO will then register their local events for the league, so you can start collecting SUL Points at those events.</p>
+    <p>Tell your local tournament organizer (TO) about our league and show them the <a href="{% url 'info_organizer_for_season' slug=current_season.slug %}">Guide for Organizers</a> page! Your TO will then register their local events for the league, so you can start collecting SUL Points at those events.</p>
     <h2>SUL Points</h2>
     <p>Players can earn SUL Points at all tournaments
         participating in the league. Points are awarded in the following three
@@ -244,6 +244,6 @@
     <h2>How do we finance this?</h2>
     <p>In addition to sponsorships, tournament organizers will pay a small
         fee for each participant in the Regional and Premier events they
-        organize. For detailed information, see <a href="{% url 'info_organizer' %}">
+        organize. For detailed information, see <a href="{% url 'info_organizer_for_season' slug=current_season.slug %}">
             Guide for Organizers</a>!</p>
 {% endblock %}

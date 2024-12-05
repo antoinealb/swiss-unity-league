@@ -50,7 +50,7 @@
         </li>
     </ul>
     <h2>How to Participate</h2>
-    <p>Tell your local tournament organizer (TO) about our league and show them the <a href="{% url 'info_organizer' %}">Guide for Organizers</a> page! Your local events will then be registered for the league, so you can start collecting League Points.</p>
+    <p>Tell your local tournament organizer (TO) about our league and show them the <a href="{% url 'info_organizer_for_season' slug=current_season.slug %}">Guide for Organizers</a> page! Your local events will then be registered for the league, so you can start collecting League Points.</p>
     <h2>League Points</h2>
     <p>Players can earn League Points at all tournaments
         participating in the league. Points are awarded in the following three
@@ -261,5 +261,5 @@
         <h2>How do we finance this?</h2>
         <p>In addition to sponsorships, tournament organizers will pay
             fees for the Regional and Premier events they organize.
-            For detailed information, see <a href="{% url 'info_organizer' %}"> Guide for Organizers</a>!</p>
+            For detailed information, see <a href="{% url 'info_organizer_for_season' slug=current_season.slug %}"> Guide for Organizers</a>!</p>
 {% endblock %}

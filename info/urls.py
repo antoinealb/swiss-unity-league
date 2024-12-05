@@ -13,25 +13,30 @@
 # limitations under the License.
 
 from django.urls import path
+from django.views.generic import RedirectView
 
 from . import views
 
 urlpatterns = [
-    path("", views.InformationForPlayerView.as_view(), name="info"),
+    path("", views.InformationView.as_view(), name="info"),
     path(
         "<slug:slug>/",
-        views.InformationForPlayerView.as_view(),
+        views.InformationView.as_view(),
         name="info_for_season",
     ),
     path(
         "organizer",
-        views.InformationForOrganizerView.as_view(),
+        views.InformationView.as_view(),
         name="info_organizer",
     ),
     path(
-        "organizer/<slug:slug>",
-        views.InformationForOrganizerView.as_view(),
+        "<slug:slug>/organizer",
+        views.InformationView.as_view(),
         name="info_organizer_for_season",
+    ),
+    path(
+        "organizer/<slug:slug>",
+        RedirectView.as_view(pattern_name="info_organizer_for_season", permanent=True),
     ),
     path("calendar-integration", views.IcalInformationView.as_view(), name="info_ical"),
 ]
