@@ -46,13 +46,27 @@ def non_null_length(*args):
 
 class ArticleTagParser(ParserContext):  # type: ignore
     card = reg(r"[^\[\]\r\n]*") > (lambda s: s.rstrip())
+
+    protocol = (lit("http") | lit("https")) >> lit("://")
+    allowed_authorities = lit("unityleague.ch/") | (rep1(lit("../")))
+    uuid = reg(r"[0-9a-f\-]+")
+    decklist_url = (
+        opt(protocol)
+        >> allowed_authorities
+        >> lit("decklists/")
+        >> uuid
+        << opt(lit("/"))
+    )
+    decklist_tag = decklist_url > DecklistTag
+
     opening_tag = lit("[[")
     closing_tag = lit("]]")
-    protocol = lit("http") | lit("https")
-    uuid = reg(r"[0-9a-f\-]+")
-    decklist = protocol >> lit("://unityleague.ch/decklists/") >> uuid << opt(lit("/"))
-    tag_content = (decklist > DecklistTag) | (card > CardTag)
+    tag_content = (decklist_tag) | (card > CardTag)
     tag = opening_tag >> tag_content << closing_tag
+
+    anchor_open = lit('<a href="')
+    anchor_close = reg(r'">.*?</a>')
+    anchor = anchor_open >> decklist_tag << anchor_close
 
     # A markdown-style image link
     image_alt_text = reg(r"[^\]]*")
@@ -61,9 +75,9 @@ class ArticleTagParser(ParserContext):  # type: ignore
         lambda s: ImageTag(url=s[1], alt_text=s[0])
     )
 
-    text = until(tag | image_tag | eof) >= non_null_length
+    text = until(tag | anchor | image_tag | decklist_tag | eof) >= non_null_length
 
-    article = rep1(tag | image_tag | text)
+    article = rep1(tag | anchor | image_tag | decklist_tag | text)
 
 
 def extract_tags(text: str) -> Iterator[ParsedText]:

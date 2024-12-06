@@ -42,7 +42,7 @@ class ArticleUpdateForm(forms.ModelForm):
         }
         help_texts = {
             "content": """Supports the following HTML tags: {}.
-To insert a reference to a card wrap it in brackets (e.g. [[Daze]]).""".format(
+To reference a card wrap it in brackets (e.g. [[Daze]]). To reference a decklist just paste a unityleague link.""".format(
                 ", ".join(settings.BLEACH_ALLOWED_TAGS_ARTICLE)
             ),
         }
