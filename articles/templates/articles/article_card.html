@@ -1,0 +1,31 @@
+{% load custom_tags %}
+
+<div class="col-lg-4 mb-5">
+    <div class="card h-100">
+        <div class="card-body">
+            <h2 class="card-title">{{ article.title }}</h2>
+            <p class="card-subtitle text-muted mb-2">
+                <span>by {{ article.author.first_name }} {{ article.author.last_name }}</span>
+                | <span>{{ article.published_date|weekday_date }}</span>
+            </p>
+            {% if article.header_image %}
+                <img src="{{ article.header_image.url }}" class="card-img-top" alt="Article Image">
+            {% endif %}
+            {% if not article.header_image %}
+                <p class="card-text">
+                    {% if article.description %}
+                        {{ article.description }}
+                    {% else %}
+                        {{ article.content|truncatewords:40 }}
+                    {% endif %}
+                </p>
+            {% endif %}
+        </div>
+        <div class="card-footer">
+            <a class="btn btn-secondary btn-sm" href="{{ article.get_absolute_url }}" title="Read More">Read More</a>
+            {% if all_articles %}
+                <a class="btn btn-secondary btn-sm" href="{% url 'article-list' %}" title="All Articles">All Articles</a>
+            {% endif %}
+        </div>
+    </div>
+</div>

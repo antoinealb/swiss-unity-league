@@ -1,17 +1,15 @@
 {% extends 'championship/base.html' %}
 
 {% block title %}SUL Articles{% endblock %}
+{% load custom_tags %}
+
 
 {% block content %}
     <h1>SUL Articles</h1>
 
-    <ul>
+    <div class="row gx-4 gx-lg-5">
         {% for article in articles %}
-            <li>{{ article.published_date }} - {{ article.author }}:
-                <a href="{% url 'article-details' article.published_date.year article.published_date.month article.published_date.day article.slug  %}">
-                    {{article.title}}
-                </a>
-            </li>
+            {% include "articles/article_card.html" %}
         {% endfor %}
-    </ul>
+    </div>
 {% endblock %}
