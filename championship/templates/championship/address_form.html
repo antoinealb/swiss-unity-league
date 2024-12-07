@@ -6,7 +6,9 @@
     <h2>{% if address %}Edit{% else %}Create{% endif %} Address</h2>
     <p>
         <a class="btn btn-secondary-light" href="{% url 'address_list' %}">Back to Addresses</a>
-        {% include 'championship/delete_confirmation.html' with object=address %}
+        {% if address.organizer.default_address_id != address.id %}
+            {% include 'championship/delete_confirmation.html' with object=address %}
+        {% endif %}
     </p>
     <form method="post">
         {% csrf_token %}

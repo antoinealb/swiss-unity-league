@@ -80,6 +80,11 @@ class Address(models.Model):
         "EventOrganizer", on_delete=models.CASCADE, related_name="addresses"
     )
 
+    def delete(self, using=None, keep_parents=False):
+        if self.organizer.default_address == self:
+            raise ValidationError("Cannot delete organizers default address")
+        return super().delete(using, keep_parents)
+
     def get_delete_url(self):
         return reverse("address_delete", args=[self.pk])
 
@@ -187,8 +192,7 @@ class EventOrganizer(models.Model):
     default_address = models.ForeignKey(
         Address,
         on_delete=models.SET_NULL,
-        null=True,
-        blank=True,
+        null=True,  # Initially null, but can't be blank and must be assigned.
         verbose_name="Main location",
         help_text="The location of your store or the location where most of your events take place.",
     )

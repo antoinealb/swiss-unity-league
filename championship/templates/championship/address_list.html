@@ -4,7 +4,7 @@
     <div class="container">
         <h2>Your Addresses</h2>
         <p>
-            <a class="btn btn-secondary-light" href="{{ organizer_url }}">Back to My Events</a>
+            <a class="btn btn-secondary-light" href="{{ organizer.get_absolute_url }}">Back to My Events</a>
         </p>
         <div class="table-responsive">
 
@@ -16,6 +16,7 @@
                         <th>City</th>
                         <th>Postal Code</th>
                         <th>Region</th>
+                        <th>Country</th>
                         <th>Actions</th>
                     </tr>
                 </thead>
@@ -27,9 +28,14 @@
                             <td>{{ address.city }}</td>
                             <td>{{ address.postal_code }}</td>
                             <td>{{ address.get_region_display }}</td>
+                            <td>{{ address.get_country_display }}</td>
                             <td>
                                 <a class="btn btn-secondary" href="{% url 'address_edit' address.id %}">Edit</a>
-                                {% include 'championship/delete_confirmation.html' with object=address %}
+                                {% if organizer.default_address_id == address.id %}
+                                    <span class="text-muted">(Main address)</span>
+                                {% else %}
+                                    {% include 'championship/delete_confirmation.html' with object=address %}
+                                {% endif %}
                             </td>
                         </tr>
                     {% empty %}

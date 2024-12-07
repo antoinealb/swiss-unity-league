@@ -85,20 +85,11 @@ class EventOrganizerFactory(DjangoModelFactory):
     url = factory.Faker("uri")
 
     @factory.post_generation
-    def addresses(self, create, extracted, **kwargs):
+    def default_address(self, create, extracted, **kwargs):
         if not create:
-            # Simple build, do nothing.
             return
-
-        if extracted is None:
-            # Create 3 new random addresses.
-            addresses = AddressFactory.create_batch(3, organizer=self)
-            for address in addresses:
-                self.addresses.add(address)
-
-            # Set one as the default
-            self.default_address = addresses[0]
-            self.save()
+        self.default_address = AddressFactory(organizer=self)
+        self.save()
 
 
 class PlayerFactory(DjangoModelFactory):

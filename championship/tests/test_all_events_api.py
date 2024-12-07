@@ -26,7 +26,7 @@ TEST_SERVER = "http://testserver"
 
 class EventApiTestCase(TestCase):
     def test_get_all_past_events(self):
-        eo = EventOrganizerFactory(name="Test TO", addresses=[])
+        eo = EventOrganizerFactory(name="Test TO")
         eo.default_address = AddressFactory(
             region=Address.Region.BERN,
             country="CH",
@@ -104,13 +104,12 @@ class FutureEventsView(TestCase):
     def test_get_all_future_events(self):
         tomorrow = datetime.date.today() + datetime.timedelta(days=1)
         event = EventFactory(
-            organizer__addresses=[],
             date=tomorrow,
             format=Event.Format.LEGACY,
             category=Event.Category.PREMIER,
         )
         resp = self.client.get(reverse("events"))
-
+        address = event.organizer.default_address
         want = [
             {
                 "name": event.name,
@@ -120,10 +119,10 @@ class FutureEventsView(TestCase):
                 "endDateTime": "",
                 "organizer": event.organizer.name,
                 "format": "Legacy",
-                "locationName": "",
-                "seoAddress": "",
-                "shortAddress": "",
-                "region": "",
+                "locationName": address.location_name,
+                "seoAddress": address.get_seo_address(),
+                "shortAddress": f", {address.city}, {address.get_region_display()}, {address.get_country_display()}",
+                "region": address.get_region_display(),
                 "category": "SUL Premier",
                 "details_url": TEST_SERVER + event.get_absolute_url(),
                 "organizer_url": TEST_SERVER

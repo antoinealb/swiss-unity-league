@@ -22,6 +22,7 @@ from rest_framework.status import HTTP_200_OK
 from parameterized import parameterized
 
 from championship.factories import (
+    AddressFactory,
     EventFactory,
     EventOrganizerFactory,
     RecurringEventFactory,
@@ -279,23 +280,15 @@ class EventCreationTestCase(TestCase):
         initial_address = response.context["form"].initial["address"]
         self.assertEqual(to.default_address.id, initial_address)
 
-    def test_create_event_form_without_any_address(self):
-        self.login()
-        EventOrganizerFactory(user=self.user)
-        Address.objects.all().delete()
-        self.client.get(reverse("events_create"))
-
     def test_initial_address_not_overwritten_by_default_address(self):
-        to = EventOrganizerFactory(user=self.user)
-        not_default_address = to.addresses.all()[1]
+        organizer = EventOrganizerFactory(user=self.user)
+        not_default_address = AddressFactory(organizer=organizer)
         event = EventFactory(
-            address=not_default_address, organizer=to, date=datetime.date.today()
+            address=not_default_address, organizer=organizer, date=datetime.date.today()
         )
         self.login()
         response = self.client.get(reverse("event_update", args=[event.id]))
-        self.assertEqual(200, response.status_code)
         initial_address = response.context["form"].initial["address"]
-        self.assertNotEqual(not_default_address, to.default_address)
         self.assertEqual(not_default_address.id, initial_address)
 
     @parameterized.expand(
@@ -306,20 +299,16 @@ class EventCreationTestCase(TestCase):
         ]
     )
     def test_update_event_contains_only_organizer_addresses(self, view_name, has_id):
-        to = EventOrganizerFactory(user=self.user)
-        # Create another TO with addresses and check that both have 3 addresses
-        for current_to in [to, EventOrganizerFactory()]:
-            self.assertEqual(3, current_to.addresses.count())
-        event = EventFactory(organizer=to, date=datetime.date.today())
+        organizer = EventOrganizerFactory(user=self.user)
+        EventOrganizerFactory()
+        self.assertEqual(2, Address.objects.count())
+        event = EventFactory(organizer=organizer, date=datetime.date.today())
         self.login()
         response = self.client.get(
             reverse(view_name, args=[event.id]) if has_id else reverse(view_name)
         )
-        self.assertEqual(200, response.status_code)
         form_addresses = response.context["form"].fields["address"].queryset
-        self.assertEqual(to.addresses.count(), form_addresses.count())
-        for address in form_addresses:
-            self.assertIn(address, to.addresses.all())
+        self.assertQuerySetEqual(form_addresses.all(), organizer.addresses.all())
 
 
 class EventCopyTestCase(TestCase):
@@ -363,7 +352,7 @@ class EventCopyTestCase(TestCase):
 
     def test_initial_address_not_overwritten_by_default_address(self):
         self.login()
-        not_default_address = self.organizer.get_addresses()[1]
+        not_default_address = AddressFactory(organizer=self.organizer)
         event = EventFactory(address=not_default_address, organizer=self.organizer)
         response = self.client.get(reverse("event_copy", args=[event.id]))
         initial_address = response.context["form"].initial["address"]

@@ -14,6 +14,7 @@
 
 from django.contrib.auth.models import User
 from django.db.models import ProtectedError
+from django.forms import ValidationError
 from django.test import TestCase
 
 from championship.factories import EventFactory, EventOrganizerFactory
@@ -28,6 +29,11 @@ class EventOrganizerTest(TestCase):
         eo = EventOrganizerFactory()
         User.objects.filter(id=eo.user.id).delete()
         self.assertFalse(EventOrganizer.objects.all().exists())
+
+    def test_cannot_delete_organizers_default_address(self):
+        eo = EventOrganizerFactory()
+        with self.assertRaises(ValidationError):
+            eo.default_address.delete()
 
     def test_cannot_delete_if_associated_events(self):
         """

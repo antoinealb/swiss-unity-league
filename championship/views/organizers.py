@@ -157,7 +157,7 @@ class AddressListView(LoginRequiredMixin, ListView):
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        context["organizer_url"] = self.request.user.eventorganizer.get_absolute_url()
+        context["organizer"] = self.request.user.eventorganizer
         return context
 
 

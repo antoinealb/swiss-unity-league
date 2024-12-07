@@ -16,7 +16,7 @@ from django.contrib.auth.models import User
 from django.test import Client, TestCase
 from django.urls import reverse
 
-from championship.factories import EventOrganizerFactory
+from championship.factories import AddressFactory, EventOrganizerFactory
 from championship.models import EventOrganizer
 
 
@@ -63,7 +63,7 @@ class OrganizerEditTestCase(TestCase):
     def test_post_data(self):
         self.login()
         to = EventOrganizerFactory(user=self.user)
-        new_address = to.addresses.all()[1]
+        new_address = AddressFactory(organizer=to)
         self.assertNotEqual(to.default_address.id, new_address.id)
         data = {
             "contact": "foo@foo.org",

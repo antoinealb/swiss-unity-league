@@ -12,47 +12,56 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from django.contrib.auth.models import User
-from django.test import Client, TestCase
+from django.forms import ValidationError
+from django.test import TestCase
 from django.urls import reverse
 
 from championship.factories import AddressFactory, EventOrganizerFactory
 from championship.models import Address
 
 
-class BaseSetupTest(TestCase):
-    def base_set_up(self, with_address=True, username="testuser"):
-        self.client = Client()
-        self.user = User.objects.create_user(username=username, password="testpass")
-        self.organizer = EventOrganizerFactory(user=self.user, addresses=[])
-        if with_address:
-            self.address = AddressFactory(organizer=self.organizer)
-        self.client.login(username=username, password="testpass")
-
-
-class AddressListViewTest(BaseSetupTest):
+class AddressListViewTest(TestCase):
     def setUp(self):
-        self.base_set_up()
-
-    def test_view_url_exists(self):
-        response = self.client.get(reverse("address_list"))
-        self.assertEqual(response.status_code, 200)
+        self.organizer = EventOrganizerFactory()
+        self.address = self.organizer.default_address
+        self.client.force_login(self.address.organizer.user)
 
     def test_view_shows_address(self):
         response = self.client.get(reverse("address_list"))
-        self.assertContains(response, str(self.address))
+        self.assertContains(response, self.address.location_name)
+        self.assertContains(response, self.address.street_address)
+        self.assertContains(response, self.address.city)
+        self.assertContains(response, self.address.postal_code)
+        self.assertContains(response, self.address.get_absolute_url())
+        self.assertContains(response, self.address.get_region_display())
+        self.assertContains(response, self.address.get_country_display())
+
+    def test_shows_as_default_address(self):
+        response = self.client.get(reverse("address_list"))
+        self.assertContains(response, "(Main address)")
+
+    def test_hides_delete_for_default_address(self):
+        response = self.client.get(reverse("address_list"))
+        self.assertNotContains(response, self.address.get_delete_url())
+
+    def test_shows_delete_for_non_default_address(self):
+        address = AddressFactory(organizer=self.organizer)
+        response = self.client.get(reverse("address_list"))
+        self.assertContains(response, address.get_delete_url())
 
 
-class AddressCreateViewTest(BaseSetupTest):
+class AddressCreateViewTest(TestCase):
     def setUp(self):
-        self.base_set_up(with_address=False)
+        self.organizer = EventOrganizerFactory()
+        self.address = self.organizer.default_address
+        self.client.force_login(self.address.organizer.user)
 
-    def test_view_url_exists(self):
+    def test_can_get(self):
         response = self.client.get(reverse("address_create"))
         self.assertEqual(response.status_code, 200)
 
     def test_create_new_address(self):
-        self.assertEqual(Address.objects.count(), 0)
+        self.assertEqual(Address.objects.count(), 1)
         response = self.client.post(
             reverse("address_create"),
             data={
@@ -65,17 +74,19 @@ class AddressCreateViewTest(BaseSetupTest):
                 "set_as_main_address": True,
             },
         )
-        self.assertEqual(Address.objects.count(), 1)
+        self.assertEqual(Address.objects.count(), 2)
         self.assertEqual(response.url, reverse("address_list"))
         self.organizer.refresh_from_db()
         self.assertEqual(self.organizer.default_address.location_name, "Test Location")
 
 
-class AddressUpdateViewTest(BaseSetupTest):
+class AddressUpdateViewTest(TestCase):
     def setUp(self):
-        self.base_set_up()
+        self.organizer = EventOrganizerFactory()
+        self.address = self.organizer.default_address
+        self.client.force_login(self.address.organizer.user)
 
-    def test_view_url_exists(self):
+    def test_can_get(self):
         response = self.client.get(reverse("address_edit", args=[self.address.pk]))
         self.assertEqual(response.status_code, 200)
 
@@ -95,23 +106,36 @@ class AddressUpdateViewTest(BaseSetupTest):
         self.assertEqual(response.url, reverse("address_list"))
         self.address.refresh_from_db()
         self.assertEqual(self.address.location_name, "New Location")
+        # Make sure the default address is still the same
+        self.assertEqual(self.organizer.default_address, self.address)
+
+    def test_hides_delete_url_for_default_address(self):
+        response = self.client.get(reverse("address_edit", args=[self.address.pk]))
+        self.assertNotContains(response, self.address.get_delete_url())
+
+    def test_hides_delete_url_for_non_default_address(self):
+        non_default_address = AddressFactory(organizer=self.organizer)
+        response = self.client.get(
+            reverse("address_edit", args=[non_default_address.pk])
+        )
+        self.assertContains(response, non_default_address.get_delete_url())
 
 
-class AddressDeleteViewTest(BaseSetupTest):
+class AddressDeleteViewTest(TestCase):
     def setUp(self):
-        self.base_set_up()
+        self.organizer = EventOrganizerFactory()
+        self.address = self.organizer.default_address
+        self.client.force_login(self.address.organizer.user)
 
-    def test_delete_default_address(self):
+    def test_delete_default_address_not_allowed(self):
         self.assertEqual(Address.objects.count(), 1)
-        response = self.client.post(reverse("address_delete", args=[self.address.pk]))
-        self.assertEqual(response.status_code, 302)
-        self.assertEqual(Address.objects.count(), 0)
-        self.organizer.refresh_from_db()
-        self.assertEqual(self.organizer.default_address, None)
+        with self.assertRaises(ValidationError):
+            self.client.post(reverse("address_delete", args=[self.address.pk]))
+        self.assertEqual(Address.objects.count(), 1)
 
     def test_delete_not_owned_address(self):
-        self.client.logout()
-        self.base_set_up(with_address=False, username="testuser2")
+        other_organizer = EventOrganizerFactory()
+        self.client.force_login(other_organizer.user)
         response = self.client.post(reverse("address_delete", args=[self.address.pk]))
         self.assertEqual(response.status_code, 403)
         self.assertTrue(Address.objects.filter(pk=self.address.pk).exists())
@@ -126,7 +150,7 @@ class AddressSortingTest(TestCase):
             (Address.Region.BERN, "aB", "CH"),
             (Address.Region.BERN, "B", "CH"),
         ]
-        organizer = EventOrganizerFactory(addresses=[])
+        organizer = EventOrganizerFactory()
 
         sorted_addresses = sorted(
             [
