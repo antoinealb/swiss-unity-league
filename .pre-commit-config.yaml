@@ -1,6 +1,15 @@
 # See https://pre-commit.com for more information
 # See https://pre-commit.com/hooks.html for more hooks
 repos:
+- repo: https://github.com/Lucas-C/pre-commit-hooks
+  rev: v1.5.5
+  hooks:
+    - id: insert-license
+      types: [python]
+      args:
+        - --license-filepath
+        - .license_header.txt
+        - --use-current-year
 - repo: https://github.com/pre-commit/pre-commit-hooks
   rev: v4.5.0
   hooks:
@@ -36,16 +45,6 @@ repos:
       language: system
       files: templates/
       types: [html]
-
-- repo: https://github.com/Lucas-C/pre-commit-hooks
-  rev: v1.5.5
-  hooks:
-    - id: insert-license
-      types: [python]
-      args:
-        - --license-filepath
-        - .license_header.txt
-        - --use-current-year
 - repo: https://github.com/google/keep-sorted
   rev: v0.4.0
   hooks:
