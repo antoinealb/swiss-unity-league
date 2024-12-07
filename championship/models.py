@@ -87,16 +87,14 @@ class Address(models.Model):
         return reverse("address_edit", args=[self.pk])
 
     def __str__(self):
-        address_parts = (
-            [
-                self.location_name,
-                self.street_address,
-                f"{self.postal_code} {self.city}",
-            ]
-            + self._get_region_as_list()
-            + self._get_country_as_list()
-        )
-        return ", ".join(address_parts)
+        address_parts = [
+            self.location_name,
+            self.street_address,
+            f"{self.postal_code} {self.city}",
+            self._get_region(),
+            self._get_country(),
+        ]
+        return ", ".join([part for part in address_parts if part])
 
     def get_seo_address(self):
         address_parts = [
@@ -107,28 +105,27 @@ class Address(models.Model):
         ]
         return ", ".join(address_parts)
 
-    def _get_region_as_list(self):
-        """Gets the region if it's different from the city.
-        We return it in a list, because it's easier to process it further."""
+    def _get_region(self):
+        """Gets the region if it's different from the city."""
         region = self.get_region_display()
-        return [region] if self.city != region else []
+        if self.city == region:
+            return None
+        return region
 
-    def _get_country_as_list(self):
-        """Gets the country if it's different from Switzerland.
-        We return it in a list, because it's easier to process it further."""
+    def _get_country(self):
+        """Gets the country, except if it's Switzerland on the Swiss site."""
         country = self.get_country_display()
-        return [country] if self.country != "CH" else []
+        if self.country == "CH" and settings.SITE_ID == 1:
+            return None
+        return country
 
     def short_string(self):
         """A short string of the address only containing city, region and country."""
-        address_parts = (
-            [self.city] + self._get_region_as_list() + self._get_country_as_list()
-        )
-        return ", ".join(address_parts)
+        address_parts = [self.city, self._get_region(), self._get_country()]
+        return ", ".join([part for part in address_parts if part])
 
     def sort_key(self):
         return (
-            self.country != "CH",
             self.get_country_display().lower(),
             self.get_region_display().lower(),
             self.city.lower(),

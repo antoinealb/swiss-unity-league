@@ -120,20 +120,22 @@ class AddressDeleteViewTest(BaseSetupTest):
 class AddressSortingTest(TestCase):
     def test_sorting(self):
         properties_in_correct_order = [
+            (Address.Region.FREIBURG_DE, "B", "FR"),
+            (Address.Region.FREIBURG_DE, "B", "DE"),
             (Address.Region.AARGAU, "AR", "CH"),
             (Address.Region.BERN, "aB", "CH"),
             (Address.Region.BERN, "B", "CH"),
-            (Address.Region.FREIBURG_DE, "B", "FR"),
-            (Address.Region.FREIBURG_DE, "B", "DE"),
         ]
-        to = EventOrganizerFactory(addresses=[])
-        addresses = [
-            AddressFactory(organizer=to, region=region, city=city, country=country)
-            for region, city, country in properties_in_correct_order[::-1]
-        ]
-        self.assertEqual(addresses[0].region, Address.Region.FREIBURG_DE)
+        organizer = EventOrganizerFactory(addresses=[])
 
-        sorted_addresses = sorted(addresses)
+        sorted_addresses = sorted(
+            [
+                AddressFactory(
+                    organizer=organizer, region=region, city=city, country=country
+                )
+                for region, city, country in properties_in_correct_order[::-1]
+            ]
+        )
 
         for i in range(len(properties_in_correct_order)):
             region, city, country = properties_in_correct_order[i]
