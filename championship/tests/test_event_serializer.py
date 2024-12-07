@@ -25,7 +25,7 @@ class EventSerializerGetAddressTestCase(TestCase):
         default_address = self.organizer_with_address.default_address
         default_address.city = "Bern"
         default_address.region = Address.Region.BERN
-        default_address.country = Address.Country.GERMANY
+        default_address.country = "DE"
         default_address.save()
         self.organizer_without_address = EventOrganizerFactory(addresses=[])
 
@@ -34,7 +34,7 @@ class EventSerializerGetAddressTestCase(TestCase):
             address=AddressFactory(
                 city="Aarau",
                 region=Address.Region.AARGAU,
-                country=Address.Country.SWITZERLAND,
+                country="CH",
                 organizer=self.organizer_with_address,
             ),
         )
@@ -56,7 +56,7 @@ class EventSerializerGetAddressTestCase(TestCase):
         serializer = EventSerializer(self.event_without_address)
         self.assertEqual(
             serializer.get_shortAddress(self.event_without_address),
-            f", Bern, {Address.Country.GERMANY.label}",
+            ", Bern, Germany",
         )
 
     def test_get_region_with_no_address(self):

@@ -190,7 +190,7 @@ class HomepageTestCase(TestCase):
             "postal_code": "123456",
             "city": "Test City",
             "region": Address.Region.AARGAU,
-            "country": Address.Country.SWITZERLAND,
+            "country": "CH",
         }
 
         response = self.client.post(reverse("register"), data=data)

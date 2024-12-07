@@ -61,7 +61,7 @@ class AddressCreateViewTest(BaseSetupTest):
                 "city": "Test City",
                 "postal_code": "123456",
                 "region": Address.Region.AARGAU,
-                "country": Address.Country.SWITZERLAND,
+                "country": "CH",
                 "set_as_main_address": True,
             },
         )
@@ -88,7 +88,7 @@ class AddressUpdateViewTest(BaseSetupTest):
                 "city": "New City",
                 "postal_code": "654321",
                 "region": Address.Region.BERN,
-                "country": Address.Country.SWITZERLAND,
+                "country": "CH",
                 "set_as_main_address": False,
             },
         )
@@ -120,11 +120,11 @@ class AddressDeleteViewTest(BaseSetupTest):
 class AddressSortingTest(TestCase):
     def test_sorting(self):
         properties_in_correct_order = [
-            (Address.Region.AARGAU, "AR", Address.Country.SWITZERLAND),
-            (Address.Region.BERN, "aB", Address.Country.SWITZERLAND),
-            (Address.Region.BERN, "B", Address.Country.SWITZERLAND),
-            (Address.Region.FREIBURG_DE, "B", Address.Country.FRANCE),
-            (Address.Region.FREIBURG_DE, "B", Address.Country.GERMANY),
+            (Address.Region.AARGAU, "AR", "CH"),
+            (Address.Region.BERN, "aB", "CH"),
+            (Address.Region.BERN, "B", "CH"),
+            (Address.Region.FREIBURG_DE, "B", "FR"),
+            (Address.Region.FREIBURG_DE, "B", "DE"),
         ]
         to = EventOrganizerFactory(addresses=[])
         addresses = [

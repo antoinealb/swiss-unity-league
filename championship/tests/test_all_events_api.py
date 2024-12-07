@@ -29,12 +29,12 @@ class EventApiTestCase(TestCase):
         eo = EventOrganizerFactory(name="Test TO", addresses=[])
         eo.default_address = AddressFactory(
             region=Address.Region.BERN,
-            country=Address.Country.SWITZERLAND,
+            country="CH",
             organizer=eo,
         )
         eo.save()
         event_address = AddressFactory(
-            region=Address.Region.AARGAU, country=Address.Country.GERMANY, organizer=eo
+            region=Address.Region.AARGAU, country="DE", organizer=eo
         )
         base_date = datetime.date(2023, 1, 1)
         older_date = base_date + datetime.timedelta(days=2)

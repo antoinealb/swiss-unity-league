@@ -109,6 +109,7 @@ INSTALLED_APPS = [
     "django.contrib.sites",
     "django.contrib.staticfiles",
     "django_bleach",
+    "django_countries",
     "django_prometheus",
     "django_tex",
     "file_storage_db",

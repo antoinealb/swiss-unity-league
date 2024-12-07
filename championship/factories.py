@@ -19,6 +19,7 @@ from django.contrib.auth.hashers import make_password
 from django.contrib.auth.models import User
 
 import factory
+from django_countries import countries
 from factory.django import DjangoModelFactory
 from faker.providers import BaseProvider
 
@@ -69,7 +70,7 @@ class AddressFactory(DjangoModelFactory):
     )
     country = factory.Faker(
         "random_element",
-        elements=Address.Country.values,
+        elements=countries.countries.keys(),
     )
 
 

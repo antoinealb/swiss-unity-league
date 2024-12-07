@@ -27,6 +27,7 @@ from django.urls import reverse
 
 from dateutil.relativedelta import relativedelta
 from django_bleach.models import BleachField
+from django_countries.fields import CountryField
 
 from championship.season import Season, find_season_by_date
 
@@ -64,14 +65,6 @@ class Address(models.Model):
         ZURICH = "ZH", "Zürich"  # German
         FREIBURG_DE = "FR_DE", "Freiburg im Breisgau (DE)"  # German
 
-    class Country(models.TextChoices):
-        SWITZERLAND = "CH", "Switzerland"
-        AUSTRIA = "AT", "Austria"
-        GERMANY = "DE", "Germany"
-        ITALY = "IT", "Italy"
-        LIECHTENSTEIN = "LI", "Liechtenstein"
-        FRANCE = "FR", "France"
-
     location_name = models.CharField(max_length=255)
     street_address = models.CharField(max_length=255)
     city = models.CharField(max_length=255)
@@ -81,9 +74,7 @@ class Address(models.Model):
         choices=Region.choices,
         default=Region.ZURICH,
     )
-    country = models.CharField(
-        max_length=2, choices=Country.choices, default=Country.SWITZERLAND
-    )
+    country = CountryField(blank_label="(select country)")
 
     organizer = models.ForeignKey(
         "EventOrganizer", on_delete=models.CASCADE, related_name="addresses"
@@ -126,7 +117,7 @@ class Address(models.Model):
         """Gets the country if it's different from Switzerland.
         We return it in a list, because it's easier to process it further."""
         country = self.get_country_display()
-        return [country] if self.country != Address.Country.SWITZERLAND else []
+        return [country] if self.country != "CH" else []
 
     def short_string(self):
         """A short string of the address only containing city, region and country."""
@@ -137,7 +128,7 @@ class Address(models.Model):
 
     def sort_key(self):
         return (
-            self.country != Address.Country.SWITZERLAND,
+            self.country != "CH",
             self.get_country_display().lower(),
             self.get_region_display().lower(),
             self.city.lower(),
