@@ -116,6 +116,7 @@ INSTALLED_APPS = [
     "hijack.contrib.admin",
     "info",
     "invoicing",
+    "legal",
     "multisite",
     "oracle",
     "rest_framework",

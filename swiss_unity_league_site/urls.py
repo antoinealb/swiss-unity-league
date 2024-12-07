@@ -46,4 +46,5 @@ urlpatterns = [
     path("media/", include("file_storage_db.urls")),
     path("articles/", include("articles.urls")),
     path("info/", include("info.urls")),
+    path("legal/", include("legal.urls")),
 ]

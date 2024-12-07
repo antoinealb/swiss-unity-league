@@ -13,7 +13,6 @@
 # limitations under the License.
 
 from django.urls import include, path
-from django.views.generic import TemplateView
 from rest_framework import routers
 
 from championship import ical_feeds
@@ -148,10 +147,5 @@ urlpatterns = [
     path("allevents.ics", ical_feeds.AllEventsFeed(), name="all_events_feed"),
     path(
         "premierevents.ics", ical_feeds.PremierEventsFeed(), name="premier_events_feed"
-    ), 
-    path(
-        "privacy/",
-        TemplateView.as_view(template_name="championship/privacy_policy.html"),
-        name="privacy",
     ),
 ]
