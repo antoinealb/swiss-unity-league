@@ -112,12 +112,19 @@ class Address(models.Model):
             return None
         return region
 
-    def _get_country(self):
-        """Gets the country, except if it's Switzerland on the Swiss site."""
-        country = self.get_country_display()
-        if self.country == "CH" and settings.SITE_ID == 1:
+    def _get_country(self) -> str | None:
+        """Gets the country to display.
+
+        This function returns the country to display, with one exception: on
+        the Swiss site, we don't add the country if the address is in
+        Switzeland.
+        """
+        if (
+            self.country == "CH"
+            and Site.objects.get_current().domain == "unityleague.ch"
+        ):
             return None
-        return country
+        return self.get_country_display()
 
     def short_string(self):
         """A short string of the address only containing city, region and country."""
