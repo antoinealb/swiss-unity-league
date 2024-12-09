@@ -31,7 +31,7 @@ class Migration(migrations.Migration):
             field=models.ForeignKey(
                 help_text="The location of your store or the location where most of your events take place.",
                 null=True,
-                on_delete=django.db.models.deletion.SET_NULL,
+                on_delete=django.db.models.deletion.RESTRICT,
                 to="championship.address",
                 verbose_name="Main location",
             ),

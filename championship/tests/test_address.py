@@ -12,7 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from django.forms import ValidationError
+from django.db.models import RestrictedError
 from django.test import TestCase
 from django.urls import reverse
 
@@ -129,7 +129,7 @@ class AddressDeleteViewTest(TestCase):
 
     def test_delete_default_address_not_allowed(self):
         self.assertEqual(Address.objects.count(), 1)
-        with self.assertRaises(ValidationError):
+        with self.assertRaises(RestrictedError):
             self.client.post(reverse("address_delete", args=[self.address.pk]))
         self.assertEqual(Address.objects.count(), 1)
 

@@ -13,8 +13,7 @@
 # limitations under the License.
 
 from django.contrib.auth.models import User
-from django.db.models import ProtectedError
-from django.forms import ValidationError
+from django.db.models import ProtectedError, RestrictedError
 from django.test import TestCase
 
 from championship.factories import EventFactory, EventOrganizerFactory
@@ -32,7 +31,7 @@ class EventOrganizerTest(TestCase):
 
     def test_cannot_delete_organizers_default_address(self):
         eo = EventOrganizerFactory()
-        with self.assertRaises(ValidationError):
+        with self.assertRaises(RestrictedError):
             eo.default_address.delete()
 
     def test_cannot_delete_if_associated_events(self):
