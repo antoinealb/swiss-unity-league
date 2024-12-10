@@ -18,6 +18,8 @@ from typing import Union
 
 from parsita import ParserContext, eof, failure, lit, opt, reg, rep1, success, until
 
+from multisite.models import GLOBAL_DOMAIN, SWISS_DOMAIN
+
 
 @dataclasses.dataclass
 class CardTag:
@@ -48,7 +50,9 @@ class ArticleTagParser(ParserContext):  # type: ignore
     card = reg(r"[^\[\]\r\n]*") > (lambda s: s.rstrip())
 
     protocol = (lit("http") | lit("https")) >> lit("://")
-    allowed_authorities = lit("unityleague.ch/") | (rep1(lit("../")))
+    allowed_authorities = ((lit(GLOBAL_DOMAIN) | lit(SWISS_DOMAIN)) & lit("/")) | rep1(
+        lit("../")
+    )
     uuid = reg(r"[0-9a-f\-]+")
     decklist_url = (
         opt(protocol)

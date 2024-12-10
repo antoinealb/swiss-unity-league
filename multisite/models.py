@@ -15,6 +15,10 @@
 from django.contrib.sites.models import Site
 from django.db import models
 
+SWISS_DOMAIN = "unityleague.ch"
+GLOBAL_DOMAIN = "playground-eu.unityleague.ch"
+ALL_DOMAINS = [SWISS_DOMAIN, GLOBAL_DOMAIN]
+
 
 class SiteSettings(models.Model):
     site = models.OneToOneField(

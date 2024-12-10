@@ -14,6 +14,7 @@
 
 from unittest import TestCase
 
+from parameterized import parameterized
 from parsita import Success
 
 from articles.parser import (
@@ -23,6 +24,7 @@ from articles.parser import (
     ImageTag,
     extract_tags,
 )
+from multisite.models import ALL_DOMAINS
 
 
 class ParserTest(TestCase):
@@ -50,20 +52,25 @@ class ParserTest(TestCase):
         got = list(extract_tags(article))
         self.assertEqual(want, got)
 
-    def test_parse_wrapped_bracket_tag_decklist(self):
-        article = """Good decklist![[https://unityleague.ch/decklists/ff521f2e-085c-4cc0-901b-600ec9a71dab/]]"""
+    @parameterized.expand(ALL_DOMAINS)
+    def test_parse_wrapped_bracket_tag_decklist(self, domain):
+        article = f"""Good decklist![[https://{domain}/decklists/ff521f2e-085c-4cc0-901b-600ec9a71dab/]]"""
         want = ["Good decklist!", DecklistTag("ff521f2e-085c-4cc0-901b-600ec9a71dab")]
         got = list(extract_tags(article))
         self.assertEqual(want, got)
 
-    def test_parse_bracket_tag_decklist(self):
-        article = """[[http://unityleague.ch/decklists/ff521f2e-085c-4cc0-901b-600ec9a71dab/]]"""
+    @parameterized.expand(ALL_DOMAINS)
+    def test_parse_bracket_tag_decklist(self, domain):
+        article = (
+            f"""[[http://{domain}/decklists/ff521f2e-085c-4cc0-901b-600ec9a71dab/]]"""
+        )
         want = [DecklistTag("ff521f2e-085c-4cc0-901b-600ec9a71dab")]
         got = list(extract_tags(article))
         self.assertEqual(want, got)
 
-    def test_parse_relative_anchor_decklist(self):
-        article = """<p>My Article</p><p><a href="../../decklists/a4ec9345-da22-4ad8-a0b6-7cb432da9c24/">https://unityleague.ch/decklists/a4ec9345-da22-4ad8-a0b6-7cb432da9c24/</a></p>"""
+    @parameterized.expand(ALL_DOMAINS)
+    def test_parse_relative_anchor_decklist(self, domain):
+        article = f"""<p>My Article</p><p><a href="../../decklists/a4ec9345-da22-4ad8-a0b6-7cb432da9c24/">https://{domain}/decklists/a4ec9345-da22-4ad8-a0b6-7cb432da9c24/</a></p>"""
         want = [
             "<p>My Article</p><p>",
             DecklistTag("a4ec9345-da22-4ad8-a0b6-7cb432da9c24"),
@@ -72,8 +79,9 @@ class ParserTest(TestCase):
         got = list(extract_tags(article))
         self.assertEqual(want, got)
 
-    def test_parse_relative_anchor_with_protocol_decklist(self):
-        article = """<p>My Article</p><p><a href="https://../../decklists/a4ec9345-da22-4ad8-a0b6-7cb432da9c24/">https://unityleague.ch/decklists/a4ec9345-da22-4ad8-a0b6-7cb432da9c24/</a></p>"""
+    @parameterized.expand(ALL_DOMAINS)
+    def test_parse_relative_anchor_with_protocol_decklist(self, domain):
+        article = f"""<p>My Article</p><p><a href="https://../../decklists/a4ec9345-da22-4ad8-a0b6-7cb432da9c24/">https://{domain}/decklists/a4ec9345-da22-4ad8-a0b6-7cb432da9c24/</a></p>"""
         want = [
             "<p>My Article</p><p>",
             DecklistTag("a4ec9345-da22-4ad8-a0b6-7cb432da9c24"),
@@ -82,8 +90,9 @@ class ParserTest(TestCase):
         got = list(extract_tags(article))
         self.assertEqual(want, got)
 
-    def test_parse_absolute_anchor_decklist(self):
-        article = """<p>My Article</p><p><a href="https://unityleague.ch/decklists/a4ec9345-da22-4ad8-a0b6-7cb432da9c24/">https://unityleague.ch/decklists/a4ec9345-da22-4ad8-a0b6-7cb432da9c24/</a></p>"""
+    @parameterized.expand(ALL_DOMAINS)
+    def test_parse_absolute_anchor_decklist(self, domain):
+        article = f"""<p>My Article</p><p><a href="https://{domain}/decklists/a4ec9345-da22-4ad8-a0b6-7cb432da9c24/">https://{domain}/decklists/a4ec9345-da22-4ad8-a0b6-7cb432da9c24/</a></p>"""
         want = [
             "<p>My Article</p><p>",
             DecklistTag("a4ec9345-da22-4ad8-a0b6-7cb432da9c24"),
@@ -92,8 +101,9 @@ class ParserTest(TestCase):
         got = list(extract_tags(article))
         self.assertEqual(want, got)
 
-    def test_parse_direct_decklist_url(self):
-        article = """<p>My Article</p><p>https://unityleague.ch/decklists/a4ec9345-da22-4ad8-a0b6-7cb432da9c24</p>"""
+    @parameterized.expand(ALL_DOMAINS)
+    def test_parse_direct_decklist_url(self, domain):
+        article = f"""<p>My Article</p><p>https://{domain}/decklists/a4ec9345-da22-4ad8-a0b6-7cb432da9c24</p>"""
         want = [
             "<p>My Article</p><p>",
             DecklistTag("a4ec9345-da22-4ad8-a0b6-7cb432da9c24"),

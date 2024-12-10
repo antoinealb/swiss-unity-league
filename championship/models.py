@@ -30,6 +30,7 @@ from django_bleach.models import BleachField
 from django_countries.fields import CountryField
 
 from championship.season import Season, find_season_by_date
+from multisite.models import SWISS_DOMAIN
 
 
 class Address(models.Model):
@@ -119,10 +120,7 @@ class Address(models.Model):
         the Swiss site, we don't add the country if the address is in
         Switzeland.
         """
-        if (
-            self.country == "CH"
-            and Site.objects.get_current().domain == "unityleague.ch"
-        ):
+        if self.country == "CH" and Site.objects.get_current().domain == SWISS_DOMAIN:
             return None
         return self.get_country_display()
 

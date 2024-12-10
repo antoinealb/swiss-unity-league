@@ -17,6 +17,7 @@ from django.utils.html import escape
 
 from articles.templatetags.article import process_article_args
 from decklists.factories import DecklistFactory
+from multisite.models import SWISS_DOMAIN
 from oracle.factories import CardFactory
 
 
@@ -58,8 +59,8 @@ class ArticleRenderingTestCase(TestCase):
             mainboard="4 Daze",
             sideboard="4 Fry",
         )
-        article = """
-        [[https://unityleague.ch/decklists/ff521f2e-085c-4cc0-901b-600ec9a71dab/]]
+        article = f"""
+        [[https://{SWISS_DOMAIN}/decklists/ff521f2e-085c-4cc0-901b-600ec9a71dab/]]
         """
         got = process_article_args(article)
         self.assertIn(self.daze_html, got)
@@ -69,8 +70,8 @@ class ArticleRenderingTestCase(TestCase):
         decklist = DecklistFactory(
             id="ff521f2e-085c-4cc0-901b-600ec9a71dab",
         )
-        article = """
-        [[https://unityleague.ch/decklists/ff521f2e-085c-4cc0-901b-600ec9a71dab/]]
+        article = f"""
+        [[https://{SWISS_DOMAIN}/decklists/ff521f2e-085c-4cc0-901b-600ec9a71dab/]]
         """
         got = process_article_args(article)
         event = decklist.collection.event
@@ -82,8 +83,8 @@ class ArticleRenderingTestCase(TestCase):
         self.assertIn(decklist.collection.get_format_display(), got)
 
     def test_unknown_decklist(self):
-        article = """
-        [[https://unityleague.ch/decklists/ff521f2e-085c-4cc0-901b-600ec9a71dab/]]
+        article = f"""
+        [[https://{SWISS_DOMAIN}/decklists/ff521f2e-085c-4cc0-901b-600ec9a71dab/]]
         """
         got = process_article_args(article)
         want = "Unknown decklist"

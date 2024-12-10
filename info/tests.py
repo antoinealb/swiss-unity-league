@@ -18,6 +18,7 @@ from django.urls import reverse
 from parameterized import parameterized
 
 from championship.season import SEASON_2023, SEASON_2024, SEASON_2025
+from multisite.models import SWISS_DOMAIN
 
 SEASONS_WITH_INFO = [SEASON_2025, SEASON_2024, SEASON_2023]
 
@@ -29,7 +30,7 @@ class InfoPlayerViewTest(TestCase):
         response = self.client.get(url)
         self.assertEqual(response.status_code, 200)
         self.assertTemplateUsed(
-            response, f"info/unityleague.ch/{season.slug}/info.html"
+            response, f"info/{SWISS_DOMAIN}/{season.slug}/info.html"
         )
         self.assertEqual(response.context["view_name"], "info_for_season")
 
@@ -46,7 +47,7 @@ class InfoOrganizerViewTest(TestCase):
         response = self.client.get(url)
         self.assertEqual(response.status_code, 200)
         self.assertTemplateUsed(
-            response, f"info/unityleague.ch/{season.slug}/info_organizer.html"
+            response, f"info/{SWISS_DOMAIN}/{season.slug}/info_organizer.html"
         )
 
     def test_default_info_exists(self):
