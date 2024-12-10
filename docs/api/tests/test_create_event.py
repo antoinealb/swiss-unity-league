@@ -20,16 +20,17 @@ import shlex
 import subprocess
 
 from django.contrib.auth.models import User
-from django.test import LiveServerTestCase
+from django.test import LiveServerTestCase, TestCase
 
 from championship.factories import EventFactory, EventOrganizerFactory
 from championship.models import Event, Result
 
 
-class CreateEventApiExample(LiveServerTestCase):
-    def setUp(self):
-        self.user = User.objects.create_user(username="test", password="test")
-        self.organizer = EventOrganizerFactory(user=self.user)
+class CreateEventApiExample(LiveServerTestCase, TestCase):
+    @classmethod
+    def setUpTestData(cls):
+        user = User.objects.create_user(username="test", password="test")
+        cls.organizer = EventOrganizerFactory(user=user)
 
     def test_can_create_event(self):
         file = os.path.dirname(os.path.abspath(__file__))
