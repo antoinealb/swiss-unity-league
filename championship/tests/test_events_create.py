@@ -15,6 +15,7 @@
 import datetime
 
 from django.contrib.sites.models import Site
+from django.forms import ValidationError
 from django.test import TestCase
 from django.urls import reverse
 from rest_framework.status import HTTP_200_OK
@@ -30,6 +31,7 @@ from championship.factories import (
     UserFactory,
 )
 from championship.models import Address, Event
+from multisite.models import GLOBAL_DOMAIN
 
 
 class EventCreationTestCase(TestCase):
@@ -135,6 +137,29 @@ class EventCreationTestCase(TestCase):
         event = Event.objects.all()[0]
 
         self.assertRedirects(resp, reverse("recurring_event_create", args=[event.id]))
+
+    def test_create_global_premier_event_not_allowed(self):
+        """
+        Checks that we can't create a premier event if we're not on the Swiss site.
+        """
+        data = {
+            "name": "Test Event",
+            "url": "https://test.example",
+            "date": "11/26/2022",
+            "format": "LEGACY",
+            "category": "PREMIER",
+            "submit_type": "schedule_series",
+        }
+        self.login()
+        EventOrganizerFactory(
+            user=self.user, site=Site.objects.get(domain=GLOBAL_DOMAIN)
+        )
+        resp = self.client.post(reverse("events_create"), data=data, follow=True)
+        self.assertIn(
+            "PREMIER is not one of the available choices.",
+            resp.context["form"]._errors["category"][0],
+        )
+        self.assertFalse(Event.objects.exists())
 
 
 class EventUpdateViewTest(TestCase):
@@ -367,6 +392,13 @@ class EventTypeCreateRestrictionTest(TestCase):
                 Site.objects.get_current().site_settings.contact_email,
                 resp.context["form"].errors["category"][0],
             )
+
+    def test_premiers_not_allowed_on_global_site(self):
+        self.organizer.site = Site.objects.get(domain=GLOBAL_DOMAIN)
+        self.organizer.save()
+        self.data["category"] = Event.Category.PREMIER
+        with self.assertRaises(ValidationError):
+            self.client.post(reverse("events-list"), data=self.data, format="json")
 
 
 class EventTypeUpdateRestrictionTest(TestCase):

@@ -15,6 +15,8 @@
 import datetime
 
 from django.contrib.auth.models import User
+from django.contrib.sites.models import Site
+from django.forms import ValidationError
 from django.urls import reverse
 from rest_framework.status import (
     HTTP_200_OK,
@@ -36,6 +38,7 @@ from championship.factories import (
     ResultFactory,
 )
 from championship.models import Event
+from multisite.models import GLOBAL_DOMAIN
 
 
 class TestEventListAPI(APITestCase):
@@ -205,6 +208,13 @@ class EventTypeCreateRestrictionTest(APITestCase):
             self.assertEqual(HTTP_201_CREATED, resp.status_code)
         else:
             self.assertEqual(HTTP_400_BAD_REQUEST, resp.status_code)
+
+    def test_premiers_not_allowed_on_global_site(self):
+        self.organizer.site = Site.objects.get(domain=GLOBAL_DOMAIN)
+        self.organizer.save()
+        self.data["category"] = Event.Category.PREMIER
+        with self.assertRaises(ValidationError):
+            self.client.post(reverse("events-list"), data=self.data, format="json")
 
 
 class EventTypeUpdateRestrictionTest(APITestCase):

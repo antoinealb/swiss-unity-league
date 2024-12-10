@@ -476,6 +476,14 @@ class Event(models.Model):
         help_text="Whether this event will be in invoices.", default=True
     )
 
+    def save(self, *args, **kwargs):
+        if (
+            self.category == Event.Category.PREMIER
+            and self.organizer.site.domain != SWISS_DOMAIN
+        ):
+            raise ValidationError("Non-Swiss organizers can't create Premier events.")
+        return super().save(*args, **kwargs)
+
     def __str__(self):
         return f"{self.name} - {self.date} ({self.get_category_display()})"
 

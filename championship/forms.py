@@ -25,6 +25,7 @@ from crispy_forms.layout import Div, Field, Submit
 from tinymce.widgets import TinyMCE
 
 from championship.parsers.general_parser_functions import parse_record
+from multisite.models import SWISS_DOMAIN
 
 from .models import (
     Address,
@@ -96,6 +97,13 @@ You can copy/paste the description from a website like swissmtg.ch, and the form
         super(EventCreateForm, self).__init__(*args, **kwargs)
         if not organizer:
             organizer = self.instance.organizer
+
+        if organizer.site.domain != SWISS_DOMAIN:
+            self.fields["category"].choices = [
+                choice
+                for choice in self.fields["category"].choices
+                if choice[0] != Event.Category.PREMIER
+            ]
         self.fields["address"].queryset = organizer.get_addresses()
 
     def clean_category(self):
