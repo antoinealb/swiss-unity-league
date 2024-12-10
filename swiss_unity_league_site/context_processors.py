@@ -13,6 +13,7 @@
 # limitations under the License.
 
 from django.conf import settings
+from django.contrib.sites.models import Site
 
 
 def debug(request):
@@ -29,4 +30,6 @@ def public_contact_email(request):
     """
     Provides a context variable to the email address for public contact.
     """
-    return {"PUBLIC_CONTACT_EMAIL": settings.PUBLIC_CONTACT_EMAIL}
+    return {
+        "PUBLIC_CONTACT_EMAIL": Site.objects.get_current().site_settings.contact_email
+    }

@@ -20,6 +20,7 @@ class SiteSettings(models.Model):
     site = models.OneToOneField(
         Site, on_delete=models.CASCADE, related_name="site_settings"
     )
+    contact_email = models.EmailField(verbose_name="Contact email")
 
     def __str__(self) -> str:
         return self.site.domain
