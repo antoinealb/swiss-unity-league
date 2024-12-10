@@ -30,7 +30,7 @@ from django_bleach.models import BleachField
 from django_countries.fields import CountryField
 
 from championship.season import Season, find_season_by_date
-from multisite.models import SWISS_DOMAIN
+from multisite.models import GLOBAL_DOMAIN, SWISS_DOMAIN
 
 
 class Address(models.Model):
@@ -492,6 +492,14 @@ class Event(models.Model):
             return f"{start_time_str}"
         else:
             return ""
+
+    def get_category_display(self) -> str:
+        if (
+            self.category == Event.Category.PREMIER
+            and Site.objects.get_current().domain == GLOBAL_DOMAIN
+        ):
+            return Event.Category.REGIONAL.label  # type: ignore
+        return self._get_FIELD_display(self._meta.get_field("category"))
 
     def get_delete_url(self):
         return reverse("event_delete", args=[self.pk])

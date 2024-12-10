@@ -18,6 +18,7 @@ from django.contrib.auth.models import Permission, User
 from django.core.exceptions import ValidationError
 from django.core.files.uploadedfile import SimpleUploadedFile
 from django.test import Client, TestCase
+from django.test.utils import override_settings
 from django.urls import reverse
 
 from freezegun import freeze_time
@@ -357,6 +358,15 @@ class EventDetailTestCase(TestCase):
                 resp,
                 reverse("recurring_event_create", args=[event.id]),
             )
+
+
+@override_settings(SITE_ID=2)
+class TestGlobalEventDetailsView(TestCase):
+
+    def test_premier_shows_as_regional(self):
+        event = EventFactory(category=Event.Category.PREMIER)
+        resp = self.client.get(reverse("event_details", args=[event.id]))
+        self.assertContains(resp, Event.Category.REGIONAL.label)
 
 
 class EventImageValidation(TestCase):
