@@ -96,15 +96,12 @@ def get_results_with_qps(
     for result in results:
         method = SCOREMETHOD_PER_SEASON[result.event.season]
         result.has_top8 = result.top_count > 0
-        if result.event.category == Event.Category.OTHER:
-            score = None
-        else:
-            score = method.score_for_result(  # type: ignore
-                result,
-                event_size=result.event_size,
-                has_top8=result.has_top8,
-                total_rounds=rounds_per_event[result.event_id],
-            )
+        score = method.score_for_result(  # type: ignore
+            result,
+            event_size=result.event_size,
+            has_top8=result.has_top8,
+            total_rounds=rounds_per_event[result.event_id],
+        )
         yield result, score
 
 
@@ -125,12 +122,12 @@ def compute_scores(season: Season) -> dict[int, LeaderboardScore]:
             player__in=Player.leaderboard_objects.all(),
         ).exclude(event__category=Event.Category.OTHER)
     ):
-        count += 1
-
-        try:
-            scores_by_player[result.player_id] += score
-        except KeyError:
-            scores_by_player[result.player_id] = score
+        if score:
+            count += 1
+            try:
+                scores_by_player[result.player_id] += score
+            except KeyError:
+                scores_by_player[result.player_id] = score
 
     scores_computation_results_count.labels(season.slug, season.name).set(count)
 
@@ -184,10 +181,11 @@ def _organizer_score_cache_key(l: OrganizerLeague):
 def compute_organizer_scores(league: OrganizerLeague) -> dict[int, LeaderboardScore]:
     qps_by_player: dict[int, int] = {}
     for result, score in get_results_with_qps(league.get_results()):
-        try:
-            qps_by_player[result.player_id] += score.qps
-        except KeyError:
-            qps_by_player[result.player_id] = score.qps
+        if score:
+            try:
+                qps_by_player[result.player_id] += score.qps
+            except KeyError:
+                qps_by_player[result.player_id] = score.qps
 
     sorted_qps = sorted(qps_by_player.items(), key=lambda x: x[1], reverse=True)
     scores = {

@@ -920,7 +920,7 @@ class ManualImportTestCase(TestCase):
         self.assertEqual(200, resp.status_code)
         self.assertContains(
             resp,
-            "A SUL Regional event with 1 players should have at maximum 5 rounds.",
+            "A Regional event with 1 players should have at maximum 5 rounds.",
         )
         self.assertFalse(self.event.result_set.exists())
 

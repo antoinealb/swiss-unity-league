@@ -151,7 +151,14 @@ class EventFactory(DjangoModelFactory):
 class RankedEventFactory(EventFactory):
     category = factory.Faker(
         "random_element",
-        elements=Event.Category.ranked_values(),
+        elements=[
+            c.name  # type: ignore
+            for c in [
+                Event.Category.REGULAR,
+                Event.Category.REGIONAL,
+                Event.Category.PREMIER,
+            ]
+        ],
     )
 
     @factory.post_generation
@@ -287,7 +294,14 @@ class OrganizerLeagueFactory(DjangoModelFactory):
 
     category = factory.Faker(
         "random_element",
-        elements=Event.Category.ranked_values(),
+        elements=[
+            c.name  # type: ignore
+            for c in [
+                Event.Category.REGULAR,
+                Event.Category.REGIONAL,
+                Event.Category.PREMIER,
+            ]
+        ],
     )
 
     playoffs = factory.Faker("boolean")

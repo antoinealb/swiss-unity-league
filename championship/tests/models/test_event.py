@@ -32,7 +32,7 @@ class EventCopyFromTest(TestCase):
         self.event = None
 
     def test_admin_fields_and_pk_not_copied(self):
-        event: Event = EventFactory(
+        event: Event = EventFactory(  # type: ignore
             results_validation_enabled=False,
             include_in_invoices=False,
             edit_deadline_override=datetime.date.today(),

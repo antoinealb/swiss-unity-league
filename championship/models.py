@@ -432,25 +432,18 @@ class Event(models.Model):
     )
 
     class Category(models.TextChoices):
-        REGULAR = "REGULAR", "SUL Regular"
-        REGIONAL = "REGIONAL", "SUL Regional"
-        PREMIER = "PREMIER", "SUL Premier"
+        REGULAR = "REGULAR", "Regular"
+        REGIONAL = "REGIONAL", "Regional"
+        PREMIER = "PREMIER", "Premier"
+        NATIONAL = "NATIONAL", "National"
+        QUALIFIER = "QUALIFIER", "Qualifier"
+        GRAND_PRIX = "GRAND_PRIX", "Grand Prix"
         OTHER = "OTHER", "Other"
-
-        @classmethod
-        def ranked_choices(cls):
-            """Used for the choice fields that only allow ranked categories to be chosen (SUL Regular, Regional, Premier)"""
-            return [(key, label) for key, label in cls.choices if key != cls.OTHER]
-
-        @classmethod
-        def ranked_values(cls):
-            """Used for testing factories that only select among ranked categories (SUL Regular, Regional, Premier)."""
-            return [key for key, _ in cls.ranked_choices()]
 
     category = models.CharField(
         max_length=10,
         choices=Category.choices,
-        help_text="Select 'Other' for events without Swiss rounds and multiplayer events (including Two-Headed Giant).",
+        help_text="Select 'Other' for events without results.",
     )
     decklists_url = models.URLField(
         "Decklists URL",
@@ -498,9 +491,13 @@ class Event(models.Model):
         return reverse("event_details", args=[self.id])
 
     def get_category_icon_url(self):
-        if self.category == Event.Category.OTHER:
-            return ""
-        return f"types/icons/{self.category.lower()}.png"
+        if self.category in [
+            Event.Category.REGULAR,
+            Event.Category.REGIONAL,
+            Event.Category.PREMIER,
+        ]:
+            return f"types/icons/{self.category.lower()}.png"
+        return ""
 
     def can_be_edited(self) -> bool:
         """Returns whether changing the Event or its Results is allowed.
@@ -938,7 +935,14 @@ class OrganizerLeague(models.Model):
 
     category = models.CharField(
         max_length=10,
-        choices=Event.Category.ranked_choices(),
+        choices=[
+            (c.name, c.label)  # type: ignore
+            for c in [
+                Event.Category.REGULAR,
+                Event.Category.REGIONAL,
+                Event.Category.PREMIER,
+            ]
+        ],
         default=Event.Category.REGIONAL,
         verbose_name="Highest category",
         help_text="Events of the selected event type and lower will be included in the league leaderboard. We recommend excluding SUL Premier events, as they dominate leaderboards.",
@@ -970,7 +974,7 @@ class OrganizerLeague(models.Model):
 
     def get_category_and_lower_display(self):
         categories = self.category_and_lower()
-        category_names = [dict(Event.Category.ranked_choices())[c] for c in categories]
+        category_names = [dict(Event.Category.choices)[c] for c in categories]
         if len(category_names) > 1:
             return ", ".join(category_names[:-1]) + " and " + category_names[-1]
         return category_names[0]

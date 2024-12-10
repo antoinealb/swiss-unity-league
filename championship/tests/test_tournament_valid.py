@@ -121,5 +121,5 @@ class CheckTournamentValidTestCase(TestCase):
         event_category = Event.Category.PREMIER
 
         got = get_max_round_error_message(event_category, standings)
-        want = " A SUL Premier event with 24 players should have 5 rounds."
+        want = " A Premier event with 24 players should have 5 rounds."
         self.assertEqual(got, want)

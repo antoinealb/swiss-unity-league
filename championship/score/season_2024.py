@@ -214,7 +214,15 @@ class ScoreMethod2024:
         return scores
 
     @classmethod
-    def score_for_result(cls, result, event_size, has_top8, total_rounds) -> Score:
+    def score_for_result(
+        cls, result, event_size, has_top8, total_rounds
+    ) -> Score | None:
+        if result.event.category not in [
+            Event.Category.REGULAR,
+            Event.Category.REGIONAL,
+            Event.Category.PREMIER,
+        ]:
+            return None
         qps = cls._qps_for_result(result, event_size, has_top8, total_rounds)
         byes = cls._byes_for_result(result, event_size, has_top8)
         return cls.Score(qps=qps, byes=byes)

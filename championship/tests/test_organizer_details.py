@@ -269,7 +269,7 @@ class OrganizerLeaderboardTest(TestCase):
 
         self.assertContains(resp, league.name)
         self.assertContains(resp, league.get_format_display())
-        self.assertContains(resp, "SUL Regular and SUL Regional")
+        self.assertContains(resp, "Regular and Regional")
         if not league.playoffs:
             self.assertContains(resp, "without playoffs")
         self.assertContains(resp, result.player.name)
