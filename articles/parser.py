@@ -16,9 +16,20 @@ import dataclasses
 from collections.abc import Iterator
 from typing import Union
 
-from parsita import ParserContext, eof, failure, lit, opt, reg, rep1, success, until
+from parsita import (
+    ParserContext,
+    eof,
+    failure,
+    lit,
+    longest,
+    opt,
+    reg,
+    rep1,
+    success,
+    until,
+)
 
-from multisite.models import GLOBAL_DOMAIN, SWISS_DOMAIN
+from multisite.models import ALL_DOMAINS
 
 
 @dataclasses.dataclass
@@ -50,13 +61,12 @@ class ArticleTagParser(ParserContext):  # type: ignore
     card = reg(r"[^\[\]\r\n]*") > (lambda s: s.rstrip())
 
     protocol = (lit("http") | lit("https")) >> lit("://")
-    allowed_authorities = ((lit(GLOBAL_DOMAIN) | lit(SWISS_DOMAIN)) & lit("/")) | rep1(
-        lit("../")
-    )
+    absolute_root = longest(*[lit(d) for d in ALL_DOMAINS]) & lit("/")
+    relative_root = rep1(lit("../"))
     uuid = reg(r"[0-9a-f\-]+")
     decklist_url = (
         opt(protocol)
-        >> allowed_authorities
+        >> (absolute_root | relative_root)
         >> lit("decklists/")
         >> uuid
         << opt(lit("/"))
@@ -68,9 +78,10 @@ class ArticleTagParser(ParserContext):  # type: ignore
     tag_content = (decklist_tag) | (card > CardTag)
     tag = opening_tag >> tag_content << closing_tag
 
-    anchor_open = lit('<a href="')
-    anchor_close = reg(r'">.*?</a>')
-    anchor = anchor_open >> decklist_tag << anchor_close
+    anchor_end = lit("</a>")
+    anchor = (
+        lit('<a href="') >> decklist_tag << (lit('">') & until(anchor_end) & anchor_end)
+    )
 
     # A markdown-style image link
     image_alt_text = reg(r"[^\]]*")
