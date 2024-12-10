@@ -16,7 +16,7 @@ from django.contrib.sites.models import Site
 from django.test import TestCase
 
 
-class SiteProfileTest(TestCase):
+class SiteSettingsTest(TestCase):
     def test_str(self):
         settings = Site.objects.get_current().site_settings
         self.assertEqual(str(settings), Site.objects.get_current().domain)
