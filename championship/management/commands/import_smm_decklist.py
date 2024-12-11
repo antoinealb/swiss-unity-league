@@ -23,7 +23,7 @@ from django.db.models import QuerySet
 import requests
 
 from championship.models import Event, Player, Result
-from championship.season import ALL_SEASONS_LIST, SEASON_2024, find_season_by_slug
+from championship.season import ALL_SEASONS, SEASON_2024, find_season_by_slug
 from decklists.models import Collection, Decklist
 
 USER_AGENT = "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/128.0.0.0 Safari/537.36"
@@ -69,7 +69,7 @@ class Command(BaseCommand):
             "--season",
             "-s",
             default=SEASON_2024.slug,
-            choices=[s.slug for s in ALL_SEASONS_LIST],
+            choices=[s.slug for s in ALL_SEASONS],
             help="The season to use to find the SMM event",
         )
 

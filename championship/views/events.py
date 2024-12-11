@@ -30,7 +30,7 @@ from rest_framework import viewsets
 from championship.forms import EventCreateForm
 from championship.models import Event
 from championship.score import get_results_with_qps
-from championship.season import SEASON_LIST, find_season_by_slug
+from championship.season import MAIN_SEASONS, find_season_by_slug
 from championship.serializers import EventSerializer
 from championship.views.base import CustomDeleteView
 from decklists.models import Collection, Decklist
@@ -216,7 +216,7 @@ class FutureEventView(TemplateView):
         future_events = {"Upcoming": ""}
         past_events_each_season = [
             {s.name: reverse("past-events-list", kwargs={"slug": s.slug})}
-            for s in SEASON_LIST
+            for s in MAIN_SEASONS
         ]
         context["season_urls"] = [future_events] + past_events_each_season
 

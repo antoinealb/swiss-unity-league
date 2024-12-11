@@ -34,7 +34,7 @@ from django_tex.shortcuts import render_to_pdf
 from matplotlib.ticker import FormatStrFormatter
 
 from championship.models import Event
-from championship.season import SEASON_LIST, Season
+from championship.season import MAIN_SEASONS, Season
 
 from .models import DiscountType, Invoice, fee_for_event
 
@@ -152,7 +152,7 @@ class Report(PermissionRequiredMixin, TemplateView):
         """
         plt.figure()
         legends = []
-        for s in sorted(SEASON_LIST, key=lambda s: s.start_date):
+        for s in sorted(MAIN_SEASONS, key=lambda s: s.start_date):
             data = list(self.data_points_for_season(s))
 
             if not data:

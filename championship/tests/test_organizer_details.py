@@ -31,7 +31,7 @@ from championship.factories import (
     ResultFactory,
 )
 from championship.models import Event, OrganizerLeague
-from championship.season import SEASON_LIST
+from championship.season import MAIN_SEASONS
 from championship.views.organizers import ORGANIZER_LEAGUE_DESCRIPTION
 from multisite.factories import SiteFactory
 
@@ -223,7 +223,7 @@ class OrganizerListViewTest(TestCase):
 
 class OrganizerLeaderboardTest(TestCase):
 
-    @parameterized.expand(SEASON_LIST)
+    @parameterized.expand(MAIN_SEASONS)
     def test_organizer_ranking_for_season(self, season):
         with freeze_time(season.end_date + datetime.timedelta(days=1)):
             organizer = EventOrganizerFactory()

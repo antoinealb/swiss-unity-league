@@ -23,7 +23,7 @@ from championship.season import (
     SEASON_2023,
     SEASON_2024,
     SEASON_2025,
-    find_season_by_date,
+    find_main_season_by_date,
 )
 
 FEE_PER_PLAYER = {
@@ -62,7 +62,7 @@ TOP8_FEE = {
 
 
 def fee_for_event(event: Event) -> int:
-    season = find_season_by_date(event.date)
+    season = find_main_season_by_date(event.date)
     if season is None:
         raise ValueError(f"Unknown season for date {event.date}")
 

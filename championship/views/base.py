@@ -17,12 +17,12 @@ from django.contrib import messages
 from django.http import Http404, HttpResponseForbidden
 from django.views.generic.edit import DeleteView
 
-from championship.season import SEASON_LIST, find_season_by_slug
+from championship.season import MAIN_SEASONS, find_season_by_slug
 
 
 class PerSeasonMixin:
     default_season = settings.DEFAULT_SEASON
-    season_list = SEASON_LIST
+    season_list = MAIN_SEASONS
 
     def dispatch(self, request, *args, **kwargs):
         self.slug = self.kwargs.get("slug", self.default_season.slug)

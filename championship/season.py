@@ -23,7 +23,10 @@ class Season:
     start_date: datetime.date
     end_date: datetime.date
     result_deadline: datetime.timedelta = datetime.timedelta(days=7)
-    visible: bool = True  # Whether the season is shown in the dropdown
+    # Whether it's a main (yearly) season and not a special one
+    main_season: bool = False
+    # Whether the season is shown in the dropdown
+    visible: bool = True
 
     def can_enter_results(self, on_date: datetime.date) -> bool:
         """Checks if results can still be added to this season on a given date."""
@@ -35,6 +38,7 @@ SEASON_2023 = Season(
     end_date=datetime.date(2023, 10, 31),
     name="Season 2023",
     slug="2023",
+    main_season=True,
 )
 
 SEASON_2024 = Season(
@@ -42,6 +46,7 @@ SEASON_2024 = Season(
     end_date=datetime.date(2024, 10, 31),
     name="Season 2024",
     slug="2024",
+    main_season=True,
 )
 
 SEASON_2025 = Season(
@@ -49,6 +54,7 @@ SEASON_2025 = Season(
     end_date=datetime.date(2025, 10, 31),
     name="Season 2025",
     slug="2025",
+    main_season=True,
 )
 
 INVITATIONAL_SPRING_2025 = Season(
@@ -58,33 +64,34 @@ INVITATIONAL_SPRING_2025 = Season(
     slug="invitational-spring-2025",
 )
 
-SEASON_LIST = [SEASON_2025, SEASON_2024, SEASON_2023]
-
-SEASON_ALL = Season(
-    start_date=min([s.start_date for s in SEASON_LIST]),
-    end_date=max([s.end_date for s in SEASON_LIST]),
-    name="all seasons",
-    slug="all",
-)
-
-ALL_SEASONS_LIST = [
+_SEASON_DEFINITION = [
     SEASON_2025,
     INVITATIONAL_SPRING_2025,
     SEASON_2024,
     SEASON_2023,
-    SEASON_ALL,
 ]
+
+SEASON_ALL = Season(
+    start_date=min([s.start_date for s in _SEASON_DEFINITION if s.main_season]),
+    end_date=max([s.end_date for s in _SEASON_DEFINITION if s.main_season]),
+    name="all seasons",
+    slug="all",
+)
+
+ALL_SEASONS = _SEASON_DEFINITION + [SEASON_ALL]
+
+MAIN_SEASONS = [season for season in ALL_SEASONS if season.main_season]
 
 
 def find_season_by_slug(slug: str) -> Season:
-    for s in ALL_SEASONS_LIST:
+    for s in ALL_SEASONS:
         if s.slug == slug:
             return s
     raise KeyError(f"Unknown season slug '{slug}'")
 
 
-def find_season_by_date(date: datetime.date) -> Season | None:
-    for season in SEASON_LIST:
+def find_main_season_by_date(date: datetime.date) -> Season | None:
+    for season in MAIN_SEASONS:
         if season.start_date <= date <= season.end_date:
             return season
     return None

@@ -29,7 +29,7 @@ from dateutil.relativedelta import relativedelta
 from django_bleach.models import BleachField
 from django_countries.fields import CountryField
 
-from championship.season import Season, find_season_by_date
+from championship.season import Season, find_main_season_by_date
 from multisite.models import GLOBAL_DOMAIN, SWISS_DOMAIN
 
 
@@ -537,7 +537,7 @@ class Event(models.Model):
         if self.edit_deadline_override and today <= self.edit_deadline_override:
             return True
 
-        season = find_season_by_date(self.date)
+        season = find_main_season_by_date(self.date)
         if season is None:
             return True
 
@@ -549,7 +549,7 @@ class Event(models.Model):
 
     @property
     def season(self) -> Season | None:
-        return find_season_by_date(self.date)
+        return find_main_season_by_date(self.date)
 
     def can_be_deleted(self) -> bool:
         """Events can be deleted if they can still be edited or have no results."""

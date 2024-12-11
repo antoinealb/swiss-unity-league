@@ -21,7 +21,7 @@ import matplotlib.pyplot as plt
 from matplotlib.ticker import FormatStrFormatter
 
 from championship.models import Event
-from championship.season import ALL_SEASONS_LIST, SEASON_2023, SEASON_2024, Season
+from championship.season import ALL_SEASONS, SEASON_2023, SEASON_2024, Season
 from invoicing.models import Invoice, fee_for_event
 
 
@@ -68,13 +68,13 @@ class Command(BaseCommand):
     help = "Plot our revenue over time, allowing us to compare seasons."
 
     def add_arguments(self, parser):
-        all_seasons = ",".join(s.slug for s in ALL_SEASONS_LIST)
+        all_seasons = ",".join(s.slug for s in ALL_SEASONS)
         parser.add_argument(
             "--season",
             "-s",
             default=[SEASON_2023, SEASON_2024],
             action="append",
-            choices=[s.slug for s in ALL_SEASONS_LIST],
+            choices=[s.slug for s in ALL_SEASONS],
             help=f"Season to report fees. Can be one of [{all_seasons}]",
         )
         parser.add_argument(

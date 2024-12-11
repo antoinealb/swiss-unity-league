@@ -20,7 +20,7 @@ from prettytable import PrettyTable
 
 from championship.models import Event, Result
 from championship.score.generic import get_leaderboard, get_results_with_qps
-from championship.season import ALL_SEASONS_LIST, find_season_by_slug
+from championship.season import ALL_SEASONS, find_season_by_slug
 
 
 class Command(BaseCommand):
@@ -29,12 +29,12 @@ class Command(BaseCommand):
     )
 
     def add_arguments(self, parser):
-        all_seasons = ",".join(s.slug for s in ALL_SEASONS_LIST)
+        all_seasons = ",".join(s.slug for s in ALL_SEASONS)
         parser.add_argument(
             "--season",
             "-s",
             default=settings.DEFAULT_SEASON.slug,
-            choices=[s.slug for s in ALL_SEASONS_LIST],
+            choices=[s.slug for s in ALL_SEASONS],
             help=f"Season to report fees. Can be one of [{all_seasons}]",
         )
         parser.add_argument(
