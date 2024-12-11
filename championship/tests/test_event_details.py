@@ -18,7 +18,6 @@ from django.contrib.auth.models import Permission, User
 from django.core.exceptions import ValidationError
 from django.core.files.uploadedfile import SimpleUploadedFile
 from django.test import Client, TestCase
-from django.test.utils import override_settings
 from django.urls import reverse
 
 from freezegun import freeze_time
@@ -32,6 +31,7 @@ from championship.factories import (
     ResultFactory,
 )
 from championship.models import Event, Result
+from multisite.tests.utils import global_site
 
 
 class EventDetailTestCase(TestCase):
@@ -359,10 +359,7 @@ class EventDetailTestCase(TestCase):
                 reverse("recurring_event_create", args=[event.id]),
             )
 
-
-@override_settings(SITE_ID=2)
-class TestGlobalEventDetailsView(TestCase):
-
+    @global_site
     def test_premier_shows_as_regional(self):
         event = EventFactory(category=Event.Category.PREMIER)
         resp = self.client.get(reverse("event_details", args=[event.id]))
