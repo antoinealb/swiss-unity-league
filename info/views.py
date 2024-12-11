@@ -22,7 +22,7 @@ from django.template.loader import get_template
 from django.urls import reverse
 from django.views.generic import TemplateView
 
-from championship.season import ALL_SEASONS_LIST, INVISIBLE_SEASONS, find_season_by_slug
+from championship.season import ALL_SEASONS_LIST, find_season_by_slug
 
 
 @lru_cache
@@ -65,8 +65,7 @@ class InformationView(TemplateView):
         return [
             season
             for season in ALL_SEASONS_LIST
-            if template_exists(self.get_template_for_season(season))
-            and season not in INVISIBLE_SEASONS
+            if season.visible and template_exists(self.get_template_for_season(season))
         ]
 
     def get_context_data(self, **kwargs):

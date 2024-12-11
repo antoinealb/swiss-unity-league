@@ -23,6 +23,7 @@ class Season:
     start_date: datetime.date
     end_date: datetime.date
     result_deadline: datetime.timedelta = datetime.timedelta(days=7)
+    visible: bool = True  # Whether the season is shown in the dropdown
 
     def can_enter_results(self, on_date: datetime.date) -> bool:
         """Checks if results can still be added to this season on a given date."""
@@ -73,21 +74,20 @@ SEASON_ALL = Season(
     slug="all",
 )
 
-INVISIBLE_SEASONS = []  # type: ignore
 ALL_SEASONS_LIST = SEASON_AND_TRIAL_LIST + [SEASON_ALL]
 
 SEASONS_WITH_RANKING = ALL_SEASONS_LIST
 
 
 def find_season_by_slug(slug: str) -> Season:
-    for s in ALL_SEASONS_LIST + INVISIBLE_SEASONS:
+    for s in ALL_SEASONS_LIST:
         if s.slug == slug:
             return s
     raise KeyError(f"Unknown season slug '{slug}'")
 
 
 def find_season_by_date(date: datetime.date) -> Season | None:
-    for season in SEASON_LIST + INVISIBLE_SEASONS:
+    for season in SEASON_LIST:
         if season.start_date <= date <= season.end_date:
             return season
     return None
