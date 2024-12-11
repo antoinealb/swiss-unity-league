@@ -29,7 +29,7 @@ from championship.factories import (
     ResultFactory,
 )
 from championship.models import Event, PlayerProfile, Result
-from championship.season import SEASONS_WITH_RANKING
+from championship.score.generic import SEASONS_WITH_SCORES
 from championship.views import (
     EVENTS,
     LAST_RESULTS,
@@ -318,7 +318,7 @@ class PlayerDetailSeasonTestCase(TestCase):
     def setUp(self):
         self.client = Client()
 
-    @parameterized.expand(SEASONS_WITH_RANKING)
+    @parameterized.expand(SEASONS_WITH_SCORES)
     def test_player_details_all_seasons_work(self, season):
         player = PlayerFactory()
         event = RankedEventFactory(date=season.start_date)

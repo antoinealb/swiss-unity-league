@@ -20,7 +20,7 @@ from django.test import TestCase
 from parameterized import parameterized
 
 from championship.factories import PlayerFactory, RankedEventFactory, ResultFactory
-from championship.season import SEASONS_WITH_RANKING
+from championship.score.generic import SEASONS_WITH_SCORES
 
 
 class RankingTestCase(TestCase):
@@ -69,7 +69,7 @@ class RankingTestCase(TestCase):
         response = self.client.get("/ranking/2022")
         self.assertEqual(404, response.status_code)
 
-    @parameterized.expand(SEASONS_WITH_RANKING)
+    @parameterized.expand(SEASONS_WITH_SCORES)
     def test_all_ranking(self, season_slug):
         response = self.get_by_slug(season_slug.slug)
         self.assertEqual(200, response.status_code)

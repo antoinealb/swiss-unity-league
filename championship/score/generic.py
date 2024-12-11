@@ -43,7 +43,6 @@ from championship.season import (
     SEASON_2024,
     SEASON_2025,
     SEASON_ALL,
-    SEASONS_WITH_RANKING,
     Season,
 )
 
@@ -63,6 +62,8 @@ SCOREMETHOD_PER_SEASON = {
     INVITATIONAL_SPRING_2025: ScoreMethodInvitationalSpring2025,
     SEASON_ALL: ScoreMethodAll,
 }
+
+SEASONS_WITH_SCORES = list(SCOREMETHOD_PER_SEASON.keys())
 
 
 def get_results_with_qps(
@@ -136,7 +137,7 @@ def compute_scores(season: Season) -> dict[int, LeaderboardScore]:
 @receiver(post_delete, sender=Result)
 @receiver(pre_save, sender=Result)
 def invalidate_score_cache(sender, instance, **kwargs):
-    for s in SEASONS_WITH_RANKING:
+    for s in SCOREMETHOD_PER_SEASON:
         if s.start_date <= instance.event.date <= s.end_date:
             cache.delete(_score_cache_key(s))
 

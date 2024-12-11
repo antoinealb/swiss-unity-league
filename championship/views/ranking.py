@@ -15,14 +15,14 @@
 from django.views.generic.base import TemplateView
 
 from championship.score import get_leaderboard
-from championship.season import SEASONS_WITH_RANKING
+from championship.score.generic import SEASONS_WITH_SCORES
 from championship.views.base import PerSeasonMixin
 
 
 class CompleteRankingView(PerSeasonMixin, TemplateView):
     template_path = "championship/ranking/{slug}/ranking.html"
     season_view_name = "ranking-by-season"
-    season_list = SEASONS_WITH_RANKING
+    season_list = SEASONS_WITH_SCORES
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)

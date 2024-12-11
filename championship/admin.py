@@ -27,7 +27,8 @@ from django.urls import path, reverse
 import openpyxl
 
 from championship.score import get_leaderboard
-from championship.season import SEASONS_WITH_RANKING, find_season_by_slug
+from championship.score.generic import SEASONS_WITH_SCORES
+from championship.season import find_season_by_slug
 from decklists.models import Decklist
 from invoicing.models import Invoice, PayeeAddress
 
@@ -142,7 +143,7 @@ class PlayerMergeForm(forms.Form):
 class TopPlayersEmailForm(forms.Form):
     num_of_players = forms.IntegerField(initial=40, min_value=1)
     season = forms.ChoiceField(
-        choices=[(s.slug, s.name) for s in SEASONS_WITH_RANKING],
+        choices=[(s.slug, s.name) for s in SEASONS_WITH_SCORES],
         initial=settings.DEFAULT_SEASON,
     )
 

@@ -22,7 +22,7 @@ from django.views.generic import CreateView, DetailView, TemplateView
 from championship.forms import PlayerProfileForm
 from championship.models import Event, Player, PlayerProfile, Result
 from championship.score import get_results_with_qps
-from championship.season import SEASONS_WITH_RANKING
+from championship.score.generic import SEASONS_WITH_SCORES
 from championship.views.base import PerSeasonMixin
 from decklists.models import Decklist
 
@@ -110,7 +110,7 @@ def sorted_most_accomplished_results(results):
 
 class PlayerDetailsView(PerSeasonMixin, DetailView):
     season_view_name = "player_details_by_season"
-    season_list = SEASONS_WITH_RANKING
+    season_list = SEASONS_WITH_SCORES
     model = Player
     queryset = Player.objects.exclude(hidden_from_leaderboard=True)
 

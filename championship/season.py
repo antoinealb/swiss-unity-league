@@ -75,8 +75,6 @@ ALL_SEASONS_LIST = [
     SEASON_ALL,
 ]
 
-SEASONS_WITH_RANKING = ALL_SEASONS_LIST
-
 
 def find_season_by_slug(slug: str) -> Season:
     for s in ALL_SEASONS_LIST:
