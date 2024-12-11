@@ -216,7 +216,9 @@ class OrganizerListViewTest(TestCase):
         self.assertNotContains(response, to_without_event.name)
 
     def test_organizer_on_another_site_is_skipped(self):
-        event = EventFactory(organizer__site=SiteFactory())
+        event = EventFactory(
+            organizer__site=SiteFactory(), category=Event.Category.REGIONAL
+        )
         response = self.client.get(reverse("organizer_view"))
         self.assertNotContains(response, event.organizer.name)
 
