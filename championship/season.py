@@ -50,13 +50,6 @@ SEASON_2025 = Season(
     slug="2025",
 )
 
-SUL_TRIAL_2024 = Season(
-    start_date=SEASON_2024.start_date,
-    end_date=datetime.date(2024, 4, 30),
-    name="SUL Trial 2024",
-    slug="sul-trial-2024",
-)
-
 INVITATIONAL_SPRING_2025 = Season(
     start_date=SEASON_2025.start_date,
     end_date=datetime.date(2025, 3, 31),
