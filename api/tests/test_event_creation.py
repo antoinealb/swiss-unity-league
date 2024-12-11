@@ -20,10 +20,13 @@ from rest_framework.status import (
     HTTP_200_OK,
     HTTP_201_CREATED,
     HTTP_204_NO_CONTENT,
+    HTTP_400_BAD_REQUEST,
     HTTP_401_UNAUTHORIZED,
     HTTP_403_FORBIDDEN,
 )
 from rest_framework.test import APITestCase
+
+from parameterized import parameterized
 
 from championship.factories import (
     AddressFactory,
@@ -101,9 +104,7 @@ class TestEventListAPI(APITestCase):
 
 class TestEventCreate(APITestCase):
     def setUp(self):
-        self.credentials = dict(username="test", password="test")
-        self.user = User.objects.create_user(**self.credentials)
-        self.organizer = EventOrganizerFactory(user=self.user)
+        self.organizer = EventOrganizerFactory()
         self.data = {
             "name": "Test Event",
             "url": "https://test.example",
@@ -113,7 +114,7 @@ class TestEventCreate(APITestCase):
         }
 
     def login(self):
-        self.client.login(**self.credentials)
+        self.client.force_login(self.organizer.user)
 
     def test_can_create_event(self):
         self.login()
@@ -171,3 +172,103 @@ class TestEventCreate(APITestCase):
         resp = self.client.patch(reverse("events-detail", args=[e.id]), data=data)
         self.assertEqual(HTTP_200_OK, resp.status_code)
         self.assertEqual(Event.objects.all()[0].name, "foobar")
+
+
+class EventTypeCreateRestrictionTest(APITestCase):
+    """Organizers require permission to create events of some categories."""
+
+    def setUp(self):
+        self.organizer = EventOrganizerFactory()
+        self.client.force_login(self.organizer.user)
+        self.data = {
+            "name": "Test Event",
+            "url": "https://test.example",
+            "date": "2022-12-25",
+            "format": "LEGACY",
+        }
+
+    @parameterized.expand(
+        [
+            (Event.Category.OTHER, True),
+            (Event.Category.REGULAR, True),
+            (Event.Category.REGIONAL, True),
+            (Event.Category.PREMIER, True),
+            (Event.Category.NATIONAL, False),
+            (Event.Category.QUALIFIER, False),
+            (Event.Category.GRAND_PRIX, False),
+        ]
+    )
+    def test_creating_some_event_types_not_allowed(self, category, is_allowed):
+        self.data["category"] = category
+        resp = self.client.post(reverse("events-list"), data=self.data, format="json")
+        if is_allowed:
+            self.assertEqual(HTTP_201_CREATED, resp.status_code)
+        else:
+            self.assertEqual(HTTP_400_BAD_REQUEST, resp.status_code)
+
+
+class EventTypeUpdateRestrictionTest(APITestCase):
+    """Organizers require permission to update events of some categories."""
+
+    def setUp(self):
+        self.event = EventFactory(
+            date=datetime.date.today(),
+            category=Event.Category.OTHER,
+        )
+        self.client.force_login(self.event.organizer.user)
+        self.data = {
+            "name": "Test Event",
+        }
+
+    @parameterized.expand(
+        [
+            (Event.Category.REGULAR, True),
+            (Event.Category.REGIONAL, True),
+            (Event.Category.PREMIER, True),
+            (Event.Category.NATIONAL, False),
+            (Event.Category.QUALIFIER, False),
+            (Event.Category.GRAND_PRIX, False),
+        ]
+    )
+    def test_edit_to_some_event_type_not_allowed(self, category, is_allowed):
+        self.data["category"] = category
+        resp = self.client.patch(
+            reverse("events-detail", args=[self.event.id]), data=self.data
+        )
+        if is_allowed:
+            self.assertEqual(HTTP_200_OK, resp.status_code)
+        else:
+            self.assertEqual(HTTP_400_BAD_REQUEST, resp.status_code)
+
+    @parameterized.expand(
+        [
+            (Event.Category.REGULAR, True),
+            (Event.Category.REGIONAL, True),
+            (Event.Category.PREMIER, True),
+            (Event.Category.NATIONAL, False),
+            (Event.Category.QUALIFIER, False),
+            (Event.Category.GRAND_PRIX, False),
+        ]
+    )
+    def test_edit_away_from_event_type_not_allowed(self, category, is_allowed):
+        self.event.category = category
+        self.event.save()
+        self.data["category"] = Event.Category.OTHER
+        resp = self.client.patch(
+            reverse("events-detail", args=[self.event.id]), data=self.data
+        )
+        if is_allowed:
+            self.assertEqual(HTTP_200_OK, resp.status_code)
+        else:
+            self.assertEqual(HTTP_400_BAD_REQUEST, resp.status_code)
+
+    def test_edit_event_type_to_same_type_is_allowed(self):
+        self.event.category = Event.Category.GRAND_PRIX
+        self.event.save()
+        self.data["category"] = Event.Category.GRAND_PRIX
+        resp = self.client.patch(
+            reverse("events-detail", args=[self.event.id]), data=self.data
+        )
+        self.assertEqual(HTTP_200_OK, resp.status_code)
+        self.event.refresh_from_db()
+        self.event.name = self.data["name"]

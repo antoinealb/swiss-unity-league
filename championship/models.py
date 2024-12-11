@@ -440,6 +440,15 @@ class Event(models.Model):
         GRAND_PRIX = "GRAND_PRIX", "Grand Prix"
         OTHER = "OTHER", "Other"
 
+        @classmethod
+        def requires_permission(cls, category):
+            """Some categories require permission to be created/edited."""
+            return category in [
+                Event.Category.NATIONAL,
+                Event.Category.QUALIFIER,
+                Event.Category.GRAND_PRIX,
+            ]
+
     category = models.CharField(
         max_length=10,
         choices=Category.choices,

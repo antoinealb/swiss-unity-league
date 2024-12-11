@@ -14,6 +14,7 @@
 
 from rest_framework import viewsets
 from rest_framework.decorators import action
+from rest_framework.exceptions import ValidationError
 from rest_framework.permissions import SAFE_METHODS, BasePermission, IsAuthenticated
 from rest_framework.response import Response
 
@@ -67,6 +68,29 @@ class EventViewSet(viewsets.ModelViewSet):
     permission_classes = [
         IsReadonly | (IsAuthenticated & IsOwner & IsEventModificationAllowed)
     ]
+
+    def perform_create(self, serializer):
+        category = serializer.validated_data["category"]
+        if Event.Category.requires_permission(category):
+            raise ValidationError(
+                f"Please contact us to create an event of category {category}."
+            )
+        return super().perform_create(serializer)
+
+    def perform_update(self, serializer):
+        instance = self.get_object()
+        old_category = instance.category
+        new_category = serializer.validated_data.get("category", old_category)
+        if old_category != new_category:
+            if Event.Category.requires_permission(new_category):
+                raise ValidationError(
+                    f"Please contact us to change the category to {new_category}."
+                )
+            if Event.Category.requires_permission(old_category):
+                raise ValidationError(
+                    f"Please contact us to change the category of {old_category} events."
+                )
+        return super().perform_update(serializer)
 
     @action(
         detail=False,
