@@ -16,6 +16,7 @@ from django import forms
 from django.conf import settings
 from django.contrib.auth.forms import UserCreationForm
 from django.contrib.auth.models import User
+from django.contrib.sites.models import Site
 from django.core.exceptions import ValidationError
 
 import bleach
@@ -96,6 +97,21 @@ You can copy/paste the description from a website like swissmtg.ch, and the form
         if not organizer:
             organizer = self.instance.organizer
         self.fields["address"].queryset = organizer.get_addresses()
+
+    def clean_category(self):
+        new_category = self.cleaned_data.get("category")
+        old_category = self.instance.category if self.instance.pk else None
+
+        if old_category != new_category:
+            if Event.Category.requires_permission(new_category):
+                raise ValidationError(
+                    f"Please contact us to create {Event.Category(new_category).label} events: {Site.objects.get_current().site_settings.contact_email}"
+                )
+            if Event.Category.requires_permission(old_category):
+                raise ValidationError(
+                    f"Please contact us to change the category of {Event.Category(old_category).label} events: {Site.objects.get_current().site_settings.contact_email}"
+                )
+        return new_category
 
 
 class UpdateAllEventForm(EventCreateForm):

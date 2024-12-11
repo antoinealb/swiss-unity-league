@@ -14,8 +14,8 @@
 
 import datetime
 
-from django.contrib.auth.models import User
-from django.test import Client, TestCase
+from django.contrib.sites.models import Site
+from django.test import TestCase
 from django.urls import reverse
 from rest_framework.status import HTTP_200_OK
 
@@ -27,6 +27,7 @@ from championship.factories import (
     EventOrganizerFactory,
     RecurringEventFactory,
     ResultFactory,
+    UserFactory,
 )
 from championship.models import Address, Event
 
@@ -37,12 +38,10 @@ class EventCreationTestCase(TestCase):
     """
 
     def setUp(self):
-        self.client = Client()
-        self.credentials = dict(username="test", password="test")
-        self.user = User.objects.create_user(**self.credentials)
+        self.user = UserFactory()
 
     def login(self):
-        self.client.login(**self.credentials)
+        self.client.force_login(self.user)
 
     def test_link_not_shown_to_anonymous_users(self):
         response = self.client.get("/")
@@ -137,6 +136,14 @@ class EventCreationTestCase(TestCase):
 
         self.assertRedirects(resp, reverse("recurring_event_create", args=[event.id]))
 
+
+class EventUpdateViewTest(TestCase):
+    def setUp(self):
+        self.user = UserFactory()
+
+    def login(self):
+        self.client.force_login(self.user)
+
     def test_update_event(self):
         data = {
             "name": "Test Event",
@@ -230,6 +237,14 @@ class EventCreationTestCase(TestCase):
         event = Event.objects.get(pk=event.id)
         self.assertEqual(datetime.date.today(), event.date)
 
+
+class EventDeleteViewTest(TestCase):
+    def setUp(self):
+        self.user = UserFactory()
+
+    def login(self):
+        self.client.force_login(self.user)
+
     def test_get_delete_page(self):
         to = EventOrganizerFactory(user=self.user)
         event = EventFactory(organizer=to)
@@ -273,20 +288,23 @@ class EventCreationTestCase(TestCase):
         self.assertEqual(403, resp.status_code)
         self.assertEqual(Event.objects.count(), 1)
 
+
+class EventAdressTest(TestCase):
+
     def test_default_address_is_initial(self):
-        self.login()
-        to = EventOrganizerFactory(user=self.user)
+        to = EventOrganizerFactory()
+        self.client.force_login(to.user)
         response = self.client.get(reverse("events_create"))
         initial_address = response.context["form"].initial["address"]
         self.assertEqual(to.default_address.id, initial_address)
 
     def test_initial_address_not_overwritten_by_default_address(self):
-        organizer = EventOrganizerFactory(user=self.user)
+        organizer = EventOrganizerFactory()
+        self.client.force_login(organizer.user)
         not_default_address = AddressFactory(organizer=organizer)
         event = EventFactory(
             address=not_default_address, organizer=organizer, date=datetime.date.today()
         )
-        self.login()
         response = self.client.get(reverse("event_update", args=[event.id]))
         initial_address = response.context["form"].initial["address"]
         self.assertEqual(not_default_address.id, initial_address)
@@ -299,11 +317,11 @@ class EventCreationTestCase(TestCase):
         ]
     )
     def test_update_event_contains_only_organizer_addresses(self, view_name, has_id):
-        organizer = EventOrganizerFactory(user=self.user)
+        organizer = EventOrganizerFactory()
+        self.client.force_login(organizer.user)
         EventOrganizerFactory()
         self.assertEqual(2, Address.objects.count())
         event = EventFactory(organizer=organizer, date=datetime.date.today())
-        self.login()
         response = self.client.get(
             reverse(view_name, args=[event.id]) if has_id else reverse(view_name)
         )
@@ -311,27 +329,139 @@ class EventCreationTestCase(TestCase):
         self.assertQuerySetEqual(form_addresses.all(), organizer.addresses.all())
 
 
+class EventTypeCreateRestrictionTest(TestCase):
+    """Organizers require permission to create events of some categories."""
+
+    def setUp(self):
+        self.organizer = EventOrganizerFactory()
+        self.client.force_login(self.organizer.user)
+        self.data = {
+            "name": "Test Event",
+            "url": "https://test.example",
+            "date": "2022-12-25",
+            "format": "LEGACY",
+        }
+
+    @parameterized.expand(
+        [
+            (Event.Category.OTHER, True),
+            (Event.Category.REGULAR, True),
+            (Event.Category.REGIONAL, True),
+            (Event.Category.PREMIER, True),
+            (Event.Category.NATIONAL, False),
+            (Event.Category.QUALIFIER, False),
+            (Event.Category.GRAND_PRIX, False),
+        ]
+    )
+    def test_creating_some_event_types_not_allowed(self, category, is_allowed):
+        self.data["category"] = category
+        resp = self.client.post(reverse("events_create"), data=self.data)
+        self.assertEqual(Event.objects.exists(), is_allowed)
+        if is_allowed:
+            self.assertRedirects(
+                resp, reverse("event_details", args=[Event.objects.first().id])
+            )
+        else:
+            self.assertEqual(resp.status_code, 200)
+            self.assertIn(
+                Site.objects.get_current().site_settings.contact_email,
+                resp.context["form"].errors["category"][0],
+            )
+
+
+class EventTypeUpdateRestrictionTest(TestCase):
+    """Organizers require permission to update events of some categories."""
+
+    def setUp(self):
+        self.event = EventFactory(
+            date=datetime.date.today(),
+            category=Event.Category.OTHER,
+        )
+        self.client.force_login(self.event.organizer.user)
+        self.data = {
+            "name": "Test Event",
+            "format": Event.Format.MODERN,
+            "date": datetime.date.today(),
+        }
+
+    @parameterized.expand(
+        [
+            (Event.Category.REGULAR, True),
+            (Event.Category.REGIONAL, True),
+            (Event.Category.PREMIER, True),
+            (Event.Category.NATIONAL, False),
+            (Event.Category.QUALIFIER, False),
+            (Event.Category.GRAND_PRIX, False),
+        ]
+    )
+    def test_edit_to_some_event_type_not_allowed(self, category, is_allowed):
+        self.data["category"] = category
+        resp = self.client.post(
+            reverse("event_update", args=[self.event.id]), data=self.data
+        )
+        self.event.refresh_from_db()
+        self.assertEqual(self.event.category == category, is_allowed)
+        if is_allowed:
+            self.assertRedirects(
+                resp, reverse("event_details", args=[Event.objects.first().id])
+            )
+        else:
+            self.assertEqual(resp.status_code, 200)
+            self.assertIn(
+                Site.objects.get_current().site_settings.contact_email,
+                resp.context["form"].errors["category"][0],
+            )
+
+    @parameterized.expand(
+        [
+            (Event.Category.REGULAR, True),
+            (Event.Category.REGIONAL, True),
+            (Event.Category.PREMIER, True),
+            (Event.Category.NATIONAL, False),
+            (Event.Category.QUALIFIER, False),
+            (Event.Category.GRAND_PRIX, False),
+        ]
+    )
+    def test_edit_away_from_event_type_not_allowed(self, category, is_allowed):
+        self.event.category = category
+        self.event.save()
+        self.data["category"] = Event.Category.OTHER
+        resp = self.client.post(
+            reverse("event_update", args=[self.event.id]), data=self.data
+        )
+        self.event.refresh_from_db()
+        self.assertEqual(self.event.category == Event.Category.OTHER, is_allowed)
+        if is_allowed:
+            self.assertRedirects(
+                resp, reverse("event_details", args=[Event.objects.first().id])
+            )
+        else:
+            self.assertEqual(resp.status_code, 200)
+            self.assertIn(
+                Site.objects.get_current().site_settings.contact_email,
+                resp.context["form"].errors["category"][0],
+            )
+
+    def test_edit_event_type_to_same_type_is_allowed(self):
+        self.event.category = Event.Category.GRAND_PRIX
+        self.event.save()
+        self.data["category"] = Event.Category.GRAND_PRIX
+        resp = self.client.post(
+            reverse("event_update", args=[self.event.id]), data=self.data
+        )
+        self.assertRedirects(
+            resp, reverse("event_details", args=[Event.objects.first().id])
+        )
+        self.event.refresh_from_db()
+        self.event.name = self.data["name"]
+
+
 class EventCopyTestCase(TestCase):
     def setUp(self):
-        self.client = Client()
-        self.credentials = dict(username="test", password="test")
-        self.user = User.objects.create_user(**self.credentials)
-        self.organizer = EventOrganizerFactory(user=self.user)
-
-    def login(self):
-        self.client.login(**self.credentials)
-
-    def test_current_event_in_context(self):
-        self.login()
-        event = EventFactory(organizer=self.organizer)
-        r = self.client.get(reverse("event_copy", args=[event.id]))
-        self.assertEqual(event, r.context["event"])
-
-    def test_copy_event(self):
-        self.login()
-        event = EventFactory()
-
-        data = {
+        self.event = EventFactory(category=Event.Category.QUALIFIER)
+        self.organizer = self.event.organizer
+        self.client.force_login(self.organizer.user)
+        self.data = {
             "name": "Test Event",
             "url": "https://test.example",
             "date": "11/26/2022",
@@ -339,19 +469,19 @@ class EventCopyTestCase(TestCase):
             "category": "PREMIER",
         }
 
-        self.client.post(reverse("event_copy", args=[event.id]), data=data)
+    def test_current_event_in_context(self):
+        r = self.client.get(reverse("event_copy", args=[self.event.id]))
+        self.assertEqual(self.event, r.context["event"])
 
-        self.assertEqual(2, Event.objects.count())
+    def test_copy_event(self):
+        self.client.post(reverse("event_copy", args=[self.event.id]), data=self.data)
+        self.assertEqual(2, Event.objects.count(), str(self.event))
 
     def test_copy_button_shown(self):
-        self.login()
-        event = EventFactory(organizer=self.organizer)
-
-        resp = self.client.get(reverse("event_details", args=[event.id]))
-        self.assertContains(resp, reverse("event_copy", args=[event.id]))
+        resp = self.client.get(reverse("event_details", args=[self.event.id]))
+        self.assertContains(resp, reverse("event_copy", args=[self.event.id]))
 
     def test_initial_address_not_overwritten_by_default_address(self):
-        self.login()
         not_default_address = AddressFactory(organizer=self.organizer)
         event = EventFactory(address=not_default_address, organizer=self.organizer)
         response = self.client.get(reverse("event_copy", args=[event.id]))
@@ -360,20 +490,24 @@ class EventCopyTestCase(TestCase):
         self.assertEqual(not_default_address.id, initial_address)
 
     def test_copy_event_with_recurring_event(self):
-        self.login()
         recurring_event = RecurringEventFactory()
-        event = EventFactory(recurring_event=recurring_event)
+        self.event.recurring_event = recurring_event
+        self.event.save()
 
-        data = {
-            "name": "Test Event",
-            "url": "https://test.example",
-            "date": "11/26/2022",
-            "format": "LEGACY",
-            "category": "PREMIER",
-        }
-
-        self.client.post(reverse("event_copy", args=[event.id]), data=data)
+        self.client.post(reverse("event_copy", args=[self.event.id]), data=self.data)
         events = Event.objects.all()
-        self.assertEqual(len(events), 2)
+        self.assertEqual(len(events), 2, str(self.event))
         self.assertEqual(events[0].recurring_event, recurring_event)
         self.assertIsNone(events[1].recurring_event)
+
+    def test_cannot_copy_to_restricted_type(self):
+        self.event.category = Event.Category.GRAND_PRIX
+        self.event.save()
+        self.data["category"] = Event.Category.GRAND_PRIX
+        response = self.client.post(
+            reverse("event_copy", args=[self.event.id]), data=self.data
+        )
+        self.assertIn(
+            Site.objects.get_current().site_settings.contact_email,
+            response.context["form"].errors["category"][0],
+        )

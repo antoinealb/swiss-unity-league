@@ -176,6 +176,12 @@ class CopyEventView(LoginRequiredMixin, UpdateView):
     form_class = EventCreateForm
     template_name = "championship/copy_event.html"
 
+    def get_form(self, form_class=None):
+        form = super().get_form(form_class)
+        if Event.Category.requires_permission(form.instance.category):
+            form.instance.category = Event.Category.OTHER
+        return form
+
     def get_initial(self):
         # By default, copy it one week later
         initial = super().get_initial()
