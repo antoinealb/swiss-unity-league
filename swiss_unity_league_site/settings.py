@@ -127,6 +127,7 @@ INSTALLED_APPS = [
     "robotstxt",
     "sass_processor",
     "tinymce",
+    "waffle",
     # keep-sorted end
 ]
 
@@ -142,6 +143,7 @@ MIDDLEWARE = [
     "django.contrib.messages.middleware.MessageMiddleware",
     "django.middleware.clickjacking.XFrameOptionsMiddleware",
     "django_prometheus.middleware.PrometheusAfterMiddleware",
+    "waffle.middleware.WaffleMiddleware",
     "geo.middleware.GeoIpMiddleware",
     "debug_toolbar.middleware.DebugToolbarMiddleware",
     "hijack.middleware.HijackUserMiddleware",
@@ -454,3 +456,7 @@ SESSION_COOKIE_AGE = datetime.timedelta(days=30).total_seconds()
 
 GEOIP_PATH = BASE_DIR
 GEOIP_CITY = "ipdb_city.mmdb"
+
+# Settings related to Waffle, a feature flag library for Django
+# See https://waffle.readthedocs.io/en/stable/starting/configuring.html
+WAFFLE_CREATE_MISSING_FLAGS = True
