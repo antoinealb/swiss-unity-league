@@ -1,5 +1,6 @@
 {% load static %}
 {% load sass_tags %}
+{% load waffle_tags %}
 <!DOCTYPE html>
 <html class="h-100" lang="en">
     <head>
@@ -101,6 +102,12 @@
                         This is intended to be used for your experiments and testing features, not for saving your data.
                     </div>
                 {% endif %}
+
+                {% flag "index_show_geoip" %}
+                    <div class="alert alert-primary" role="alert">
+                        You are visiting from: {{ request.geoip_data.city|default:"unknown" }}. This message is controlled by the "index_show_geoip" flag.
+                    </div>
+                {% endflag %}
                 {% block content %}
                     You now need to fill in the block content :)
                 {% endblock %}
