@@ -45,7 +45,7 @@ from championship.models import (
     RecurringEvent,
 )
 from championship.score.generic import get_organizer_leaderboard
-from championship.season import find_main_season_by_date
+from championship.seasons.helpers import find_main_season_by_date
 from championship.views.base import CustomDeleteView
 
 ORGANIZER_LEAGUE_DESCRIPTION = "<p>A leaderboard with <b>the best players of {organizer_name} in {season_name}</b>.<br><br><i>Please note that this leaderboard is for informational purposes only and does not award any prizes, invitations or rewards.</i></p>"

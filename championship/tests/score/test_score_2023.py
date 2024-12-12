@@ -21,7 +21,7 @@ from championship.models import Event, Result
 from championship.score import compute_scores
 from championship.score.season_2023 import ScoreMethod2023
 from championship.score.types import QualificationType
-from championship.season import SEASON_2023
+from championship.seasons.definitions import SEASON_2023
 
 
 class TestComputeScoreFor2023(TestCase):

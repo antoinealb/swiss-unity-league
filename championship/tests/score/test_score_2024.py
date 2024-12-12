@@ -29,7 +29,7 @@ from championship.models import Event, Result
 from championship.score import compute_scores
 from championship.score.season_2024 import ScoreMethod2024
 from championship.score.types import QualificationType
-from championship.season import SEASON_2024
+from championship.seasons.definitions import SEASON_2024
 
 
 class TestComputeScoreFor2024(TestCase):

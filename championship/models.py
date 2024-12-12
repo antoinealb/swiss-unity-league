@@ -29,7 +29,7 @@ from dateutil.relativedelta import relativedelta
 from django_bleach.models import BleachField
 from django_countries.fields import CountryField
 
-from championship.season import Season, find_main_season_by_date
+from championship.seasons.helpers import Season, find_main_season_by_date
 from multisite.constants import GLOBAL_DOMAIN, SWISS_DOMAIN
 
 

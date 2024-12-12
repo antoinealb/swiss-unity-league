@@ -17,7 +17,7 @@ import datetime
 from championship.models import Event
 from championship.score.season_2025 import ScoreMethod2025
 from championship.score.types import LeaderboardScore, QualificationType
-from championship.season import INVITATIONAL_SPRING_2025
+from championship.seasons.definitions import INVITATIONAL_SPRING_2025
 
 
 class ScoreMethodInvitationalSpring2025(ScoreMethod2025):

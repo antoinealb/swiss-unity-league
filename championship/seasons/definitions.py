@@ -15,7 +15,7 @@
 import datetime
 from dataclasses import dataclass
 
-from multisite.constants import SWISS_DOMAIN
+from multisite.constants import GLOBAL_DOMAIN, SWISS_DOMAIN
 
 
 @dataclass(frozen=True)
@@ -28,12 +28,19 @@ class Season:
     domain: str = SWISS_DOMAIN
     # Whether it's a main (yearly) season and not a special one
     main_season: bool = False
+    # Whether this is the default season to show on the website
+    default: bool = False
     # Whether the season is shown in the dropdown
     visible: bool = True
 
     def can_enter_results(self, on_date: datetime.date) -> bool:
         """Checks if results can still be added to this season on a given date."""
         return on_date <= self.end_date + self.result_deadline
+
+    def __lt__(self, other: "Season") -> bool:
+        if self.start_date != other.start_date:
+            return self.start_date > other.start_date
+        return self.end_date < other.end_date
 
 
 SEASON_2023 = Season(
@@ -58,6 +65,7 @@ SEASON_2025 = Season(
     name="Season 2025",
     slug="2025",
     main_season=True,
+    default=True,
 )
 
 INVITATIONAL_SPRING_2025 = Season(
@@ -67,34 +75,32 @@ INVITATIONAL_SPRING_2025 = Season(
     slug="invitational-spring-2025",
 )
 
-_SEASON_DEFINITION = [
+SWISS_SEASONS = [
     SEASON_2025,
     INVITATIONAL_SPRING_2025,
     SEASON_2024,
     SEASON_2023,
 ]
 
+EU_SEASON_2025 = Season(
+    start_date=datetime.date(2025, 1, 1),
+    end_date=datetime.date(2025, 9, 30),
+    name="Season 2025",
+    slug="eu-2025",
+    domain=GLOBAL_DOMAIN,
+    main_season=True,
+    default=True,
+)
+
+EU_SEASONS = [EU_SEASON_2025]
+
 SEASON_ALL = Season(
-    start_date=min([s.start_date for s in _SEASON_DEFINITION if s.main_season]),
-    end_date=max([s.end_date for s in _SEASON_DEFINITION if s.main_season]),
+    start_date=min([s.start_date for s in SWISS_SEASONS if s.main_season]),
+    end_date=max([s.end_date for s in SWISS_SEASONS if s.main_season]),
     name="all seasons",
     slug="all",
 )
 
-ALL_SEASONS = _SEASON_DEFINITION + [SEASON_ALL]
+ALL_SEASONS = SWISS_SEASONS + EU_SEASONS + [SEASON_ALL]
 
-MAIN_SEASONS = [season for season in ALL_SEASONS if season.main_season]
-
-
-def find_season_by_slug(slug: str) -> Season:
-    for s in ALL_SEASONS:
-        if s.slug == slug:
-            return s
-    raise KeyError(f"Unknown season slug '{slug}'")
-
-
-def find_main_season_by_date(date: datetime.date) -> Season | None:
-    for season in MAIN_SEASONS:
-        if season.start_date <= date <= season.end_date:
-            return season
-    return None
+MAIN_SEASONS = [s for s in ALL_SEASONS if s.main_season]

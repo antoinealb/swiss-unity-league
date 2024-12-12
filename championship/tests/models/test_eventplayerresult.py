@@ -18,7 +18,7 @@ from django.test import TestCase
 
 from championship.factories import ResultFactory
 from championship.models import Result
-from championship.season import SEASON_2023
+from championship.seasons.definitions import SEASON_2023
 
 
 class ResultFactoryTest(TestCase):

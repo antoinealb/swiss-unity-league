@@ -12,20 +12,27 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from django.conf import settings
 from django.contrib import messages
 from django.http import Http404, HttpResponseForbidden
 from django.views.generic.edit import DeleteView
 
-from championship.season import MAIN_SEASONS, find_season_by_slug
+from championship.seasons.helpers import (
+    find_season_by_slug,
+    get_default_season,
+    get_main_seasons,
+)
 
 
 class PerSeasonMixin:
-    default_season = settings.DEFAULT_SEASON
-    season_list = MAIN_SEASONS
+
+    def get_default_season(self):
+        return get_default_season()
+
+    def get_season_list(self):
+        return get_main_seasons()
 
     def dispatch(self, request, *args, **kwargs):
-        self.slug = self.kwargs.get("slug", self.default_season.slug)
+        self.slug = self.kwargs.get("slug", self.get_default_season().slug)
         try:
             self.current_season = find_season_by_slug(self.slug)
         except KeyError:
@@ -37,12 +44,12 @@ class PerSeasonMixin:
         # not found, the default one gets returned.
         return [
             self.template_path.format(slug=s)
-            for s in (self.slug, self.default_season.slug)
+            for s in (self.slug, self.get_default_season().slug)
         ]
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        context["seasons"] = self.season_list
+        context["seasons"] = self.get_season_list()
         context["current_season"] = self.current_season
         context["view_name"] = self.season_view_name
         return context

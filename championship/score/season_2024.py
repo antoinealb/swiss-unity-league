@@ -17,7 +17,7 @@ from dataclasses import dataclass
 
 from championship.models import Count, Event, Result, SpecialReward
 from championship.score.types import LeaderboardScore, QualificationType
-from championship.season import SEASON_2024
+from championship.seasons.definitions import SEASON_2024
 
 
 class ScoreMethod2024:

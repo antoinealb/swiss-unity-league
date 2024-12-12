@@ -31,7 +31,8 @@ from championship.factories import (
     ResultFactory,
 )
 from championship.models import Event, Result
-from multisite.tests.utils import global_site
+from multisite.constants import GLOBAL_DOMAIN
+from multisite.tests.utils import site
 
 
 class EventDetailTestCase(TestCase):
@@ -359,7 +360,7 @@ class EventDetailTestCase(TestCase):
                 reverse("recurring_event_create", args=[event.id]),
             )
 
-    @global_site
+    @site(GLOBAL_DOMAIN)
     def test_premier_shows_as_regional(self):
         event = EventFactory(category=Event.Category.PREMIER)
         resp = self.client.get(reverse("event_details", args=[event.id]))

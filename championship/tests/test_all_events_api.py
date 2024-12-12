@@ -19,7 +19,7 @@ from django.urls import reverse
 
 from championship.factories import AddressFactory, EventFactory, EventOrganizerFactory
 from championship.models import Address, Event
-from championship.season import SEASON_2023
+from championship.seasons.definitions import SEASON_2023
 
 TEST_SERVER = "http://testserver"
 

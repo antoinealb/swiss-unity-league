@@ -23,7 +23,8 @@ from parameterized import parameterized
 
 from championship.factories import EventFactory, ResultFactory
 from championship.models import Event
-from championship.season import MAIN_SEASONS, SEASON_2024
+from championship.seasons.definitions import SEASON_2024
+from championship.seasons.helpers import get_main_seasons
 from invoicing.factories import InvoiceFactory
 from invoicing.models import fee_for_event
 from invoicing.views import Report
@@ -42,7 +43,7 @@ class ReportRenderingTest(TestCase):
         self.assertEqual(HTTP_200_OK, resp.status_code)
 
     def test_get_image(self):
-        for s in MAIN_SEASONS:
+        for s in get_main_seasons():
             event = EventFactory(date=s.start_date, category=Event.Category.REGIONAL)
             for _ in range(10):
                 ResultFactory(event=event)

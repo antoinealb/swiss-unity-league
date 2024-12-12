@@ -17,7 +17,7 @@ from django.test import Client, TestCase
 from django.urls import reverse
 
 from championship.factories import PlayerFactory, RankedEventFactory, ResultFactory
-from championship.season import SEASON_2023
+from championship.seasons.definitions import SEASON_2023
 
 
 class TopPlayersEmailViewTest(TestCase):

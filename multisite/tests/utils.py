@@ -14,17 +14,33 @@
 
 from functools import wraps
 
+from django.contrib.sites.models import Site
 from django.test.utils import override_settings
 
 
-def global_site(test_func):
+def site(domain):
     """
-    Test decorator to globally set SITE_ID=2.
+    Test decorator or context manager to set SITE_ID based on the given domain.
     """
 
-    @wraps(test_func)
-    @override_settings(SITE_ID=2)
-    def wrapped(*args, **kwargs):
-        return test_func(*args, **kwargs)
+    class SiteContext:
+        def __init__(self, domain):
+            self.domain = domain
 
-    return wrapped
+        def __enter__(self):
+            self.site_id = Site.objects.get(domain=self.domain).id
+            self.override = override_settings(SITE_ID=self.site_id)
+            self.override.enable()
+
+        def __exit__(self, exc_type, exc_value, traceback):
+            self.override.disable()
+
+        def __call__(self, test_func):
+            @wraps(test_func)
+            def wrapped(*args, **kwargs):
+                with self:
+                    return test_func(*args, **kwargs)
+
+            return wrapped
+
+    return SiteContext(domain)

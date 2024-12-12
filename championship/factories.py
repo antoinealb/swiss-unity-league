@@ -35,7 +35,7 @@ from .models import (
     Result,
     SpecialReward,
 )
-from .season import SEASON_2023, SEASON_2024, SEASON_2025
+from .seasons.definitions import SEASON_2023, SEASON_2024, SEASON_2025
 
 
 class MagicProvider(BaseProvider):

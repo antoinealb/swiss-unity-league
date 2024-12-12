@@ -31,9 +31,10 @@ from championship.factories import (
     ResultFactory,
 )
 from championship.models import Event, OrganizerLeague
-from championship.season import MAIN_SEASONS
+from championship.seasons.definitions import MAIN_SEASONS
 from championship.views.organizers import ORGANIZER_LEAGUE_DESCRIPTION
 from multisite.factories import SiteFactory
+from multisite.tests.utils import site
 
 
 class EventOrganizerDetailViewTests(TestCase):
@@ -227,7 +228,9 @@ class OrganizerLeaderboardTest(TestCase):
 
     @parameterized.expand(MAIN_SEASONS)
     def test_organizer_ranking_for_season(self, season):
-        with freeze_time(season.end_date + datetime.timedelta(days=1)):
+        with freeze_time(season.end_date + datetime.timedelta(days=1)), site(
+            domain=season.domain
+        ):
             organizer = EventOrganizerFactory()
             # Check that it's possible to fetch the organizer details even though ther are no results
             response = self.client.get(

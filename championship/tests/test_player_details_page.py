@@ -29,7 +29,7 @@ from championship.factories import (
     ResultFactory,
 )
 from championship.models import Event, PlayerProfile, Result
-from championship.score.generic import SEASONS_WITH_SCORES
+from championship.score.generic import SCOREMETHOD_PER_SEASON
 from championship.views import (
     EVENTS,
     LAST_RESULTS,
@@ -42,6 +42,7 @@ from championship.views import (
 )
 from championship.views.players import sorted_most_accomplished_results
 from decklists.factories import DecklistFactory
+from multisite.tests.utils import site
 
 
 class PlayerDetailsTest(TestCase):
@@ -318,15 +319,16 @@ class PlayerDetailSeasonTestCase(TestCase):
     def setUp(self):
         self.client = Client()
 
-    @parameterized.expand(SEASONS_WITH_SCORES)
+    @parameterized.expand(SCOREMETHOD_PER_SEASON.keys())
     def test_player_details_all_seasons_work(self, season):
-        player = PlayerFactory()
-        event = RankedEventFactory(date=season.start_date)
-        ResultFactory(event=event, player=player)
-        response = self.client.get(
-            reverse("player_details_by_season", args=[player.id, season.slug])
-        )
-        self.assertContains(response, event.name)
+        with site(domain=season.domain):
+            player = PlayerFactory()
+            event = RankedEventFactory(date=season.start_date)
+            ResultFactory(event=event, player=player)
+            response = self.client.get(
+                reverse("player_details_by_season", args=[player.id, season.slug])
+            )
+            self.assertContains(response, event.name)
 
 
 class PlayerDetailsProfileTest(TestCase):

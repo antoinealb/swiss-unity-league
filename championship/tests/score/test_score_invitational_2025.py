@@ -23,7 +23,7 @@ from championship.score.invitational_spring_2025 import (
     ScoreMethodInvitationalSpring2025,
 )
 from championship.score.types import QualificationType
-from championship.season import INVITATIONAL_SPRING_2025
+from championship.seasons.definitions import INVITATIONAL_SPRING_2025
 
 
 class TestScoresOutOfTrialSeason(TestCase):

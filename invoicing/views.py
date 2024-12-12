@@ -27,6 +27,8 @@ from django.views.generic import DetailView, ListView, TemplateView
 
 import matplotlib
 
+from championship.seasons.helpers import get_main_seasons
+
 matplotlib.use("Agg")
 
 import matplotlib.pyplot as plt
@@ -34,7 +36,7 @@ from django_tex.shortcuts import render_to_pdf
 from matplotlib.ticker import FormatStrFormatter
 
 from championship.models import Event
-from championship.season import MAIN_SEASONS, Season
+from championship.seasons.definitions import Season
 
 from .models import DiscountType, Invoice, fee_for_event
 
@@ -152,7 +154,7 @@ class Report(PermissionRequiredMixin, TemplateView):
         """
         plt.figure()
         legends = []
-        for s in sorted(MAIN_SEASONS, key=lambda s: s.start_date):
+        for s in sorted(get_main_seasons(), key=lambda s: s.start_date):
             data = list(self.data_points_for_season(s))
 
             if not data:

@@ -19,12 +19,8 @@ from django.db import models
 from django.urls import reverse
 
 from championship.models import Event, EventOrganizer
-from championship.season import (
-    SEASON_2023,
-    SEASON_2024,
-    SEASON_2025,
-    find_main_season_by_date,
-)
+from championship.seasons.definitions import SEASON_2023, SEASON_2024, SEASON_2025
+from championship.seasons.helpers import find_main_season_by_date
 
 FEE_PER_PLAYER = {
     SEASON_2023: {

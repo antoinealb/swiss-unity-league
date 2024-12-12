@@ -16,8 +16,9 @@ from django.test import TestCase
 
 from championship.factories import EventFactory, PlayerFactory, ResultFactory
 from championship.models import Event
-from championship.score.generic import SEASONS_WITH_SCORES, compute_scores
-from championship.season import SEASON_ALL
+from championship.score.generic import compute_scores
+from championship.seasons.definitions import SEASON_ALL
+from championship.seasons.helpers import get_seasons_with_scores
 
 
 class TestComputeScoreFor2023(TestCase):
@@ -26,11 +27,12 @@ class TestComputeScoreFor2023(TestCase):
 
     def test_score_all(self):
         player = PlayerFactory()
-        for season in SEASONS_WITH_SCORES:
+        seasons_with_scores = get_seasons_with_scores()
+        for season in seasons_with_scores:
             event = EventFactory(
                 date=season.start_date, category=Event.Category.REGULAR
             )
             ResultFactory(event=event, player=player, points=3)
 
         scores = self.compute_scores()
-        self.assertEqual(scores[player.id].total_score, 6 * len(SEASONS_WITH_SCORES))
+        self.assertEqual(scores[player.id].total_score, 6 * len(seasons_with_scores))

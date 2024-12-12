@@ -15,14 +15,17 @@
 import os.path
 from functools import lru_cache
 
-from django.conf import settings
 from django.contrib.sites.models import Site
 from django.template import TemplateDoesNotExist
 from django.template.loader import get_template
 from django.urls import reverse
 from django.views.generic import TemplateView
 
-from championship.season import ALL_SEASONS, find_season_by_slug
+from championship.seasons.helpers import (
+    find_season_by_slug,
+    get_all_seasons,
+    get_default_season,
+)
 
 
 @lru_cache
@@ -41,7 +44,7 @@ class InformationView(TemplateView):
         try:
             season = find_season_by_slug(self.kwargs["slug"])
         except KeyError:
-            season = settings.DEFAULT_SEASON
+            season = get_default_season()
         return season
 
     def get_template_for_season(self, season):
@@ -64,7 +67,7 @@ class InformationView(TemplateView):
     def get_seasons_with_template(self):
         return [
             season
-            for season in ALL_SEASONS
+            for season in get_all_seasons()
             if season.visible and template_exists(self.get_template_for_season(season))
         ]
 

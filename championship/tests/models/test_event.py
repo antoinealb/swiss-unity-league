@@ -22,7 +22,7 @@ from parameterized import parameterized
 
 from championship.factories import EventFactory
 from championship.models import Event
-from championship.season import SEASON_2023
+from championship.seasons.definitions import SEASON_2023
 from multisite.factories import SiteFactory
 
 

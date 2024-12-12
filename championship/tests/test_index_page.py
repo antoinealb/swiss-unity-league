@@ -17,7 +17,7 @@ import datetime
 from django.conf import settings
 from django.contrib.auth.models import User
 from django.shortcuts import reverse
-from django.test import Client, TestCase, override_settings
+from django.test import Client, TestCase
 from django.utils import timezone
 
 from articles.factories import ArticleFactory
@@ -28,7 +28,6 @@ from championship.factories import (
     ResultFactory,
 )
 from championship.models import Address, Event
-from championship.season import SEASON_2023
 from invoicing.factories import InvoiceFactory
 
 
@@ -89,7 +88,6 @@ class HomepageTestCase(TestCase):
             "Premier events should be listed before Regional events.",
         )
 
-    @override_settings(DEFAULT_SEASON=SEASON_2023)
     def test_shows_player_with_points(self):
         """
         Checks that the homepage contains some player information.
@@ -98,6 +96,7 @@ class HomepageTestCase(TestCase):
         ResultFactory(
             player=player,
             points=1,
+            event__date=datetime.date.today() - datetime.timedelta(days=1),
         )
         response = self.client.get("/")
         self.assertContains(response, player.name)

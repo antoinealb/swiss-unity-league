@@ -13,14 +13,17 @@
 # limitations under the License.
 
 
-from django.conf import settings
 from django.core.management.base import BaseCommand
 
 from prettytable import PrettyTable
 
 from championship.models import Event, Result
 from championship.score.generic import get_leaderboard, get_results_with_qps
-from championship.season import ALL_SEASONS, find_season_by_slug
+from championship.seasons.helpers import (
+    find_season_by_slug,
+    get_all_seasons,
+    get_default_season,
+)
 
 
 class Command(BaseCommand):
@@ -29,12 +32,12 @@ class Command(BaseCommand):
     )
 
     def add_arguments(self, parser):
-        all_seasons = ",".join(s.slug for s in ALL_SEASONS)
+        all_seasons = ",".join(s.slug for s in get_all_seasons())
         parser.add_argument(
             "--season",
             "-s",
-            default=settings.DEFAULT_SEASON.slug,
-            choices=[s.slug for s in ALL_SEASONS],
+            default=get_default_season().slug,
+            choices=[s.slug for s in all_seasons()],
             help=f"Season to report fees. Can be one of [{all_seasons}]",
         )
         parser.add_argument(

@@ -37,7 +37,8 @@ from championship.score.season_2024 import ScoreMethod2024
 from championship.score.season_2025 import ScoreMethod2025
 from championship.score.season_all import ScoreMethodAll
 from championship.score.types import LeaderboardScore
-from championship.season import (
+from championship.seasons.definitions import (
+    EU_SEASON_2025,
     INVITATIONAL_SPRING_2025,
     SEASON_2023,
     SEASON_2024,
@@ -59,11 +60,10 @@ SCOREMETHOD_PER_SEASON = {
     SEASON_2023: ScoreMethod2023,
     SEASON_2024: ScoreMethod2024,
     SEASON_2025: ScoreMethod2025,
+    EU_SEASON_2025: ScoreMethod2025,
     INVITATIONAL_SPRING_2025: ScoreMethodInvitationalSpring2025,
     SEASON_ALL: ScoreMethodAll,
 }
-
-SEASONS_WITH_SCORES = list(SCOREMETHOD_PER_SEASON.keys())
 
 
 def get_results_with_qps(
