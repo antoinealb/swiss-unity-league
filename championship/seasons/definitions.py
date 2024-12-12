@@ -13,12 +13,15 @@
 # limitations under the License.
 
 import datetime
+import functools
 from dataclasses import dataclass
+from typing import Any
 
 from multisite.constants import GLOBAL_DOMAIN, SWISS_DOMAIN
 
 
 @dataclass(frozen=True)
+@functools.total_ordering
 class Season:
     name: str
     slug: str
@@ -41,6 +44,9 @@ class Season:
         if self.start_date != other.start_date:
             return self.start_date > other.start_date
         return self.end_date < other.end_date
+
+    def __eq__(self, other: Any) -> bool:
+        return (self.start_date, self.end_date) == (other.start_date, other.end_date)
 
 
 SEASON_2023 = Season(
