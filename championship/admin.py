@@ -146,8 +146,8 @@ class PlayerMergeForm(forms.Form):
 class TopPlayersEmailForm(forms.Form):
     num_of_players = forms.IntegerField(initial=40, min_value=1)
     season = forms.ChoiceField(
-        choices=[(s.slug, s.name) for s in get_seasons_with_scores()],
-        initial=get_default_season(),
+        choices=lambda: [(s.slug, s.name) for s in get_seasons_with_scores()],
+        initial=lambda: get_default_season(),
     )
 
 
