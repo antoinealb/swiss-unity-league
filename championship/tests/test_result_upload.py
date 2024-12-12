@@ -25,8 +25,8 @@ from requests import HTTPError
 
 from championship.factories import (
     EventOrganizerFactory,
+    OldCategoryRankedEventFactory,
     PlayerFactory,
-    RankedEventFactory,
     ResultFactory,
 )
 from championship.forms import AddTop8ResultsForm
@@ -76,7 +76,7 @@ class AetherhubImportTest(TestCase):
         self.credentials = dict(username="test", password="test")
         self.user = User.objects.create_user(**self.credentials)
         self.organizer = EventOrganizerFactory(user=self.user)
-        self.event = RankedEventFactory(
+        self.event = OldCategoryRankedEventFactory(
             organizer=self.organizer,
             date=datetime.date.today(),
             category=Event.Category.REGULAR,
@@ -185,7 +185,7 @@ class AetherhubImportTest(TestCase):
         self.client.post(reverse("results_create_aetherhub"), self.data)
 
         # Create a second event, and import the results again
-        second_event = RankedEventFactory(
+        second_event = OldCategoryRankedEventFactory(
             organizer=self.organizer,
             date=datetime.date.today(),
             category=self.event.category,
@@ -300,7 +300,7 @@ class AetherhubImportTest(TestCase):
 
     def test_category_other_not_allowed_choice(self):
         self.login()
-        RankedEventFactory(
+        OldCategoryRankedEventFactory(
             organizer=self.organizer,
             date=datetime.date.today(),
             category=Event.Category.OTHER,
@@ -316,7 +316,7 @@ class SpicerackLinkImportTest(TestCase):
         self.credentials = dict(username="test", password="test")
         self.user = User.objects.create_user(**self.credentials)
         self.organizer = EventOrganizerFactory(user=self.user)
-        self.event = RankedEventFactory(
+        self.event = OldCategoryRankedEventFactory(
             organizer=self.organizer,
             date=datetime.date.today(),
             category=Event.Category.REGULAR,
@@ -374,7 +374,7 @@ class ChallongeLinkImportTest(TestCase):
         self.credentials = dict(username="test", password="test")
         self.user = User.objects.create_user(**self.credentials)
         self.organizer = EventOrganizerFactory(user=self.user)
-        self.event = RankedEventFactory(
+        self.event = OldCategoryRankedEventFactory(
             organizer=self.organizer,
             date=datetime.date.today(),
             category=Event.Category.REGULAR,
@@ -444,7 +444,7 @@ class ChallongeHtmlImportTest(TestCase):
         self.credentials = dict(username="test", password="test")
         self.user = User.objects.create_user(**self.credentials)
         self.organizer = EventOrganizerFactory(user=self.user)
-        self.event = RankedEventFactory(
+        self.event = OldCategoryRankedEventFactory(
             organizer=self.organizer,
             date=datetime.date.today(),
             category=Event.Category,
@@ -512,7 +512,7 @@ class EventLinkImportTestCase(TestCase):
         self.credentials = dict(username="test", password="test")
         self.user = User.objects.create_user(**self.credentials)
         self.organizer = EventOrganizerFactory(user=self.user)
-        self.event = RankedEventFactory(
+        self.event = OldCategoryRankedEventFactory(
             organizer=self.organizer,
             date=datetime.date.today(),
             category=Event.Category,
@@ -614,7 +614,7 @@ class MeleeUploadTest(TestCase):
         self.credentials = dict(username="test", password="test")
         self.user = User.objects.create_user(**self.credentials)
         self.organizer = EventOrganizerFactory(user=self.user)
-        self.event = RankedEventFactory(
+        self.event = OldCategoryRankedEventFactory(
             organizer=self.organizer,
             date=datetime.date.today(),
             category=Event.Category.PREMIER,
@@ -649,7 +649,7 @@ class MtgEventUploadTest(TestCase):
         self.credentials = dict(username="test", password="test")
         self.user = User.objects.create_user(**self.credentials)
         self.organizer = EventOrganizerFactory(user=self.user)
-        self.event = RankedEventFactory(
+        self.event = OldCategoryRankedEventFactory(
             organizer=self.organizer,
             date=datetime.date.today(),
             category=Event.Category.REGULAR,
@@ -700,7 +700,7 @@ class ExcelCsvUploadTest(TestCase):
         self.credentials = dict(username="test", password="test")
         self.user = User.objects.create_user(**self.credentials)
         self.organizer = EventOrganizerFactory(user=self.user)
-        self.event = RankedEventFactory(
+        self.event = OldCategoryRankedEventFactory(
             organizer=self.organizer,
             date=datetime.date.today(),
             category=Event.Category.REGULAR,
@@ -795,7 +795,7 @@ class ManualImportTestCase(TestCase):
         self.credentials = dict(username="test", password="test")
         self.user = User.objects.create_user(**self.credentials)
         self.organizer = EventOrganizerFactory(user=self.user)
-        self.event = RankedEventFactory(
+        self.event = OldCategoryRankedEventFactory(
             organizer=self.organizer,
             date=datetime.date.today(),
             category=Event.Category.REGULAR,
@@ -972,7 +972,7 @@ class FindEventsForUpload(TestCase):
     def test_find_events_for_upload(self):
         yesterday = datetime.date.today() - datetime.timedelta(days=1)
         organizer = EventOrganizerFactory()
-        event = RankedEventFactory(date=yesterday, organizer=organizer)
+        event = OldCategoryRankedEventFactory(date=yesterday, organizer=organizer)
 
         self.assertIn(
             event, set(Event.objects.available_for_result_upload(organizer.user))
@@ -981,7 +981,7 @@ class FindEventsForUpload(TestCase):
     def test_old_events_not_shown(self):
         long_ago = datetime.date.today() - datetime.timedelta(days=100)
         organizer = EventOrganizerFactory()
-        event = RankedEventFactory(date=long_ago, organizer=organizer)
+        event = OldCategoryRankedEventFactory(date=long_ago, organizer=organizer)
 
         with self.settings(EVENT_MAX_AGE_FOR_RESULT_ENTRY=datetime.timedelta(30)):
             self.assertNotIn(
@@ -991,12 +991,14 @@ class FindEventsForUpload(TestCase):
     def test_does_not_show_events_by_other_organizer(self):
         orga1 = EventOrganizerFactory()
         orga2 = EventOrganizerFactory()
-        event = RankedEventFactory(date=datetime.date.today(), organizer=orga1)
+        event = OldCategoryRankedEventFactory(
+            date=datetime.date.today(), organizer=orga1
+        )
 
         self.assertNotIn(event, Event.objects.available_for_result_upload(orga2.user))
 
     def test_does_not_show_events_with_results(self):
-        event = RankedEventFactory(date=datetime.date.today())
+        event = OldCategoryRankedEventFactory(date=datetime.date.today())
         ResultFactory(event=event)
         self.assertNotIn(
             event, Event.objects.available_for_result_upload(event.organizer.user)
@@ -1004,14 +1006,14 @@ class FindEventsForUpload(TestCase):
 
     def test_does_not_show_future_events(self):
         tomorrow = datetime.date.today() + datetime.timedelta(days=1)
-        event = RankedEventFactory(date=tomorrow)
+        event = OldCategoryRankedEventFactory(date=tomorrow)
         self.assertNotIn(
             event, Event.objects.available_for_result_upload(event.organizer.user)
         )
 
     def test_does_not_show_too_old_events(self):
         too_old_to_upload = datetime.date.today() - datetime.timedelta(days=32)
-        event = RankedEventFactory(date=too_old_to_upload)
+        event = OldCategoryRankedEventFactory(date=too_old_to_upload)
         self.assertNotIn(
             event,
             Event.objects.available_for_result_upload(event.organizer.user),
@@ -1019,7 +1021,7 @@ class FindEventsForUpload(TestCase):
 
     def test_edit_deadline_override(self):
         too_old_to_upload = datetime.date.today() - datetime.timedelta(days=32)
-        event = RankedEventFactory(
+        event = OldCategoryRankedEventFactory(
             date=too_old_to_upload, edit_deadline_override=datetime.date.today()
         )
         self.assertIn(
@@ -1042,7 +1044,7 @@ class AddTop8Results(TestCase):
         self.credentials = dict(username="test", password="test")
         self.user = User.objects.create_user(**self.credentials)
         self.organizer = EventOrganizerFactory(user=self.user)
-        self.event = RankedEventFactory(
+        self.event = OldCategoryRankedEventFactory(
             organizer=self.organizer,
             date=datetime.date.today(),
         )
@@ -1191,7 +1193,7 @@ class AddTop8Results(TestCase):
         Test that the top8 form only offers 9 options (8 players plus empty)
         for each result choice field.
         """
-        event = RankedEventFactory()
+        event = OldCategoryRankedEventFactory()
         for i in range(1, 20):
             ResultFactory(event=event, ranking=i)
         form = AddTop8ResultsForm(event=event)

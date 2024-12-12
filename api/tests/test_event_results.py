@@ -21,8 +21,8 @@ from rest_framework.test import APITestCase
 
 from championship.factories import (
     EventOrganizerFactory,
+    OldCategoryRankedEventFactory,
     PlayerFactory,
-    RankedEventFactory,
     ResultFactory,
 )
 from championship.models import Event, PlayerAlias, Result
@@ -34,7 +34,7 @@ class TestEventResultsAPI(APITestCase):
         self.user = User.objects.create_user(**self.credentials)
         self.organizer = EventOrganizerFactory(user=self.user)
         yesterday = datetime.date.today() - datetime.timedelta(days=1)
-        self.event = RankedEventFactory(
+        self.event = OldCategoryRankedEventFactory(
             organizer=self.organizer, date=yesterday, category=Event.Category.REGIONAL
         )
         self.url = reverse("events-detail", args=[self.event.id])

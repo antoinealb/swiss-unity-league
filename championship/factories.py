@@ -117,24 +117,15 @@ class PlayerProfileFactory(DjangoModelFactory):
     image = factory.Faker("image_url")
 
 
-RANKED_EVENT_CATEGORIES = [
-    Event.Category.PREMIER,
-    Event.Category.REGIONAL,
-    Event.Category.REGULAR,
-]
-
-
 class EventFactory(DjangoModelFactory):
     class Meta:
         model = Event
 
+    class Params:
+        season = SEASON_2023
+
     name = factory.Faker("mtg_event_name")
     organizer = factory.SubFactory(EventOrganizerFactory)
-    date = factory.Faker(
-        "date_between",
-        start_date=SEASON_2023.start_date,
-        end_date=SEASON_2023.end_date,
-    )
     url = factory.Faker("uri")
 
     format = factory.Faker(
@@ -147,18 +138,18 @@ class EventFactory(DjangoModelFactory):
         elements=Event.Category.values,
     )
 
+    date = factory.LazyAttribute(
+        lambda obj: factory.Faker._get_faker().date_between(
+            start_date=obj.season.start_date,
+            end_date=obj.season.end_date,
+        )
+    )
+
 
 class RankedEventFactory(EventFactory):
     category = factory.Faker(
         "random_element",
-        elements=[
-            c.name  # type: ignore
-            for c in [
-                Event.Category.REGULAR,
-                Event.Category.REGIONAL,
-                Event.Category.PREMIER,
-            ]
-        ],
+        elements=[c for c in Event.Category.values if c != Event.Category.OTHER.name],  # type: ignore
     )
 
     @factory.post_generation
@@ -210,20 +201,28 @@ class RankedEventFactory(EventFactory):
         return self
 
 
-class Event2024Factory(RankedEventFactory):
-    date = factory.Faker(
-        "date_between",
-        start_date=SEASON_2024.start_date,
-        end_date=SEASON_2024.end_date,
+class OldCategoryRankedEventFactory(RankedEventFactory):
+    category = factory.Faker(
+        "random_element",
+        elements=[
+            c.name  # type: ignore
+            for c in [
+                Event.Category.REGULAR,
+                Event.Category.REGIONAL,
+                Event.Category.PREMIER,
+            ]
+        ],
     )
 
 
-class Event2025Factory(RankedEventFactory):
-    date = factory.Faker(
-        "date_between",
-        start_date=SEASON_2025.start_date,
-        end_date=SEASON_2025.end_date,
-    )
+class Event2024Factory(OldCategoryRankedEventFactory):
+    class Params:
+        season = SEASON_2024
+
+
+class Event2025Factory(OldCategoryRankedEventFactory):
+    class Params:
+        season = SEASON_2025
 
 
 class ResultFactory(DjangoModelFactory):

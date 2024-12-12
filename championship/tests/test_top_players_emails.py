@@ -16,7 +16,11 @@ from django.contrib.auth.models import User
 from django.test import Client, TestCase
 from django.urls import reverse
 
-from championship.factories import PlayerFactory, RankedEventFactory, ResultFactory
+from championship.factories import (
+    OldCategoryRankedEventFactory,
+    PlayerFactory,
+    ResultFactory,
+)
 from championship.seasons.definitions import SEASON_2023
 
 
@@ -28,7 +32,7 @@ class TopPlayersEmailViewTest(TestCase):
             username="test", password="test", is_staff=True, is_superuser=True
         )
         self.client.login(username="test", password="test")
-        self.event = RankedEventFactory()
+        self.event = OldCategoryRankedEventFactory()
         for i in range(3):
             player = PlayerFactory(email=f"player{i}@example.com")
             ResultFactory(event=self.event, points=i * 3, player=player)

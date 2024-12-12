@@ -19,7 +19,12 @@ from django.test import TestCase
 
 from parameterized import parameterized
 
-from championship.factories import PlayerFactory, RankedEventFactory, ResultFactory
+from championship.factories import (
+    OldCategoryRankedEventFactory,
+    PlayerFactory,
+    ResultFactory,
+)
+from championship.models import Event
 from championship.score.generic import SCOREMETHOD_PER_SEASON
 from multisite.tests.utils import site
 
@@ -41,7 +46,7 @@ class RankingTestCase(TestCase):
         tournament gets deleted, then we have stale players with no results.
         In this case the player shouldn't show up in the ranking.
         """
-        result = ResultFactory()
+        result = ResultFactory(event__category=Event.Category.REGULAR)
         PlayerFactory()  # another player, without results
         players = self.get_by_slug("2023").context["players"]
         self.assertEqual([p.name for p in players], [result.player.name])
@@ -54,7 +59,7 @@ class RankingTestCase(TestCase):
 
     def test_score_properties_rendering(self):
         """Checks that the score properties are rendered correctly."""
-        event = RankedEventFactory(date=datetime.date(2023, 4, 1))
+        event = OldCategoryRankedEventFactory(date=datetime.date(2023, 4, 1))
         ResultFactory(event=event)
         response = self.get_by_slug("2023")
         player = response.context["players"][0]

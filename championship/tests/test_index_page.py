@@ -92,14 +92,14 @@ class HomepageTestCase(TestCase):
         """
         Checks that the homepage contains some player information.
         """
-        player = PlayerFactory()
-        ResultFactory(
-            player=player,
+
+        result = ResultFactory(
             points=1,
             event__date=datetime.date.today() - datetime.timedelta(days=1),
+            event__category=Event.Category.REGULAR,
         )
         response = self.client.get("/")
-        self.assertContains(response, player.name)
+        self.assertContains(response, result.player.name)
 
     def test_hides_hidden_player_name(self):
         """

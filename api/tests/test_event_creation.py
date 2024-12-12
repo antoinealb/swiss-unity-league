@@ -34,7 +34,7 @@ from championship.factories import (
     AddressFactory,
     EventFactory,
     EventOrganizerFactory,
-    RankedEventFactory,
+    OldCategoryRankedEventFactory,
     ResultFactory,
 )
 from championship.models import Event
@@ -51,7 +51,7 @@ class TestEventListAPI(APITestCase):
         self.client.login(**self.credentials)
 
     def test_can_get_all_events(self):
-        e1 = RankedEventFactory(
+        e1 = OldCategoryRankedEventFactory(
             description="Hello",
             start_time=datetime.time(hour=15),
             end_time=datetime.time(hour=17),
@@ -84,12 +84,14 @@ class TestEventListAPI(APITestCase):
         # Just provide two events, we don't want to test the full logic of
         # Event.available_for_result_upload here.
         too_old = datetime.date(2023, 1, 1)
-        RankedEventFactory(date=too_old, organizer=self.organizer)
+        OldCategoryRankedEventFactory(date=too_old, organizer=self.organizer)
 
         yesterday = datetime.date.today() - datetime.timedelta()
-        event_good = RankedEventFactory(date=yesterday, organizer=self.organizer)
+        event_good = OldCategoryRankedEventFactory(
+            date=yesterday, organizer=self.organizer
+        )
 
-        event_with_results = RankedEventFactory(
+        event_with_results = OldCategoryRankedEventFactory(
             date=yesterday, organizer=self.organizer
         )
         for _ in range(8):
@@ -158,7 +160,9 @@ class TestEventCreate(APITestCase):
         SUL rules do not allow old events to be edited if they have results.
         See Event.can_be_edited.
         """
-        e = RankedEventFactory(organizer=self.organizer, date=datetime.date(2023, 1, 1))
+        e = OldCategoryRankedEventFactory(
+            organizer=self.organizer, date=datetime.date(2023, 1, 1)
+        )
         for _ in range(10):
             ResultFactory(event=e)
 
@@ -169,7 +173,7 @@ class TestEventCreate(APITestCase):
 
     def test_edit_event(self):
         yesterday = datetime.date.today() - datetime.timedelta(days=1)
-        e = RankedEventFactory(organizer=self.organizer, date=yesterday)
+        e = OldCategoryRankedEventFactory(organizer=self.organizer, date=yesterday)
         self.login()
         data = {"name": "foobar"}
         resp = self.client.patch(reverse("events-detail", args=[e.id]), data=data)

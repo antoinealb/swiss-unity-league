@@ -23,9 +23,9 @@ from parameterized import parameterized
 
 from championship.factories import (
     EventFactory,
+    OldCategoryRankedEventFactory,
     PlayerFactory,
     PlayerProfileFactory,
-    RankedEventFactory,
     ResultFactory,
 )
 from championship.models import Event, PlayerProfile, Result
@@ -323,7 +323,7 @@ class PlayerDetailSeasonTestCase(TestCase):
     def test_player_details_all_seasons_work(self, season):
         with site(domain=season.domain):
             player = PlayerFactory()
-            event = RankedEventFactory(date=season.start_date)
+            event = OldCategoryRankedEventFactory(date=season.start_date)
             ResultFactory(event=event, player=player)
             response = self.client.get(
                 reverse("player_details_by_season", args=[player.id, season.slug])

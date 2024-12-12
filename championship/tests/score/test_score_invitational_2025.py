@@ -42,8 +42,14 @@ class TestScoresOutOfTrialSeason(TestCase):
         self.assertEqual({}, got_scores)
 
     def test_events_in_season_contribute_score(self):
-        ResultFactory(event__date=INVITATIONAL_SPRING_2025.start_date)
-        ResultFactory(event__date=INVITATIONAL_SPRING_2025.end_date)
+        ResultFactory(
+            event__date=INVITATIONAL_SPRING_2025.start_date,
+            event__category=Event.Category.REGULAR,
+        )
+        ResultFactory(
+            event__date=INVITATIONAL_SPRING_2025.end_date,
+            event__category=Event.Category.REGULAR,
+        )
         got_scores = self.compute_scores()
         self.assertEqual(2, len(got_scores))
 

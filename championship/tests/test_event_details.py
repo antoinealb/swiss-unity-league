@@ -26,7 +26,7 @@ from parameterized import parameterized
 from championship.factories import (
     EventFactory,
     EventOrganizerFactory,
-    RankedEventFactory,
+    OldCategoryRankedEventFactory,
     RecurringEventFactory,
     ResultFactory,
 )
@@ -293,7 +293,7 @@ class EventDetailTestCase(TestCase):
         self.assertIn("Test P.", resp.content.decode())
 
     def test_shows_record(self):
-        event = RankedEventFactory()
+        event = OldCategoryRankedEventFactory()
         ResultFactory(
             event=event,
             win_count=3,
