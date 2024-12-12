@@ -128,6 +128,6 @@ class QuerysetTestCase(TestCase):
         self.assertQuerysetEqual(Event.objects.in_season(SEASON_2023), [e])
 
     def test_event_on_site(self):
-        e1 = EventFactory()
-        EventFactory(organizer__site=SiteFactory())
+        e1 = EventFactory(category=Event.Category.REGULAR)
+        EventFactory(organizer__site=SiteFactory(), category=Event.Category.REGULAR)
         self.assertQuerysetEqual(Event.objects.on_site(), [e1])
