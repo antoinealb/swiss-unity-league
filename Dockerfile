@@ -5,10 +5,13 @@ WORKDIR /app
 
 # Install latex for invoices
 RUN apt-get update && apt-get install -y \
+    # keep-sorted start
+    libgdal-dev \
     texlive \
-	texlive-latex-recommended \
-	texlive-latex-extra \
-	texlive-science \
+    texlive-latex-extra \
+    texlive-latex-recommended \
+    texlive-science \
+    # keep-sorted end
   && rm -rf /var/lib/apt/lists/*
 
 # set environment variables
@@ -26,6 +29,9 @@ RUN /app/manage.py collectstatic --no-input
 
 # Update Oracle cards from scryfall
 RUN /app/manage.py migrate --database oracle && /app/manage.py scryfall_import
+
+# Download IP database file
+RUN /app/manage.py download_ipdb
 
 # HTTP endpoint
 EXPOSE 8000

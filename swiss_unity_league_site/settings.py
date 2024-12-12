@@ -103,6 +103,7 @@ INSTALLED_APPS = [
     "django.contrib.admin",
     "django.contrib.auth",
     "django.contrib.contenttypes",
+    "django.contrib.gis",
     "django.contrib.humanize",
     "django.contrib.messages",
     "django.contrib.sessions",
@@ -113,6 +114,7 @@ INSTALLED_APPS = [
     "django_prometheus",
     "django_tex",
     "file_storage_db",
+    "geo",
     "hijack",
     "hijack.contrib.admin",
     "info",
@@ -140,6 +142,7 @@ MIDDLEWARE = [
     "django.contrib.messages.middleware.MessageMiddleware",
     "django.middleware.clickjacking.XFrameOptionsMiddleware",
     "django_prometheus.middleware.PrometheusAfterMiddleware",
+    "geo.middleware.GeoIpMiddleware",
     "debug_toolbar.middleware.DebugToolbarMiddleware",
     "hijack.middleware.HijackUserMiddleware",
 ]
@@ -448,3 +451,6 @@ SECURE_PROXY_SSL_HEADER = ("HTTP_X_FORWARDED_PROTO", "https")
 
 # The age of session cookies, in seconds.
 SESSION_COOKIE_AGE = datetime.timedelta(days=30).total_seconds()
+
+GEOIP_PATH = BASE_DIR
+GEOIP_CITY = "ipdb_city.mmdb"
