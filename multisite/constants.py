@@ -12,15 +12,6 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from django.contrib.sites.models import Site
-from django.db import models
-
-
-class SiteSettings(models.Model):
-    site = models.OneToOneField(
-        Site, on_delete=models.CASCADE, related_name="site_settings"
-    )
-    contact_email = models.EmailField(verbose_name="Contact email")
-
-    def __str__(self) -> str:
-        return self.site.domain
+SWISS_DOMAIN = "unityleague.ch"
+GLOBAL_DOMAIN = "playground-eu.unityleague.ch"
+ALL_DOMAINS = [SWISS_DOMAIN, GLOBAL_DOMAIN]

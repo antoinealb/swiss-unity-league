@@ -30,7 +30,7 @@ from django_bleach.models import BleachField
 from django_countries.fields import CountryField
 
 from championship.season import Season, find_main_season_by_date
-from multisite.models import GLOBAL_DOMAIN, SWISS_DOMAIN
+from multisite.constants import GLOBAL_DOMAIN, SWISS_DOMAIN
 
 
 class Address(models.Model):

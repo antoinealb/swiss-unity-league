@@ -38,7 +38,7 @@ from championship.factories import (
     ResultFactory,
 )
 from championship.models import Event
-from multisite.models import GLOBAL_DOMAIN
+from multisite.constants import GLOBAL_DOMAIN
 
 
 class TestEventListAPI(APITestCase):

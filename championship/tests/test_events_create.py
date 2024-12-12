@@ -31,7 +31,7 @@ from championship.factories import (
     UserFactory,
 )
 from championship.models import Address, Event
-from multisite.models import GLOBAL_DOMAIN
+from multisite.constants import GLOBAL_DOMAIN
 
 
 class EventCreationTestCase(TestCase):

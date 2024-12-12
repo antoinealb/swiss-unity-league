@@ -29,7 +29,7 @@ from parsita import (
     until,
 )
 
-from multisite.models import ALL_DOMAINS
+from multisite.constants import ALL_DOMAINS
 
 
 @dataclasses.dataclass

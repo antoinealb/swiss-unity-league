@@ -24,7 +24,7 @@ from articles.parser import (
     ImageTag,
     extract_tags,
 )
-from multisite.models import ALL_DOMAINS
+from multisite.constants import ALL_DOMAINS
 
 
 class ParserTest(TestCase):

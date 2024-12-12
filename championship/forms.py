@@ -25,7 +25,7 @@ from crispy_forms.layout import Div, Field, Submit
 from tinymce.widgets import TinyMCE
 
 from championship.parsers.general_parser_functions import parse_record
-from multisite.models import SWISS_DOMAIN
+from multisite.constants import SWISS_DOMAIN
 
 from .models import (
     Address,

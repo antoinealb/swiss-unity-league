@@ -18,7 +18,7 @@ from django.urls import reverse
 from parameterized import parameterized
 
 from championship.season import SEASON_2023, SEASON_2024, SEASON_2025
-from multisite.models import SWISS_DOMAIN
+from multisite.constants import SWISS_DOMAIN
 
 SEASONS_WITH_INFO = [SEASON_2025, SEASON_2024, SEASON_2023]
 

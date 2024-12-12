@@ -15,6 +15,8 @@
 import datetime
 from dataclasses import dataclass
 
+from multisite.constants import SWISS_DOMAIN
+
 
 @dataclass(frozen=True)
 class Season:
@@ -23,6 +25,7 @@ class Season:
     start_date: datetime.date
     end_date: datetime.date
     result_deadline: datetime.timedelta = datetime.timedelta(days=7)
+    domain: str = SWISS_DOMAIN
     # Whether it's a main (yearly) season and not a special one
     main_season: bool = False
     # Whether the season is shown in the dropdown

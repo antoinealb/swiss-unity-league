@@ -17,7 +17,7 @@ from django.utils.html import escape
 
 from articles.templatetags.article import process_article_args
 from decklists.factories import DecklistFactory
-from multisite.models import SWISS_DOMAIN
+from multisite.constants import SWISS_DOMAIN
 from oracle.factories import CardFactory
 
 
