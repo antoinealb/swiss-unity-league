@@ -102,5 +102,16 @@ SEASON_ALL = Season(
 )
 
 ALL_SEASONS = SWISS_SEASONS + EU_SEASONS + [SEASON_ALL]
-
 MAIN_SEASONS = [s for s in ALL_SEASONS if s.main_season]
+
+
+def assert_single_default(seasons, domain):
+    default_count = sum(
+        1 for season in seasons if season.domain == domain and season.default
+    )
+    assert default_count <= 1, f"Multiple default seasons found for {domain} domain."
+
+
+# Assert that there's only one default season per domain
+assert_single_default(ALL_SEASONS, SWISS_DOMAIN)
+assert_single_default(ALL_SEASONS, GLOBAL_DOMAIN)
