@@ -29,6 +29,7 @@ from prometheus_client import Gauge, Summary
 
 from championship.cache_function import cache_function
 from championship.models import Event, OrganizerLeague, Player, Result
+from championship.score.eu_season_2025 import ScoreMethodEu2025
 from championship.score.invitational_spring_2025 import (
     ScoreMethodInvitationalSpring2025,
 )
@@ -60,7 +61,7 @@ SCOREMETHOD_PER_SEASON = {
     SEASON_2023: ScoreMethod2023,
     SEASON_2024: ScoreMethod2024,
     SEASON_2025: ScoreMethod2025,
-    EU_SEASON_2025: ScoreMethod2025,
+    EU_SEASON_2025: ScoreMethodEu2025,
     INVITATIONAL_SPRING_2025: ScoreMethodInvitationalSpring2025,
     SEASON_ALL: ScoreMethodAll,
 }
