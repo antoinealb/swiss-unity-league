@@ -27,4 +27,13 @@ from django.core.wsgi import get_wsgi_application
 
 os.environ.setdefault("DJANGO_SETTINGS_MODULE", "swiss_unity_league_site.settings")
 
+# If we get passed a metric storage directory that does not exist, create it.
+# This is required to use private tmpsfs subdirectories, such as in Docker or in
+# Systemd.
+if d := os.environ.get("PROMETHEUS_MULTIPROC_DIR"):
+    try:
+        os.makedirs(d)
+    except FileExistsError:
+        pass
+
 application = get_wsgi_application()

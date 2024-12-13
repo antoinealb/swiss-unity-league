@@ -33,7 +33,7 @@ from pathlib import Path
 from django.contrib.messages import constants as messages
 
 import cid.locals
-from prometheus_client import Info
+from prometheus_client import Gauge
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -52,8 +52,6 @@ except KeyError:
 # SECURITY WARNING: don't run with debug turned on in production!
 if "RUN_IN_PROD" in os.environ:
     DEBUG = False
-    PROMETHEUS_METRICS_EXPORT_PORT_RANGE = range(8001, 8004)
-    PROMETHEUS_METRICS_EXPORT_ADDRESS = ""  # all addresses
 else:
     DEBUG = True
 
@@ -280,19 +278,19 @@ if DEBUG:
 
 # Export release version as a metric. The commit_sha.txt file is populated by
 # the CI build.
-build_info = Info("app_version", "Stores information about the version of the software")
+build_info = Gauge(
+    "app_version",
+    "Stores information about the version of the software",
+    ["commit", "debug_mode"],
+)
 try:
     with open(BASE_DIR / "commit_sha.txt") as f:
         commit_hash = f.read().strip()
 except FileNotFoundError:
     commit_hash = "<unknown>"
 
-build_info.info({"commit_sha": commit_hash})
+build_info.labels(commit=commit_hash, debug_mode=int(DEBUG)).set(1)
 
-debug_settings = Info(
-    "debug_settings", "Information about whether we are running in debug mode."
-)
-debug_settings.info({"debug": str(DEBUG).lower()})
 
 # Maximum age for an event to enter result in (effetively disables backfill).
 EVENT_MAX_AGE_FOR_RESULT_ENTRY = datetime.timedelta(days=31)
