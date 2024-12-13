@@ -102,7 +102,7 @@ class Address(models.Model):
             self.street_address,
             self.city,
             self.postal_code,
-            self.get_country_display(),
+            self.country.name,
         ]
         return ", ".join(address_parts)
 
@@ -122,7 +122,7 @@ class Address(models.Model):
         """
         if self.country == "CH" and Site.objects.get_current().domain == SWISS_DOMAIN:
             return None
-        return self.get_country_display()
+        return self.country.name
 
     def short_string(self):
         """A short string of the address only containing city, region and country."""
