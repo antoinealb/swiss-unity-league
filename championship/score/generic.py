@@ -39,6 +39,7 @@ from championship.score.season_2025 import ScoreMethod2025
 from championship.score.season_all import ScoreMethodAll
 from championship.score.types import LeaderboardScore
 from championship.seasons.definitions import (
+    EU_SEASON_2024_MOCKUP,
     EU_SEASON_2025,
     INVITATIONAL_SPRING_2025,
     SEASON_2023,
@@ -62,6 +63,7 @@ SCOREMETHOD_PER_SEASON = {
     SEASON_2024: ScoreMethod2024,
     SEASON_2025: ScoreMethod2025,
     EU_SEASON_2025: ScoreMethodEu2025,
+    EU_SEASON_2024_MOCKUP: ScoreMethodEu2025,
     INVITATIONAL_SPRING_2025: ScoreMethodInvitationalSpring2025,
     SEASON_ALL: ScoreMethodAll,
 }

@@ -95,10 +95,20 @@ EU_SEASON_2025 = Season(
     slug="eu-2025",
     domain=GLOBAL_DOMAIN,
     main_season=True,
+)
+
+# Introduce a mockup season to test the leaderboard for eu
+EU_SEASON_2024_MOCKUP = Season(
+    start_date=datetime.date(2024, 1, 1),
+    end_date=datetime.date(2024, 12, 31),
+    name="Mockup Season 2024",
+    slug="eu-2024-mockup",
+    domain=GLOBAL_DOMAIN,
+    main_season=True,
     default=True,
 )
 
-EU_SEASONS = [EU_SEASON_2025]
+EU_SEASONS = [EU_SEASON_2025, EU_SEASON_2024_MOCKUP]
 
 SEASON_ALL = Season(
     start_date=min([s.start_date for s in SWISS_SEASONS if s.main_season]),
