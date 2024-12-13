@@ -77,7 +77,7 @@ SEASON_2025 = Season(
 INVITATIONAL_SPRING_2025 = Season(
     start_date=SEASON_2025.start_date,
     end_date=datetime.date(2025, 3, 31),
-    name="Invitational Spring 2025",
+    name="Spring Invitational 2025",
     slug="invitational-spring-2025",
 )
 

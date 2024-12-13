@@ -2,11 +2,11 @@
 
 {% load custom_tags %}
 
-{% block title %}Leaderboard Swiss Unity League {{ current_season.name }} - Best Magic: The Gathering Players in Switzerland{% endblock %}
+{% block title %}Leaderboard {{ current_season.name }} - Best Magic: The Gathering Players in Switzerland | Swiss Unity League{% endblock %}
 {% block meta_description %}Discover the Swiss Unity League leaderboard in Magic: The Gathering. Only the best players in Switzerland qualify for the end of year Championship.{% endblock %}
 
 {% block content %}
-    <h1>Leaderboard - Swiss Unity League {{ current_season.name }}</h1>
+    <h1>Leaderboard - {{ current_season.name }}</h1>
     {% include 'championship/components/season_dropdown.html' %}
     <br>
     {% block info_text %}{% endblock %}

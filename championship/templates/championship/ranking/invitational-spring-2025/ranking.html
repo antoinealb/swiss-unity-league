@@ -2,18 +2,17 @@
 
 {% block info_text %}
     <p>
-        The top 80 players on the leaderboard at the end of March (31.03.2025) will qualify for the SUL Invitational Spring in April 2025.
-        Additionally, the top 2 players of each Premier event and the top 1 player of each Regional qualify directly.
-        The SUL Invitational Spring is a one-day invite-only tournament where the top 4 players will receive a direct invite to the SUL Championship later this year.
-        {% comment %}
-        Todo: add link once Invitational is published.
-        <br><a class="btn btn-secondary-light mt-1" href="{% url 'event_details' pk=1009 %}">SUL Trial Info</a>
-        {% endcomment %}
+        The SUL Invitational Spring is a one-day invite-only tournament on 13th of April 2025 where the top 4 players will receive a direct invite to the SUL Championship later this year.
+        <br><a class="btn btn-secondary-light mt-1" href="{% url 'event_details' pk=1930 %}">Info about Spring Invitational</a>
     </p>
-    <dl>
-        <dt><i class="icon-star"></i></dt>
-        <dd>Qualification for the SUL Invitational Spring (cutoff 31st March 2025)</dd>
-        <dt><i class="icon-trophy"></i></dt>
-        <dd>Direct qualification from top finish</dd>
-    </dl>
+    <p>
+        Only events from 01.11.2024 to 31.03.2025 are considered for this leaderboard. The following players qualify for the Spring Invitational:
+    </p>
+    <ul>
+        <li>The top 80 players with the most League Points</li>
+        <li>The top 2 players of each Premier event</li>
+        <li>The winner of each Regional (with top 4/8)</li>
+    </ul>
+    <p><i class="icon-star"></i> Qualification through league points</p>
+    <p><i class="icon-trophy"></i> Direct qualification from top finish</p>
 {% endblock %}

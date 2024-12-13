@@ -2,12 +2,19 @@
 
 {% block info_text %}
     <p>
-        TODO Ranking of the European series by country.
+        Every year, Magic: The Gathering tournaments in Switzerland award League Points to players. At the end of
+        the season (31.10.2025), the following players qualify for the Championship:
     </p>
-    <dl>
-        <dt><i class="icon-star"></i></dt>
-        <dd>Qualifies for National Championship at the end of the season</dd>
-        <dt><i class="icon-trophy"></i></dt>
-        <dd>Direct qualification for European Magic Cup</dd>
-    </dl>
+    <ul>
+        <li>The top 36 players with the most League Points</li>
+        <li>The winner of each Premier event</li>
+        <li>The top 4 of each Invitational</li>
+    </ul>
+    <p>
+        Curious if you are also qualified for the Spring Invitational 13th April 2025?
+        <br><a class="btn btn-secondary-light mt-1" href="{% url 'ranking-by-season' slug='invitational-spring-2025' %}">Spring Invitational Leaderboard</a>
+    </p>
+    <p><i class="icon-star"></i> Leaderboard qualification at the end of the season</p>
+    <p><i class="icon-trophy"></i> Direct qualification from top finish</p>
+    <p><i class="icon-shield"></i> Bye for the SUL Championship tournament</p>
 {% endblock %}
