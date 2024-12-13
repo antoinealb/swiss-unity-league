@@ -76,6 +76,11 @@ class ScoreMethodEu2025:
         category = result.event.category
         multiplier = cls.MULT[category]
 
+        if result.points:
+            swiss_points = (result.points + cls.PARTICIPATION_POINTS) * multiplier
+        else:
+            swiss_points = 0
+
         if has_top_8:
             estimated_rounds = math.ceil(math.log2(event_size))
             win_equivalent_for_playoff = cls.WIN_EQUIVALENT_FOR_PLAYOFFS.get(
@@ -89,16 +94,15 @@ class ScoreMethodEu2025:
                 ):
                     extra_wins_for_large_event += 1
 
-            return (
+            playoff_points = (
                 (win_equivalent_for_playoff + extra_wins_for_large_event)
                 * multiplier
                 * cls.POINTS_PER_WIN
             )
         else:
-            if not result.points:
-                return 0
-            points = result.points + cls.PARTICIPATION_POINTS
-            return points * multiplier
+            playoff_points = 0
+
+        return max(swiss_points, playoff_points)
 
     @classmethod
     def finalize_scores(

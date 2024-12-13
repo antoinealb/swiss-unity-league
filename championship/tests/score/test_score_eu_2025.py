@@ -154,7 +154,7 @@ class TestComputeScoreForEU2025(TestCase):
         )
 
 
-class ScoresWithTop8TestCase(TestCase):
+class ScoresWithPlayoffsTestCase(TestCase):
     def setUp(self):
         self.event = RankedEventFactory(
             season=EU_SEASON_2025,
@@ -176,7 +176,6 @@ class ScoresWithTop8TestCase(TestCase):
             None,
         )
         ep = Result(
-            points=9999,
             event=self.event,
             player=self.player,
             playoff_result=result,
@@ -217,6 +216,20 @@ class ScoresWithTop8TestCase(TestCase):
         self.assertEqual(
             self.score(ranking, event_size),
             win_equivalent * 3 * ScoreMethodEu2025.MULT[self.event.category],
+        )
+
+    def test_swiss_round_result_more_points_than_playoffs(self):
+        """
+        If an event has super many rounds, it can happen that the
+        Swiss round result gives more points than the playoff result.
+        The maximum of the two should be taken.
+        """
+        result = ResultFactory(win_count=15, draw_count=1, event=self.event)
+        score = ScoreMethodEu2025._qps_for_result(
+            result=result, event_size=512, has_top_8=True, total_rounds=0
+        )
+        self.assertEqual(
+            score, (15 * 3 + 1 + 3) * ScoreMethodEu2025.MULT[self.event.category]
         )
 
 
