@@ -63,6 +63,29 @@ class ScoreMethodEu2025:
     )
 
     @classmethod
+    def _estimated_rounds(cls, event_size: int) -> int:
+        return math.ceil(math.log2(event_size))
+
+    @classmethod
+    def _win_equivalent_for_rank(
+        cls,
+        result: Result,
+        event_size: int,
+    ):
+        win_equivalent_for_playoff = cls.WIN_EQUIVALENT_FOR_PLAYOFFS.get(
+            result.playoff_result, 0
+        )
+        extra_wins_for_large_event = 0
+        for extra_wins in cls.EXTRA_WINS:
+            if (
+                result.ranking <= extra_wins.rank_required
+                and cls._estimated_rounds(event_size) >= extra_wins.rounds_required
+            ):
+                extra_wins_for_large_event += 1
+
+        return win_equivalent_for_playoff + extra_wins_for_large_event
+
+    @classmethod
     def _qps_for_result(
         cls,
         result: Result,
@@ -73,36 +96,25 @@ class ScoreMethodEu2025:
         """
         Returns how many QPs a player got in a single event.
         """
-        category = result.event.category
-        multiplier = cls.MULT[category]
+        multiplier = cls.MULT[result.event.category]
+        swiss_points, top_finish_points = 0, 0
 
         if result.points:
             swiss_points = (result.points + cls.PARTICIPATION_POINTS) * multiplier
-        else:
-            swiss_points = 0
 
         if has_top_8:
-            estimated_rounds = math.ceil(math.log2(event_size))
-            win_equivalent_for_playoff = cls.WIN_EQUIVALENT_FOR_PLAYOFFS.get(
-                result.playoff_result, 0
-            )
-            extra_wins_for_large_event = 0
-            for extra_wins in cls.EXTRA_WINS:
-                if (
-                    result.ranking <= extra_wins.rank_required
-                    and estimated_rounds >= extra_wins.rounds_required
-                ):
-                    extra_wins_for_large_event += 1
+            win_equivalent_for_rank = cls._win_equivalent_for_rank(result, event_size)
+            if win_equivalent_for_rank > 0:
+                estimated_swiss_wins = cls._estimated_rounds(event_size) - 1
+                match_point_equivalent = (
+                    win_equivalent_for_rank + estimated_swiss_wins
+                ) * cls.POINTS_PER_WIN
 
-            playoff_points = (
-                (win_equivalent_for_playoff + extra_wins_for_large_event)
-                * multiplier
-                * cls.POINTS_PER_WIN
-            )
-        else:
-            playoff_points = 0
+                top_finish_points = (
+                    match_point_equivalent + cls.PARTICIPATION_POINTS
+                ) * multiplier
 
-        return max(swiss_points, playoff_points)
+        return max(swiss_points, top_finish_points)
 
     @classmethod
     def finalize_scores(

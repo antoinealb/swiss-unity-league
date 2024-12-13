@@ -161,8 +161,8 @@ class ScoresWithPlayoffsTestCase(TestCase):
         )
         self.player = PlayerFactory()
 
-    def score(self, rank, event_size):
-        result = next(
+    def win_equivalent_for_topfinish(self, ranking, event_size):
+        playoff_result = next(
             (
                 r
                 for r in [
@@ -171,19 +171,17 @@ class ScoresWithPlayoffsTestCase(TestCase):
                     Result.PlayoffResult.SEMI_FINALIST,
                     Result.PlayoffResult.QUARTER_FINALIST,
                 ]
-                if rank <= r.value
+                if ranking <= r.value
             ),
             None,
         )
-        ep = Result(
+        self.result = Result(
             event=self.event,
             player=self.player,
-            playoff_result=result,
-            ranking=rank,
+            playoff_result=playoff_result,
+            ranking=ranking,
         )
-        return ScoreMethodEu2025._qps_for_result(
-            ep, event_size=event_size, has_top_8=True, total_rounds=0
-        )
+        return ScoreMethodEu2025._win_equivalent_for_rank(self.result, event_size)
 
     @parameterized.expand(
         [
@@ -211,11 +209,23 @@ class ScoresWithPlayoffsTestCase(TestCase):
         ]
     )
     def test_win_equivalents_for_top_finishes(
-        self, event_size, ranking, win_equivalent
+        self, event_size, ranking, want_win_equivalent
     ):
+        got_win_equivalent = self.win_equivalent_for_topfinish(ranking, event_size)
         self.assertEqual(
-            self.score(ranking, event_size),
-            win_equivalent * 3 * ScoreMethodEu2025.MULT[self.event.category],
+            got_win_equivalent,
+            want_win_equivalent,
+        )
+
+    def test_total_score(self):
+        rounds = 7
+        win_equivalent = self.win_equivalent_for_topfinish(ranking=1, event_size=128)
+        qps = ScoreMethodEu2025._qps_for_result(
+            result=self.result, event_size=128, has_top_8=True, total_rounds=rounds
+        )
+        self.assertEqual(
+            qps,
+            (rounds + win_equivalent) * 3 * ScoreMethodEu2025.MULT[self.event.category],
         )
 
     def test_swiss_round_result_more_points_than_playoffs(self):
