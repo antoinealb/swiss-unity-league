@@ -19,13 +19,17 @@ from django.contrib.gis.geoip2 import GeoIP2, GeoIP2Exception
 from django.http.request import HttpRequest
 
 from geoip2.errors import AddressNotFoundError
-from prometheus_client import Counter
+from prometheus_client import Counter, Histogram
 
 logger = logging.getLogger(__name__)
 del logging  # avoids accidental use
 
 geoip_lookups_count = Counter(
     "geoip_lookups_total", "Number of GeoIP lookups performed, by status", ["status"]
+)
+
+geoip_lookup_duration = Histogram(
+    "geoip_lookup_duration_seconds", "Duration of the GeoIP database lookup"
 )
 
 
@@ -59,6 +63,7 @@ class GeoIpMiddleware:
                     "Could not open GeoIP database, maybe run 'manage.py download_ipdb' ?"
                 )
 
+    @geoip_lookup_duration.time()
     def geoip_lookup(self, ip_addr: str) -> GeoIPData | None:
         # If we could not read the database, abort
         if not self.geoip:
