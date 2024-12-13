@@ -8,14 +8,30 @@ environment from your system.
 
 ### Installing dependencies
 
+> [!IMPORTANT]
+> This is only needed once, however, when working with the code, make sure that
+> your virtual environment is correctly activated with the following commands.
+
+## Geospatial libraries (outside of Python)
+
+You will need to install GDAL and GEOS in order to have the IP-based
+geolocation work correctly. If you don't have those libraries installed, a
+dummy location will be returned instead.
+
+See the [Django
+documentation](https://docs.djangoproject.com/en/5.1/ref/contrib/gis/install/geolibs/)
+on how to install those libraries in general. On a mac, you can get them with:
+
+```shell
+$ brew install gdal geos
+```
+
+## Python dependencies
+
 ```shell
 python3 -m venv env
 env/bin/pip install -r requirements.txt
 ```
-
-> [!IMPORTANT]
-> This is only needed once, however, when working with the code, make sure that
-> your virtual environment is correctly activated with the following commands.
 
 ```shell
 # Start the dev environment with the modules you installed above
