@@ -92,15 +92,15 @@ class ScoreMethodEu2025:
         event_size: int,
         has_top_8: bool,
         total_rounds: int,
-    ) -> int:
+    ) -> int | None:
         """
         Returns how many QPs a player got in a single event.
         """
         multiplier = cls.MULT[result.event.category]
-        swiss_points, top_finish_points = 0, 0
-
-        if result.points:
+        points = []
+        if result.points is not None:
             swiss_points = (result.points + cls.PARTICIPATION_POINTS) * multiplier
+            points.append(swiss_points)
 
         if has_top_8:
             win_equivalent_for_rank = cls._win_equivalent_for_rank(result, event_size)
@@ -113,8 +113,9 @@ class ScoreMethodEu2025:
                 top_finish_points = (
                     match_point_equivalent + cls.PARTICIPATION_POINTS
                 ) * multiplier
+                points.append(top_finish_points)
 
-        return max(swiss_points, top_finish_points)
+        return None if not points else max(points)
 
     @classmethod
     def finalize_scores(
@@ -184,7 +185,8 @@ class ScoreMethodEu2025:
     def score_for_result(
         cls, result, event_size, has_top8, total_rounds
     ) -> Score | None:
-        if result.event.category in [Event.Category.NATIONAL, Event.Category.OTHER]:
-            return None
-        qps = cls._qps_for_result(result, event_size, has_top8, total_rounds)
-        return cls.Score(qps=qps)
+        if result.event.category not in [Event.Category.NATIONAL, Event.Category.OTHER]:
+            qps = cls._qps_for_result(result, event_size, has_top8, total_rounds)
+            if qps is not None:
+                return cls.Score(qps=qps)
+        return None

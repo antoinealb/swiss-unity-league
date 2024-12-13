@@ -242,6 +242,29 @@ class ScoresWithPlayoffsTestCase(TestCase):
             score, (15 * 3 + 1 + 3) * ScoreMethodEu2025.MULT[self.event.category]
         )
 
+    def test_playoff_only_result(self):
+        """Most MTGTop 8 results will only have a rank and a playoff result, but no points."""
+        rounds = 5
+        win_equivalent = 15
+        result = Result(
+            ranking=1, event=self.event, playoff_result=Result.PlayoffResult.WINNER
+        )
+        score = ScoreMethodEu2025._qps_for_result(
+            result=result, event_size=17, has_top_8=True, total_rounds=rounds
+        )
+        self.assertEqual(
+            score,
+            (win_equivalent + rounds) * 3 * ScoreMethodEu2025.MULT[self.event.category],
+        )
+
+    def test_rank_only_result_ineligible_for_points(self):
+        """Some MTGTop 8 results will only have a rank."""
+        result = Result(ranking=17, event=self.event)
+        score = ScoreMethodEu2025._qps_for_result(
+            result=result, event_size=33, has_top_8=True, total_rounds=6
+        )
+        self.assertEqual(score, None)
+
 
 class TestScoresQualified(TestCase):
     def setUp(self):
