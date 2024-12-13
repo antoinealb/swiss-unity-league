@@ -29,7 +29,9 @@ geoip_lookups_count = Counter(
 )
 
 geoip_lookup_duration = Histogram(
-    "geoip_lookup_duration_seconds", "Duration of the GeoIP database lookup"
+    "geoip_lookup_duration_seconds",
+    "Duration of the GeoIP database lookup",
+    buckets=[0.0025, 0.005, 0.01, 0.02, 0.04, 0.08, 0.10],
 )
 
 
