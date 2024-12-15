@@ -40,7 +40,7 @@ from championship.views import (
     THEAD,
     Performance,
 )
-from championship.views.players import sorted_most_accomplished_results
+from championship.views.players import CATEGORY_ORDER, sorted_most_accomplished_results
 from decklists.factories import DecklistFactory
 from multisite.tests.utils import site
 
@@ -424,33 +424,9 @@ class AccomplishmentsSortTesCase(TestCase):
         sorted_results = sorted_most_accomplished_results([(r, None) for r in results])
         return [r[0] for r in sorted_results]
 
-    def test_first_sort_by_category(self):
+    def test_first_sort_by_playoff_result(self):
         results = [
             ResultFactory(
-                event__category=category,
-                player=self.profile.player,
-            )
-            for category in [
-                Event.Category.OTHER,
-                Event.Category.REGULAR,
-                Event.Category.REGIONAL,
-                Event.Category.PREMIER,
-            ]
-        ]
-        sorted_results = self.sort_results(results)
-        sorted_categories = [r.event.category for r in sorted_results]
-        expected_category_order = [
-            Event.Category.PREMIER,
-            Event.Category.REGIONAL,
-            Event.Category.REGULAR,
-            Event.Category.OTHER,
-        ]
-        self.assertEqual(sorted_categories, expected_category_order)
-
-    def test_second_sort_by_playoff_result(self):
-        results = [
-            ResultFactory(
-                event__category=Event.Category.PREMIER,
                 player=self.profile.player,
                 playoff_result=playoff_result,
             )
@@ -473,6 +449,20 @@ class AccomplishmentsSortTesCase(TestCase):
         ]
         self.assertEqual(sorted_playoff_results, expected_playoff_result_order)
 
+    def test_second_sort_by_category(self):
+        expected_category_order = CATEGORY_ORDER
+        results = [
+            ResultFactory(
+                playoff_result=Result.PlayoffResult.WINNER,
+                event__category=category,
+                player=self.profile.player,
+            )
+            for category in reversed(expected_category_order)
+        ]
+        sorted_results = self.sort_results(results)
+        sorted_categories = [r.event.category for r in sorted_results]
+        self.assertEqual(sorted_categories, expected_category_order)
+
     def test_third_sort_by_ranking_if_no_playoff_result(self):
         results = [
             ResultFactory(
@@ -481,10 +471,18 @@ class AccomplishmentsSortTesCase(TestCase):
                 ranking=ranking,
             )
             for ranking in [4, 3, 2, 1]
+        ] + [
+            ResultFactory(
+                event__category=Event.Category.PREMIER,
+                player=self.profile.player,
+                playoff_result=Result.PlayoffResult.QUARTER_FINALIST,
+                ranking=8,
+            )
         ]
         sorted_results = self.sort_results(results)
         sorted_ranks = [r.ranking for r in sorted_results]
         expected_rank_order = [
+            8,
             1,
             2,
             3,

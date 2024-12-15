@@ -84,21 +84,24 @@ class Performance:
         )
 
 
+CATEGORY_ORDER = [
+    Event.Category.GRAND_PRIX,
+    Event.Category.QUALIFIER,
+    Event.Category.PREMIER,
+    Event.Category.REGIONAL,
+    Event.Category.NATIONAL,
+    Event.Category.REGULAR,
+    Event.Category.OTHER,
+]
+
+
 def sorted_most_accomplished_results(results):
     def accomplishments_sort_key(result_score):
         result, score = result_score
-        if result.event.category == Event.Category.PREMIER:
-            category = 1
-        elif result.event.category == Event.Category.REGIONAL:
-            category = 2
-        elif result.event.category == Event.Category.REGULAR:
-            category = 3
-        else:
-            category = 4
-
+        category_index = CATEGORY_ORDER.index(result.event.category)
         return (
-            category,
             result.playoff_result or 16 + result.ranking,
+            category_index,
             -result.event.date.toordinal(),
         )
 
