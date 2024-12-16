@@ -171,19 +171,16 @@ class PlayerDetailsTest(TestCase):
             [
                 QPS,
                 qps_premier,
-                0,
                 qps_regular,
                 qps_premier + qps_regular,
             ],
-            [EVENTS, 1, 0, 1, 2],
+            [EVENTS, 1, 1, 2],
         ]
         actual_tbody = response.context[QP_TABLE][TBODY]
         self.assertEqual(expected_tbody, actual_tbody)
 
     def test_top_finishes(self):
         player = PlayerFactory()
-        ser_winner = Result.PlayoffResult.WINNER
-        ser_quarter = Result.PlayoffResult.QUARTER_FINALIST
         event1 = EventFactory(category=Event.Category.PREMIER)
         event2 = EventFactory(category=Event.Category.REGIONAL)
         ResultFactory(
@@ -191,14 +188,21 @@ class PlayerDetailsTest(TestCase):
             player=player,
             event=event1,
             ranking=1,
-            playoff_result=ser_quarter,
+            playoff_result=Result.PlayoffResult.QUARTER_FINALIST,
         )
         ResultFactory(
             points=10,
             player=player,
             event=event2,
             ranking=2,
-            playoff_result=ser_winner,
+            playoff_result=Result.PlayoffResult.WINNER,
+        )
+        # Excludes non-playoff result
+        ResultFactory(
+            points=10,
+            player=player,
+            event=event2,
+            ranking=2,
         )
         response = self.get_player_details_2023(player)
         expected_top_finishes = {

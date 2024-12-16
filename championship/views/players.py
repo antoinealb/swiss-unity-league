@@ -32,25 +32,9 @@ QP_TABLE = "qp_table"
 THEAD = "thead"
 TBODY = "tbody"
 TABLE = "table"
-QPS = "QPs"
+QPS = "League Points"
 EVENTS = "Events"
 PERFORMANCE_PER_FORMAT = "performance_per_format"
-
-
-def add_to_table(table, column_title, row_title, value=1):
-    """Increases the entry of the table in the given column-row pair by the value."""
-    thead = table[THEAD]
-    if column_title not in thead:
-        return
-    column_index = thead.index(column_title)
-    tbody = table[TBODY]
-    for existing_row in tbody:
-        if existing_row[0] == row_title:
-            existing_row[column_index] += value
-            return
-    new_row = [row_title] + [0] * (len(thead) - 1)
-    new_row[column_index] = value
-    tbody.append(new_row)
 
 
 @dataclasses.dataclass
@@ -167,58 +151,75 @@ class PlayerDetailsView(PerSeasonMixin, DetailView):
                 context["accomplishments"], key=lambda r: r[0].event.date, reverse=True
             )
 
-        qp_table = {
-            THEAD: [
-                "",
-                Event.Category.PREMIER.label,
-                Event.Category.REGIONAL.label,
-                Event.Category.REGULAR.label,
-                "Total",
-            ],
-            TBODY: [],
-        }
-        with_top_8_table = {
-            THEAD: ["", Event.Category.PREMIER.label, Event.Category.REGIONAL.label],
-            TBODY: [],
-        }
-
-        for result, score in sorted(context[LAST_RESULTS]):
-            add_to_table(
-                qp_table,
-                column_title=result.event.get_category_display(),
-                row_title=QPS,
-                value=score.qps if score else None,
-            )
-            add_to_table(
-                qp_table,
-                column_title=result.event.get_category_display(),
-                row_title=EVENTS,
-            )
-            if result.playoff_result:
-                add_to_table(
-                    with_top_8_table,
-                    column_title=result.event.get_category_display(),
-                    row_title=result.get_ranking_display(),
-                )
-
         context[PERFORMANCE_PER_FORMAT] = self.performance_per_format(
             context[LAST_RESULTS]
         )
 
-        if len(qp_table[TBODY]) > 0:
-            # Compute the total and add it in the last column
-            for row in qp_table[TBODY]:
-                row[-1] = sum(row[1:])
+        context[QP_TABLE] = self._get_qp_table(context)
+        context["top_finish_table"] = self._get_top_finish_table(context)
 
-            context[QP_TABLE] = qp_table
+        context["decklists"] = self._decklists(context["player"])
+        return context
 
-        context["top_finish_table"] = {
+    def _get_top_finish_table(self, context):
+        playoff_count_by_category_ranking = defaultdict(lambda: defaultdict(int))
+        for result, _ in context[LAST_RESULTS]:
+            if result.playoff_result:
+                playoff_count_by_category_ranking[result.event.get_category_display()][
+                    result.get_ranking_display()
+                ] += 1
+        rankings = sorted(
+            set(
+                r[0].get_ranking_display()
+                for r in context[LAST_RESULTS]
+                if r[0].playoff_result
+            )
+        )
+        categories = [
+            c.label
+            for c in CATEGORY_ORDER
+            if c.label in playoff_count_by_category_ranking
+        ]
+        with_top_8_table = {
+            THEAD: [""] + categories,
+            TBODY: [
+                [ranking]
+                + [
+                    playoff_count_by_category_ranking[category].get(ranking, 0)
+                    for category in categories
+                ]
+                for ranking in rankings
+            ],
+        }
+
+        return {
             "title": "Top 8 Finishes",
             TABLE: with_top_8_table,
         }
 
-        context["decklists"] = self._decklists(context["player"])
-        return context
+    def _get_qp_table(self, context):
+        qps_by_category = defaultdict(int)
+        num_events_by_category = defaultdict(int)
+
+        for result, score in sorted(
+            context[LAST_RESULTS],
+            key=lambda r: CATEGORY_ORDER.index(r[0].event.category),
+        ):
+            if score and score.qps:
+                qps_by_category[result.event.get_category_display()] += score.qps
+                num_events_by_category[result.event.get_category_display()] += 1
+
+        categories = [c.label for c in CATEGORY_ORDER if c.label in qps_by_category]
+        event_counts = [num_events_by_category[category] for category in categories]
+        return {
+            THEAD: [""] + categories + ["Total"],
+            TBODY: [
+                [QPS]
+                + list(qps_by_category.values())
+                + [sum(qps_by_category.values())],
+                [EVENTS] + event_counts + [sum(event_counts)],
+            ],
+        }
 
     def _decklists(self, player):
         return (
