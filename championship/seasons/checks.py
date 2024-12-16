@@ -43,21 +43,19 @@ def check_default_season_is_unique(app_configs, **kwargs):
     """
     Checks that each domain has one and exactly one default season.
     """
-    from django.contrib.sites.models import Site
-
     errors = []
 
-    for site in Site.objects.all():
-        default_seasons = [
-            s for s in ALL_SEASONS if s.domain == site.domain and s.default
-        ]
+    domains = set(s.domain for s in ALL_SEASONS)
+
+    for domain in domains:
+        default_seasons = [s for s in ALL_SEASONS if s.domain == domain and s.default]
         if len(default_seasons) > 1:
             all_slugs = ",".join(s.slug for s in default_seasons)
             errors.append(
                 Error(
                     "More than one default season.",
                     hint=f"Default seasons are: {all_slugs}",
-                    obj=site,
+                    obj=domain,
                     id="championship.E002",
                 )
             )
@@ -65,7 +63,7 @@ def check_default_season_is_unique(app_configs, **kwargs):
             errors.append(
                 Error(
                     "No default season for domain",
-                    obj=site,
+                    obj=domain,
                     id="championship.E003",
                 )
             )
