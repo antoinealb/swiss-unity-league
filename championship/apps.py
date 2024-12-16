@@ -18,3 +18,7 @@ from django.apps import AppConfig
 class ChampionshipConfig(AppConfig):
     default_auto_field = "django.db.models.BigAutoField"
     name = "championship"
+
+    def ready(self):
+        # triggers registration of checks
+        import championship.seasons.checks  # noqa

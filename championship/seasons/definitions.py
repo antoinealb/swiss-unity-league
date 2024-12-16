@@ -14,11 +14,8 @@
 
 import datetime
 import functools
-import re
 from dataclasses import dataclass
 from typing import Any
-
-from django.core.checks import Error, register
 
 from multisite.constants import GLOBAL_DOMAIN, SWISS_DOMAIN
 
@@ -121,57 +118,3 @@ SEASON_ALL = Season(
 )
 ALL_SEASONS = SWISS_SEASONS + EU_SEASONS + [SEASON_ALL]
 MAIN_SEASONS = [s for s in ALL_SEASONS if s.main_season]
-
-
-@register()
-def check_season_slug_is_compatible(app_configs, **kwargs):
-    """
-    Checks that season slugs are in a format compatible with DRF API router.
-    """
-    errors = []
-    valid = re.compile(r"^[a-zA-Z0-9]+$")
-    for season in ALL_SEASONS:
-        if not valid.match(season.slug):
-            errors.append(
-                Error(
-                    "Invalid season slug (must be a-z0-9).",
-                    obj=season,
-                    id="championship.E001",
-                )
-            )
-    return errors
-
-
-@register()
-def check_default_season_is_unique(app_configs, **kwargs):
-    """
-    Checks that each domain has one and exactly one default season.
-    """
-    from django.contrib.sites.models import Site
-
-    errors = []
-
-    for site in Site.objects.all():
-        default_seasons = [
-            s for s in ALL_SEASONS if s.domain == site.domain and s.default
-        ]
-        if len(default_seasons) > 1:
-            all_slugs = ",".join(s.slug for s in default_seasons)
-            errors.append(
-                Error(
-                    "More than one default season.",
-                    hint=f"Default seasons are: {all_slugs}",
-                    obj=site,
-                    id="championship.E002",
-                )
-            )
-        elif not default_seasons:
-            errors.append(
-                Error(
-                    "No default season for domain",
-                    obj=site,
-                    id="championship.E003",
-                )
-            )
-
-    return errors
