@@ -14,6 +14,7 @@
 
 import datetime
 import functools
+import re
 from dataclasses import dataclass
 from typing import Any
 
@@ -78,7 +79,7 @@ INVITATIONAL_SPRING_2025 = Season(
     start_date=SEASON_2025.start_date,
     end_date=datetime.date(2025, 3, 31),
     name="Spring Invitational 2025",
-    slug="invitational-spring-2025",
+    slug="spring2025invitational",
 )
 
 SWISS_SEASONS = [
@@ -92,7 +93,7 @@ EU_SEASON_2025 = Season(
     start_date=datetime.date(2025, 1, 1),
     end_date=datetime.date(2025, 9, 30),
     name="Season 2025",
-    slug="eu-2025",
+    slug="eu2025",
     domain=GLOBAL_DOMAIN,
     main_season=True,
 )
@@ -102,7 +103,7 @@ EU_SEASON_2024_MOCKUP = Season(
     start_date=datetime.date(2024, 1, 1),
     end_date=datetime.date(2024, 12, 31),
     name="Mockup Season 2024",
-    slug="eu-2024-mockup",
+    slug="eu2024mockup",
     domain=GLOBAL_DOMAIN,
     main_season=True,
     default=True,
@@ -116,7 +117,6 @@ SEASON_ALL = Season(
     name="all seasons",
     slug="all",
 )
-
 ALL_SEASONS = SWISS_SEASONS + EU_SEASONS + [SEASON_ALL]
 MAIN_SEASONS = [s for s in ALL_SEASONS if s.main_season]
 
@@ -127,6 +127,12 @@ def assert_single_default(seasons, domain):
     )
     assert default_count <= 1, f"Multiple default seasons found for {domain} domain."
 
+
+# Assert slug is alphanumeric (requirement from the api router)
+for season in ALL_SEASONS:
+    assert re.match(
+        r"^[a-zA-Z0-9]+$", season.slug
+    ), f"Season '{season.name}' has a non-alphanumeric slug: {season.slug}"
 
 # Assert that there's only one default season per domain
 assert_single_default(ALL_SEASONS, SWISS_DOMAIN)
