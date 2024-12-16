@@ -38,24 +38,26 @@ class ScoreMethodEu2025:
 
     MULT = {
         Event.Category.REGULAR: 1,
-        Event.Category.REGIONAL: 4,
-        Event.Category.PREMIER: 4,
-        Event.Category.NATIONAL: 5,  # Included for sake of completeness, but there shouldn't be any nationals this year
-        Event.Category.QUALIFIER: 6,
-        Event.Category.GRAND_PRIX: 7,
+        Event.Category.REGIONAL: 3,
+        Event.Category.PREMIER: 3,
+        Event.Category.NATIONAL: 4,  # Included for sake of completeness, but there shouldn't be any nationals this year
+        Event.Category.QUALIFIER: 5,
+        Event.Category.GRAND_PRIX: 6,
     }
     PARTICIPATION_POINTS = 3
     POINTS_PER_WIN = 3
     WIN_EQUIVALENT_FOR_PLAYOFFS = {
-        Result.PlayoffResult.WINNER: 15,
-        Result.PlayoffResult.FINALIST: 9,
-        Result.PlayoffResult.SEMI_FINALIST: 6,
-        Result.PlayoffResult.QUARTER_FINALIST: 4,
+        Result.PlayoffResult.WINNER: 16,
+        Result.PlayoffResult.FINALIST: 10,
+        Result.PlayoffResult.SEMI_FINALIST: 7,
+        Result.PlayoffResult.QUARTER_FINALIST: 5,
     }
     EXTRA_WINS = [
-        ExtraWinForLargeEvents(rank_required=16, rounds_required=6),
+        ExtraWinForLargeEvents(rank_required=12, rounds_required=6),
+        ExtraWinForLargeEvents(rank_required=16, rounds_required=7),
         ExtraWinForLargeEvents(rank_required=32, rounds_required=8),
-        ExtraWinForLargeEvents(rank_required=64, rounds_required=10),
+        ExtraWinForLargeEvents(rank_required=64, rounds_required=9),
+        ExtraWinForLargeEvents(rank_required=128, rounds_required=10),
     ]
     LEADERBOARD_QUALIFICATION_RANK = 40
     DIRECT_QUALIFICATION_REASON = (
@@ -97,6 +99,8 @@ class ScoreMethodEu2025:
         Returns how many QPs a player got in a single event.
         """
         multiplier = cls.MULT[result.event.category]
+        # if result.event.category == Event.Category.REGIONAL and not has_top_8:
+        #     multiplier = 1
         points = []
         if result.points is not None:
             swiss_points = (result.points + cls.PARTICIPATION_POINTS) * multiplier

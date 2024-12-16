@@ -74,31 +74,35 @@ class TestComputeScoreForEU2025(TestCase):
         )
 
     def test_compute_score_points_premier(self):
+        mult = 3
         self._test_compute_score(
             category=Event.Category.PREMIER,
             points=[10, 10, 9, 5],
-            want_score=[52, 52, 48, 32],
+            want_score=[13 * mult, 13 * mult, 12 * mult, 8 * mult],
         )
 
     def test_compute_score_points_regional(self):
+        mult = 3
         self._test_compute_score(
             category=Event.Category.REGIONAL,
             points=[10, 10, 9, 5],
-            want_score=[52, 52, 48, 32],
+            want_score=[13 * mult, 13 * mult, 12 * mult, 8 * mult],
         )
 
     def test_compute_score_points_qualifier(self):
+        mult = 5
         self._test_compute_score(
             category=Event.Category.QUALIFIER,
             points=[10, 10, 9, 5],
-            want_score=[13 * 6, 13 * 6, 12 * 6, 8 * 6],
+            want_score=[13 * mult, 13 * mult, 12 * mult, 8 * mult],
         )
 
     def test_compute_score_points_grand_prix(self):
+        mult = 6
         self._test_compute_score(
             category=Event.Category.GRAND_PRIX,
             points=[10, 10, 9, 5],
-            want_score=[13 * 7, 13 * 7, 12 * 7, 8 * 7],
+            want_score=[13 * mult, 13 * mult, 12 * mult, 8 * mult],
         )
 
     def test_ignores_players_hidden_from_leaderboard(self):
@@ -185,27 +189,29 @@ class ScoresWithPlayoffsTestCase(TestCase):
 
     @parameterized.expand(
         [
-            (16, 1, 15),
-            (16, 2, 9),
-            (16, 3, 6),
-            (16, 4, 6),
-            (16, 5, 4),
-            (16, 8, 4),
+            (16, 1, 16),
+            (16, 2, 10),
+            (16, 3, 7),
+            (16, 4, 7),
+            (16, 5, 5),
+            (16, 8, 5),
             (16, 9, 0),
             (16, 16, 0),
-            (32, 1, 15),
+            (32, 1, 16),
             (32, 9, 0),
-            (33, 1, 16),
+            (33, 1, 17),
             (33, 9, 1),
-            (128, 8, 5),
-            (129, 8, 6),
-            (513, 8, 7),
-            (128, 1, 16),
-            (129, 1, 17),
-            (512, 1, 17),
-            (513, 1, 18),
-            (1024, 1, 18),
-            (1025, 1, 18),
+            (33, 13, 0),
+            (128, 8, 7),
+            (129, 8, 8),
+            (256, 8, 8),
+            (257, 8, 9),
+            (513, 8, 10),
+            (128, 1, 18),
+            (129, 1, 19),
+            (257, 1, 20),
+            (512, 1, 20),
+            (513, 1, 21),
         ]
     )
     def test_win_equivalents_for_top_finishes(
@@ -215,6 +221,7 @@ class ScoresWithPlayoffsTestCase(TestCase):
         self.assertEqual(
             got_win_equivalent,
             want_win_equivalent,
+            f"For event size {event_size} and ranking {ranking}, ",
         )
 
     def test_total_score(self):
@@ -245,7 +252,7 @@ class ScoresWithPlayoffsTestCase(TestCase):
     def test_playoff_only_result(self):
         """Most MTGTop 8 results will only have a rank and a playoff result, but no points."""
         rounds = 5
-        win_equivalent = 15
+        win_equivalent = 16
         result = Result(
             ranking=1, event=self.event, playoff_result=Result.PlayoffResult.WINNER
         )
