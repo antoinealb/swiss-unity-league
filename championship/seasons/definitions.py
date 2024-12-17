@@ -81,12 +81,19 @@ INVITATIONAL_SPRING_2025 = Season(
     slug="spring2025invitational",
 )
 
-SWISS_SEASONS = [
+SWISS_SEASONS_DEFINITIONS = [
     SEASON_2025,
     INVITATIONAL_SPRING_2025,
     SEASON_2024,
     SEASON_2023,
 ]
+
+SWISS_SEASON_ALL = Season(
+    start_date=min([s.start_date for s in SWISS_SEASONS_DEFINITIONS if s.main_season]),
+    end_date=max([s.end_date for s in SWISS_SEASONS_DEFINITIONS if s.main_season]),
+    name="all seasons",
+    slug="all",
+)
 
 EU_SEASON_2025 = Season(
     start_date=datetime.date(2025, 1, 1),
@@ -108,13 +115,10 @@ EU_SEASON_2024_MOCKUP = Season(
     default=True,
 )
 
-EU_SEASONS = [EU_SEASON_2025, EU_SEASON_2024_MOCKUP]
+EU_SEASONS_DEFINITIONS = [EU_SEASON_2025, EU_SEASON_2024_MOCKUP]
 
-SEASON_ALL = Season(
-    start_date=min([s.start_date for s in SWISS_SEASONS if s.main_season]),
-    end_date=max([s.end_date for s in SWISS_SEASONS if s.main_season]),
-    name="all seasons",
-    slug="all",
-)
-ALL_SEASONS = SWISS_SEASONS + EU_SEASONS + [SEASON_ALL]
+ALL_SEASONS = SWISS_SEASONS_DEFINITIONS + EU_SEASONS_DEFINITIONS + [SWISS_SEASON_ALL]
 MAIN_SEASONS = [s for s in ALL_SEASONS if s.main_season]
+
+SWISS_SEASONS = [season for season in ALL_SEASONS if season.domain == SWISS_DOMAIN]
+EU_SEASONS = [season for season in ALL_SEASONS if season.domain == GLOBAL_DOMAIN]

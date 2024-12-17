@@ -42,6 +42,7 @@ from .models import (
     Player,
     PlayerAlias,
     PlayerProfile,
+    PlayerSeasonData,
     RecurrenceRule,
     RecurringEvent,
     Result,
@@ -353,6 +354,17 @@ class PlayerProfileAdmin(admin.ModelAdmin):
         return obj.age()
 
 
+class PlayerSeasonDataAdmin(admin.ModelAdmin):
+    list_display = (
+        "player",
+        "season_slug",
+        "country",
+        "auto_assign_country",
+    )
+    search_fields = ["player__name"]
+    list_filter = ["season_slug", "country"]
+
+
 class PlayerAliasAdmin(admin.ModelAdmin):
     list_display = (
         "name",
@@ -368,6 +380,7 @@ class PlayerAliasAdmin(admin.ModelAdmin):
 admin.site.register(PlayerAlias, PlayerAliasAdmin)
 admin.site.register(Player, PlayerAdmin)
 admin.site.register(PlayerProfile, PlayerProfileAdmin)
+admin.site.register(PlayerSeasonData, PlayerSeasonDataAdmin)
 
 
 def _last_day_of_month(any_day: datetime.date) -> datetime.date:

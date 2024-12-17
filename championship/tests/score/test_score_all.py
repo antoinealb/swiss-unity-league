@@ -17,13 +17,13 @@ from django.test import TestCase
 from championship.factories import EventFactory, PlayerFactory, ResultFactory
 from championship.models import Event
 from championship.score.generic import compute_scores
-from championship.seasons.definitions import SEASON_ALL
+from championship.seasons.definitions import SWISS_SEASON_ALL
 from championship.seasons.helpers import get_seasons_with_scores
 
 
-class TestComputeScoreFor2023(TestCase):
+class TestComputeScoreOverall(TestCase):
     def compute_scores(self):
-        return compute_scores(SEASON_ALL)
+        return compute_scores(SWISS_SEASON_ALL)
 
     def test_score_all(self):
         player = PlayerFactory()

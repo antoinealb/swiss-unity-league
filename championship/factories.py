@@ -123,6 +123,7 @@ class EventFactory(DjangoModelFactory):
 
     class Params:
         season = SEASON_2023
+        excluded_categories: list[Event.Category] = []
 
     name = factory.Faker("mtg_event_name")
     organizer = factory.SubFactory(EventOrganizerFactory)
@@ -133,9 +134,10 @@ class EventFactory(DjangoModelFactory):
         elements=Event.Format.values,
     )
 
-    category = factory.Faker(
-        "random_element",
-        elements=Event.Category.values,
+    category = factory.LazyAttribute(
+        lambda obj: random.choice(
+            [c for c in Event.Category.values if c not in obj.excluded_categories]
+        )
     )
 
     date = factory.LazyAttribute(
@@ -147,10 +149,8 @@ class EventFactory(DjangoModelFactory):
 
 
 class RankedEventFactory(EventFactory):
-    category = factory.Faker(
-        "random_element",
-        elements=[c for c in Event.Category.values if c != Event.Category.OTHER.name],  # type: ignore
-    )
+    class Params:
+        excluded_categories = [Event.Category.OTHER]
 
     @factory.post_generation
     def players(self, create: bool, players: Iterable[Player] | int):

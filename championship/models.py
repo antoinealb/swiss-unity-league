@@ -29,6 +29,7 @@ from dateutil.relativedelta import relativedelta
 from django_bleach.models import BleachField
 from django_countries.fields import CountryField
 
+from championship.seasons.definitions import EU_SEASONS
 from championship.seasons.helpers import Season, find_main_season_by_date
 from multisite.constants import GLOBAL_DOMAIN, SWISS_DOMAIN
 
@@ -721,6 +722,33 @@ class Player(models.Model):
 def player_image_validator(image):
     if image.size > 1024 * 1024:
         raise ValidationError("Image file too large ( > 1MB )")
+
+
+class PlayerSeasonData(models.Model):
+    """
+    Tracks a player's country assignment for each season.
+    """
+
+    class Meta:
+        indexes = [
+            models.Index(fields=["player", "season_slug"], name="player_season_idx")
+        ]
+        constraints = [
+            models.UniqueConstraint(
+                fields=["player", "season_slug"], name="unique_player_season"
+            )
+        ]
+
+    season_slug = models.CharField(
+        max_length=50,
+        choices=[(season.slug, season.name) for season in EU_SEASONS],
+    )
+    player = models.ForeignKey(Player, on_delete=models.CASCADE)
+    country = CountryField()
+    auto_assign_country = models.BooleanField(default=True)
+
+    def __str__(self):
+        return f"{self.player.name} - {self.season_slug} ({self.country})"
 
 
 class PlayerProfile(models.Model):

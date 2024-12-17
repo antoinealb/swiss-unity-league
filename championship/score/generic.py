@@ -45,7 +45,7 @@ from championship.seasons.definitions import (
     SEASON_2023,
     SEASON_2024,
     SEASON_2025,
-    SEASON_ALL,
+    SWISS_SEASON_ALL,
     Season,
 )
 
@@ -65,7 +65,7 @@ SCOREMETHOD_PER_SEASON = {
     EU_SEASON_2025: ScoreMethodEu2025,
     EU_SEASON_2024_MOCKUP: ScoreMethodEu2025,
     INVITATIONAL_SPRING_2025: ScoreMethodInvitationalSpring2025,
-    SEASON_ALL: ScoreMethodAll,
+    SWISS_SEASON_ALL: ScoreMethodAll,
 }
 
 
