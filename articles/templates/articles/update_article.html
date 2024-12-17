@@ -13,4 +13,5 @@
         {{ form|crispy }}
         <button type="submit" value="Submit" class="btn btn-secondary">Submit</button>
     </form>
+    <p>Need to add some pictures ? <a href="{% url 'article-attachment-create' %}" target="_blank">Upload here</a>
 {% endblock %}

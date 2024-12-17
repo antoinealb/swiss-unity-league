@@ -102,6 +102,6 @@ class ArticleAttachmentCreateView(
 
     def get_success_message(self, cleaned_data):
         url = self.request.build_absolute_uri(
-            f"/{settings.MEDIA_URL}/f{self.db_file.filename}"
+            f"/{settings.MEDIA_URL}/{self.db_file.filename}"
         )
         return f"Your file is now available at {url}"

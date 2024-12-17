@@ -42,7 +42,9 @@ class ArticleUpdateForm(forms.ModelForm):
         }
         help_texts = {
             "content": """Supports the following HTML tags: {}.
-To reference a card wrap it in brackets (e.g. [[Daze]]). To reference a decklist just paste a unityleague link.""".format(
+To reference a card wrap it in brackets (e.g. [[Daze]]). To reference a decklist just paste a unityleague link.
+To add an image, use this syntax (including the exclamation mark): "![Image title](https://unityleague.ch/static/flag.png)".
+""".format(
                 ", ".join(settings.BLEACH_ALLOWED_TAGS_ARTICLE)
             ),
         }
