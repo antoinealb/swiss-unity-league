@@ -1,4 +1,5 @@
 {% load custom_tags %}
+{% load waffle_tags %}
 
 <div class="col-lg-4 mb-5">
     <div class="card h-100">
@@ -8,10 +9,19 @@
                 <span>by {{ article.author.first_name }} {{ article.author.last_name }}</span>
                 | <span>{{ article.published_date|weekday_date }}</span>
             </p>
-            {% if article.header_image %}
-                <img src="{{ article.header_image.url }}" class="card-img-top" alt="Article Image">
-            {% endif %}
-            {% if not article.header_image %}
+            {% flag "index_article_card_show_header" %}
+                {% if article.header_image %}
+                    <img src="{{ article.header_image.url }}" class="card-img-top" alt="Article Image">
+                {% else %}
+                    <p class="card-text">
+                        {% if article.description %}
+                            {{ article.description }}
+                        {% else %}
+                            {{ article.content|truncatewords:40 }}
+                        {% endif %}
+                    </p>
+                {% endif %}
+            {% else %}
                 <p class="card-text">
                     {% if article.description %}
                         {{ article.description }}
@@ -19,7 +29,7 @@
                         {{ article.content|truncatewords:40 }}
                     {% endif %}
                 </p>
-            {% endif %}
+            {% endflag %}
         </div>
         <div class="card-footer">
             <a class="btn btn-secondary btn-sm" href="{{ article.get_absolute_url }}" title="Read More">Read More</a>
