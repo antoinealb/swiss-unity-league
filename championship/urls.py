@@ -42,9 +42,14 @@ urlpatterns = [
     path("", views.IndexView.as_view(), name="index"),
     path("ranking", views.CompleteRankingView.as_view(), name="ranking"),
     path(
-        "ranking/<slug:slug>",
+        "ranking/<slug:slug>/",
         views.CompleteRankingView.as_view(),
-        name="ranking-by-season",
+        name="ranking_by_season",
+    ),
+    path(
+        "ranking/<slug:slug>/<str:country_code>/",
+        views.CompleteRankingView.as_view(),
+        name="ranking_by_season_country",
     ),
     path("player/<int:pk>/", views.PlayerDetailsView.as_view(), name="player_details"),
     path(

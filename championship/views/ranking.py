@@ -12,24 +12,50 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+from django.contrib.sites.models import Site
+from django.urls import reverse
 from django.views.generic.base import TemplateView
 
 from championship.score import get_leaderboard
+from championship.seasons.definitions import Season
 from championship.seasons.helpers import get_seasons_with_scores
 from championship.views.base import PerSeasonMixin
+from multisite.constants import SWISS_DOMAIN
+
+DEFAULT_COUNTRY_CODE = "IT"
 
 
 class CompleteRankingView(PerSeasonMixin, TemplateView):
     template_path = "championship/ranking/{slug}/ranking.html"
-    season_view_name = "ranking-by-season"
 
     def get_season_list(self):
         return get_seasons_with_scores()
 
+    def get_country_code(self) -> str:
+        if Site.objects.get_current().domain == SWISS_DOMAIN:
+            return ""
+        return self.kwargs.get("country_code", DEFAULT_COUNTRY_CODE)
+
+    def get_url_for_season(self, season: Season) -> str:
+        if self.get_country_code():
+            return reverse(
+                "ranking_by_season_country",
+                kwargs={
+                    "slug": season.slug,
+                    "country_code": self.get_country_code(),
+                },
+            )
+        else:
+            return reverse(
+                "ranking_by_season",
+                kwargs={
+                    "slug": season.slug,
+                },
+            )
+
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        players = get_leaderboard(self.current_season)
-
-        context["players"] = players
-
+        context["players"] = get_leaderboard(
+            self.current_season, self.get_country_code()
+        )
         return context

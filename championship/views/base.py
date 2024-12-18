@@ -12,10 +12,13 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+from dataclasses import asdict
+
 from django.contrib import messages
 from django.http import Http404, HttpResponseForbidden
 from django.views.generic.edit import DeleteView
 
+from championship.seasons.definitions import Season
 from championship.seasons.helpers import (
     find_season_by_slug,
     get_default_season,
@@ -25,11 +28,14 @@ from championship.seasons.helpers import (
 
 class PerSeasonMixin:
 
-    def get_default_season(self):
+    def get_default_season(self) -> Season:
         return get_default_season()
 
-    def get_season_list(self):
+    def get_season_list(self) -> list[Season]:
         return get_main_seasons()
+
+    def get_url_for_season(self, season: Season) -> str:
+        raise NotImplementedError()
 
     def dispatch(self, request, *args, **kwargs):
         self.slug = self.kwargs.get("slug", self.get_default_season().slug)
@@ -39,7 +45,7 @@ class PerSeasonMixin:
             raise Http404(f"Unknown season {self.slug}")
         return super().dispatch(request, *args, **kwargs)
 
-    def get_template_names(self):
+    def get_template_names(self) -> list[str]:
         # We return two templates so that in case the season-specific one is
         # not found, the default one gets returned.
         return [
@@ -49,9 +55,11 @@ class PerSeasonMixin:
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        context["seasons"] = self.get_season_list()
+        context["seasons"] = [
+            {**asdict(season), "url": self.get_url_for_season(season)}
+            for season in self.get_season_list()
+        ]
         context["current_season"] = self.current_season
-        context["view_name"] = self.season_view_name
         return context
 
 

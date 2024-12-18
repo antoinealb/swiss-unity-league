@@ -30,6 +30,7 @@ from .models import (
     OrganizerLeague,
     Player,
     PlayerProfile,
+    PlayerSeasonData,
     RecurrenceRule,
     RecurringEvent,
     Result,
@@ -236,6 +237,15 @@ class ResultFactory(DjangoModelFactory):
     win_count = factory.Faker("random_int", min=0, max=3)
     loss_count = factory.Faker("random_int", min=0, max=3)
     draw_count = factory.Faker("random_int", min=0, max=3)
+
+    @factory.post_generation
+    def player_country(self, create, country_code, **kwargs):
+        if create and country_code:
+            PlayerSeasonData.objects.create(
+                player=self.player,
+                season_slug=self.event.season.slug,
+                country=country_code,
+            )
 
 
 class SpecialRewardFactory(DjangoModelFactory):

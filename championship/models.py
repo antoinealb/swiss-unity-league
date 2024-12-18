@@ -584,6 +584,9 @@ class LeaderBoardPlayerManager(models.Manager):
     def get_queryset(self):
         return super().get_queryset().filter(hidden_from_leaderboard=False)
 
+    def for_country(self, country_code):
+        return self.get_queryset().filter(playerseasondata__country=country_code)
+
 
 def clean_name(name: str) -> str:
     """Normalizes the given name based on observations from results uploaded.
@@ -855,6 +858,9 @@ class ResultQuerySet(models.QuerySet):
             event__date__gte=season.start_date,
             event__date__lte=season.end_date,
         )
+
+    def on_site(self):
+        return self.filter(event__organizer__site=Site.objects.get_current())
 
 
 class Result(models.Model):

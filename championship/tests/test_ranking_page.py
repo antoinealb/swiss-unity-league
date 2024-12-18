@@ -14,6 +14,7 @@
 
 import datetime
 
+from django.contrib.sites.models import Site
 from django.shortcuts import reverse
 from django.test import TestCase
 
@@ -26,6 +27,8 @@ from championship.factories import (
 )
 from championship.models import Event
 from championship.score.generic import SCOREMETHOD_PER_SEASON
+from championship.seasons.definitions import EU_SEASON_2025, SEASON_2025
+from multisite.constants import GLOBAL_DOMAIN
 from multisite.tests.utils import site
 
 
@@ -35,7 +38,7 @@ class RankingTestCase(TestCase):
     """
 
     def get_by_slug(self, slug):
-        url = reverse("ranking-by-season", kwargs={"slug": slug})
+        url = reverse("ranking_by_season", kwargs={"slug": slug})
         return self.client.get(url)
 
     def test_ranking_with_no_results(self):
@@ -72,7 +75,7 @@ class RankingTestCase(TestCase):
         self.assertEqual(200, response.status_code)
 
     def test_ranking_for_unknown_season_returns_404(self):
-        response = self.client.get("/ranking/2022")
+        response = self.client.get("/ranking/2022/")
         self.assertEqual(404, response.status_code)
 
     @parameterized.expand(SCOREMETHOD_PER_SEASON.keys())
@@ -80,3 +83,45 @@ class RankingTestCase(TestCase):
         with site(domain=season.domain):
             response = self.get_by_slug(season.slug)
             self.assertEqual(200, response.status_code)
+
+
+class NationalRankingPageTestCase(TestCase):
+    def setUp(self):
+        self.season = EU_SEASON_2025  # next((s for s in ALL_SEASONS if s.domain == GLOBAL_DOMAIN and s.default))
+
+    def get_ranking(self, country_code):
+        return self.client.get(
+            reverse(
+                "ranking_by_season_country",
+                kwargs={"slug": self.season.slug, "country_code": country_code},
+            )
+        )
+
+    @site(EU_SEASON_2025.domain)
+    def test_ranking_per_country(self):
+        result = ResultFactory(event__season=self.season, player_country="FR")
+        resp = self.get_ranking("FR")
+        self.assertContains(resp, result.player.name)
+
+    @site(EU_SEASON_2025.domain)
+    def test_hides_players_from_other_country(self):
+        result = ResultFactory(event__season=self.season, player_country="IT")
+        resp = self.get_ranking("FR")
+        self.assertNotContains(resp, result.player.name)
+
+    @site(EU_SEASON_2025.domain)
+    def test_wrong_country_code_shows_empty_ranking(self):
+        resp = self.get_ranking("FOO")
+        self.assertEqual(200, resp.status_code)
+
+    def test_swiss_ranking_ignores_results_from_other_sites(self):
+        result = ResultFactory(
+            event__season=SEASON_2025,
+            event__category=Event.Category.REGULAR,
+            event__organizer__site=Site.objects.get(domain=GLOBAL_DOMAIN),
+        )
+        resp = self.client.get(
+            reverse("ranking_by_season", kwargs={"slug": SEASON_2025.slug})
+        )
+        self.assertEqual(200, resp.status_code)
+        self.assertNotContains(resp, result.player.name)

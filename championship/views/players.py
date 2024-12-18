@@ -16,7 +16,7 @@ import dataclasses
 from collections import Counter, defaultdict
 
 from django.contrib import messages
-from django.urls import reverse_lazy
+from django.urls import reverse, reverse_lazy
 from django.views.generic import CreateView, DetailView, TemplateView
 
 from championship.forms import PlayerProfileForm
@@ -109,9 +109,17 @@ def sorted_most_accomplished_results(results):
 
 
 class PlayerDetailsView(PerSeasonMixin, DetailView):
-    season_view_name = "player_details_by_season"
     model = Player
     queryset = Player.objects.exclude(hidden_from_leaderboard=True)
+
+    def get_url_for_season(self, season):
+        return reverse(
+            "player_details_by_season",
+            kwargs={
+                "slug": season.slug,
+                "pk": self.object.pk,
+            },
+        )
 
     def get_season_list(self):
         return get_seasons_with_scores()
