@@ -67,6 +67,11 @@ class Command(BaseCommand):
     def handle(self, season, *args, **kwargs):
         season = find_season_by_slug(season)
 
+        # the parser doesn't check the default value
+        assert season.slug in [
+            s.slug for s in EU_SEASONS
+        ], "This command only works for EU seasons."
+
         for player in Player.objects.exclude(
             playerseasondata__season_slug=season.slug,
             playerseasondata__auto_assign_country=False,

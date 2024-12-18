@@ -26,6 +26,7 @@ from championship.management.commands.assign_countries_to_players import (
 )
 from championship.models import Event, PlayerSeasonData
 from championship.seasons.definitions import EU_SEASON_2025
+from multisite.constants import SWISS_DOMAIN
 from multisite.tests.utils import site
 
 
@@ -189,3 +190,8 @@ class AssignCountriesToAllPlayersTest(TestCase):
             result.event.organizer.default_address.country,
         )
         self.assertEqual(PlayerSeasonData.objects.all().count(), 2)
+
+    @site(SWISS_DOMAIN)
+    def test_eu_season_only(self):
+        with self.assertRaises(AssertionError):
+            call_command("assign_countries_to_players")
