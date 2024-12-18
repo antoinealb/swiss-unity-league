@@ -20,6 +20,8 @@ from django.shortcuts import reverse
 from django.test import Client, TestCase
 from django.utils import timezone
 
+from waffle.testutils import override_flag
+
 from articles.factories import ArticleFactory
 from championship.factories import (
     EventFactory,
@@ -213,6 +215,7 @@ class HomepageTestCase(TestCase):
         for article in articles:
             self.assertNotContains(response, article.title)
 
+    @override_flag("index_article_card_show_header", active=True)
     def test_when_image_shows_no_description(self):
         article = ArticleFactory(
             published_date=timezone.now().date(),
