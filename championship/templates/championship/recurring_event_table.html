@@ -1,0 +1,31 @@
+<div class="table-responsive">
+    <table class="table table-striped">
+        <thead>
+            <tr>
+                <th scope="col">Event Series</th>
+                <th scope="col">Start Date</th>
+                <th scope="col">End Date</th>
+                {% if user_is_organizer %}
+                    <th scope="col"></th>
+                {% endif %}
+            </tr>
+        </thead>
+        <tbody>
+            {% for r_event in recurring_events %}
+                <tr>
+                    <td>{{ r_event.name }}</td>
+                    <td>{{ r_event.start_date }}</td>
+                    <td>{{ r_event.end_date }}</td>
+                    {% if user_is_organizer %}
+                        <td>
+                            <a href="{% url 'recurring_event_update' r_event.id %}" class="btn btn-secondary">Update Schedule</a>
+                            <a href="{% url 'recurring_event_update_all' r_event.id %}" class="btn btn-secondary">Edit all Events</a>
+                            <a href="{% url 'recurring_event_copy' r_event.id %}" class="btn btn-secondary-light">Copy</a>
+                            {% include 'championship/delete_confirmation.html' with object=r_event long_name=True %}
+                        </td>
+                    {% endif %}
+                </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>

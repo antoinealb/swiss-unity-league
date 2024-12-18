@@ -109,13 +109,21 @@ class EventOrganizerDetailView(DetailView):
         if organizer.user == self.request.user:
             # Show the organizer all of their own recurring events
             context["user_is_organizer"] = True
-            recurring_events = RecurringEvent.objects.filter(event__organizer=organizer)
-        else:
-            # Show only active recurring events to other users
-            recurring_events = RecurringEvent.objects.filter(
-                event__organizer=organizer,
-                end_date__gte=datetime.date.today(),
+            context["past_recurring_events"] = (
+                RecurringEvent.objects.filter(
+                    event__organizer=organizer,
+                    end_date__lt=datetime.date.today(),
+                )
+                .distinct()
+                .order_by("-start_date")
             )
+
+        # Show only active recurring events to other users
+        recurring_events = RecurringEvent.objects.filter(
+            event__organizer=organizer,
+            end_date__gte=datetime.date.today(),
+        )
+
         context["recurring_events"] = recurring_events.distinct().order_by("start_date")
         return context
 

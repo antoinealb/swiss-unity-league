@@ -107,6 +107,8 @@ class EventOrganizerDetailViewTests(TestCase):
 
     def test_no_table_shown_without_active_recurring_event(self):
         self.assertNotContains(self.response, "Active Event Series")
+
+    def test_past_recurring_events_are_not_shown_anonymous_users(self):
         recurring_event = RecurringEventFactory(
             end_date=datetime.date.today() - timezone.timedelta(days=1)
         )
@@ -116,6 +118,19 @@ class EventOrganizerDetailViewTests(TestCase):
             reverse("organizer_details", args=[self.organizer.id])
         )
         self.assertNotContains(response, "Active Event Series")
+        self.assertNotContains(response, "Past Event Series")
+
+    def test_past_recurring_events_are_shown_for_organizer(self):
+        recurring_event = RecurringEventFactory(
+            end_date=datetime.date.today() - timezone.timedelta(days=1)
+        )
+        self.past_event.recurring_event = recurring_event
+        self.past_event.save()
+        self.client.force_login(self.past_event.organizer.user)
+        response = self.client.get(
+            reverse("organizer_details", args=[self.organizer.id])
+        )
+        self.assertContains(response, "Past Event Series")
 
     def test_recurring_events_ordered_by_start_date(self):
         recurring_event1 = RecurringEventFactory(
