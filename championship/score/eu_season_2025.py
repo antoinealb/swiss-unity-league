@@ -18,7 +18,7 @@ from dataclasses import dataclass
 
 from django.db.models import Count
 
-from championship.models import Event, Result
+from championship.models import Event, NationalLeaderboard, Result
 from championship.score.types import LeaderboardScore, QualificationType
 from championship.seasons.definitions import EU_SEASON_2025
 
@@ -60,9 +60,7 @@ class ScoreMethodEu2025:
         ExtraWinForLargeEvents(rank_required=128, rounds_required=10),
     ]
     LEADERBOARD_QUALIFICATION_RANK = 40
-    DIRECT_QUALIFICATION_REASON = (
-        "Direct invite to European Magic Cup for {ranking} place at '{event_name}'"
-    )
+    SEASON = EU_SEASON_2025
 
     @classmethod
     def _estimated_rounds(cls, event_size: int) -> int:
@@ -123,8 +121,7 @@ class ScoreMethodEu2025:
 
     @classmethod
     def finalize_scores(
-        cls,
-        scores_by_player: dict[int, Score],
+        cls, scores_by_player: dict[int, Score], country_code: str
     ) -> dict[int, LeaderboardScore]:
         """Implements the last step of score processing.
 
@@ -137,28 +134,28 @@ class ScoreMethodEu2025:
         qualifier_event = (
             Event.objects.filter(
                 category=Event.Category.QUALIFIER,
-                date__gte=EU_SEASON_2025.start_date,
-                date__lte=EU_SEASON_2025.end_date,
+                date__gte=cls.SEASON.start_date,
+                date__lte=cls.SEASON.end_date,
             )
             .prefetch_related("result_set")
             .order_by("date")
             .annotate(top_count=Count("result__playoff_result"))
             .filter(top_count__gt=0)
         )
+        national_leaderboard = NationalLeaderboard.objects.filter(
+            country=country_code, season_slug=cls.SEASON.slug
+        ).first()
         direct_qualification_reasons_by_player = {}
         for qualifier_event in qualifier_event:
             for result in sorted(qualifier_event.result_set.all()):
                 if result.player_id not in direct_qualification_reasons_by_player:
                     direct_qualification_reasons_by_player[result.player_id] = (
-                        cls.DIRECT_QUALIFICATION_REASON.format(
-                            ranking=result.get_ranking_display(),
-                            event_name=qualifier_event.name,
-                        )
+                        f"Invite to European Magic Cup for {result.get_ranking_display()} place at '{qualifier_event.name}'"
                     )
                     break
 
-        if EU_SEASON_2025.can_enter_results(datetime.date.today()):
-            leaderboard_reason = "This place qualifies for the National Championship at the end of the Season"
+        if cls.SEASON.can_enter_results(datetime.date.today()):
+            leaderboard_reason = "This place qualifies for the National Championship at the end of the season"
         else:
             leaderboard_reason = "Qualified for National Championship"
 
@@ -179,7 +176,15 @@ class ScoreMethodEu2025:
                 scores[player_id].qualification_reason = (
                     direct_qualification_reasons_by_player[player_id]
                 )
-            elif rank <= cls.LEADERBOARD_QUALIFICATION_RANK:
+            elif (
+                national_leaderboard
+                and rank <= national_leaderboard.continental_invites
+            ):
+                scores[player_id].qualification_type = QualificationType.DIRECT
+                scores[player_id].qualification_reason = (
+                    "Invite to European Magic Cup at the end of the season"
+                )
+            elif national_leaderboard and rank <= national_leaderboard.national_invites:
                 scores[player_id].qualification_type = QualificationType.LEADERBOARD
                 scores[player_id].qualification_reason = leaderboard_reason
 

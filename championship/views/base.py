@@ -27,6 +27,7 @@ from championship.seasons.helpers import (
 
 
 class PerSeasonMixin:
+    template_path = ""
 
     def get_default_season(self) -> Season:
         return get_default_season()

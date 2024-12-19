@@ -19,6 +19,7 @@ The code in this file is mostly season-independent.
 
 from typing import Any, Iterable
 
+from django.conf import settings
 from django.contrib.sites.models import Site
 from django.core.cache import cache
 from django.db import models
@@ -29,7 +30,7 @@ from django.dispatch import receiver
 from prometheus_client import Gauge, Summary
 
 from championship.cache_function import cache_function
-from championship.models import Event, OrganizerLeague, Player, Result
+from championship.models import Event, OrganizerLeague, Player, PlayerSeasonData, Result
 from championship.score.eu_season_2025 import ScoreMethodEu2025
 from championship.score.invitational_spring_2025 import (
     ScoreMethodInvitationalSpring2025,
@@ -49,7 +50,8 @@ from championship.seasons.definitions import (
     SWISS_SEASON_ALL,
     Season,
 )
-from multisite.constants import GLOBAL_DOMAIN, SWISS_DOMAIN
+from championship.seasons.helpers import get_seasons_with_scores
+from multisite.constants import SWISS_DOMAIN
 
 scores_computation_time_seconds = Summary(
     "scores_computation_time_seconds", "Time spent to compute scores of all players"
@@ -108,14 +110,17 @@ def get_results_with_qps(
         yield result, score
 
 
-def _score_cache_key(season):
-    return f"compute_scoresS{season.slug}"
+def _score_cache_key(season, country_code=settings.DEFAULT_COUNTRY):
+    if country_code and Site.objects.get_current().domain != SWISS_DOMAIN:
+        return f"compute_scoresS{season.slug}C{country_code}"
+    else:
+        return f"compute_scoresS{season.slug}"
 
 
 @cache_function(cache_key=_score_cache_key, cache_ttl=15 * 60)
 @scores_computation_time_seconds.time()
 def compute_scores(
-    season: Season,
+    season: Season, country_code: str = settings.DEFAULT_COUNTRY
 ) -> dict[int, LeaderboardScore]:
     scores_by_player: dict[int, Any] = {}
     results = Result.objects.filter(
@@ -125,8 +130,12 @@ def compute_scores(
     ).exclude(event__category=Event.Category.OTHER)
 
     if Site.objects.get_current().domain == SWISS_DOMAIN:
-        # for the swiss leaderboard only result from Swiss event count
         results = results.on_site()
+    else:
+        results = results.filter(
+            player__playerseasondata__country=country_code,
+            player__playerseasondata__season_slug=season.slug,
+        )
 
     count = 0
     for result, score in get_results_with_qps(results):
@@ -140,20 +149,28 @@ def compute_scores(
     scores_computation_results_count.labels(season.slug, season.name).set(count)
 
     return SCOREMETHOD_PER_SEASON[season].finalize_scores(  # type: ignore
-        scores_by_player
+        scores_by_player,
+        country_code,
     )
 
 
 @receiver(post_delete, sender=Result)
 @receiver(pre_save, sender=Result)
 def invalidate_score_cache(sender, instance, **kwargs):
-    for s in SCOREMETHOD_PER_SEASON:
-        if s.start_date <= instance.event.date <= s.end_date:
-            cache.delete(_score_cache_key(s))
+    for season in get_seasons_with_scores():
+        if season.start_date <= instance.event.date <= season.end_date:
+            if Site.objects.get_current().domain == SWISS_DOMAIN:
+                cache.delete(_score_cache_key(season))
+            else:
+                player_season_data = PlayerSeasonData.objects.filter(
+                    player_id=instance.player_id, season_slug=season.slug
+                ).first()
+                if player_season_data:
+                    cache.delete(_score_cache_key(season, player_season_data.country))
 
 
 def combine_scores_with_players(
-    scores_by_player: dict[int, LeaderboardScore], country_code: str = ""
+    scores_by_player: dict[int, LeaderboardScore]
 ) -> list[Player]:
     """Returns a list of Player with their score.
 
@@ -162,11 +179,7 @@ def combine_scores_with_players(
     leaderboard.
     """
     players_with_score = []
-    if country_code and Site.objects.get_current().domain == GLOBAL_DOMAIN:
-        players = Player.leaderboard_objects.for_country(country_code)
-    else:
-        players = Player.leaderboard_objects.all()
-    for player in players:
+    for player in Player.leaderboard_objects.all():
         if score := scores_by_player.get(player.id):
             player.score = score
             players_with_score.append(player)
@@ -174,15 +187,17 @@ def combine_scores_with_players(
     return players_with_score
 
 
-def get_leaderboard(season: Season, country_code: str = "") -> list[Player]:
+def get_leaderboard(
+    season: Season, country_code: str = settings.DEFAULT_COUNTRY
+) -> list[Player]:
     """Returns a list of Player with their score.
 
     This function returns a list of Players with an additional score property
     (of type Score), containing all informations required to render a
     leaderboard.
     """
-    scores_by_player = compute_scores(season)
-    return combine_scores_with_players(scores_by_player, country_code)
+    scores_by_player = compute_scores(season, country_code)
+    return combine_scores_with_players(scores_by_player)
 
 
 def _organizer_score_cache_key(l: OrganizerLeague):

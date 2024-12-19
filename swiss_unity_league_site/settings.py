@@ -373,6 +373,8 @@ SERVER_EMAIL = "django@unityleague.ch"
 DEFAULT_FROM_EMAIL = "noreply@unityleague.ch"
 PUBLIC_CONTACT_EMAIL = "leoninleague@gmail.com"
 
+DEFAULT_COUNTRY = "CH"
+
 if "test" in sys.argv or "pytest" in sys.modules:
     # Set some options for faster unit testing in Django See:
     # https://docs.djangoproject.com/en/5.0/topics/testing/overview/

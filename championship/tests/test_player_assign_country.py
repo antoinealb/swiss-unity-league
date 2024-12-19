@@ -127,9 +127,9 @@ class AssignCountryToPlayerTest(TestCase):
         self.assertEqual(season_data.country, result.event.address.country)
 
 
+@site(EU_SEASON_2025.domain)
 class AssignCountriesToAllPlayersTest(TestCase):
 
-    @site(EU_SEASON_2025.domain)
     def test_assign_countries_to_all_players(self):
         ResultFactory.create_batch(
             2,
@@ -139,7 +139,6 @@ class AssignCountriesToAllPlayersTest(TestCase):
         call_command("assign_countries_to_players", season=EU_SEASON_2025.slug)
         self.assertEqual(2, PlayerSeasonData.objects.all().count())
 
-    @site(EU_SEASON_2025.domain)
     def test_disable_auto_assign_country(self):
         result = ResultFactory(
             event__season=EU_SEASON_2025,
@@ -169,7 +168,6 @@ class AssignCountriesToAllPlayersTest(TestCase):
         )
         self.assertEqual(PlayerSeasonData.objects.all().count(), 1)
 
-    @site(EU_SEASON_2025.domain)
     def test_disable_auto_assign_country_not_affect_other_seasons(self):
         result = ResultFactory(
             event__season=EU_SEASON_2025,

@@ -20,7 +20,7 @@ from championship.score.types import LeaderboardScore
 class ScoreMethodAll:
     @classmethod
     def finalize_scores(
-        cls, scores_by_player: dict[int, Any]
+        cls, scores_by_player: dict[int, Any], country_code: str
     ) -> dict[int, LeaderboardScore]:
         """Implements the last step of score processing.
 

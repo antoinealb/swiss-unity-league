@@ -584,9 +584,6 @@ class LeaderBoardPlayerManager(models.Manager):
     def get_queryset(self):
         return super().get_queryset().filter(hidden_from_leaderboard=False)
 
-    def for_country(self, country_code):
-        return self.get_queryset().filter(playerseasondata__country=country_code)
-
 
 def clean_name(name: str) -> str:
     """Normalizes the given name based on observations from results uploaded.
@@ -743,6 +740,7 @@ class PlayerSeasonData(models.Model):
         ]
 
     season_slug = models.CharField(
+        verbose_name="Season",
         max_length=50,
         choices=[(season.slug, season.name) for season in EU_SEASONS],
     )
@@ -752,6 +750,41 @@ class PlayerSeasonData(models.Model):
 
     def __str__(self):
         return f"{self.player.name} - {self.season_slug} ({self.country})"
+
+
+class NationalLeaderboard(models.Model):
+    """
+    Tracks the rewards and information of each country's seasonal ranking.
+    """
+
+    class Meta:
+        constraints = [
+            models.UniqueConstraint(
+                fields=["country", "season_slug"], name="unique_country_season"
+            )
+        ]
+
+    country = CountryField()
+    season_slug = models.CharField(
+        verbose_name="Season",
+        max_length=50,
+        choices=[(season.slug, season.name) for season in EU_SEASONS],
+    )
+    national_invites = models.IntegerField(
+        default=0,
+        help_text="How many players qualify for the National Championships from this leaderboard.",
+    )
+    continental_invites = models.IntegerField(
+        default=1,
+        help_text="How many players qualify for the continental championship, e.g. European Magic Cup.",
+    )
+    description = BleachField(
+        help_text="Additional info about the leaderboard. Supports the following HTML tags: {}".format(
+            ", ".join(settings.BLEACH_ALLOWED_TAGS)
+        ),
+        blank=True,
+        strip_tags=True,
+    )
 
 
 class PlayerProfile(models.Model):

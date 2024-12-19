@@ -27,6 +27,7 @@ from .models import (
     Address,
     Event,
     EventOrganizer,
+    NationalLeaderboard,
     OrganizerLeague,
     Player,
     PlayerProfile,
@@ -150,11 +151,24 @@ class EventFactory(DjangoModelFactory):
 
 
 class RankedEventFactory(EventFactory):
+    """
+    Factory to create Event instances with players and results.
+
+    Special attributes:
+        players (Iterable[Player] | int): Players list or number of players to create.
+        players__country (str): Optional; Specify the country code for the PlayerSeasonData.
+        with_tops (int): Optional; Specify 4 or 8 to assign playoff results to the top players.
+
+    Usage:
+        ranked_event = RankedEventFactory(players=10, players__country="IT", with_tops=4)
+    """
+
     class Params:
         excluded_categories = [Event.Category.OTHER]
 
     @factory.post_generation
-    def players(self, create: bool, players: Iterable[Player] | int):
+    def players(self, create: bool, players: Iterable[Player] | int, **kwargs):
+
         if not create or not players:
             return
 
@@ -170,6 +184,7 @@ class RankedEventFactory(EventFactory):
                 points=num_players - i,
                 ranking=rank,
                 event=self,
+                player_country=kwargs.get("country"),
             )
         return self
 
@@ -239,12 +254,12 @@ class ResultFactory(DjangoModelFactory):
     draw_count = factory.Faker("random_int", min=0, max=3)
 
     @factory.post_generation
-    def player_country(self, create, country_code, **kwargs):
-        if create and country_code:
+    def player_country(self, create, country, **kwargs):
+        if create and country:
             PlayerSeasonData.objects.create(
                 player=self.player,
                 season_slug=self.event.season.slug,
-                country=country_code,
+                country=country,
             )
 
 
@@ -314,3 +329,13 @@ class OrganizerLeagueFactory(DjangoModelFactory):
     )
 
     playoffs = factory.Faker("boolean")
+
+
+class NationalLeaderboardFactory(DjangoModelFactory):
+    class Meta:
+        model = NationalLeaderboard
+
+    country = factory.Faker(
+        "random_element",
+        elements=countries.countries.keys(),
+    )

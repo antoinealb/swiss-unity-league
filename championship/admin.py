@@ -18,6 +18,7 @@ import warnings
 from django import forms
 from django.conf import settings
 from django.contrib import admin, messages
+from django.contrib.sites.models import Site
 from django.db import transaction
 from django.db.models import Count, Q
 from django.http import HttpResponseRedirect
@@ -25,6 +26,7 @@ from django.shortcuts import redirect, render
 from django.urls import path, reverse
 
 import openpyxl
+from django_countries.fields import CountryField
 
 from championship.score import get_leaderboard
 from championship.seasons.helpers import (
@@ -34,10 +36,12 @@ from championship.seasons.helpers import (
 )
 from decklists.models import Decklist
 from invoicing.models import Invoice, PayeeAddress
+from multisite.constants import SWISS_DOMAIN
 
 from .models import (
     Event,
     EventOrganizer,
+    NationalLeaderboard,
     OrganizerLeague,
     Player,
     PlayerAlias,
@@ -150,6 +154,12 @@ class TopPlayersEmailForm(forms.Form):
         choices=lambda: [(s.slug, s.name) for s in get_seasons_with_scores()],
         initial=lambda: get_default_season(),
     )
+    country = CountryField().formfield()
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        if Site.objects.get_current().domain == SWISS_DOMAIN:
+            del self.fields["country"]
 
 
 class EventfrogFileUploadForm(forms.Form):
@@ -200,7 +210,10 @@ class PlayerAdmin(admin.ModelAdmin):
         if request.method == "POST" and form.is_valid():
             num_of_players = form.cleaned_data["num_of_players"]
             season = find_season_by_slug(form.cleaned_data["season"])
-            top_players = get_leaderboard(season)[:num_of_players]
+            if country := form.cleaned_data.get("country"):
+                top_players = get_leaderboard(season, country)[:num_of_players]
+            else:
+                top_players = get_leaderboard(season)[:num_of_players]
             entries = [
                 {
                     "rank": i + 1,
@@ -490,6 +503,15 @@ class OrganizerLeagueAdmin(admin.ModelAdmin):
 
 admin.site.register(OrganizerLeague, OrganizerLeagueAdmin)
 
+
+class NationalLeaderboardAdmin(admin.ModelAdmin):
+    list_display = ("country", "season_slug", "national_invites", "continental_invites")
+    search_fields = ("country", "season_slug")
+    list_filter = ("season_slug", "country")
+    ordering = ("country", "season_slug")
+
+
+admin.site.register(NationalLeaderboard, NationalLeaderboardAdmin)
 
 admin.site.site_title = "Unity League"
 

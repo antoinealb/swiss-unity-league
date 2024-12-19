@@ -29,8 +29,7 @@ class ScoreMethodInvitationalSpring2025(ScoreMethod2025):
 
     @classmethod
     def finalize_scores(
-        cls,
-        scores_by_player: dict[int, ScoreMethod2025.Score],
+        cls, scores_by_player: dict[int, ScoreMethod2025.Score], country_code: str
     ) -> dict[int, LeaderboardScore]:
         """Implements the last step of score processing.
 

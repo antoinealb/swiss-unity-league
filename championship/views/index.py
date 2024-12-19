@@ -15,6 +15,7 @@
 import datetime
 import random
 
+from django.conf import settings
 from django.contrib.auth.models import User
 from django.db.models import Max
 from django.views.generic.base import TemplateView
@@ -35,7 +36,9 @@ class IndexView(TemplateView):
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        context["players"] = get_leaderboard(get_default_season())[:PLAYERS_TOP]
+        context["players"] = get_leaderboard(
+            get_default_season(), settings.DEFAULT_COUNTRY
+        )[:PLAYERS_TOP]
         context["future_events"] = self._future_events()
         context["organizers"] = self._organizers_with_image()
         context["has_open_invoices"] = self._has_open_invoices()

@@ -21,6 +21,7 @@ from parameterized import parameterized
 
 from championship.factories import (
     EventFactory,
+    NationalLeaderboardFactory,
     PlayerFactory,
     RankedEventFactory,
     ResultFactory,
@@ -33,15 +34,16 @@ from championship.seasons.definitions import EU_SEASON_2025
 from multisite.tests.utils import site
 
 
+@site(EU_SEASON_2025.domain)
 class TestComputeScoreForEU2025(TestCase):
     def setUp(self):
+        self.country_code = "IT"
         self.event = EventFactory(
             season=EU_SEASON_2025,
         )
 
-    @site(EU_SEASON_2025.domain)
     def compute_scores(self):
-        return compute_scores(EU_SEASON_2025)
+        return compute_scores(EU_SEASON_2025, self.country_code)
 
     def _test_compute_score(self, category, points, want_score):
         player_count = len(points)
@@ -50,7 +52,7 @@ class TestComputeScoreForEU2025(TestCase):
 
         players = [PlayerFactory() for _ in range(player_count)]
         for i, (player, pi) in enumerate(zip(players, points)):
-            Result.objects.create(
+            ResultFactory(
                 player=player,
                 event=self.event,
                 points=pi,
@@ -58,6 +60,7 @@ class TestComputeScoreForEU2025(TestCase):
                 win_count=pi // 3,
                 draw_count=pi % 3,
                 loss_count=0,
+                player_country=self.country_code,
             )
 
         scores = self.compute_scores()
@@ -273,24 +276,20 @@ class ScoresWithPlayoffsTestCase(TestCase):
         self.assertEqual(score, None)
 
 
+@site(EU_SEASON_2025.domain)
 class TestScoresQualified(TestCase):
     def setUp(self):
-        self.num_leaderboard_qualifications = (
-            ScoreMethodEu2025.LEADERBOARD_QUALIFICATION_RANK
+        self.country_code = "IT"
+        self.num_leaderboard_qualifications = 40
+        NationalLeaderboardFactory(
+            country=self.country_code,
+            national_invites=self.num_leaderboard_qualifications,
+            continental_invites=0,
+            season_slug=EU_SEASON_2025.slug,
         )
 
-    @site(EU_SEASON_2025.domain)
     def compute_scores(self):
-        return compute_scores(EU_SEASON_2025)
-
-    def assert_qualifications(self, num_players, num_direct=0):
-        got_qualified = [s.qualification_type for s in self.compute_scores().values()]
-        want_qualified = (
-            [QualificationType.DIRECT] * num_direct
-            + [QualificationType.LEADERBOARD] * (self.num_qualified - num_direct)
-            + [QualificationType.NONE] * (num_players - self.num_qualified)
-        )
-        self.assertEqual(want_qualified, got_qualified)
+        return compute_scores(EU_SEASON_2025, self.country_code)
 
     def test_top_leaderboard_qualified(self):
         num_players = 50
@@ -299,6 +298,7 @@ class TestScoresQualified(TestCase):
             season=EU_SEASON_2025,
             players=num_players,
             with_tops=8,
+            players__country=self.country_code,
         )
         got_qualified = [s.qualification_type for s in self.compute_scores().values()]
         want_qualified = [
@@ -315,6 +315,7 @@ class TestScoresQualified(TestCase):
             season=EU_SEASON_2025,
             players=num_players,
             with_tops=8,
+            players__country=self.country_code,
         )
         got_qualified = [s.qualification_type for s in self.compute_scores().values()]
         want_qualified = (
@@ -335,6 +336,7 @@ class TestScoresQualified(TestCase):
             season=EU_SEASON_2025,
             players=players,
             with_tops=8,
+            players__country=self.country_code,
         )
         RankedEventFactory(
             category=Event.Category.QUALIFIER,
@@ -356,14 +358,12 @@ class TestScoresQualified(TestCase):
         """Checks that the invite trickles down to the second place on the second event."""
         num_players = 50
         winner = PlayerFactory()
-        event1_players = [winner] + [PlayerFactory() for _ in range(num_players)]
         event2_players = [winner] + [PlayerFactory() for _ in range(num_players)]
-        RankedEventFactory(
-            category=Event.Category.QUALIFIER,
-            season=EU_SEASON_2025,
-            players=event1_players,
-            with_tops=8,
-            date=datetime.date(2025, 1, 1),
+        ResultFactory(
+            event__category=Event.Category.QUALIFIER,
+            event__date=datetime.date(2025, 1, 1),
+            player=winner,
+            playoff_result=Result.PlayoffResult.WINNER,
         )
         RankedEventFactory(
             category=Event.Category.QUALIFIER,
@@ -371,6 +371,7 @@ class TestScoresQualified(TestCase):
             players=event2_players,
             with_tops=8,
             date=datetime.date(2025, 2, 1),
+            players__country=self.country_code,
         )
         scores = self.compute_scores()
 
@@ -393,6 +394,7 @@ class TestScoresQualified(TestCase):
             category=Event.Category.QUALIFIER,
             season=EU_SEASON_2025,
             with_tops=8,
+            players__country=self.country_code,
         )
         got_qualified = [s.qualification_type for s in self.compute_scores().values()]
         # The last ranked player should get the direct inivte and the other invites go to the top players
@@ -414,6 +416,7 @@ class TestScoresQualified(TestCase):
             players=num_players,
             category=Event.Category.QUALIFIER,
             season=EU_SEASON_2025,
+            players__country=self.country_code,
         )
         got_qualified = [s.qualification_type for s in self.compute_scores().values()]
         want_qualified = [QualificationType.LEADERBOARD] * (
@@ -424,45 +427,105 @@ class TestScoresQualified(TestCase):
         self.assertEqual(want_qualified, got_qualified)
 
 
+@site(EU_SEASON_2025.domain)
 class TestQualificationReason(TestCase):
 
-    @site(EU_SEASON_2025.domain)
-    def compute_scores(self):
-        return compute_scores(EU_SEASON_2025)
+    def setUp(self):
+        self.country_code = "IT"
+        self.num_leaderboard_qualifications = 40
 
-    def test_direct_qualification_reason(self):
+    def compute_scores(self):
+        return compute_scores(EU_SEASON_2025, self.country_code)
+
+    def test_without_national_leadeboard_no_reasons(self):
+        ResultFactory(
+            ranking=1,
+            event__season=EU_SEASON_2025,
+            event__excluded_categories=[Event.Category.OTHER, Event.Category.OTHER],
+            player_country=self.country_code,
+        )
+        score = list(self.compute_scores().values())[0]
+        self.assertEqual(score.qualification_reason, "")
+
+    def test_qualifier_reason(self):
         event = EventFactory(
             category=Event.Category.QUALIFIER,
             season=EU_SEASON_2025,
         )
         ResultFactory(
-            ranking=1, event=event, playoff_result=Result.PlayoffResult.WINNER
+            ranking=1,
+            event=event,
+            playoff_result=Result.PlayoffResult.WINNER,
+            player_country=self.country_code,
         )
         direct_score = list(self.compute_scores().values())[0]
-        want_reason = (
-            f"Direct invite to European Magic Cup for 1st place at '{event.name}'"
+        want_reason = f"Invite to European Magic Cup for 1st place at '{event.name}'"
+        self.assertEqual(want_reason, direct_score.qualification_reason)
+
+    def test_qualifier_reason_with_leaderboard(self):
+        NationalLeaderboardFactory(
+            country=self.country_code,
+            continental_invites=1,
+            season_slug=EU_SEASON_2025.slug,
         )
+        event = EventFactory(
+            category=Event.Category.QUALIFIER,
+            season=EU_SEASON_2025,
+        )
+        ResultFactory(
+            ranking=1,
+            event=event,
+            playoff_result=Result.PlayoffResult.WINNER,
+            player_country=self.country_code,
+        )
+        direct_score = list(self.compute_scores().values())[0]
+        want_reason = f"Invite to European Magic Cup for 1st place at '{event.name}'"
+        self.assertEqual(want_reason, direct_score.qualification_reason)
+
+    def test_continetal_qualification_reason(self):
+        NationalLeaderboardFactory(
+            country=self.country_code,
+            continental_invites=1,
+            season_slug=EU_SEASON_2025.slug,
+        )
+        ResultFactory(
+            event__season=EU_SEASON_2025,
+            event__category=Event.Category.REGIONAL,
+            player_country=self.country_code,
+        )
+        direct_score = list(self.compute_scores().values())[0]
+        want_reason = "Invite to European Magic Cup at the end of the season"
         self.assertEqual(want_reason, direct_score.qualification_reason)
 
     @freeze_time("2025-9-30")
     def test_leaderboard_qual_reason_during_season(self):
+        NationalLeaderboardFactory(
+            country=self.country_code,
+            national_invites=1,
+            continental_invites=0,
+            season_slug=EU_SEASON_2025.slug,
+        )
         ResultFactory(
-            event=EventFactory(
-                category=Event.Category.REGIONAL,
-                season=EU_SEASON_2025,
-            )
+            event__season=EU_SEASON_2025,
+            event__category=Event.Category.REGIONAL,
+            player_country=self.country_code,
         )
         direct_score = list(self.compute_scores().values())[0]
-        want_reason = "This place qualifies for the National Championship at the end of the Season"
+        want_reason = "This place qualifies for the National Championship at the end of the season"
         self.assertEqual(want_reason, direct_score.qualification_reason)
 
     @freeze_time("2025-10-08")
     def test_leaderboard_qual_reason_after_season(self):
+        NationalLeaderboardFactory(
+            country=self.country_code,
+            national_invites=1,
+            continental_invites=0,
+            season_slug=EU_SEASON_2025.slug,
+        )
         ResultFactory(
-            event=EventFactory(
-                category=Event.Category.REGIONAL,
-                season=EU_SEASON_2025,
-            )
+            event__season=EU_SEASON_2025,
+            event__category=Event.Category.REGIONAL,
+            player_country=self.country_code,
         )
         direct_score = list(self.compute_scores().values())[0]
         want_reason = "Qualified for National Championship"
