@@ -105,13 +105,13 @@ class NationalRankingPageTestCase(TestCase):
             player_country="FR",
         )
         resp = self.get_ranking("FR")
-        self.assertContains(resp, "Leaderboard France")
+        self.assertContains(resp, "Leaderboard - France")
         self.assertContains(resp, result.player.name)
 
     def test_hides_players_from_other_country(self):
         result = ResultFactory(event__season=self.season, player_country="IT")
         resp = self.get_ranking("FR")
-        self.assertContains(resp, "Leaderboard France")
+        self.assertContains(resp, "Leaderboard - France")
         self.assertNotContains(resp, result.player.name)
 
     def test_wrong_country_shows_empty_ranking(self):
@@ -154,7 +154,7 @@ class NationalLeaderboardTests(TestCase):
 
     def test_national_leaderboard(self):
         resp = self.get_ranking(self.country_code)
-        self.assertContains(resp, "Leaderboard Italy")
+        self.assertContains(resp, "Leaderboard - Italy")
         self.assertContains(resp, self.leaderboard.description)
         self.assertContains(
             resp, f"<b>top {self.leaderboard.national_invites}</b> players"
@@ -168,7 +168,7 @@ class NationalLeaderboardTests(TestCase):
 
     def test_country_without_national_leaderboard(self):
         resp = self.get_ranking("FR")
-        self.assertContains(resp, "Leaderboard France")
+        self.assertContains(resp, "Leaderboard - France")
         self.assertNotContains(resp, self.leaderboard.description)
         self.assertNotContains(
             resp, f"<b>top {self.leaderboard.national_invites}</b> players"
