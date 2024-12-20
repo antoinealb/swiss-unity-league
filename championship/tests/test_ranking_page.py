@@ -21,11 +21,12 @@ from django.test import TestCase
 from parameterized import parameterized
 
 from championship.factories import (
+    NationalLeaderboardFactory,
     OldCategoryRankedEventFactory,
     PlayerFactory,
     ResultFactory,
 )
-from championship.models import Event
+from championship.models import Event, Result
 from championship.score.generic import SCOREMETHOD_PER_SEASON
 from championship.seasons.definitions import EU_SEASON_2025, SEASON_2025
 from multisite.constants import GLOBAL_DOMAIN, SWISS_DOMAIN
@@ -104,11 +105,13 @@ class NationalRankingPageTestCase(TestCase):
             player_country="FR",
         )
         resp = self.get_ranking("FR")
+        self.assertContains(resp, "Leaderboard France")
         self.assertContains(resp, result.player.name)
 
     def test_hides_players_from_other_country(self):
         result = ResultFactory(event__season=self.season, player_country="IT")
         resp = self.get_ranking("FR")
+        self.assertContains(resp, "Leaderboard France")
         self.assertNotContains(resp, result.player.name)
 
     def test_wrong_country_shows_empty_ranking(self):
@@ -127,3 +130,75 @@ class NationalRankingPageTestCase(TestCase):
         )
         self.assertEqual(200, resp.status_code)
         self.assertNotContains(resp, result.player.name)
+
+
+@site(EU_SEASON_2025.domain)
+class NationalLeaderboardTests(TestCase):
+    def setUp(self):
+        self.season = EU_SEASON_2025
+        self.country_code = "IT"
+        self.leaderboard = NationalLeaderboardFactory(
+            season_slug=self.season.slug,
+            country=self.country_code,
+            national_invites=40,
+            continental_invites=1,
+        )
+
+    def get_ranking(self, country):
+        return self.client.get(
+            reverse(
+                "ranking_by_season_country",
+                kwargs={"slug": self.season.slug, "country_code": country},
+            )
+        )
+
+    def test_national_leaderboard(self):
+        resp = self.get_ranking(self.country_code)
+        self.assertContains(resp, "Leaderboard Italy")
+        self.assertContains(resp, self.leaderboard.description)
+        self.assertContains(
+            resp, f"<b>top {self.leaderboard.national_invites}</b> players"
+        )
+        self.assertContains(resp, "<b>1st</b> of the leaderboard")
+        self.assertContains(
+            resp,
+            '<i class="icon-star"></i> Qualifies for National Championship at the end of the season',
+        )
+        self.assertNotContains(resp, '<i class="icon-shield"></i>')
+
+    def test_country_without_national_leaderboard(self):
+        resp = self.get_ranking("FR")
+        self.assertContains(resp, "Leaderboard France")
+        self.assertNotContains(resp, self.leaderboard.description)
+        self.assertNotContains(
+            resp, f"<b>top {self.leaderboard.national_invites}</b> players"
+        )
+
+    @site(SWISS_DOMAIN)
+    def test_national_leaderboard_not_shown_for_switzerland(self):
+        self.season = SEASON_2025
+        resp = self.get_ranking(self.country_code)
+        self.assertNotIn("national_leaderboard", resp.context)
+        self.assertNotContains(resp, "Leaderboard Switzerland")
+        self.assertContains(resp, "Leaderboard - Swiss Unity League")
+
+    def test_leaderboard_invite_icon_hiden_without_national_invites(self):
+        self.leaderboard.national_invites = 0
+        self.leaderboard.save()
+        resp = self.get_ranking(self.country_code)
+        self.assertNotContains(resp, '<i class="icon-star"></i>')
+
+    def test_continental_invites_legend_shown_if_qualifier_won(self):
+        self.leaderboard.delete()
+        result = ResultFactory(
+            event__category=Event.Category.QUALIFIER,
+            playoff_result=Result.PlayoffResult.WINNER,
+            event__season=self.season,
+            player_country=self.country_code,
+        )
+        resp = self.get_ranking(self.country_code)
+        self.assertContains(resp, result.player.name)
+        self.assertContains(
+            resp,
+            '<i class="icon-trophy"></i> Direct qualification for European Magic Cup',
+        )

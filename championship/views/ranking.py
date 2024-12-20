@@ -17,7 +17,9 @@ from django.contrib.sites.models import Site
 from django.urls import reverse
 from django.views.generic.base import TemplateView
 
+from championship.models import NationalLeaderboard
 from championship.score import get_leaderboard
+from championship.score.types import QualificationType
 from championship.seasons.definitions import Season
 from championship.seasons.helpers import get_seasons_with_scores
 from championship.views.base import PerSeasonMixin
@@ -46,7 +48,19 @@ class CompleteRankingView(PerSeasonMixin, TemplateView):
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
+        context["country_code"] = self.get_country_code()
         context["players"] = get_leaderboard(
-            self.current_season, self.get_country_code()
+            self.current_season, context["country_code"]
         )
+        if Site.objects.get_current().domain != SWISS_DOMAIN:
+            context["national_leaderboard"] = NationalLeaderboard.objects.filter(
+                country=context["country_code"], season_slug=self.current_season.slug
+            ).first()
+            context["has_direct_invites"] = any(
+                [
+                    p.score.qualification_type == QualificationType.DIRECT
+                    for p in context["players"]
+                ]
+            )
+
         return context

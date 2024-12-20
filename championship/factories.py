@@ -339,3 +339,4 @@ class NationalLeaderboardFactory(DjangoModelFactory):
         "random_element",
         elements=countries.countries.keys(),
     )
+    description = factory.Faker("text")

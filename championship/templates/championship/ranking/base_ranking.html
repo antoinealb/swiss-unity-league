@@ -1,14 +1,26 @@
 {% extends "championship/base.html" %}
-
 {% load custom_tags %}
+{% load countries %}
+{% load static %}
 
-{% block title %}Leaderboard {{ current_season.name }} - Best Magic: The Gathering Players in Switzerland | Swiss Unity League{% endblock %}
-{% block meta_description %}Discover the Swiss Unity League leaderboard in Magic: The Gathering. Only the best players in Switzerland qualify for the end of year Championship.{% endblock %}
+{% block extrahead %}
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/flag-icon-css/6.0.0/css/flag-icons.min.css">
+{% endblock %}
+
+{% block title %}National Leaderboard {{ current_season.name }} - Best Magic: The Gathering Players | Swiss Unity League{% endblock %}
+{% block meta_description %}Discover national leaderboards for Magic: The Gathering. Only the best players qualify for the yearly Championships.{% endblock %}
 
 {% block content %}
-    <h1>Leaderboard - {{ current_season.name }}</h1>
+    {% get_country country_code as country %}
+    <h1>
+        {% if country_code != 'CH' %}
+            Leaderboard {{ country.name }} <i class="flag-icon flag-icon{{ country.code }}" aria-label="{{ country_code }} flag"></i>
+        {% else %}
+            Leaderboard - Swiss Unity League
+        {% endif %}
+    </h1>
     {% include 'championship/components/season_dropdown.html' %}
-    <br>
+    <p class="pt-2">All events from {{ current_season.start_date }} to {{ current_season.end_date  }} award league points for this leadeboard.</p>
     {% block info_text %}{% endblock %}
     <div x-data="init()">
         <input type="text" id="playerSearch" class="form-control mb-3" placeholder="Search for players..." x-model="search">
