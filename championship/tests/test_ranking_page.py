@@ -102,7 +102,6 @@ class NationalRankingPageTestCase(TestCase):
         result = ResultFactory(
             event__season=self.season,
             player_country="FR",
-            event__excluded_categories=[Event.Category.NATIONAL, Event.Category.OTHER],
         )
         resp = self.get_ranking("FR")
         self.assertContains(resp, result.player.name)

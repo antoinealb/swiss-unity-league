@@ -40,7 +40,7 @@ class ScoreMethodEu2025:
         Event.Category.REGULAR: 1,
         Event.Category.REGIONAL: 3,
         Event.Category.PREMIER: 3,
-        Event.Category.NATIONAL: 4,  # Included for sake of completeness, but there shouldn't be any nationals this year
+        Event.Category.NATIONAL: 4,
         Event.Category.QUALIFIER: 5,
         Event.Category.GRAND_PRIX: 6,
     }
@@ -194,7 +194,7 @@ class ScoreMethodEu2025:
     def score_for_result(
         cls, result, event_size, has_top8, total_rounds
     ) -> Score | None:
-        if result.event.category not in [Event.Category.NATIONAL, Event.Category.OTHER]:
+        if result.event.category != Event.Category.OTHER:
             qps = cls._qps_for_result(result, event_size, has_top8, total_rounds)
             if qps is not None:
                 return cls.Score(qps=qps)

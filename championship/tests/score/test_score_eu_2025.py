@@ -441,7 +441,6 @@ class TestQualificationReason(TestCase):
         ResultFactory(
             ranking=1,
             event__season=EU_SEASON_2025,
-            event__excluded_categories=[Event.Category.OTHER, Event.Category.OTHER],
             player_country=self.country_code,
         )
         score = list(self.compute_scores().values())[0]
