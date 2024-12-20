@@ -19,8 +19,20 @@
             Leaderboard - Swiss Unity League
         {% endif %}
     </h1>
-    {% include 'championship/components/season_dropdown.html' %}
-    <p class="pt-2">All events from {{ current_season.start_date }} to {{ current_season.end_date  }} award league points for this leadeboard.</p>
+    <div class="row">
+        <div class="col-auto">
+            {% include 'championship/components/season_dropdown.html' %}
+        </div>
+        {% if country_code != 'CH' %}
+            <div class="col-auto">
+                <div class="position-relative">
+                    <input type="text" id="country-input" class="form-control" placeholder="Type a country..." />
+                    <div id="autocomplete-list" class="list-group position-absolute w-100"></div>
+                </div>
+            </div>
+        {% endif %}
+    </div>
+    <p class="pt-2">From {{ current_season.start_date }} to {{ current_season.end_date  }} all events in {{ country.name }} award league points for this leadeboard.</p>
     {% block info_text %}{% endblock %}
     <div x-data="init()">
         <input type="text" id="playerSearch" class="form-control mb-3" placeholder="Search for players..." x-model="search">
@@ -50,7 +62,7 @@
                         </td>
                         <td aria-label="League Points">{{ player.score.total_score }}</td>
                         <td aria-label="Player Name">
-                            <a href="{{ player.get_absolute_url }}" title="View tournament statistics of {{ player.get_name_display }}">
+                            <a href="{{ player.get_absolute_url }}" title="View tournament statistics of {{ player.get_name_display }}">
                                 {{ player.get_name_display }}
                             </a>
                         </td>
@@ -73,6 +85,36 @@
                 };
             }
         </script>
+        {% get_countries as countries %}
+        {% if country_code != 'CH' %}
+            <script>
+                const countries = [
+                    {% for country in countries %}
+                        { name: "{{ country.name }}", url: "{% url 'ranking_by_season_country' slug=current_season.slug country_code=country.code %}" },
+                    {% endfor %}
+                ];
+
+                document.getElementById("country-input").addEventListener("input", function () {
+                    const input = this.value.toLowerCase();
+                    const list = document.getElementById("autocomplete-list");
+                    list.innerHTML = ""; // Clear previous suggestions
+
+                    if (!input) return; // Exit if input is empty
+
+                    const suggestions = countries.filter(country =>
+                        country.name.toLowerCase().includes(input)
+                    ).slice(0, 5); // Limit to 5 suggestions
+
+                    suggestions.forEach(({ name, url }) => {
+                        const suggestionItem = document.createElement("a");
+                        suggestionItem.href = url; // Set the link
+                        suggestionItem.classList.add("list-group-item", "list-group-item-action");
+                        suggestionItem.textContent = name;
+                        list.appendChild(suggestionItem);
+                    });
+                });
+            </script>
+        {% endif %}
     {% endblock %}
 
 {% endblock %}
