@@ -20,9 +20,9 @@ from collections import Counter
 from typing import Iterable
 from zipfile import BadZipFile
 
-from django.conf import settings
 from django.contrib import messages
 from django.contrib.auth.mixins import LoginRequiredMixin
+from django.contrib.sites.models import Site
 from django.core.exceptions import ImproperlyConfigured
 from django.db import transaction
 from django.http import HttpResponseForbidden, HttpResponseRedirect
@@ -84,7 +84,7 @@ def validate_standings_and_show_error(request, standings, category):
         TooManyPointsForTop8Error,
     ) as e:
         if category == Event.Category.REGULAR:
-            error_message = f"{e.ui_error_message()} You're trying to upload a SUL Regular event with more than 6 Swiss rounds. Please contact us at {settings.PUBLIC_CONTACT_EMAIL}!"
+            error_message = f"{e.ui_error_message()} You're trying to upload a SUL Regular event with more than 6 Swiss rounds. Please contact us at {Site.objects.get_current().site_settings.contact_email}!"
         else:
             error_message = f"{e.ui_error_message()} {get_max_round_error_message(category, standings)} Please use the standings of the last Swiss round!"
         messages.error(request, error_message)
@@ -143,7 +143,7 @@ class CreateResultsView(FormView):
                 messages.error(
                     self.request,
                     f"""The record of {parse_result.name} does not add up to the match points. Please send us
-                    the results link or file via email to {settings.PUBLIC_CONTACT_EMAIL}""",
+                    the results link or file via email to {Site.objects.get_current().site_settings.contact_email}""",
                 )
                 return self.form_invalid(form)
 

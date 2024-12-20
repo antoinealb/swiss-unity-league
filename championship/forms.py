@@ -13,7 +13,6 @@
 # limitations under the License.
 
 from django import forms
-from django.conf import settings
 from django.contrib.auth.forms import UserCreationForm
 from django.contrib.auth.models import User
 from django.contrib.sites.models import Site
@@ -269,7 +268,7 @@ class ImporterSelectionForm(forms.Form, SubmitButtonMixin):
         self.fields["site"].choices = [(p.name.upper(), p.name) for p in IMPORTER_LIST]
 
     site = forms.ChoiceField(
-        help_text=f"If you use a different tool for the results and can't upload them, please send us the results via email: {settings.PUBLIC_CONTACT_EMAIL}. "
+        help_text=lambda: f"If you use a different tool for the results and can't upload them, please send us the results via email: {Site.objects.get_current().site_settings.contact_email}. "
         + "We will try to support as many tools as possible, but we also appreciate it if you can switch to one of the tools already supported!",
     )
 

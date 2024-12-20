@@ -14,8 +14,8 @@
 
 import datetime
 
-from django.conf import settings
 from django.contrib.auth.models import User
+from django.contrib.sites.models import Site
 from django.shortcuts import reverse
 from django.test import Client, TestCase
 from django.utils import timezone
@@ -249,4 +249,6 @@ class HomepageTestCase(TestCase):
 
     def test_shows_contact_email(self):
         response = self.client.get("/")
-        self.assertContains(response, settings.PUBLIC_CONTACT_EMAIL)
+        self.assertContains(
+            response, Site.objects.get_current().site_settings.contact_email
+        )

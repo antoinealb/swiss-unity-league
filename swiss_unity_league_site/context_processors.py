@@ -15,6 +15,8 @@
 from django.conf import settings
 from django.contrib.sites.models import Site
 
+from multisite.constants import GLOBAL_DOMAIN, SWISS_DOMAIN
+
 
 def debug(request):
     """Adds a debug variable reflecting the site's DEBUG value.
@@ -26,10 +28,14 @@ def debug(request):
     return {"debug": settings.DEBUG}
 
 
-def public_contact_email(request):
+def current_site(request):
     """
     Provides a context variable to the email address for public contact.
     """
+    site = Site.objects.get_current()
     return {
-        "PUBLIC_CONTACT_EMAIL": Site.objects.get_current().site_settings.contact_email
+        "SITE": site,
+        "SITE_SETTINGS": site.site_settings,
+        "IS_SWISS_SITE": site.domain == SWISS_DOMAIN,
+        "IS_GLOBAL_SITE": site.domain == GLOBAL_DOMAIN,
     }

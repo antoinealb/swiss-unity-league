@@ -159,8 +159,8 @@ TEMPLATES = [
                 "django.contrib.auth.context_processors.auth",
                 "django.contrib.messages.context_processors.messages",
                 "django.template.context_processors.request",
+                "swiss_unity_league_site.context_processors.current_site",
                 "swiss_unity_league_site.context_processors.debug",
-                "swiss_unity_league_site.context_processors.public_contact_email",
                 # keep-sorted end
             ],
         },
@@ -371,7 +371,6 @@ else:
 ADMINS = [("Antoine", "antoinea101@gmail.com")]
 SERVER_EMAIL = "django@unityleague.ch"
 DEFAULT_FROM_EMAIL = "noreply@unityleague.ch"
-PUBLIC_CONTACT_EMAIL = "leoninleague@gmail.com"
 
 DEFAULT_COUNTRY = "CH"
 

@@ -13,7 +13,7 @@
 {% block content %}
     {% get_country country_code as country %}
     <h1>
-        {% if country_code != 'CH' %}
+        {% if IS_GLOBAL_SITE %}
             Leaderboard {{ country.name }} <i class="flag-icon flag-icon{{ country.code }}" aria-label="{{ country_code }} flag"></i>
         {% else %}
             Leaderboard - Swiss Unity League
@@ -23,7 +23,7 @@
         <div class="col-auto">
             {% include 'championship/components/season_dropdown.html' %}
         </div>
-        {% if country_code != 'CH' %}
+        {% if IS_GLOBAL_SITE %}
             <div class="col-auto">
                 <div class="position-relative">
                     <input type="text" id="country-input" class="form-control" placeholder="Type a country..." />
@@ -86,7 +86,7 @@
             }
         </script>
         {% get_countries as countries %}
-        {% if country_code != 'CH' %}
+        {% if IS_GLOBAL_SITE %}
             <script>
                 const countries = [
                     {% for country in countries %}
