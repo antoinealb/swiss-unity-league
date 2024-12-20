@@ -1,9 +1,38 @@
 {% extends "championship/ranking/base_ranking.html" %}
+{% load countries %}
+{% load custom_tags %}
 
 {% block info_text %}
-    <p>
-        TODO Ranking of the European series by country.
-    </p>
-    <p><i class="icon-star"></i> Qualifies for National Championship at the end of the season</p>
-    <p><i class="icon-trophy"></i> Direct qualification for European Magic Cup</p>
+    {% get_country country_code as country %}
+    {% if national_leaderboard %}
+        <p>{{ national_leaderboard.description|safe }}</p>
+        <ul>
+            {% if national_leaderboard.national_invites > 0 %}
+                <li>The <b>top {{ national_leaderboard.national_invites }}</b> players qualify for the <b>EUL National Championship</b> of {{ country.name }}.</li>
+            {% endif %}
+            {% if national_leaderboard.continental_invites == 1 %}
+                <li>The <b>1st</b> of the leaderboard qualifies for the <b>European Magic Cup</b>.</li>
+            {% elif national_leaderboard.continental_invites > 1 %}
+                <li>The <b>top {{ national_leaderboard.continental_invites }}</b> players qualify for the <b>European Magic Cup</b>.</li>
+            {% endif %}
+            <li>The <b>winner</b> of each <b>Qualifier</b> event qualifies for <b>European Magic Cup</b>.</li>
+            <i>If more events take place in {{ country.name }} than expected, the number of invites may increase during the season.</i>
+        </ul>
+        {% if national_leaderboard.national_invites == 0 %}
+            <p>{{ country.name }} requires more participating events to host a EUL National Championship. If you organize events in {{ country.name }}, please <a href="{% url 'info_organizer'  %}">sign up here</a>.</p>
+        {% endif %}
+    {% else %}
+        <p>
+            The leaderboard of {{ country.name }}  currently has <b>no national rewards</b>. If you think we should organize a EUL National Championship in {{ country.name }}, please <a href="mailto:{{ SITE_SETTINGS.contact_email }}">contact us</a>.
+        </p>
+        <p>
+            Players can still qualify for the <b>European Magic Cup</b> through <b>Qualifier events</b>.
+        </p>
+    {% endif %}
+    {% if national_leaderboard.national_invites > 0 %}
+        <p><i class="icon-star"></i> Qualifies for National Championship at the end of the season</p>
+    {% endif %}
+    {% if has_direct_invites %}
+        <p><i class="icon-trophy"></i> Direct qualification for European Magic Cup</p>
+    {% endif %}
 {% endblock %}
