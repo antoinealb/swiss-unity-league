@@ -10,7 +10,7 @@
     />
 {% endblock %}
 
-{% block title %}National Leaderboard {{ current_season.name }} - Best Magic: The Gathering Players | Swiss Unity League{% endblock %}
+{% block title %}National Leaderboard {{ current_season.name }} - Best Magic: The Gathering Players | {{ SITE.name }}{% endblock %}
 {% block meta_description %}Discover national leaderboards for Magic: The Gathering. Only the best players qualify for the yearly Championships.{% endblock %}
 
 {% block content %}
@@ -20,7 +20,7 @@
             Leaderboard - {{ country.name }}
             <i class="fi fi-{{ country.code|lower }}"></i>
         {% else %}
-            Leaderboard - Swiss Unity League
+            Leaderboard - {{ SITE.name }}
         {% endif %}
     </h1>
     <div class="row">
@@ -40,7 +40,7 @@
     {% block info_text %}{% endblock %}
     <div x-data="init()">
         <input type="text" id="playerSearch" class="form-control mb-3" placeholder="Search for players..." x-model="search">
-        <table class="table table-striped" id="rankingTable" aria-label="Leaderboard Swiss Unity League {{ current_season.name }}">
+        <table class="table table-striped" id="rankingTable" aria-label="Leaderboard {{ SITE.name }} {{ current_season.name }}">
             <thead>
                 <tr>
                     <th scope="col">Rank</th>

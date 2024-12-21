@@ -1,0 +1,21 @@
+{% extends "championship/base.html" %}
+
+{% block title %}
+    How to participate in the {{ SITE.name }}
+{% endblock %}
+
+{% block meta_description %}
+    Everything you need to know to participate in Europe's premier Magic: the Gathering tournament series, {{ SITE.name }}.
+{% endblock %}
+
+{% block content %}
+    <h1>{{ SITE.name }} - {{ current_season.name }}</h1>
+    {% include 'championship/components/season_dropdown.html' %}
+    <br>
+    <p>In the following we explain everything you need to know as a player to
+        participate in Switzerland's premier Magic: the Gathering tournament series, {{ SITE.name }}.</p>
+    <h2>Abstract</h2>
+    {% include 'info/abstract.html' %}
+    {% block info %}
+    {% endblock %}
+{% endblock %}

@@ -1,0 +1,26 @@
+{% extends "championship/base.html" %}
+
+{% block title %}
+    How to organize SUL Events | Organizer Guide
+{% endblock %}
+
+{% block meta_description %}
+    How to become a SUL event organizer. Host tournaments and join the network of Magic: the Gathering events in Switzerland.
+{% endblock %}
+
+{% block content %}
+    <h1>EU Organizer Guide - {{ SITE.name }} {{ current_season.name }}</h1>
+    {% include 'championship/components/season_dropdown.html' %}
+    <br>
+    <div class="alert alert-success" role="alert">
+        Interested in becoming an organizer? <a href="{% url 'register' %}">Register here</a>
+    </div>
+    <p>In this guide, we explain everything you need to know, to register your events for the SUL.
+        If you wish to understand how League Points are awarded to players,
+        and to see more information about the end-of-year Championship tournament,
+        please also read the <a href="{% url 'info' %}">Player Guide</a>.</p>
+    <h2>Abstract</h2>
+    {% include 'info/abstract.html' %}
+    {% block info %}
+    {% endblock %}
+{% endblock %}

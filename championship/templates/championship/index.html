@@ -17,10 +17,16 @@
     <div class="row gx-4 gx-lg-5 mb-5 mt-4">
         <div class="col-lg-5 mb-2">
             <div class="text-center mb-4">
-                <img class="img-fluid" style="max-height:300px" src="{% static 'sul_logo.png' %}" alt="Swiss Unity League Logo" />
+                <img class="img-fluid" style="max-height:300px" src="{% static 'sul_logo.png' %}" alt="{{ SITE.name }} Logo" />
             </div>
-            <h1>Switzerland's Premier Magic Tournament Series</h1>
-            {% include 'championship/components/abstract.html' %}
+            <h1>
+                {% if IS_GLOBAL_SITE %}
+                    Uniting all Magic events into one series
+                {% else %}
+                    Switzerland's Premier Magic Tournament Series
+                {% endif %}
+            </h1>
+            {% include 'info/abstract.html' %}
             <a class="btn btn-secondary" href="{% url 'info' %}" title="A Guide for Players about the League">More info</a>
         </div>
         <div class="col-lg-7"><img class="img-fluid rounded my-4 mb-lg-0" src="{% static 'tournament.jpg' %}" alt="A Magic: The Gathering event with an ongoing tournament." /></div>

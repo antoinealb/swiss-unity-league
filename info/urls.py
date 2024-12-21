@@ -17,18 +17,18 @@ from django.views.generic import RedirectView
 
 from . import views
 
+TEMPLATE_BASE = "info.html"
 TEMPLATE_ORGANIZER = "info_organizer.html"
-TEMPLATE_PLAYER = "info.html"
 
 urlpatterns = [
     path(
         "",
-        views.InformationView.as_view(base_template_name=TEMPLATE_PLAYER),
+        views.InformationView.as_view(base_template_name=TEMPLATE_BASE),
         name="info",
     ),
     path(
         "<slug:slug>/",
-        views.InformationView.as_view(base_template_name=TEMPLATE_PLAYER),
+        views.InformationView.as_view(base_template_name=TEMPLATE_BASE),
         name="info_for_season",
     ),
     path(

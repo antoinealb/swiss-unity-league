@@ -17,9 +17,11 @@ import datetime
 from django.contrib.auth.models import User
 from django.contrib.sites.models import Site
 from django.shortcuts import reverse
+from django.template.loader import render_to_string
 from django.test import Client, TestCase
 from django.utils import timezone
 
+from parameterized import parameterized
 from waffle.testutils import override_flag
 
 from articles.factories import ArticleFactory
@@ -31,6 +33,8 @@ from championship.factories import (
 )
 from championship.models import Address, Event
 from invoicing.factories import InvoiceFactory
+from multisite.constants import ALL_DOMAINS
+from multisite.tests.utils import with_site
 
 
 class HomepageTestCase(TestCase):
@@ -252,3 +256,23 @@ class HomepageTestCase(TestCase):
         self.assertContains(
             response, Site.objects.get_current().site_settings.contact_email
         )
+
+    @parameterized.expand(ALL_DOMAINS)
+    def test_shows_site_specific_abstract(self, domain):
+        with with_site(domain):
+            resp = self.client.get("/")
+            expected_abstract = render_to_string(
+                f"info/{domain}/abstract.html", {"SITE": Site.objects.get_current()}
+            )
+            self.assertContains(resp, expected_abstract)
+
+    @parameterized.expand(ALL_DOMAINS)
+    def test_shows_site_specific_name(self, domain):
+        with with_site(domain):
+            resp = self.client.get("/")
+            sites = Site.objects.all()
+            for site in sites:
+                if site.domain == domain:
+                    self.assertContains(resp, site.name)
+                else:
+                    self.assertNotContains(resp, site.name)

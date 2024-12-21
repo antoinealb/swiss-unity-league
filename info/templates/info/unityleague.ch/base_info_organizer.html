@@ -9,7 +9,7 @@
 {% endblock %}
 
 {% block content %}
-    <h1>Organizer Guide - Swiss Unity League {{ current_season.name }}</h1>
+    <h1>Organizer Guide - {{ SITE.name }} {{ current_season.name }}</h1>
     {% include 'championship/components/season_dropdown.html' %}
     <br>
     <div class="alert alert-success" role="alert">
@@ -20,7 +20,7 @@
         and to see more information about the end-of-year Championship tournament,
         please also read the <a href="{% url 'info' %}">Player Guide</a>.</p>
     <h2>Abstract</h2>
-    {% include 'championship/components/abstract.html' %}
+    {% include 'info/abstract.html' %}
     {% block info %}
     {% endblock %}
 {% endblock %}

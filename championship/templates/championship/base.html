@@ -6,10 +6,10 @@
     <head>
         <meta charset="utf-8" />
         <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no" />
-        <title>{% block title %}Swiss Unity League - Magic: the Gathering Tournament Series Switzerland{% endblock %}</title>
-        <meta name="description" content="{% block meta_description %}Compete in Switzerland's premier Magic: The Gathering tournament series 'Swiss Unity League'. Gather points at events to win big prizes!{% endblock meta_description %}">
+        <title>{% block title %}{{ SITE.name }} - Magic: the Gathering Tournament Series Switzerland{% endblock %}</title>
+        <meta name="description" content="{% block meta_description %}Compete in Switzerland's premier Magic: The Gathering tournament series '{{ SITE.name }}'. Gather points at events to win big prizes!{% endblock meta_description %}">
         <meta property="og:image" content="{% static 'flag.png' %}"/>
-        <meta name="keywords" content="Swiss Unity League, Magic: the Gathering, Switzerland, Events, Tournaments"/>
+        <meta name="keywords" content="{{ SITE.name }}, Magic: the Gathering, Switzerland, Events, Tournaments"/>
         <link rel="stylesheet" href="{% sass_src 'style.scss' %}" type="text/css">
         <link href="//netdna.bootstrapcdn.com/font-awesome/3.2.1/css/font-awesome.css" rel="stylesheet">
         {% block extrahead %}
@@ -19,9 +19,9 @@
         <main class="flex-shrink-0 pb-2">
             <nav class="navbar navbar-expand-lg bg-primary d-print-none">
                 <div class="container px-5">
-                    <a class="navbar-brand" href="{% url 'index' %}" title="Return to the homepage of Swiss Unity League - Premier MTG Tournament Series">
-                        <img src="{% static 'flag.png' %}" width="30" height="30" class="d-inline-block align-top" alt="Swiss Unity League Logo">
-                        Swiss Unity League
+                    <a class="navbar-brand" href="{% url 'index' %}" title="Homepage of {{ SITE.name }} - Premier MTG Tournament Series">
+                        <img src="{% static 'flag.png' %}" width="30" height="30" class="d-inline-block align-top" alt="{{ SITE.name }} Logo">
+                        {{ SITE.name }}
                         {% if debug %}
                             (DEBUG MODE)
                         {% endif %}
@@ -30,14 +30,14 @@
                     <div class="collapse navbar-collapse" id="navbarSupportedContent">
                         <ul class="navbar-nav ms-auto mb-2 mb-lg-0">
                             <li class="nav-item">
-                                <a class="nav-link" href="{% url 'ranking' %}" title="View the complete ranking of Swiss Unity League">Leaderboard</a>
+                                <a class="nav-link" href="{% url 'ranking' %}" title="View the complete ranking of {{ SITE.name }}">Leaderboard</a>
                             </li>
                             <li class="nav-item">
                                 <a class="nav-link" href="{% url 'events' %}" title="View upcoming Magic: the Gathering events in Switzerland">Upcoming events</a>
                             </li>
                             {% if has_articles %}
                                 <li class="nav-item">
-                                    <a class="nav-link" href="{% url 'article-list' %}" title="View Swiss Unity League blog articles">Articles</a>
+                                    <a class="nav-link" href="{% url 'article-list' %}" title="View {{ SITE.name }} blog articles">Articles</a>
                                 </li>
                             {% endif %}
                             <li class="nav-item dropdown">
@@ -98,7 +98,7 @@
                 {% endif %}
                 {% if debug %}
                     <div class="alert alert-warning" role="alert">
-                        You are currently on the <b>debug / playground</b> version of the Swiss Unity League website.</br>
+                        You are currently on the <b>debug / playground</b> version of the {{ SITE.name }} website.</br>
                         This is intended to be used for your experiments and testing features, not for saving your data.
                     </div>
                 {% endif %}
