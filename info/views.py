@@ -13,6 +13,7 @@
 # limitations under the License.
 
 import os.path
+from dataclasses import asdict
 from functools import lru_cache
 
 from django.contrib.sites.models import Site
@@ -58,12 +59,6 @@ class InformationView(TemplateView):
     def get_template_names(self):
         return [self.get_template_for_season(self.get_season())]
 
-    def get_view_name(self):
-        view_name = self.request.resolver_match.url_name
-        if "for_season" not in view_name:
-            return view_name + "_for_season"
-        return view_name
-
     def get_seasons_with_template(self):
         return [
             season
@@ -71,11 +66,19 @@ class InformationView(TemplateView):
             if season.visible and template_exists(self.get_template_for_season(season))
         ]
 
+    def get_url_for_season(self, season):
+        view_name = self.request.resolver_match.url_name
+        if "for_season" not in view_name:
+            view_name += "_for_season"
+        return reverse(view_name, kwargs={"slug": season.slug})
+
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        context["seasons"] = self.get_seasons_with_template()
+        context["seasons"] = [
+            {**asdict(season), "url": self.get_url_for_season(season)}
+            for season in self.get_seasons_with_template()
+        ]
         context["current_season"] = self.get_season()
-        context["view_name"] = self.get_view_name()
         return context
 
 

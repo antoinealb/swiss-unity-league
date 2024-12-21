@@ -32,12 +32,11 @@ class InfoPlayerViewTest(TestCase):
         self.assertTemplateUsed(
             response, f"info/{SWISS_DOMAIN}/{season.slug}/info.html"
         )
-        self.assertEqual(response.context["view_name"], "info_for_season")
+        self.assertIsNotNone(response.context["seasons"][0]["url"])
 
     def test_default_info_exists(self):
         response = self.client.get("/info", follow=True)
         self.assertEqual(response.status_code, 200)
-        self.assertEqual(response.context["view_name"], "info_for_season")
 
 
 class InfoOrganizerViewTest(TestCase):
