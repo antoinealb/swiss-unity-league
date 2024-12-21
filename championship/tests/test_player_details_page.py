@@ -42,7 +42,7 @@ from championship.views import (
 )
 from championship.views.players import CATEGORY_ORDER, sorted_most_accomplished_results
 from decklists.factories import DecklistFactory
-from multisite.tests.utils import site
+from multisite.tests.utils import with_site
 
 
 class PlayerDetailsTest(TestCase):
@@ -325,7 +325,7 @@ class PlayerDetailSeasonTestCase(TestCase):
 
     @parameterized.expand(SCOREMETHOD_PER_SEASON.keys())
     def test_player_details_all_seasons_work(self, season):
-        with site(domain=season.domain):
+        with with_site(domain=season.domain):
             player = PlayerFactory()
             event = OldCategoryRankedEventFactory(date=season.start_date)
             ResultFactory(event=event, player=player)

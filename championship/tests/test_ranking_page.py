@@ -30,7 +30,7 @@ from championship.models import Event, Result
 from championship.score.generic import SCOREMETHOD_PER_SEASON
 from championship.seasons.definitions import EU_SEASON_2025, SEASON_2025
 from multisite.constants import GLOBAL_DOMAIN, SWISS_DOMAIN
-from multisite.tests.utils import site
+from multisite.tests.utils import with_site
 
 
 class RankingTestCase(TestCase):
@@ -81,12 +81,12 @@ class RankingTestCase(TestCase):
 
     @parameterized.expand(SCOREMETHOD_PER_SEASON.keys())
     def test_all_ranking(self, season):
-        with site(domain=season.domain):
+        with with_site(domain=season.domain):
             response = self.get_by_slug(season.slug)
             self.assertEqual(200, response.status_code)
 
 
-@site(EU_SEASON_2025.domain)
+@with_site(EU_SEASON_2025.domain)
 class NationalRankingPageTestCase(TestCase):
     def setUp(self):
         self.season = EU_SEASON_2025
@@ -118,7 +118,7 @@ class NationalRankingPageTestCase(TestCase):
         resp = self.get_ranking("FOO")
         self.assertEqual(200, resp.status_code)
 
-    @site(SWISS_DOMAIN)
+    @with_site(SWISS_DOMAIN)
     def test_swiss_ranking_ignores_results_from_other_sites(self):
         result = ResultFactory(
             event__season=SEASON_2025,
@@ -132,7 +132,7 @@ class NationalRankingPageTestCase(TestCase):
         self.assertNotContains(resp, result.player.name)
 
 
-@site(EU_SEASON_2025.domain)
+@with_site(EU_SEASON_2025.domain)
 class NationalLeaderboardTests(TestCase):
     def setUp(self):
         self.season = EU_SEASON_2025
@@ -174,7 +174,7 @@ class NationalLeaderboardTests(TestCase):
             resp, f"<b>top {self.leaderboard.national_invites}</b> players"
         )
 
-    @site(SWISS_DOMAIN)
+    @with_site(SWISS_DOMAIN)
     def test_national_leaderboard_not_shown_for_switzerland(self):
         self.season = SEASON_2025
         resp = self.get_ranking(self.country_code)

@@ -19,7 +19,7 @@ from django.contrib.sites.models import Site
 from django.test import TestCase, override_settings
 
 
-def site(domain):
+def with_site(domain):
     """
     Test decorator or context manager to set SITE_ID based on the given domain.
 

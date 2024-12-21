@@ -31,10 +31,10 @@ from championship.score import compute_scores
 from championship.score.eu_season_2025 import ScoreMethodEu2025
 from championship.score.types import QualificationType
 from championship.seasons.definitions import EU_SEASON_2025
-from multisite.tests.utils import site
+from multisite.tests.utils import with_site
 
 
-@site(EU_SEASON_2025.domain)
+@with_site(EU_SEASON_2025.domain)
 class TestComputeScoreForEU2025(TestCase):
     def setUp(self):
         self.country_code = "IT"
@@ -276,7 +276,7 @@ class ScoresWithPlayoffsTestCase(TestCase):
         self.assertEqual(score, None)
 
 
-@site(EU_SEASON_2025.domain)
+@with_site(EU_SEASON_2025.domain)
 class TestScoresQualified(TestCase):
     def setUp(self):
         self.country_code = "IT"
@@ -427,7 +427,7 @@ class TestScoresQualified(TestCase):
         self.assertEqual(want_qualified, got_qualified)
 
 
-@site(EU_SEASON_2025.domain)
+@with_site(EU_SEASON_2025.domain)
 class TestQualificationReason(TestCase):
 
     def setUp(self):
