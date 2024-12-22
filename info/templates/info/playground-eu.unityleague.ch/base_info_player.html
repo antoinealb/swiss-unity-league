@@ -1,0 +1,19 @@
+{% extends "championship/base.html" %}
+
+{% block title %}
+    How to participate as Player | {{ SITE.name }}
+{% endblock %}
+
+{% block meta_description %}
+    How to participate as player and ensure that you receive all of your league points.
+{% endblock %}
+
+{% block content %}
+    <h1>How to participate as Player - {{ SITE.name }}</h1>
+    {% include 'championship/components/season_dropdown.html' %}
+    <br>
+    <h2>Abstract</h2>
+    {% include 'info/abstract.html' %}
+    {% block info %}
+    {% endblock %}
+{% endblock %}

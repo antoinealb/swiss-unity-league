@@ -50,16 +50,27 @@
         </div>
     </div>
     <p><a class="btn btn-secondary" href="{% url 'events' %}">Find events near you</a></p>
+    <h2>National Leaderboard</h2>
+    <p>Each country has a seperate leaderboard that only shows players from this country.
+        The league points are accumulated and at the end of the season ({{ current_season.end_date }}) the top finishers receive the following rewards:</p>
+    <h3 class="h4">Rewards</h3>
+    <p>
+        <ul>
+            <li>The 1st of the leaderboard is awarded a direct invite to the European Magic Cup</li>
+            <li>The top 40* players qualify for the National Championship**</li>
+        </ul>
+        <small>*Countries with a larger player base have more qualified players</small>
+        <br><small>**Larger countries have several National Championships</small>
+    </p>
+    <p><a class="btn btn-secondary" href="{% url 'ranking' %}" title="National Leadeboard">View Leaderboards</a></p>
     <h2>National Championships</h2>
-    <p>Only the best players of each country are qualified for the National Championships, that award 4 invites to the European Magic Cup.</p>
+    <p>Once a player is qualified throught the leaderboard, they may attend all National Championships in their country.
+        Each National Championships awards 4 invites to the European Magic Cup.</p>
     <ul>
         <li>Dates: Oct - Dec 2025</li>
-        <li>Top 40* players from the national leaderboard qualify</li>
-        <li>4 invites to the European Magic Cup</li>
-        *In larger countries more players qualify.
+        <li>Only the best players of the country</li>
+        <li>Top 4 is invited to the European Magic Cup</li>
     </ul>
-    <p><a class="btn btn-secondary" href="{% url 'ranking' %}" title="National Leadeboard">Check your qualification status</a></p>
-
     <h2>20k European Magic Cup</h2>
     <p>The European Magic Cup will feature 3 main events each in a different format. Qualified players choose their favorite format to play. </p>
     <ul>
@@ -68,7 +79,7 @@
         <li>Prizes: €20k</li>
         <li>Formats: announced one by one during the year</li>
     </ul>
-    <b>National Teams</b>
-    <p>Three qualified players from the same country, each playing a different format/main event, can form a national team. The combined Swiss round match points count for the team result.</p>
+    <h3 class="h4">National Teams</h3>
+    <p>Three qualified players from the same country can form a national team, each playing a different format/main event. The combined Swiss round match points count for the team result.</p>
     <p>Prizes are awarded to the top finishers of the 3 main events and the best national teams.</p>
 {% endblock %}

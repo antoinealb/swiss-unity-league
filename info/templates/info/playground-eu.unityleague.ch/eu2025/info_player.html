@@ -1,0 +1,77 @@
+{% extends "info/playground-eu.unityleague.ch/base_info_player.html" %}
+{% block info %}
+    <h2 class="pt-5">How to collect points</h2>
+    <p>To participate as a player, there is <b>no sign up</b> needed. However to guarantee that you receive all of your points, please follow these steps:</p>
+    <h3>Inform your local tournament organizer</h3>
+    <p>For you to receive points, your local organizer needs to register their events for the league.
+        Hence it's essential that you inform your local gaming store (LGS) or other independent organizers
+        about the opportunity to participate in the league and award points.
+        <br>If you organize events, sign up here:
+    </p>
+    <p><a class="btn btn-secondary" href="{% url 'info_organizer' %}" title="Organizer Sign up">Organizers sign up</a></p>
+    <h3>Use your full name in tournament apps</h3>
+    <p>Your full name will be the identifier used to track your points across platforms. Therefore it's really important that you use the identical full name on all tournament apps. </p>
+    <p>To pick a unique full name as your identifier, consider the following:</p>
+    <ul>
+        <li>Use your first and last name with a space in between, for example "Elliot Carter".</li>
+        <li>Also include your middle name, for example "John Bob Smith", if your name is common in Europe.</li>
+        <li>If the tournament app only shows usernames, input your full name with underscores instead of spaces as the username, for example "John_Bob_Smith".</li>
+    </ul>
+    <p>To verify that your name is correct, you can check that the standings of the app list your full name correctly.</p>
+    <p>Here are some tutorials how you can change your name in the most popular tournament apps:</p>
+    <h4>Change your name in the Companion App</h4>
+    <ol>
+        <li>Open the Magic: The Gathering <b><a href="https://play.google.com/store/apps/details?id=com.wizards.winter_orb" target="_blank" rel="noopener noreferrer">Companion App</b></a> and login</li>
+        <li>Go to the <b>Join ⚔️</b> tab on the bottom navigation (the one with 2 crossed swords)</li>
+        <li>Click on <b>Joining as</b> followed by your name on top of the screen</li>
+        <li>Enter your first and last name and <b>Submit</b></li>
+    </ol>
+    <p>If you need to include a middle name, just add it after your first name with a space in between. For example, add "John Bob" in the first name field.</p>
+    <h4>Change your name in Melee</h4>
+    <ol>
+        <li>Open <a href="https://melee.gg/Account/SignIn" target="_blank" rel="noopener noreferrer"><b>Melee.gg</b></a> and login</li>
+        <li>Go to <a href="https://melee.gg/Profile/Account" target="_blank" rel="noopener noreferrer">Manage Your Account Settings</a></li>
+        <li>Make sure <b>Display username by default</b> is <b>not</b> checked</li>
+        <li>Go to <a href="https://melee.gg/Profile/Settings" target="_blank" rel="noopener noreferrer">Profile</a></li>
+        <li>Click on <b>Edit</b> next to your <b>First Name</b> and <b>Last Name</b></li>
+        <li>Enter your names and <b>Save</b></li>
+    </ol>
+    <p>If you need to include a middle name, just add it after your first name with a space in between. For example, add "John Bob" in the first name field.</p>
+    <h3>Report inaccurate/missing results</h3>
+    <p>In case the results of a tournament are incorrect or missing, it's your responsibility to report this to the organizer of the event within 14 days. If the tournament organizer is unable to correct the error, please <a href="mailto:{{ SITE_SETTINGS.contact_email }}">contact us</a>.</p>
+
+    <h2 class="pt-5">Frequently asked questions</h2>
+    <h3>Can I use a nickname or username to track my points?</h3>
+    <p>To receive invites to the National Championships or the European Magic Cup, you must use your real name to track points. We will ask for ID to ensure the right players attend these events.</p>
+    <h3>I'm not a national of the country where I'm playing events. Can I still participate?</h3>
+    <p>Yes, you can. Your country is determined by where you play most of your events and is set automatically. If we've assigned the wrong country to you, please <a href="mailto:{{ SITE_SETTINGS.contact_email }}">contact us</a>.</p>
+    <h3>Can I attend tournaments in other countries?</h3>
+    <p>Yes, you collect points no matter where you play. But you only show up on the leaderboard of the country where you play most of your events.</p>
+    <h3>Which countries host a National Championship and award invites to the EMC?</h3>
+    <p>Generally all countries (not only EU member states) are eligible to host a National Championship and award invites to the European Magic Cup.
+        However there must be a significant number of participating events in the country and their player base must be interested in attending the European Magic Cup.</p>
+    <h3>How many players qualify in my country?</h3>
+    <p>The more events/players that participate in a country, the more rewards will be handed out.
+        <br>You can expect the following rewards to increase throughout the season according to the participation in a given country:
+        <ul>
+            <li>Number of players qualified for National Championships</li>
+            <li>Number of National Championship events in the country</li>
+            <li>EMC direct invite for the top finishers of the leadeboard</li>
+        </ul>
+    </p>
+    <h3>Which formats will be played?</h3>
+    <p>We allow all Magic formats at our participating events, even inoffical ones.
+        You can expect that the National Championships will be hosted in a popular format of the country.</p>
+    <p>The formats of the European Magic Cup will be chosen based on their popularity among participating events.
+        They will be annouced throughout the first half of the year.
+        Currently we're considering the following formats for the EMC main events:
+        <ul>
+            <li>Duel Commander</li>
+            <li>Pauper</li>
+            <li>Legacy</li>
+            <li>Modern</li>
+            <li>Standard</li>
+            <li>Limited</li>
+        </ul>
+    </p>
+{% endblock %}

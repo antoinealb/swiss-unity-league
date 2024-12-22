@@ -19,6 +19,7 @@ from . import views
 
 TEMPLATE_BASE = "info.html"
 TEMPLATE_ORGANIZER = "info_organizer.html"
+TEMPLATE_PLAYER = "info_player.html"
 
 urlpatterns = [
     path(
@@ -30,6 +31,16 @@ urlpatterns = [
         "<slug:slug>/",
         views.InformationView.as_view(base_template_name=TEMPLATE_BASE),
         name="info_for_season",
+    ),
+    path(
+        "player",
+        views.InformationView.as_view(base_template_name=TEMPLATE_PLAYER),
+        name="info_player",
+    ),
+    path(
+        "<slug:slug>/player",
+        views.InformationView.as_view(base_template_name=TEMPLATE_PLAYER),
+        name="info_player_for_season",
     ),
     path(
         "organizer",
