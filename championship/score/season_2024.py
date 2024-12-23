@@ -126,7 +126,7 @@ class ScoreMethod2024:
 
     @classmethod
     def finalize_scores(
-        cls, scores_by_player: dict[int, Score], country_code: str
+        cls, scores_by_player: dict[int, Score], *args, **kwargs
     ) -> dict[int, LeaderboardScore]:
         """Implements the last step of score processing.
 
