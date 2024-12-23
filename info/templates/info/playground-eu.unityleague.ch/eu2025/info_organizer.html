@@ -1,7 +1,7 @@
 {% extends "info/playground-eu.unityleague.ch/base_info_organizer.html" %}
 {% block info %}
 
-    <h2>Choose an event type</h2>
+    <h2 class="pt-4">Choose an event type</h2>
     <p>To each of your events, you will assign one event type. Each type has a multiplier and the higher the multiplier, the more points your players will receive.</p>
     <p>We recommend that you assign the following types to the given events:</p>
     <div class="row py-3">
@@ -34,7 +34,7 @@
                     <tr>
                         <td><b>National</b></td>
                         <td>4x</td>
-                        <td>Organizers can volunteer to host a National Championship, the finals of their country.</td>
+                        <td>National Championships can be hosted from Oct-Dec 2025. They represent the finals of the national competition.</td>
                         <td>4 slots</td>
                         <td>Free + you receive goodies</td>
                     </tr>
@@ -43,7 +43,7 @@
                         <td>5x</td>
                         <td>Special events in your region: Coupe de France, Nordic Masters, MOLE, etc.</td>
                         <td>1 slot</td>
-                        <td>custom</td>
+                        <td>Custom</td>
                     </tr>
                     <tr>
                         <td><b>Grand&nbsp;Prix</b></td>
@@ -54,14 +54,14 @@
                     </tr>
                 </tbody>
             </table>
-            <small>*For Regionals with top 8 the minimum fee is €25</small>
+            <small>*For Regionals with top cut the minimum fee is €25</small>
             <br><small>**Only main events of European conventions with an expected attendance of 300+ players are eligible. 1 EMC slot included, additional slots can be purchased.</small>
         </div>
     </div>
-    <p>To finance the goodies of the National Championships and the European Magic Cup, organizers pay fees for some of the events.
-        <br>However you can also <b>participate for free</b> by running <b>all</b> of your events as <b>Regular</b>.</p>
+    <p>Organizers pay fees for some of the events they host. These fees are used to finance the goodies of the National Championships and the European Magic Cup.
+        <br>You can also <b>participate for free</b> by running <b>all</b> of your events as <b>Regular</b>.</p>
 
-    <h2>How to register events for the league</h2>
+    <h2 class="pt-4">How to register events for the league</h2>
     <p>In the following we explain all the necessary steps to make your events award points.</p>
     <p>First make sure to <a href="{% url 'register' %}">create an account</a>, confirm your email and login.</p>
     <div class="row">
@@ -90,7 +90,31 @@
         </div>
     </div>
 
-    <h2>Frequently asked questions</h2>
-    <h3>How do I pay the fees?</h3>
-    <p>We will send an invoice via email every few months. There will also be a message shown when you login to the website.</p>
+    <h2 class="pt-4">Frequently asked questions</h2>
+    <div class="accordion" id="organizerFAQ">
+        <div class="accordion-item">
+            <h2 class="accordion-header" id="headingFees">
+                <button class="accordion-button" type="button" data-bs-toggle="collapse" data-bs-target="#collapseFees" aria-expanded="false" aria-controls="collapseFees">
+                    How do I pay the fees?
+                </button>
+            </h2>
+            <div id="collapseFees" class="accordion-collapse collapse show" aria-labelledby="headingFees" data-bs-parent="#organizerFAQ">
+                <div class="accordion-body">
+                    <p>We will send an invoice via email every few months. There will also be a message shown when you login to the website.</p>
+                </div>
+            </div>
+        </div>
+        <div class="accordion-item">
+            <h2 class="accordion-header" id="headingHostCountries">
+                <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapseHostCountries" aria-expanded="false" aria-controls="collapseHostCountries">
+                    Which countries can host a National Championship and award invites to the EMC?
+                </button>
+            </h2>
+            <div id="collapseHostCountries" class="accordion-collapse collapse" aria-labelledby="headingHostCountries" data-bs-parent="#organizerFAQ">
+                <div class="accordion-body">
+                    <p>Generally all countries (not only EU Member States) are eligible to host a National Championship and award invites to the European Magic Cup. However there must be a significant number of participating events in the country.</p>
+                </div>
+            </div>
+        </div>
+    </div>
 {% endblock %}

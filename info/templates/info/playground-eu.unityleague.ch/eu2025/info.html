@@ -1,7 +1,7 @@
 {% extends "info/playground-eu.unityleague.ch/base_info.html" %}
 {% block info %}
 
-    <div class="row pt-5 d-flex g-3">
+    <div class="row pt-4 d-flex g-4">
         <div class="col-lg-6 d-flex flex-column">
             <h2>League Points</h2>
             <p>Players earn league points based on their performance in each event:</p>
@@ -15,16 +15,13 @@
             <p class=""><a class="btn btn-secondary" href="{% url 'ranking' %}" title="National leadeboard">View your leaderboard</a></p>
             <h3 class="h4">Rewards</h3>
             <p> At the end of the season ({{ current_season.end_date }}) the top finishers of each national leaderboard receive the following rewards:</p>
-
             <ul>
                 <li>The 1st of the leaderboard receives a direct invite to the European Magic Cup</li>
                 <li>The top 40* players qualify for the National Championship**</li>
             </ul>
             <p>
-
                 <small>*Countries with a larger player base have more qualified players</small>
                 <br><small>**Larger countries have several National Championships</small>
-
             </p>
         </div>
         <div class="col-lg-6">

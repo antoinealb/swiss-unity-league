@@ -1,6 +1,6 @@
 {% extends "info/playground-eu.unityleague.ch/base_info_player.html" %}
 {% block info %}
-    <h2 class="pt-5">How to collect points</h2>
+    <h2 class="pt-4">How to collect points</h2>
     <p>To participate as a player, there is <b>no sign up</b> needed. However to guarantee that you receive all of your points, please follow these steps:</p>
     <h3>Inform your local tournament organizer</h3>
     <p>For you to receive points, your local organizer needs to register their events for the league.
@@ -46,40 +46,95 @@
     <p>If you need to include a middle name, just add it after your first name with a space in between. For example, add "John Bob" in the first name field.</p>
     <h3>Report inaccurate/missing results</h3>
     <p>In case the results of a tournament are incorrect or missing, it's your responsibility to report this to the organizer of the event within 14 days. If the tournament organizer is unable to correct the error, please <a href="mailto:{{ SITE_SETTINGS.contact_email }}">contact us</a>.</p>
-
-    <h2 class="pt-5">Frequently asked questions</h2>
-    <h3>Can I use a nickname or username to track my points?</h3>
-    <p>To receive invites to the National Championships or the European Magic Cup, you must use your real name to track points. We will ask for ID to ensure the right players attend these events.</p>
-    <h3>I'm not a national of the country where I'm playing events. Can I still participate?</h3>
-    <p>Yes, you can. Your country is determined by where you play most of your events and is set automatically. If we've assigned the wrong country to you, please <a href="mailto:{{ SITE_SETTINGS.contact_email }}">contact us</a>.</p>
-    <h3>Can I attend tournaments in other countries?</h3>
-    <p>Yes, you collect points no matter where you play. But you only show up on the leaderboard of the country where you play most of your events.</p>
-    <h3>Which countries host a National Championship and award invites to the EMC?</h3>
-    <p>Generally all countries (not only EU member states) are eligible to host a National Championship and award invites to the European Magic Cup.
-        However there must be a significant number of participating events in the country and their player base must be interested in attending the European Magic Cup.</p>
-    <h3>How many players qualify in my country?</h3>
-    <p>The more events/players that participate in a country, the more rewards will be handed out.
-        <br>You can expect the following rewards to increase throughout the season according to the participation in a given country:
-        <ul>
-            <li>Number of players qualified for National Championships</li>
-            <li>Number of National Championship events in the country</li>
-            <li>EMC direct invite for the top finishers of the leadeboard</li>
-        </ul>
-    </p>
-    <h3>Which formats will be played?</h3>
-    <p>We allow all Magic formats at our participating events, even inoffical ones.
-        You can expect that the National Championships will be hosted in a popular format of the country.</p>
-    <p>The formats of the European Magic Cup will be chosen based on their popularity among participating events.
-        They will be annouced throughout the first half of the year.
-        Currently we're considering the following formats for the EMC main events:
-        <ul>
-            <li>Duel Commander</li>
-            <li>Pauper</li>
-            <li>Legacy</li>
-            <li>Modern</li>
-            <li>Pioneer</li>
-            <li>Standard</li>
-            <li>Limited</li>
-        </ul>
-    </p>
+    <h2 class="pt-4">Frequently asked questions</h2>
+    <div class="accordion" id="playerFAQ">
+        <div class="accordion-item">
+            <h2 class="accordion-header" id="headingRealName">
+                <button class="accordion-button" type="button" data-bs-toggle="collapse" data-bs-target="#collapseRealName" aria-expanded="false" aria-controls="collapseRealName">
+                    Can I use a nickname or username to track my points?
+                </button>
+            </h2>
+            <div id="collapseRealName" class="accordion-collapse collapse show" aria-labelledby="headingRealName" data-bs-parent="#playerFAQ">
+                <div class="accordion-body">
+                    <p>To receive invites to the National Championships or the European Magic Cup, you must use your real name to track points. We will ask for ID to ensure the right players attend these events.</p>
+                </div>
+            </div>
+        </div>
+        <div class="accordion-item">
+            <h2 class="accordion-header" id="headingNationality">
+                <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapseNationality" aria-expanded="false" aria-controls="collapseNationality">
+                    I'm not a national of the country where I'm playing events. Can I still participate?
+                </button>
+            </h2>
+            <div id="collapseNationality" class="accordion-collapse collapse" aria-labelledby="headingNationality" data-bs-parent="#playerFAQ">
+                <div class="accordion-body">
+                    <p>Yes, you can. Your country is determined by where you play most of your events and is set automatically. If we've assigned the wrong country to you, please <a href="mailto:{{ SITE_SETTINGS.contact_email }}">contact us</a>.</p>
+                </div>
+            </div>
+        </div>
+        <div class="accordion-item">
+            <h2 class="accordion-header" id="headingOtherCountries">
+                <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapseOtherCountries" aria-expanded="false" aria-controls="collapseOtherCountries">
+                    Can I collect points in other countries?
+                </button>
+            </h2>
+            <div id="collapseOtherCountries" class="accordion-collapse collapse" aria-labelledby="headingOtherCountries" data-bs-parent="#playerFAQ">
+                <div class="accordion-body">
+                    <p>Yes, you collect points no matter where you play, but you only show up on the leaderboard of your country (the country where you play most of your events).</p>
+                </div>
+            </div>
+        </div>
+        <div class="accordion-item">
+            <h2 class="accordion-header" id="headingHostCountries">
+                <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapseHostCountries" aria-expanded="false" aria-controls="collapseHostCountries">
+                    Which countries host a National Championship and award invites to the EMC?
+                </button>
+            </h2>
+            <div id="collapseHostCountries" class="accordion-collapse collapse" aria-labelledby="headingHostCountries" data-bs-parent="#playerFAQ">
+                <div class="accordion-body">
+                    <p>Generally all countries (not only EU Member States) are eligible to host a National Championship and award invites to the European Magic Cup. However there must be a significant number of participating events in the country.</p>
+                </div>
+            </div>
+        </div>
+        <div class="accordion-item">
+            <h2 class="accordion-header" id="headingPlayerQualification">
+                <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapsePlayerQualification" aria-expanded="false" aria-controls="collapsePlayerQualification">
+                    How many players qualify in my country?
+                </button>
+            </h2>
+            <div id="collapsePlayerQualification" class="accordion-collapse collapse" aria-labelledby="headingPlayerQualification" data-bs-parent="#playerFAQ">
+                <div class="accordion-body">
+                    <p>The number of qualifications is dynamic and depends on the player base of the country. The more events/players in a country that participate, the more qualifications will be awarded.</p>
+                    <p>The following rewards may increase throughout the season:</p>
+                    <ul>
+                        <li>Number of players qualified for National Championships</li>
+                        <li>Number of National Championship events in the country</li>
+                        <li>Number of EMC direct invites for the top finishers of the leaderboard</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+        <div class="accordion-item">
+            <h2 class="accordion-header" id="headingFormats">
+                <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapseFormats" aria-expanded="false" aria-controls="collapseFormats">
+                    Which formats will be played?
+                </button>
+            </h2>
+            <div id="collapseFormats" class="accordion-collapse collapse" aria-labelledby="headingFormats" data-bs-parent="#playerFAQ">
+                <div class="accordion-body">
+                    <p>We allow all Magic formats at our participating events, even unofficial ones. You can expect that the National Championships will be hosted in a popular format of the country.</p>
+                    <p>The formats of the European Magic Cup will be chosen based on their popularity among participating events. They will be announced throughout the first half of the year. Currently we're considering the following formats for the EMC main events:</p>
+                    <ul>
+                        <li>Duel Commander</li>
+                        <li>Pauper</li>
+                        <li>Legacy</li>
+                        <li>Modern</li>
+                        <li>Pioneer</li>
+                        <li>Standard</li>
+                        <li>Limited</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
 {% endblock %}
