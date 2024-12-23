@@ -1,0 +1,90 @@
+{% extends "info/playground-eu.unityleague.ch/base_info_organizer.html" %}
+{% block info %}
+
+    <h2>Choose an event type</h2>
+    <p>To each of your events, you will assign one event type. Each type has a multiplier and the higher the multiplier, the more points your players will receive.</p>
+    <p>We recommend that you assign the following types to the given events:</p>
+    <div class="row py-3">
+        <div class="col-xl-8 col-lg-10 align-items-center table-responsive">
+            <table class="table table-striped border border-2">
+                <thead>
+                    <tr class="header">
+                        <th>Type</th>
+                        <th>Multiplier</th>
+                        <th>Recommended Events</th>
+                        <th>EMC Invites</th>
+                        <th>Organizer Fees</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td><b>Local</b></td>
+                        <td>1x</td>
+                        <td>Weeklies, FNMs, Prereleases, leagues</td>
+                        <td></td>
+                        <td>Free</td>
+                    </tr>
+                    <tr>
+                        <td><b>Regional</b></td>
+                        <td>3x</td>
+                        <td>Competitive 1k, RCQs, Store Champs</td>
+                        <td></td>
+                        <td>€1 per player*</td>
+                    </tr>
+                    <tr>
+                        <td><b>National</b></td>
+                        <td>4x</td>
+                        <td>Organizers can volunteer to host a National Championship, the finals of their country.</td>
+                        <td>4 slots</td>
+                        <td>Free + you receive goodies</td>
+                    </tr>
+                    <tr>
+                        <td><b>Qualifier</b></td>
+                        <td>5x</td>
+                        <td>Special events in your region: Coupe de France, Nordic Masters, MOLE, etc.</td>
+                        <td>1 slot</td>
+                        <td>custom</td>
+                    </tr>
+                    <tr>
+                        <td><b>Grand&nbsp;Prix</b></td>
+                        <td>6x</td>
+                        <td>Large Conventions: RC, Spotlight, Relic Fest, 4Seasons, etc.</td>
+                        <td>1-8 slot**</td>
+                        <td>Free**</td>
+                    </tr>
+                </tbody>
+            </table>
+            <small>*For Regionals with top 8 the minimum fee is €25</small>
+            <br><small>**Only main events of European conventions with an expected attendance of 300+ players are eligible. 1 EMC slot included, additional slots can be purchased.</small>
+        </div>
+    </div>
+    <p>To finance the goodies of the National Championships and the European Magic Cup, organizers pay fees for some of the events.
+        <br>However you can also <b>participate for free</b> by running <b>all</b> of your events as <b>Regular</b>.</p>
+
+    <h2>How to register events for the league</h2>
+    <p>In the following we explain all the necessary steps to make your events award points.</p>
+    <p>First make sure to <a href="{% url 'register' %}">create an account</a>, confirm your email and login.</p>
+    <h3>Create an event</h3>
+    <ol>
+        <li>In the <b>Welcome</b> menu in the top right, you click <b><a href="{% url 'events_create' %}">Create new event</a></b>.</li>
+        <li>Enter at least the <b>Name</b>, <b>Date</b>, <b>Format</b>, and <b>Type</b> of the event.</li>
+        <li>On the bottom, click <b>Create event</b> or <b>Schedule event as series</b> if the event takes place regularly.</li>
+        <li>To host Qualifier, National and Grand Prix events, please <a href="mailto:{{ SITE.email }}">contact us</a>.</li>
+    </ol>
+    <p>Now your events will be listed in our <a href="{% url 'events' %}">Event calendar</a>. To see all of your events, go to <b>My events</b> in the <b>Welcome</b> menu.</p>
+    <h3>Upload results</h3>
+    <p>After your event has finished, you have 30 days to upload the results.</p>
+    <ol>
+        <li>In the <b>Welcome</b> menu, go to <b><a href="{% url 'results_create' %}">Upload results</a></b>.</li>
+        <li>Select the tournament app* you used for the event.</li>
+        <li>Select the event you want to upload results for.</li>
+        <li>Download the standings from your tournament app, upload them in the form and <b>Submit</b>. (for some apps you can also share a link to the standings)</li>
+        <li>After importing the results, you can scroll down to verify that all results are imported correctly.</li>
+        <li>If you have any issues, please <a href="mailto:{{ SITE_SETTINGS.contact_email}}">contact us</a>.</li>
+        <small>*Alternatively you can upload the results as an <b>Excel/CSV</b> file or select <b>Manual</b> to enter them by hand.</small>
+    </ol>
+
+    <h2>Frequently asked questions</h2>
+    <h3>How do I pay the fees?</h3>
+    <p>We will send an invoice via email every few months. There will also be a message shown when you login to the website.</p>
+{% endblock %}
