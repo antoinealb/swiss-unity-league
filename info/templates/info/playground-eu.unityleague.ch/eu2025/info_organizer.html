@@ -64,25 +64,31 @@
     <h2>How to register events for the league</h2>
     <p>In the following we explain all the necessary steps to make your events award points.</p>
     <p>First make sure to <a href="{% url 'register' %}">create an account</a>, confirm your email and login.</p>
-    <h3>Create an event</h3>
-    <ol>
-        <li>In the <b>Welcome</b> menu in the top right, you click <b><a href="{% url 'events_create' %}">Create new event</a></b>.</li>
-        <li>Enter at least the <b>Name</b>, <b>Date</b>, <b>Format</b>, and <b>Type</b> of the event.</li>
-        <li>On the bottom, click <b>Create event</b> or <b>Schedule event as series</b> if the event takes place regularly.</li>
-        <li>To host Qualifier, National and Grand Prix events, please <a href="mailto:{{ SITE.email }}">contact us</a>.</li>
-    </ol>
-    <p>Now your events will be listed in our <a href="{% url 'events' %}">Event calendar</a>. To see all of your events, go to <b>My events</b> in the <b>Welcome</b> menu.</p>
-    <h3>Upload results</h3>
-    <p>After your event has finished, you have 30 days to upload the results.</p>
-    <ol>
-        <li>In the <b>Welcome</b> menu, go to <b><a href="{% url 'results_create' %}">Upload results</a></b>.</li>
-        <li>Select the tournament app* you used for the event.</li>
-        <li>Select the event you want to upload results for.</li>
-        <li>Download the standings from your tournament app, upload them in the form and <b>Submit</b>. (for some apps you can also share a link to the standings)</li>
-        <li>After importing the results, you can scroll down to verify that all results are imported correctly.</li>
-        <li>If you have any issues, please <a href="mailto:{{ SITE_SETTINGS.contact_email}}">contact us</a>.</li>
-        <small>*Alternatively you can upload the results as an <b>Excel/CSV</b> file or select <b>Manual</b> to enter them by hand.</small>
-    </ol>
+    <div class="row">
+        <div class="col-md-6">
+            <h3>Create an event</h3>
+            <ol>
+                <li>In the <b>Welcome</b> menu in the top right, you click <b><a href="{% url 'events_create' %}">Create new event</a></b>.</li>
+                <li>Enter at least the <b>Name</b>, <b>Date</b>, <b>Format</b>, and <b>Type</b> of the event.</li>
+                <li>On the bottom, click <b>Create event</b> or <b>Schedule event as series</b> if the event takes place regularly.</li>
+                <li>To host Qualifier, National and Grand Prix events, please <a href="mailto:{{ SITE.email }}">contact us</a>.</li>
+            </ol>
+            <p>Now your events will be listed in our <a href="{% url 'events' %}">Event calendar</a>. To see all of your events, go to <b>My events</b> in the <b>Welcome</b> menu.</p>
+        </div>
+        <div class="col-md-6">
+            <h3>Upload results</h3>
+            <p>After your event has finished, you have 30 days to upload the results.</p>
+            <ol>
+                <li>In the <b>Welcome</b> menu, go to <b><a href="{% url 'results_create' %}">Upload results</a></b>.</li>
+                <li>Select the tournament app* you used for the event.</li>
+                <li>Select the event you want to upload results for.</li>
+                <li>Download the standings from your tournament app, upload them in the form and <b>Submit</b>. (for some apps you can also share a link to the standings)</li>
+                <li>After importing the results, you can scroll down to verify that all results are imported correctly.</li>
+                <li>If you have any issues, please <a href="mailto:{{ SITE_SETTINGS.contact_email}}">contact us</a>.</li>
+                <small>*Alternatively you can upload the results as an <b>Excel/CSV</b> file or select <b>Manual</b> to enter them by hand.</small>
+            </ol>
+        </div>
+    </div>
 
     <h2>Frequently asked questions</h2>
     <h3>How do I pay the fees?</h3>

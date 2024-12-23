@@ -12,13 +12,20 @@
     <h1>{{ SITE.name }}</h1>
     {% include 'championship/components/season_dropdown.html' %}
     <br>
-    <div class="alert alert-success" role="alert">
-        <p>Interested in participating?</p>
-        <a class="btn btn-success" href="{% url 'info_player' %}">Participate as Player</a>
-        <a class="btn btn-success" href="{% url 'info_organizer' %}">Organizer Sign up</a>
-    </div>
+
     <h2>Abstract</h2>
-    {% include 'info/abstract.html' %}
+    <div class="row">
+        <div class="col-md-6">
+            {% include 'info/abstract.html' %}
+        </div>
+        <div class="col-md-6">
+            <div class="alert alert-success" role="alert">
+                <p>Interested in participating?</p>
+                <a class="btn btn-success" href="{% url 'info_player' %}">Participate as player</a>
+                <a class="btn btn-success" href="{% url 'info_organizer' %}">Organize events</a>
+            </div>
+        </div>
+    </div>
     {% block info %}
     {% endblock %}
 {% endblock %}

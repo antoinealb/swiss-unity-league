@@ -8,7 +8,7 @@
         about the opportunity to participate in the league and award points.
         <br>If you organize events, sign up here:
     </p>
-    <p><a class="btn btn-secondary" href="{% url 'info_organizer' %}" title="Organizer Sign up">Organizers sign up</a></p>
+    <p><a class="btn btn-secondary" href="{% url 'info_organizer' %}" title="Organizer Sign up">Organizer sign up</a></p>
     <h3>Use your full name in tournament apps</h3>
     <p>Your full name will be the identifier used to track your points across platforms. Therefore it's really important that you use the identical full name on all tournament apps. </p>
     <p>To pick a unique full name as your identifier, consider the following:</p>
@@ -18,24 +18,31 @@
         <li>If the tournament app only shows usernames, input your full name with underscores instead of spaces as the username, for example "John_Bob_Smith".</li>
     </ul>
     <p>To verify that your name is correct, you can check that the standings of the app list your full name correctly.</p>
-    <p>Here are some tutorials how you can change your name in the most popular tournament apps:</p>
-    <h4>Change your name in the Companion App</h4>
-    <ol>
-        <li>Open the Magic: The Gathering <b><a href="https://play.google.com/store/apps/details?id=com.wizards.winter_orb" target="_blank" rel="noopener noreferrer">Companion App</b></a> and login</li>
-        <li>Go to the <b>Join ⚔️</b> tab on the bottom navigation (the one with 2 crossed swords)</li>
-        <li>Click on <b>Joining as</b> followed by your name on top of the screen</li>
-        <li>Enter your first and last name and <b>Submit</b></li>
-    </ol>
-    <p>If you need to include a middle name, just add it after your first name with a space in between. For example, add "John Bob" in the first name field.</p>
-    <h4>Change your name in Melee</h4>
-    <ol>
-        <li>Open <a href="https://melee.gg/Account/SignIn" target="_blank" rel="noopener noreferrer"><b>Melee.gg</b></a> and login</li>
-        <li>Go to <a href="https://melee.gg/Profile/Account" target="_blank" rel="noopener noreferrer">Manage Your Account Settings</a></li>
-        <li>Make sure <b>Display username by default</b> is <b>not</b> checked</li>
-        <li>Go to <a href="https://melee.gg/Profile/Settings" target="_blank" rel="noopener noreferrer">Profile</a></li>
-        <li>Click on <b>Edit</b> next to your <b>First Name</b> and <b>Last Name</b></li>
-        <li>Enter your names and <b>Save</b></li>
-    </ol>
+    <h4>Change your name in tournament apps</h4>
+    <p>Here are some tutorials how you can change your name in the most popular tournament apps, to make sure you appear with the identical full name:</p>
+    <div class="row">
+        <div class="col-md-6">
+            <h5>Companion App</h5>
+            <ol>
+                <li>Open the Magic: The Gathering <b><a href="https://play.google.com/store/apps/details?id=com.wizards.winter_orb" target="_blank" rel="noopener noreferrer">Companion App</b></a> and login</li>
+                <li>Go to the <b>Join ⚔️</b> tab on the bottom navigation (the one with 2 crossed swords)</li>
+                <li>Click on <b>Joining as</b> followed by your name on top of the screen</li>
+                <li>Enter your first and last name and <b>Submit</b></li>
+            </ol>
+        </div>
+        <div class="col-md-6">
+            <h5>Melee</h5>
+            <ol>
+                <li>Open <a href="https://melee.gg/Account/SignIn" target="_blank" rel="noopener noreferrer"><b>Melee.gg</b></a> and login</li>
+                <li>Go to <a href="https://melee.gg/Profile/Account" target="_blank" rel="noopener noreferrer">Manage Your Account Settings</a></li>
+                <li>Make sure <b>Display username by default</b> is <b>not</b> checked</li>
+                <li>Go to <a href="https://melee.gg/Profile/Settings" target="_blank" rel="noopener noreferrer">Profile</a></li>
+                <li>Click on <b>Edit</b> next to your <b>First Name</b> and <b>Last Name</b></li>
+                <li>Enter your names and <b>Save</b></li>
+            </ol>
+        </div>
+    </div>
+
     <p>If you need to include a middle name, just add it after your first name with a space in between. For example, add "John Bob" in the first name field.</p>
     <h3>Report inaccurate/missing results</h3>
     <p>In case the results of a tournament are incorrect or missing, it's your responsibility to report this to the organizer of the event within 14 days. If the tournament organizer is unable to correct the error, please <a href="mailto:{{ SITE_SETTINGS.contact_email }}">contact us</a>.</p>

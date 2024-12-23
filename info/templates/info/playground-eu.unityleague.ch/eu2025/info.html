@@ -1,92 +1,106 @@
 {% extends "info/playground-eu.unityleague.ch/base_info.html" %}
 {% block info %}
-    <h2>League Points</h2>
-    <p>Players earn league points based on their performance in each event:</p>
-    <ul>
-        <li>3 league points just for participating in an event.</li>
-        <li>League points equal to their total match points in the event.</li>
-        <li>Top finishers receive a fixed amount of points based on the event's size.</li>
-    </ul>
-    <h2>Event Types</h2>
-    <p>Each Magic event gets a type, that defines its multiplier. League points awarded to players are multiplied based on the multiplier of the event.</p>
-    <div class="row py-3">
-        <div class="col-xl-6 col-lg-8 col-md-10 align-items-center table-responsive">
-            <table class="table table-striped border border-2">
-                <thead>
-                    <tr class="header">
-                        <th>Type</th>
-                        <th>Multiplier</th>
-                        <th>Events*</th>
-                        <th>European Magic Cup Invites</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    <tr>
-                        <td><b>Local</b></td>
-                        <td>1x</td>
-                        <td>FNMs, Prereleases, weeklies, leagues</td>
-                        <td></td>
-                    </tr>
-                    <tr>
-                        <td><b>Regional</b></td>
-                        <td>3x</td>
-                        <td>RCQs, Store Champs, competitive, 1k</td>
-                        <td></td>
-                    </tr>
-                    <tr>
-                        <td><b>National</b></td>
-                        <td>4x</td>
-                        <td>National Championships, where only the best players are invited.</td>
-                        <td>4 slots</td>
-                    </tr>
-                    <tr>
-                        <td><b>Qualifier</b></td>
-                        <td>5x</td>
-                        <td>Special events in your region: Coupe de France, Nordic Masters, MOLE, etc.</td>
-                        <td>1 slot</td>
-                    </tr>
-                    <tr>
-                        <td><b>Grand&nbsp;Prix</b></td>
-                        <td>6x</td>
-                        <td>Large Conventions: RC, Spotlight, Relic Fest, 4Seasons, etc.</td>
-                        <td>1-8 slots</td>
-                    </tr>
-                </tbody>
-            </table>
-            <small>*We recommend to assign the given type to these events, but the assignment may be different.</small>
+
+    <div class="row pt-5 d-flex g-3">
+        <div class="col-lg-6 d-flex flex-column">
+            <h2>League Points</h2>
+            <p>Players earn league points based on their performance in each event:</p>
+            <ul>
+                <li>3 league points just for participating in an event.</li>
+                <li>League points equal to their total match points in the event.</li>
+                <li>Top finishers receive a fixed amount of points based on the event's size.</li>
+            </ul>
+            <h2>National Leaderboards</h2>
+            <p>Each country has a separate leaderboard that accumulates points of the players from this country.</p>
+            <p class=""><a class="btn btn-secondary" href="{% url 'ranking' %}" title="National leadeboard">View your leaderboard</a></p>
+            <h3 class="h4">Rewards</h3>
+            <p> At the end of the season ({{ current_season.end_date }}) the top finishers of each national leaderboard receive the following rewards:</p>
+
+            <ul>
+                <li>The 1st of the leaderboard receives a direct invite to the European Magic Cup</li>
+                <li>The top 40* players qualify for the National Championship**</li>
+            </ul>
+            <p>
+
+                <small>*Countries with a larger player base have more qualified players</small>
+                <br><small>**Larger countries have several National Championships</small>
+
+            </p>
+        </div>
+        <div class="col-lg-6">
+            <h2>Event Types</h2>
+            <p>Each Magic event gets a type, that defines its multiplier. League points awarded to players are multiplied based on the multiplier of the event.</p>
+
+            <div class=" align-items-center table-responsive">
+                <table class="table table-striped border border-2">
+                    <thead>
+                        <tr class="header">
+                            <th>Type</th>
+                            <th>Multiplier</th>
+                            <th>Events*</th>
+                            <th>European Magic Cup Invites</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td><b>Local</b></td>
+                            <td>1x</td>
+                            <td>FNMs, Prereleases, weeklies, leagues</td>
+                            <td></td>
+                        </tr>
+                        <tr>
+                            <td><b>Regional</b></td>
+                            <td>3x</td>
+                            <td>RCQs, Store Champs, competitive, 1k</td>
+                            <td></td>
+                        </tr>
+                        <tr>
+                            <td><b>National</b></td>
+                            <td>4x</td>
+                            <td>National Championships, where only the best players are invited.</td>
+                            <td>4 slots</td>
+                        </tr>
+                        <tr>
+                            <td><b>Qualifier</b></td>
+                            <td>5x</td>
+                            <td>Special events in your region: Coupe de France, Nordic Masters, MOLE, etc.</td>
+                            <td>1 slot</td>
+                        </tr>
+                        <tr>
+                            <td><b>Grand&nbsp;Prix</b></td>
+                            <td>6x</td>
+                            <td>Large Conventions: RC, Spotlight, Relic Fest, 4Seasons, etc.</td>
+                            <td>1-8 slots</td>
+                        </tr>
+                    </tbody>
+                </table>
+                <small>*We recommend to assign the given type to these events, but the assignment may be different.</small>
+            </div>
+            <p><a class="btn btn-secondary" href="{% url 'events' %}">Find events near you</a></p>
+        </div>
+        <div class="col-lg-6">
+            <h2>National Championships</h2>
+            <p>Once a player is qualified throught the leaderboard, they may attend all National Championships in their country.
+                Each National Championship awards 4 invites to the European Magic Cup.</p>
+            <ul>
+                <li>Dates: Oct - Dec 2025</li>
+                <li>Only the best players of the country</li>
+                <li>Top 4 is invited to the European Magic Cup</li>
+            </ul>
+        </div>
+        <div class="col-lg-6">
+            <h2>20k European Magic Cup</h2>
+            <p>The European Magic Cup will feature 3 main events each in a different format. Qualified players choose their favorite format to play. </p>
+            <ul>
+                <li>Date: Q1 2026</li>
+                <li>Location: Italy (to be announced)</li>
+                <li>Prizes: €20k</li>
+                <li>Formats: announced one by one during the year</li>
+            </ul>
+            <h3 class="h4">National Teams</h3>
+            <p>Three qualified players from the same country can form a national team, each playing a different format/main event. The combined Swiss round match points count for the team result.</p>
+            <p>Prizes are awarded to the top finishers of the 3 main events and the best national teams.</p>
         </div>
     </div>
-    <p><a class="btn btn-secondary" href="{% url 'events' %}">Find events near you</a></p>
-    <h2>National Leaderboard</h2>
-    <p>Each country has a seperate leaderboard that only shows players from this country.
-        The league points are accumulated and at the end of the season ({{ current_season.end_date }}) the top finishers receive the following rewards:</p>
-    <h3 class="h4">Rewards</h3>
-    <p>
-        <ul>
-            <li>The 1st of the leaderboard is awarded a direct invite to the European Magic Cup</li>
-            <li>The top 40* players qualify for the National Championship**</li>
-        </ul>
-        <small>*Countries with a larger player base have more qualified players</small>
-        <br><small>**Larger countries have several National Championships</small>
-    </p>
-    <p><a class="btn btn-secondary" href="{% url 'ranking' %}" title="National Leadeboard">View Leaderboards</a></p>
-    <h2>National Championships</h2>
-    <p>Once a player is qualified throught the leaderboard, they may attend all National Championships in their country.
-        Each National Championships awards 4 invites to the European Magic Cup.</p>
-    <ul>
-        <li>Dates: Oct - Dec 2025</li>
-        <li>Only the best players of the country</li>
-        <li>Top 4 is invited to the European Magic Cup</li>
-    </ul>
-    <h2>20k European Magic Cup</h2>
-    <p>The European Magic Cup will feature 3 main events each in a different format. Qualified players choose their favorite format to play. </p>
-    <ul>
-        <li>Date: Q1 2026</li>
-        <li>Location: Italy (to be announced)</li>
-        <li>Prizes: €20k</li>
-        <li>Formats: announced one by one during the year</li>
-    </ul>
-    <h3 class="h4">National Teams</h3>
-    <p>Three qualified players from the same country can form a national team, each playing a different format/main event. The combined Swiss round match points count for the team result.</p>
-    <p>Prizes are awarded to the top finishers of the 3 main events and the best national teams.</p>
+
 {% endblock %}
