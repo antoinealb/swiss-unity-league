@@ -18,9 +18,25 @@ from django.core.management.base import BaseCommand
 from django.db.models import Count
 from django.db.models.functions import Coalesce
 
+from prometheus_client import CollectorRegistry, Counter, Gauge, push_to_gateway
+from waffle import sample_is_active
+
 from championship.models import Event, Player, PlayerSeasonData
 from championship.seasons.definitions import EU_SEASONS, Season
-from championship.seasons.helpers import find_main_season_by_date, find_season_by_slug
+from championship.seasons.helpers import find_season_by_slug
+
+metrics_registry = CollectorRegistry()
+player_season_data_updated = Counter(
+    "player_season_data_updated_count",
+    "Number of PlayerSeasonData objects updated by the script run.",
+    ["created"],
+    registry=metrics_registry,
+)
+last_success = Gauge(
+    "job_last_success_unixtime",
+    "Last time a job finished succesfully",
+    registry=metrics_registry,
+)
 
 
 def assign_country_to_player(player: Player, season: Season):
@@ -42,29 +58,46 @@ def assign_country_to_player(player: Player, season: Season):
         .order_by("-event_count")
         .first()
     )
+    most_played_country = {"country": "CH"}
     if most_played_country:
-        PlayerSeasonData.objects.update_or_create(
+        _, created = PlayerSeasonData.objects.update_or_create(
             player=player,
             season_slug=season.slug,
             defaults={
                 "country": most_played_country["country"],
             },
         )
+        player_season_data_updated.labels(created).inc()
 
 
 class Command(BaseCommand):
     help = "To each players' seasonal data we assign the country they played most local and regional events in the season."
 
+    def get_default_season(self):
+        today = datetime.date.today()
+        for season in EU_SEASONS:
+            if season.start_date <= today <= season.end_date:
+                return season
+
     def add_arguments(self, parser):
         parser.add_argument(
             "--season",
             "-s",
-            default=find_main_season_by_date(datetime.date.today()).slug,
+            default=self.get_default_season().slug,
             choices=[s.slug for s in EU_SEASONS],
             help="The season to which we apply the country to the players' season data.",
         )
+        parser.add_argument(
+            "--force-sampling",
+            "-f",
+            action="store_true",
+            help="If set, force sampling, meaning all eligible players will be updated.",
+        )
+        parser.add_argument(
+            "--pushgateway", help="Address to the Prometheus pushgateway"
+        )
 
-    def handle(self, season, *args, **kwargs):
+    def handle(self, season, force_sampling, pushgateway, *args, **kwargs):
         season = find_season_by_slug(season)
 
         # the parser doesn't check the default value
@@ -76,4 +109,13 @@ class Command(BaseCommand):
             playerseasondata__season_slug=season.slug,
             playerseasondata__auto_assign_country=False,
         ):
-            assign_country_to_player(player, season)
+            if force_sampling or sample_is_active(
+                "assign_countries_to_player_fraction"
+            ):
+                assign_country_to_player(player, season)
+
+        last_success.set_to_current_time()
+        if pushgateway:
+            push_to_gateway(
+                pushgateway, job="league-assign-countries", registry=metrics_registry
+            )

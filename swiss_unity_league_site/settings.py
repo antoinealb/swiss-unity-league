@@ -455,3 +455,4 @@ GEOIP_CITY = "ipdb_city.mmdb"
 # Settings related to Waffle, a feature flag library for Django
 # See https://waffle.readthedocs.io/en/stable/starting/configuring.html
 WAFFLE_CREATE_MISSING_FLAGS = True
+WAFFLE_CREATE_MISSING_SAMPLES = True
