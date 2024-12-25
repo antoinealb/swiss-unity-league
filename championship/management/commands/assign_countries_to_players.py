@@ -58,7 +58,6 @@ def assign_country_to_player(player: Player, season: Season):
         .order_by("-event_count")
         .first()
     )
-    most_played_country = {"country": "CH"}
     if most_played_country:
         _, created = PlayerSeasonData.objects.update_or_create(
             player=player,

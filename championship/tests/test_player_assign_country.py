@@ -15,6 +15,8 @@
 from django.core.management import call_command
 from django.test import TestCase
 
+from waffle.testutils import override_sample
+
 from championship.factories import (
     AddressFactory,
     EventOrganizerFactory,
@@ -128,6 +130,7 @@ class AssignCountryToPlayerTest(TestCase):
 
 
 @site(EU_SEASON_2025.domain)
+@override_sample("assign_countries_to_player_fraction", active=True)
 class AssignCountriesToAllPlayersTest(TestCase):
 
     def test_assign_countries_to_all_players(self):
@@ -191,5 +194,5 @@ class AssignCountriesToAllPlayersTest(TestCase):
 
     @site(SWISS_DOMAIN)
     def test_eu_season_only(self):
-        with self.assertRaises(AssertionError):
+        with self.assertRaises(KeyError):
             call_command("assign_countries_to_players")
