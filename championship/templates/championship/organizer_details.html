@@ -22,8 +22,9 @@
             {% if eventorganizer.user == user %}
                 <dt class="col-sm-4">TO actions (only shown to you)</dt>
                 <dd class="col-sm-8">
-                    <p><a href="{% url 'organizer_update' %}" class="btn btn-secondary">Edit Organizer</a></p>
-                    <p><a href="{% url 'address_list' %}" class="btn btn-secondary">Edit Addresses</a></p>
+                    <a href="{% url 'organizer_update' %}" class="btn btn-secondary">Edit organizer</a>
+                    <a href="{% url 'address_list' %}" class="btn btn-secondary">Edit addresses</a>
+                    <a href="{% url 'events_create' %}" class="btn btn-secondary">Create event</a>
                 </dd>
             {% endif %}
             {% if user.is_staff %}
