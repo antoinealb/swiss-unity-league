@@ -22,7 +22,7 @@
             </thead>
             <tbody>
                 {% for player in players %}
-                    <tr x-show="shouldShow('{{ player.name|escapejs }}')">
+                    <tr x-show="shouldShow('{{ player.get_name_display|escapejs }}')">
                         <td aria-label="Rank">
                             <div class="d-inline text-nowrap">
                                 {{ player.score.rank }}

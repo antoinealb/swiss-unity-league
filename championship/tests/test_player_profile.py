@@ -128,3 +128,11 @@ class PlayerProfilesByTeamViewTest(TestCase):
             profile.player.name for profile in context["profiles_by_team"]["Team A"]
         ]
         self.assertEqual(team_a_player_names, ["Charlie", "Bob", "Alice"])
+
+    def test_redacts_name_of_players(self):
+        PlayerProfileFactory(
+            player__name="Charlie Brown", player__hidden_from_leaderboard=True
+        )
+        response = self.client.get(self.url)
+        self.assertContains(response, "Charlie B.")
+        self.assertNotContains(response, "Charlie Brown")

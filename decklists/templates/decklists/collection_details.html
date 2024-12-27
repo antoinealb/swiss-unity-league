@@ -45,7 +45,7 @@
                                 {% endif %}
                                 {{ decklist.player.name }} ({{ decklist.archetype }})</a>
                             {% else %}
-                                {{ decklist.player.name }}
+                                {{ decklist.player.get_name_display }}
                             {% endif %}
                         </td>
                         <td>

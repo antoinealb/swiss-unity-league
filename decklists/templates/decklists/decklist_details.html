@@ -2,7 +2,7 @@
 {% load mana %}
 
 {% block title %}
-    {{ decklist.archetype|title }} by {{ decklist.player.name }}
+    {{ decklist.archetype|title }} by {{ decklist.player.get_name_display }}
 {% endblock %}
 
 {% block extrahead %}
@@ -11,7 +11,7 @@
 
 {% block content %}
     <h1>{{ decklist.archetype|title }}
-        <small class="text-muted">by {{decklist.player.name}}</small>
+        <small class="text-muted">by {{ decklist.player.get_name_display }}</small>
     </h1>
     <p>Last edited: {{ decklist.last_modified }}</p>
 

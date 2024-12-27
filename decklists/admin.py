@@ -101,6 +101,7 @@ class DecklistAdmin(admin.ModelAdmin):
         "collection_name",
     ]
     ordering = ["-last_modified"]
+    search_fields = ["player__name"]
 
 
 admin.site.register(decklists.models.Decklist, DecklistAdmin)

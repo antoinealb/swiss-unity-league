@@ -126,3 +126,13 @@ class DecklistViewTestCase(TestCase):
             c.name for c in resp.context["cards_by_section"]["Sideboard (2)"]
         ]
         self.assertEqual(got_sideboard, want_sideboard)
+
+    def test_redacts_name_of_hidden_players(self):
+        decklist = DecklistFactory(
+            player__name="Charlie Brown",
+            player__hidden_from_leaderboard=True,
+            collection__published=True,
+        )
+        resp = self.client.get(reverse("decklist-details", args=[decklist.id]))
+        self.assertContains(resp, "Charlie B.")
+        self.assertNotContains(resp, decklist.player.name)

@@ -8,7 +8,7 @@
             </div>
         {% endif %}
         <div class="card-body">
-            <h5 class="card-title"><a href="{{ profile.get_absolute_url }}" >{{ profile.player.name }}</a>
+            <h5 class="card-title"><a href="{{ profile.get_absolute_url }}" >{{ profile.player.get_name_display }}</a>
                 {% if profile.get_pronouns %}<span class="text-muted h6">{{ profile.get_pronouns }}</span>{% endif %}
             </h5>
             <p class="card-text">

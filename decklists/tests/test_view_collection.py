@@ -205,3 +205,25 @@ class CollectionViewTestCase(TestCase):
         resp = self.client.get(reverse("collection-details", args=[collection.id]))
         self.assertContains(resp, reverse("collection-update", args=[collection.id]))
         self.assertContains(resp, "Edit Deadline")
+
+    def test_redacts_player_names(self):
+        collection = CollectionFactory()
+        DecklistFactory(
+            collection=collection,
+            player__name="Charlie Brown",
+            player__hidden_from_leaderboard=True,
+        )
+        resp = self.client.get(reverse("collection-details", args=[collection.id]))
+        self.assertContains(resp, "Charlie B.")
+        self.assertNotContains(resp, "Charlie Brown")
+
+    def test_name_not_redacted_for_staff(self):
+        collection = CollectionFactory()
+        DecklistFactory(
+            collection=collection,
+            player__name="Charlie Brown",
+            player__hidden_from_leaderboard=True,
+        )
+        resp = self.client.get(reverse("collection-details", args=[collection.id]))
+        self.assertContains(resp, "Charlie B.")
+        self.assertNotContains(resp, "Charlie Brown")
