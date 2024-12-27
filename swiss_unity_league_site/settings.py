@@ -451,6 +451,15 @@ SESSION_COOKIE_AGE = datetime.timedelta(days=30).total_seconds()
 GEOIP_PATH = BASE_DIR
 GEOIP_CITY = "ipdb_city.mmdb"
 
+if key := os.environ.get("GOOGLE_GEOCODING_API_KEY"):
+    GEO_GEOCODER = {
+        "BACKEND": "geopy.geocoders.GoogleV3",
+        "KWARGS": {
+            "api_key": key,
+        },
+    }
+
+
 # Settings related to Waffle, a feature flag library for Django
 # See https://waffle.readthedocs.io/en/stable/starting/configuring.html
 WAFFLE_CREATE_MISSING_FLAGS = True

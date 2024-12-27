@@ -15,7 +15,7 @@ tests:
   stage: test
   image: python:3.12
   before_script:
-    - apt update && apt install -y libgdal-dev
+    - apt update && apt install -y libgdal-dev libsqlite3-mod-spatialite
     - pip install --upgrade -r requirements.txt
   script:
     - ./manage.py test --testrunner "xmlrunner.extra.djangotestrunner.XMLTestRunner"
@@ -28,7 +28,7 @@ migrations:
   stage: test
   image: python:3.12
   before_script:
-    - apt update && apt install -y libgdal-dev
+    - apt update && apt install -y libgdal-dev libsqlite3-mod-spatialite
     - pip install --upgrade -r requirements.txt
   script:
     - ./manage.py makemigrations --check --dry-run
@@ -37,7 +37,7 @@ python-typing:
   stage: test
   image: python:3.12
   before_script:
-    - apt update && apt install -y libgdal-dev
+    - apt update && apt install -y libgdal-dev libsqlite3-mod-spatialite
     - pip install --upgrade -r requirements.txt
     - pip install --upgrade mypy
   script:
@@ -47,7 +47,7 @@ python-format:
   stage: test
   image: python:3.12
   before_script:
-    - apt update && apt install -y libgdal-dev
+    - apt update && apt install -y libgdal-dev libsqlite3-mod-spatialite
     - pip install -r requirements.txt
     - pip install pre-commit
   script:

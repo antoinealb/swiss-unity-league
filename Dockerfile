@@ -7,6 +7,7 @@ WORKDIR /app
 RUN apt-get update && apt-get install -y \
     # keep-sorted start
     libgdal-dev \
+    libsqlite3-mod-spatialite \
     texlive \
     texlive-latex-extra \
     texlive-latex-recommended \
