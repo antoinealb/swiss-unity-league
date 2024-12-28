@@ -1,4 +1,6 @@
 {% extends "info/playground-eu.unityleague.ch/base_info.html" %}
+{% load static %}
+
 {% block info %}
 
     <div class="row pt-4 d-flex g-4">
@@ -14,7 +16,7 @@
             <p>Each country has a separate leaderboard that accumulates points of the players from this country.</p>
             <p class=""><a class="btn btn-secondary" href="{% url 'ranking' %}" title="National leadeboard">View your leaderboard</a></p>
             <h3 class="h4">Rewards</h3>
-            <p> At the end of the season ({{ current_season.end_date }}) the top finishers of each national leaderboard receive the following rewards:</p>
+            <p> At the end of the season (<b>{{ current_season.end_date }}</b>) the top finishers of each national leaderboard receive the following rewards:</p>
             <ul>
                 <li>The 1st of the leaderboard receives a direct invite to the European Magic Cup</li>
                 <li>The top 40* players qualify for the National Championship**</li>
@@ -26,7 +28,7 @@
         </div>
         <div class="col-lg-6">
             <h2>Event Types</h2>
-            <p>Each Magic event gets a type, that defines its multiplier. League points awarded to players are multiplied based on the multiplier of the event.</p>
+            <p>Each Magic event gets a type that defines its multiplier. League points awarded to players are multiplied based on the multiplier of the event.</p>
 
             <div class=" align-items-center table-responsive">
                 <table class="table table-striped border border-2">
@@ -66,7 +68,7 @@
                         <tr>
                             <td><b>Grand&nbsp;Prix</b></td>
                             <td>6x</td>
-                            <td>Large Conventions: RC, Spotlight, Relic Fest, 4Seasons, etc.</td>
+                            <td>Large conventions: RC, Spotlight, Relic Fest, 4Seasons, etc.</td>
                             <td>1-8 slots</td>
                         </tr>
                     </tbody>
@@ -77,19 +79,23 @@
         </div>
         <div class="col-lg-6">
             <h2>National Championships</h2>
-            <p>Once a player is qualified throught the leaderboard, they may attend all National Championships in their country.
-                Each National Championship awards 4 invites to the European Magic Cup.</p>
+            <p>Once a player is qualified throught the leaderboard, they may attend all National Championships in their country.</p>
             <ul>
-                <li>Dates: Oct - Dec 2025</li>
+                <li>Dates: <b>Oct - Dec 2025</b></li>
                 <li>Only the best players of the country</li>
                 <li>Top 4 is invited to the European Magic Cup</li>
             </ul>
+            <p>Each National Championship awards 4 invites to the European Magic Cup and crowns a national champion.</p>
+            <div class="figure">
+                <a href="/player/702"><img src="{% static 'tournament_winner.webp' %}" class="figure-img img-fluid rounded" alt="Winner of the Swiss Nationals of Magic: The Gathering"></a>
+                <figcaption class="figure-caption"><a href="/player/702">Lou Dumez</a>, 2024 National Champion of Switzerland</figcaption>
+            </div>
         </div>
         <div class="col-lg-6">
             <h2>20k European Magic Cup</h2>
             <p>The European Magic Cup will feature 3 main events each in a different format. Qualified players choose their favorite format to play. </p>
             <ul>
-                <li>Date: Q1 2026</li>
+                <li>Date: <b>Q1 2026</b></li>
                 <li>Location: Italy (to be announced)</li>
                 <li>Prizes: €20k</li>
                 <li>Formats: announced one by one during the year</li>

@@ -1,4 +1,5 @@
 {% extends "championship/base.html" %}
+{% load static %}
 
 {% block title %}
     How to participate in the {{ SITE.name }}
@@ -13,16 +14,20 @@
     {% include 'championship/components/season_dropdown.html' %}
     <br>
 
-    <h2>Abstract</h2>
     <div class="row">
-        <div class="col-md-6">
-            {% include 'info/abstract.html' %}
-        </div>
         <div class="col-md-6">
             <div class="alert alert-success" role="alert">
                 <p>Interested in participating?</p>
                 <a class="btn btn-success" href="{% url 'info_player' %}">Participate as player</a>
                 <a class="btn btn-success" href="{% url 'info_organizer' %}">Organize events</a>
+            </div>
+            <h2>Abstract</h2>
+            {% include 'info/abstract.html' %}
+        </div>
+        <div class="col-md-6">
+            <div class="figure">
+                <a href="/events/981/"><img class="figure-img img-fluid rounded" src="{% static 'top_8_players.webp' %}" alt="Top 8 players of a Magic: The Gathering event."></a>
+                <figcaption class="figure-caption">Top 8 of the <a href="/events/981/">2024 National Championship</a> of Switzerland</figcaption>
             </div>
         </div>
     </div>
