@@ -82,23 +82,37 @@
                 <li>In the <b>Welcome</b> menu, go to <b><a href="{% url 'results_create' %}">Upload results</a></b>.</li>
                 <li>Select the tournament app* you used for the event.</li>
                 <li>Select the event you want to upload results for.</li>
-                <li>Download the standings from your tournament app, upload them in the form and <b>Submit</b>. (for some apps you can also share a link to the standings)</li>
+                <li>Login to your tournament app and download the standings from the last round of the event.</li>
+                <li>Go to our import form and <b>Submit</b>. (for some apps you can also share a link to the standings)</li>
+                <li>For most apps the top cut/playoffs is reported automatically. To do it manually click <b>Edit playoff results</b>.</li>
                 <li>After importing the results, you can scroll down to verify that all results are imported correctly.</li>
-                <li>If you have any issues, please <a href="mailto:{{ SITE_SETTINGS.contact_email}}">contact us</a>.</li>
                 <small>*Alternatively you can upload the results as an <b>Excel/CSV</b> file or select <b>Manual</b> to enter them by hand.</small>
             </ol>
+            <p>If you have any issues, please <a href="mailto:{{ SITE_SETTINGS.contact_email}}">contact us</a>.</p>
         </div>
     </div>
 
     <h2 class="pt-4">Frequently asked questions</h2>
     <div class="accordion" id="organizerFAQ">
         <div class="accordion-item">
+            <h2 class="accordion-header" id="headingWPN">
+                <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapseWPN" aria-expanded="false" aria-controls="collapseWPN">
+                    I'm not a WPN store, can I still organize an event?
+                </button>
+            </h2>
+            <div id="collapseWPN" class="accordion-collapse collapse" aria-labelledby="headingWPN" data-bs-parent="#organizerFAQ">
+                <div class="accordion-body">
+                    <p>Yes, all events can participate, provided that they are open to the public. From the smallest 6-player draft at a local restaurant to the largest main event at a convention, everything is allowed.</p>
+                </div>
+            </div>
+        </div>
+        <div class="accordion-item">
             <h2 class="accordion-header" id="headingFees">
-                <button class="accordion-button" type="button" data-bs-toggle="collapse" data-bs-target="#collapseFees" aria-expanded="false" aria-controls="collapseFees">
+                <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapseFees" aria-expanded="false" aria-controls="collapseFees">
                     How do I pay the fees?
                 </button>
             </h2>
-            <div id="collapseFees" class="accordion-collapse collapse show" aria-labelledby="headingFees" data-bs-parent="#organizerFAQ">
+            <div id="collapseFees" class="accordion-collapse collapse" aria-labelledby="headingFees" data-bs-parent="#organizerFAQ">
                 <div class="accordion-body">
                     <p>We will send an invoice via email every few months. There will also be a message shown when you login to the website.</p>
                 </div>
