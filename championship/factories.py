@@ -58,24 +58,6 @@ class UserFactory(DjangoModelFactory):
     password = factory.LazyFunction(lambda: make_password("foobar"))
 
 
-class AddressFactory(DjangoModelFactory):
-    class Meta:
-        model = Address
-
-    location_name = factory.Faker("company", locale="fr_CH")
-    street_address = factory.Faker("street_address", locale="fr_CH")
-    city = factory.Faker("city", locale="fr_CH")
-    postal_code = factory.Faker("postcode", locale="fr_CH")
-    region = factory.Faker(
-        "random_element",
-        elements=Address.Region.values,
-    )
-    country = factory.Faker(
-        "random_element",
-        elements=countries.countries.keys(),
-    )
-
-
 class EventOrganizerFactory(DjangoModelFactory):
     class Meta:
         model = EventOrganizer
@@ -92,6 +74,25 @@ class EventOrganizerFactory(DjangoModelFactory):
             return
         self.default_address = AddressFactory(organizer=self)
         self.save()
+
+
+class AddressFactory(DjangoModelFactory):
+    class Meta:
+        model = Address
+
+    location_name = factory.Faker("company", locale="fr_CH")
+    street_address = factory.Faker("street_address", locale="fr_CH")
+    city = factory.Faker("city", locale="fr_CH")
+    postal_code = factory.Faker("postcode", locale="fr_CH")
+    region = factory.Faker(
+        "random_element",
+        elements=Address.Region.values,
+    )
+    country = factory.Faker(
+        "random_element",
+        elements=countries.countries.keys(),
+    )
+    organizer = factory.SubFactory(EventOrganizerFactory)
 
 
 class PlayerFactory(DjangoModelFactory):

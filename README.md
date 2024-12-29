@@ -23,7 +23,7 @@ documentation](https://docs.djangoproject.com/en/5.1/ref/contrib/gis/install/geo
 on how to install those libraries in general. On a mac, you can get them with:
 
 ```shell
-$ brew install gdal geos
+$ brew install gdal geos libspatialite
 ```
 
 ## Python dependencies

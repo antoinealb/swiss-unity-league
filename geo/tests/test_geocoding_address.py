@@ -25,7 +25,9 @@ from geo.address import address_to_coordinate
 MockGeocoder = Mock()
 
 
-@override_settings(GEO_GEOCODER="geo.tests.test_geocoding_address.MockGeocoder")
+@override_settings(
+    GEO_GEOCODER={"BACKEND": "geo.tests.test_geocoding_address.MockGeocoder"}
+)
 class GeoCodingTestCase(TestCase):
     def setUp(self):
         self.geocoder = Mock()

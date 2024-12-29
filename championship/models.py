@@ -17,6 +17,8 @@ import re
 import urllib.parse
 
 from django.conf import settings
+from django.contrib.gis.db.models import PointField
+from django.contrib.gis.geos import Point
 from django.contrib.humanize.templatetags.humanize import ordinal
 from django.contrib.sites.models import Site
 from django.core.exceptions import ValidationError
@@ -31,6 +33,7 @@ from django_countries.fields import CountryField
 
 from championship.seasons.definitions import EU_SEASONS
 from championship.seasons.helpers import Season, find_main_season_by_date
+from geo.address import address_to_coordinate
 from multisite.constants import GLOBAL_DOMAIN, SWISS_DOMAIN
 
 
@@ -80,6 +83,9 @@ class Address(models.Model):
 
     organizer = models.ForeignKey(
         "EventOrganizer", on_delete=models.CASCADE, related_name="addresses"
+    )
+    position = PointField(
+        help_text="The position of the venue on a map. Usually inferred from the address",
     )
 
     def get_delete_url(self):
@@ -144,6 +150,10 @@ class Address(models.Model):
         """Return a URL for this address on Google Maps."""
         query = urllib.parse.quote(str(self))
         return f"https://www.google.com/maps/search/?api=1&query={query}"
+
+    def save(self, *args, **kwargs):
+        self.position = Point(*address_to_coordinate(self))
+        super().save(*args, **kwargs)
 
 
 def organizer_image_validator(image):

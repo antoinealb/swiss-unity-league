@@ -27,6 +27,7 @@ https://docs.djangoproject.com/en/4.1/ref/settings/
 import datetime
 import logging
 import os
+import platform
 import sys
 from pathlib import Path
 
@@ -184,7 +185,7 @@ if not db_path:
 
 DATABASES = {
     "default": {
-        "ENGINE": "django.db.backends.sqlite3",
+        "ENGINE": "django.contrib.gis.db.backends.spatialite",
         "NAME": db_path,
         "TEST": {
             "DEPENDENCIES": [],
@@ -379,6 +380,11 @@ if "test" in sys.argv or "pytest" in sys.modules:
     # https://docs.djangoproject.com/en/5.0/topics/testing/overview/
     # https://medium.com/@thehackadda/tips-for-speeding-up-your-django-tests-35bab8250760
 
+    # Use a fake geocoding API that always return the same place.
+    GEO_GEOCODER = {
+        "BACKEND": "geo.tests.utils.FakeGeocoder",
+    }
+
     # Use a fast, insecure password hasher
     PASSWORD_HASHERS = [
         "django.contrib.auth.hashers.MD5PasswordHasher",
@@ -458,6 +464,11 @@ if key := os.environ.get("GOOGLE_GEOCODING_API_KEY"):
             "api_key": key,
         },
     }
+
+
+# https://docs.djangoproject.com/en/5.1/ref/contrib/gis/install/spatialite/
+if platform.system() == "Darwin":
+    SPATIALITE_LIBRARY_PATH = "/opt/homebrew/lib/mod_spatialite.dylib"
 
 
 # Settings related to Waffle, a feature flag library for Django
