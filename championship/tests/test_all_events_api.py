@@ -72,6 +72,7 @@ class EventApiTestCase(TestCase):
                 "seoAddress": event_address.get_seo_address(),
                 "shortAddress": f", {event_address.city}, {event_address.get_region_display()}, {event_address.get_country_display()}",
                 "region": "Aargau",
+                "distance_km": None,
                 "category": Event.Category.REGULAR.label,
                 "details_url": TEST_SERVER + reverse("event_details", args=[a.id]),
                 "organizer_url": TEST_SERVER
@@ -90,6 +91,7 @@ class EventApiTestCase(TestCase):
                 "seoAddress": eo.default_address.get_seo_address(),
                 "shortAddress": f", {eo.default_address.city}, {eo.default_address.get_region_display()}",
                 "region": "Bern",
+                "distance_km": None,
                 "category": Event.Category.REGIONAL.label,
                 "details_url": TEST_SERVER + reverse("event_details", args=[b.id]),
                 "organizer_url": TEST_SERVER
@@ -123,6 +125,7 @@ class FutureEventsView(TestCase):
                 "seoAddress": address.get_seo_address(),
                 "shortAddress": f", {address.city}, {address.get_region_display()}, {address.get_country_display()}",
                 "region": address.get_region_display(),
+                "distance_km": None,
                 "category": Event.Category.PREMIER.label,
                 "details_url": TEST_SERVER + event.get_absolute_url(),
                 "organizer_url": TEST_SERVER

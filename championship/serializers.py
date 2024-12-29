@@ -35,6 +35,7 @@ class EventSerializer(serializers.ModelSerializer):
             "seoAddress",
             "shortAddress",
             "region",
+            "distance_km",
             "category",
             "details_url",
             "organizer_url",
@@ -57,6 +58,7 @@ class EventSerializer(serializers.ModelSerializer):
         source="organizer", view_name="organizer_details", read_only=True
     )
     icon_url = serializers.SerializerMethodField()
+    distance_km = serializers.SerializerMethodField()
 
     def get_address_helper(self, event) -> Address | None:
         if event.address:
@@ -99,3 +101,7 @@ class EventSerializer(serializers.ModelSerializer):
 
     def get_icon_url(self, event):
         return static(event.get_category_icon_url())
+
+    def get_distance_km(self, event):
+        if distance := getattr(event, "distance", None):
+            return distance.km

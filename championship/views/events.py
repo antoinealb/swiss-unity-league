@@ -18,6 +18,7 @@ from typing import Any
 
 from django.contrib import messages
 from django.contrib.auth.mixins import LoginRequiredMixin
+from django.contrib.gis.db.models.functions import Distance
 from django.db.models import Prefetch
 from django.http import Http404, HttpResponseForbidden, HttpResponseRedirect
 from django.urls import reverse
@@ -26,6 +27,8 @@ from django.views.generic import DetailView
 from django.views.generic.base import TemplateView
 from django.views.generic.edit import FormView, UpdateView
 from rest_framework import viewsets
+
+from waffle import flag_is_active
 
 from championship.forms import EventCreateForm
 from championship.models import Event
@@ -213,18 +216,24 @@ class FutureEventView(TemplateView):
 
     def get_context_data(self, **kwargs: Any):
         context = super().get_context_data(**kwargs)
-        future_events = {"Upcoming": ""}
         past_events_each_season = [
             {s.name: reverse("past-events-list", kwargs={"slug": s.slug})}
             for s in get_main_seasons()
         ]
-        context["season_urls"] = [future_events] + past_events_each_season
+        context["season_urls"] = [{"Upcoming": ""}] + past_events_each_season
 
         future_events = (
             Event.objects.future_events()
             .select_related("organizer", "address", "organizer__default_address")
             .order_by("date")
         )
+
+        # TODO(antoinealb): Cover this with unit testing before moving the code
+        # out of the flag.
+        if flag_is_active(self.request, "events_show_distance"):
+            future_events = future_events.annotate(
+                distance=Distance("address__position", self.request.geoip_data.position)
+            )
 
         events = EventSerializer(
             future_events, many=True, context={"request": self.request}

@@ -1,6 +1,7 @@
 {% extends "championship/base.html" %}
 {% load static %}
 {% load custom_tags %}
+{% load waffle_tags %}
 
 {% block title %}
     Upcoming Magic: the Gathering Events in Switzerland | {{ SITE.name }}
@@ -71,6 +72,9 @@
                         <th scope="col">Date/Time</th>
                         <th scope="col">Event</th>
                         <th scope="col">Type</th>
+                        {% flag "events_show_distance" %}
+                            <th scope="col">Approx. Distance (km)</th>
+                        {% endflag %}
                     </tr>
                 </thead>
                 <tbody>
@@ -111,6 +115,10 @@
                                     </div>
                                 </div>
                             </td>
+
+                            {% flag "events_show_distance" %}
+                                <td><span x-text="Math.round(event.distance_km)"></span> KM</td>
+                            {% endflag %}
                         </tr>
                     </template>
                 </tbody>

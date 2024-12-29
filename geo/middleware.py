@@ -16,6 +16,7 @@ import dataclasses
 import logging
 
 from django.contrib.gis.geoip2 import GeoIP2, GeoIP2Exception
+from django.contrib.gis.geos import Point
 from django.http.request import HttpRequest
 
 from geoip2.errors import AddressNotFoundError
@@ -41,6 +42,10 @@ class GeoIPData:
     country_code: str
     latitude: float
     longitude: float
+
+    @property
+    def position(self):
+        return Point(self.latitude, self.longitude, srid=4326)
 
 
 def _get_ip(request):
